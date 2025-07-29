@@ -6,3 +6,6 @@ frontend/node_modules
 .env
 backend/.env
 frontend/.env
+
+# Seed data
+backend/db-seed.csv

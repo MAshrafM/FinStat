@@ -1,0 +1,66 @@
+/* frontend/src/components/SummaryRow.css */
+.summary-row {
+  display: flex;
+  flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+  gap: 2rem;
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border: 1px solid #e9ecef;
+}
+
+.summary-item {
+  flex: 1;
+  min-width: 300px; /* Ensure items don't get too squished */
+}
+
+.summary-item h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+  padding-bottom: 0.5rem;
+}
+
+.grand-total p {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #009879;
+  margin: 0;
+}
+
+.period-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.period-item {
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.period-item strong {
+  color: #343a40;
+}
+
+.period-change {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.change-positive {
+  color: #28a745; /* Green for positive */
+}
+.change-negative {
+  color: #dc3545; /* Red for negative */
+}
+.change-neutral {
+  color: #6c757d; /* Gray for neutral/N/A */
+}

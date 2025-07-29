@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { getPaychecks } from '../../services/paycheckService';
 import AnalysisCard from '../../components/AnalysisCard';
+import SummaryRow from '../../components/SummaryRow';
 
 const CalendarAnalysis = () => {
   const [yearlyData, setYearlyData] = useState({});
@@ -32,14 +33,17 @@ const CalendarAnalysis = () => {
     <div className="page-container">
       <h1>Calendar Year Analysis</h1>
       {years.length > 0 ? (
-        years.map(year => (
+        <>
+        <SummaryRow periodData={yearlyData} periodTitle="Yearly" />
+        {years.map(year => (
           <AnalysisCard
             key={year}
             title={`Calendar Year ${year}`}
             paychecks={yearlyData[year]}
             monthLabels={calendarMonthLabels(year)}
           />
-        ))
+        ))}
+        </>
       ) : (
         <p>No paycheck data available to analyze.</p>
       )}
