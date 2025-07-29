@@ -70,7 +70,7 @@ const SalaryProfilePage = () => {
           <h4>Current Salary Details (as of {new Date(profile.currentSalary.effectiveDate).toLocaleDateString()})</h4>
           <ul>
             {Object.entries(profile.currentSalary)
-              .filter(([key]) => !['_id', 'effectiveDate'].includes(key))
+              .filter(([key]) => !['_id', 'effectiveDate', 'prepaid'].includes(key))
               .map(([key, value]) => (
                 <li key={key}>
                   <span>{key.charAt(0).toUpperCase() + key.slice(1)}:</span>
@@ -83,6 +83,10 @@ const SalaryProfilePage = () => {
           <div className="gross-estimate">
             <span>Monthly Gross Estimate:</span>
             <strong>{formatCurrency(profile.monthlyGrossEstimate)}</strong>
+          </div>
+          <div className="gross-estimate prepaid">
+            <span>Monthly Prepaid:</span>
+            <strong>{formatCurrency(profile.currentSalary.prepaid)}</strong>
           </div>
           <div className="card-actions">
             <button className="action-button" onClick={() => setIsEditing(true)} title="Update Salary">

@@ -14,6 +14,7 @@ const SalaryForm = ({ onFormSubmit, initialData = {}, mode = 'create' }) => {
     effectiveDate: new Date().toISOString().slice(0, 10), // YYYY-MM-DD
     basicSalary: 0,
     basicProduction: 0,
+    prepaid: 0,
     variables: 0,
     environment: 0,
     meal: 0,
@@ -61,7 +62,7 @@ const SalaryForm = ({ onFormSubmit, initialData = {}, mode = 'create' }) => {
   };
 
   const salaryFields = [
-    'basicSalary', 'basicProduction', 'variables', 'environment', 
+    'basicSalary', 'basicProduction', 'prepaid', 'variables', 'environment', 
     'meal', 'shift', 'supervising', 'others', 'bonds'
   ];
 

@@ -36,6 +36,7 @@ const SalaryHistory = () => {
               <th>Shift</th>
               <th>Supervising</th>
               <th>Others</th>
+              <th>Prepaid</th>
               <th>Bonds</th>
             </tr>
           </thead>
@@ -51,6 +52,7 @@ const SalaryHistory = () => {
                 <td>{formatCurrency(record.shift)}</td>
                 <td>{formatCurrency(record.supervising)}</td>
                 <td>{formatCurrency(record.others)}</td>
+                <td>{formatCurrency(record.prepaid)}</td>
                 <td>{formatCurrency(record.bonds)}</td>
               </tr>
             ))}

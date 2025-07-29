@@ -10,6 +10,7 @@ const SalaryDetailSchema = new mongoose.Schema({
   },
   basicSalary: { type: Number, default: 0 },
   basicProduction: { type: Number, default: 0 },
+  prepaid: { type: Number, default: 0 },
   variables: { type: Number, default: 0 },
   environment: { type: Number, default: 0 },
   meal: { type: Number, default: 0 },

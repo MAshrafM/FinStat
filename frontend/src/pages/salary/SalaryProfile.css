@@ -153,6 +153,10 @@
   color: #009879; /* Theme color */
 }
 
+.prepaid strong{
+    color: #007798;
+}
+
 .card-actions {
   display: flex;
   gap: 1.5rem;
