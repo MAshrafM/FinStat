@@ -39,6 +39,28 @@ router.get('/', async (req, res) => {
   }
 });
 
+// @route   GET api/paychecks/:id
+// @desc    Get a single paycheck by ID
+// @access  Public
+router.get('/:id', async (req, res) => {
+  try {
+    const paycheck = await Paycheck.findById(req.params.id);
+
+    if (!paycheck) {
+      return res.status(404).json({ msg: 'Paycheck not found' });
+    }
+
+    res.json(paycheck);
+  } catch (err) {
+    console.error(err.message);
+    // If the ID is not a valid format, it can also cause an error
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Paycheck not found' });
+    }
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route   PUT api/paychecks/:id
 // @desc    Update a paycheck
 // @access  Public

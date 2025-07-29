@@ -1,6 +1,7 @@
 // frontend/src/components/PaycheckTable.js
 import React from 'react';
-import { FaTrash } from 'react-icons/fa'; // Import the trash icon
+import { Link } from 'react-router-dom';
+import { FaTrash, FaPencilAlt } from 'react-icons/fa'; // Import the trash icon
 import './PaycheckTable.css'; // We will update this file next
 
 const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
@@ -30,8 +31,8 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
             <th>Month</th>
             <th>Type</th>
             <th>Amount</th>
-            <th>Actions</th>
             <th>Monthly Total</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -42,17 +43,20 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
                   {entryIndex === 0 && <td rowSpan={monthGroup.rowCount}>{monthGroup.month}</td>}
                   <td>{entry.type}</td>
                   <td>${entry.amount.toFixed(2)}</td>
-                  <td className="action-cell">
-                    <FaTrash
-                      className="action-icon"
-                      onClick={() => onPaycheckDeleted(entry._id)}
-                    />
-                  </td>
                   {entryIndex === 0 && (
                     <td rowSpan={monthGroup.rowCount}>
                       <strong>${monthGroup.monthlyTotal.toFixed(2)}</strong>
                     </td>
                   )}
+                  <td className="action-cell">
+                    <Link to={`/paycheck-log/edit/${entry._id}`}>
+                      <FaPencilAlt className="action-icon edit-icon" />
+                    </Link>
+                    <FaTrash
+                      className="action-icon"
+                      onClick={() => onPaycheckDeleted(entry._id)}
+                    />
+                  </td>
                 </tr>
               ))}
             </React.Fragment>

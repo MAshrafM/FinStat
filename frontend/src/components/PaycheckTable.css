@@ -46,8 +46,8 @@
   text-align: center;
 }
 .action-icon {
+  margin: 0 8px;
   cursor: pointer;
-  color: #e74c3c;
   font-size: 1.2em;
   transition: transform 0.2s;
 }
@@ -77,4 +77,19 @@
   transform: translateX(-50%);
   bottom: 105%; /* Position above the row */
   white-space: nowrap;
+}
+
+
+.edit-icon {
+  color: #2980b9; /* Blue color for edit */
+}
+.edit-icon:hover {
+  color: #3498db;
+}
+
+.delete-icon {
+  color: #c0392b; /* Red color for delete */
+}
+.delete-icon:hover {
+  color: #e74c3c;
 }

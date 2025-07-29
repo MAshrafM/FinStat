@@ -7,10 +7,26 @@ export const getPaychecks = async ( ) => {
   return await response.json();
 };
 
+// Get a single paycheck by its ID ===
+export const getPaycheckById = async (id) => {
+  const response = await fetch(`${API_URL}/${id}`);
+  return await response.json();
+};
+
 // Create a new paycheck
 export const createPaycheck = async (paycheck) => {
   const response = await fetch(API_URL, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(paycheck),
+  });
+  return await response.json();
+};
+
+// Update an existing paycheck ===
+export const updatePaycheck = async (id, paycheck) => {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(paycheck),
   });

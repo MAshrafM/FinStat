@@ -1,15 +1,30 @@
 // frontend/src/components/PaycheckForm.js
-import React, { useState } from 'react';
-import './PaycheckForm.css'; // We will create this new CSS file
+import React, { useState, useEffect } from 'react';
+import './PaycheckForm.css';
 
-const PaycheckForm = ({ onPaycheckAdded }) => {
-  // Get the current month in YYYY-MM format for the default value
-  const currentMonth = new Date().toISOString().slice(0, 7);
-
-  const [month, setMonth] = useState(currentMonth);
+// The component now accepts 'onFormSubmit' and optional 'initialData'
+const PaycheckForm = ({ onFormSubmit, initialData }) => {
+  const [month, setMonth] = useState('');
   const [type, setType] = useState('Cash');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
+
+  // Determine if we are in "edit" mode based on presence of initialData
+  const isEditMode = Boolean(initialData);
+
+  // If in edit mode, populate the form with existing data
+  useEffect(() => {
+    if (isEditMode && initialData) {
+      setMonth(initialData.month);
+      setType(initialData.type);
+      setAmount(initialData.amount);
+      setNote(initialData.note);
+    } else {
+      // If in create mode, set default month
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      setMonth(currentMonth);
+    }
+  }, [initialData, isEditMode]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -17,25 +32,18 @@ const PaycheckForm = ({ onPaycheckAdded }) => {
       alert('Please fill in the month and amount.');
       return;
     }
-    onPaycheckAdded({ month, type, amount: Number(amount), note });
-    // No need to reset the form here, as we navigate away
+    // Call the single, generalized submit handler
+    onFormSubmit({ month, type, amount: Number(amount), note });
   };
 
   return (
-    // The 'form-container' class will be our main styling hook
     <form onSubmit={handleSubmit} className="paycheck-form-container">
-      <h3>Add New Paycheck Log</h3>
+      {/* Change title based on mode */}
+      <h3>{isEditMode ? 'Edit Paycheck Log' : 'Add New Paycheck Log'}</h3>
       
-      {/* Each form element is wrapped in a 'form-group' for vertical layout */}
       <div className="form-group">
         <label htmlFor="month">Month</label>
-        <input
-          id="month"
-          type="month"
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          required
-        />
+        <input id="month" type="month" value={month} onChange={(e) => setMonth(e.target.value)} required />
       </div>
 
       <div className="form-group">
@@ -48,28 +56,18 @@ const PaycheckForm = ({ onPaycheckAdded }) => {
 
       <div className="form-group">
         <label htmlFor="amount">Amount</label>
-        <input
-          id="amount"
-          type="number"
-          placeholder="e.g., 1500.00"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          required
-        />
+        <input id="amount" type="number" placeholder="e.g., 1500.00" value={amount} onChange={(e) => setAmount(e.target.value)} required />
       </div>
 
       <div className="form-group">
         <label htmlFor="note">Note</label>
-        <input
-          id="note"
-          type="text"
-          placeholder="e.g., 'Monthly Salary'"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-        />
+        <input id="note" type="text" placeholder="e.g., 'Monthly Salary'" value={note} onChange={(e) => setNote(e.target.value)} />
       </div>
 
-      <button type="submit" className="submit-button">Add Paycheck</button>
+      {/* Change button text based on mode */}
+      <button type="submit" className="submit-button">
+        {isEditMode ? 'Update Paycheck' : 'Add Paycheck'}
+      </button>
     </form>
   );
 };

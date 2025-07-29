@@ -14,7 +14,7 @@ const AddPaycheck = () => {
 
   return (
     <div className="page-container">
-      <PaycheckForm onPaycheckAdded={handleAddPaycheck} />
+      <PaycheckForm onFormSubmit={handleAddPaycheck} />
     </div>
   );
 };

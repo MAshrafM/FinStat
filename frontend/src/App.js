@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import PaycheckLog from './pages/PaycheckLog';
 import AddPaycheck from './pages/AddPaycheck';
+import EditPaycheck from './pages/EditPaycheck';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/paycheck-log" element={<PaycheckLog />} />
             <Route path="/paycheck-log/new" element={<AddPaycheck />} />
+            <Route path="/paycheck-log/edit/:id" element={<EditPaycheck />} />
           </Routes>
         </main>
       </div>
