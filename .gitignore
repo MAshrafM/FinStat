@@ -1,0 +1,8 @@
+# Ignore the backend node_modules folder
+backend/node_modules
+frontend/node_modules
+
+# Ignore environment files (for storing secrets)
+.env
+backend/.env
+frontend/.env
