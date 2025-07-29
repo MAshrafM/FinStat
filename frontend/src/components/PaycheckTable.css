@@ -1,0 +1,80 @@
+/* frontend/src/components/PaycheckTable.css */
+.table-container {
+  width: 100%;
+  overflow-x: auto; /* For responsiveness on small screens */
+}
+
+.styled-table {
+  width: 100%;
+  border-collapse: collapse; /* Removes space between borders */
+  font-size: 1rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.styled-table thead tr {
+  background-color: #009879;
+  color: #ffffff;
+  text-align: center;
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 12px 15px;
+  border: 1px solid #dddddd;
+}
+
+.styled-table tbody tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+/* Zebra striping for rows */
+.styled-table tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+  border-bottom: 2px solid #009879;
+}
+
+/* Hover effect for rows */
+.styled-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Action icons styling */
+.action-cell {
+  text-align: center;
+}
+.action-icon {
+  cursor: pointer;
+  color: #e74c3c;
+  font-size: 1.2em;
+  transition: transform 0.2s;
+}
+.action-icon:hover {
+  transform: scale(1.2);
+  color: #c0392b;
+}
+
+/* Tooltip for note on hover */
+.tooltip-container {
+  position: relative;
+}
+
+/* Show tooltip only if data-note attribute is not empty */
+.tooltip-container:hover::after {
+  content: attr(data-note); /* Use the note from the data attribute */
+  visibility: visible;
+  opacity: 1;
+  position: absolute;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  padding: 5px 10px;
+  border-radius: 6px;
+  z-index: 1;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 105%; /* Position above the row */
+  white-space: nowrap;
+}

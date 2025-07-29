@@ -1,0 +1,64 @@
+/* frontend/src/components/PaycheckForm.css */
+
+.paycheck-form-container {
+  max-width: 600px; /* Sets a max-width but allows it to be smaller */
+  width: 100%;      /* Takes up available width up to the max-width */
+  margin: 2rem auto; /* Centers the form on the page */
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.paycheck-form-container h3 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 1.5rem; /* Space between form fields */
+}
+
+.form-group label {
+  display: block; /* Makes the label take its own line */
+  font-weight: bold;
+  margin-bottom: 0.5rem; /* Space between label and input */
+  color: #555;
+}
+
+/* Universal styling for inputs and select */
+.form-group input,
+.form-group select {
+  width: 100%; /* Makes inputs take the full width of the container */
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box; /* Important for padding and width to work together */
+  transition: border-color 0.2s;
+}
+
+/* Style for when an input is focused (clicked on) */
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #009879; /* Highlight color to match the table */
+}
+
+.submit-button {
+  width: 100%;
+  padding: 15px;
+  background-color: #009879;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #007a63;
+}
