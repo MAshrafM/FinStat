@@ -1,23 +1,24 @@
 // Import the Express library
 const express = require('express');
 const cors = require('cors');
+const connectDB = require('./config/db'); // Import the DB connection function
 
+// Connect to Database
+connectDB();
 // Create an instance of an Express application
 const app = express();
 
 // This enables CORS for all routes, allowing our frontend to make requests
 app.use(cors()); 
+// This allows us to accept JSON data in the body of requests
+app.use(express.json()); 
+
+// Define a simple test route
+app.get('/', (req, res) => res.send('API Running'));
 
 // Define the port the server will run on. 
 // We use 5000 for the backend to avoid conflict with the React frontend (which usually runs on 3000)
-const PORT = 5000;
-
-// Define a simple "route" or "endpoint"
-// This tells the server what to do when it receives a GET request to the main URL ("/")
-app.get('/api', (req, res) => {
-  // Send a JSON response back to the client
-  res.json({ message: "Hello from the backend server!" });
-});
+const PORT = process.env.PORT || 5000;
 
 // Start the server and make it listen for incoming requests on the specified port
 app.listen(PORT, () => {
