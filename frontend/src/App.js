@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard';
 import PaycheckLog from './pages/PaycheckLog';
 import AddPaycheck from './pages/AddPaycheck';
 import EditPaycheck from './pages/EditPaycheck';
+import CalendarAnalysis from './pages/analysis/CalendarAnalysis';
+import FiscalAnalysis from './pages/analysis/FiscalAnalysis';
 import './App.css';
 
 function App() {
@@ -19,6 +21,8 @@ function App() {
             <Route path="/paycheck-log" element={<PaycheckLog />} />
             <Route path="/paycheck-log/new" element={<AddPaycheck />} />
             <Route path="/paycheck-log/edit/:id" element={<EditPaycheck />} />
+            <Route path="/analysis/calendar" element={<CalendarAnalysis />} />
+            <Route path="/analysis/fiscal" element={<FiscalAnalysis />} />
           </Routes>
         </main>
       </div>

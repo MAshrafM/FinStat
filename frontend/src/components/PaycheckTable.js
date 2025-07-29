@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa'; // Import the trash icon
+import { formatCurrency } from '../utils/formatters';
 import './PaycheckTable.css'; // We will update this file next
 
 const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
@@ -42,10 +43,10 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
                 <tr key={entry._id} className="tooltip-container" data-note={entry.note}>
                   {entryIndex === 0 && <td rowSpan={monthGroup.rowCount}>{monthGroup.month}</td>}
                   <td>{entry.type}</td>
-                  <td>${entry.amount.toFixed(2)}</td>
+                  <td>{formatCurrency(entry.amount)}</td>
                   {entryIndex === 0 && (
                     <td rowSpan={monthGroup.rowCount}>
-                      <strong>${monthGroup.monthlyTotal.toFixed(2)}</strong>
+                      <strong>{formatCurrency(monthGroup.monthlyTotal)}</strong>
                     </td>
                   )}
                   <td className="action-cell">

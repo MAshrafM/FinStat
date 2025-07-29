@@ -1,0 +1,33 @@
+/* frontend/src/pages/Dashboard.css */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.dashboard-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+  text-decoration: none;
+  color: #333;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-card h2 {
+  margin-top: 1rem;
+  color: #009879; /* Theme color */
+}
+
+.dashboard-card p {
+  color: #666;
+  font-size: 0.9rem;
+}
