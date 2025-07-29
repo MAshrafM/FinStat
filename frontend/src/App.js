@@ -3,11 +3,17 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
+// Paycheck Log
 import PaycheckLog from './pages/PaycheckLog';
 import AddPaycheck from './pages/AddPaycheck';
 import EditPaycheck from './pages/EditPaycheck';
+// Pay Analysis
 import CalendarAnalysis from './pages/analysis/CalendarAnalysis';
 import FiscalAnalysis from './pages/analysis/FiscalAnalysis';
+// Salary Profile
+import SalaryProfilePage from './pages/salary/SalaryProfilePage';
+import SalaryHistory from './pages/salary/SalaryHistory';
+import EditProfilePage from './pages/salary/EditProfilePage';
 import './App.css';
 
 function App() {
@@ -23,6 +29,9 @@ function App() {
             <Route path="/paycheck-log/edit/:id" element={<EditPaycheck />} />
             <Route path="/analysis/calendar" element={<CalendarAnalysis />} />
             <Route path="/analysis/fiscal" element={<FiscalAnalysis />} />
+            <Route path="/salary-profile" element={<SalaryProfilePage />} />
+            <Route path="/salary-profile/history" element={<SalaryHistory />} />
+            <Route path="/salary-profile/edit" element={<EditProfilePage />} />
           </Routes>
         </main>
       </div>

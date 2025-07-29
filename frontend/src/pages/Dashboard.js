@@ -1,7 +1,7 @@
 // frontend/src/pages/Dashboard.js
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaRegListAlt, FaRegCalendarAlt, FaChartLine } from 'react-icons/fa'; // Import new icons
+import { FaRegListAlt, FaRegCalendarAlt, FaChartLine, FaUserTie } from 'react-icons/fa'; // Import new icons
 import './Dashboard.css'; // We will create this CSS file
 
 const Dashboard = () => {
@@ -10,6 +10,11 @@ const Dashboard = () => {
       <h1>Welcome to Your Dashboard</h1>
       <p>Select a feature to get started.</p>
       <div className="dashboard-grid">
+        <Link to="/salary-profile" className="dashboard-card">
+          <FaUserTie size={50} />
+          <h2>Salary Profile</h2>
+          <p>Model and track historical salary information and projections.</p>
+        </Link>
         <Link to="/paycheck-log" className="dashboard-card">
           <FaRegListAlt size={50} />
           <h2>Paycheck Log</h2>

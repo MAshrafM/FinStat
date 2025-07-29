@@ -18,6 +18,7 @@ app.get('/', (req, res) => res.send('API Running'));
 
 //ROUTES
 app.use('/api/paychecks', require('./routes/paychecks'));
+app.use('/api/salary-profile', require('./routes/salaryProfiles'));
 
 // Define the port the server will run on. 
 // We use 5000 for the backend to avoid conflict with the React frontend (which usually runs on 3000)

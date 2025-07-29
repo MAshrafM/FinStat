@@ -1,0 +1,234 @@
+/* frontend/src/pages/salary/SalaryProfile.css */
+
+/* --- Page Header --- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap; /* Allow wrapping on small screens */
+  gap: 1rem;
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+/* Re-using the .nav-button style from Navbar.css for consistency */
+.nav-button {
+  background-color: #009879;
+  color: white;
+  padding: 0.7rem 1.2rem;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+.nav-button:hover {
+  background-color: #007a63;
+}
+
+
+/* --- Profile Grid Layout --- */
+.profile-grid {
+  display: grid;
+  /* Create responsive columns that are at least 400px wide */
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+}
+
+
+/* --- Profile Card Styling --- */
+.profile-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column; /* Stack card sections vertically */
+  overflow: hidden; /* Ensures border-radius is respected by children */
+}
+
+/* --- Card Header --- */
+.card-header {
+  background-color: #2c3e50;
+  color: white;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header-content {
+  flex-grow: 1;
+}
+
+.header-action-icon {
+  color: #bdc3c7;
+  font-size: 1.5rem;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.header-action-icon:hover {
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.card-header p {
+  margin: 0.25rem 0 0;
+  color: #bdc3c7; /* A light gray for the subtitle */
+  font-style: italic;
+}
+
+/* --- Card Body --- */
+.card-body {
+  padding: 1.5rem;
+  flex-grow: 1; /* Allows the body to take up available space */
+}
+
+.card-body h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #34495e;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 0.5rem;
+}
+
+.card-body ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.card-body li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f4f6f6;
+}
+
+.card-body li:last-child {
+  border-bottom: none;
+}
+
+.card-body li span {
+  color: #7f8c8d; /* Muted color for the label */
+}
+
+.card-body li strong {
+  color: #2c3e50;
+}
+
+/* --- Card Footer --- */
+.card-footer {
+  background-color: #f8f9fa;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.gross-estimate {
+  text-align: left;
+}
+
+.gross-estimate span {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.gross-estimate strong {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #009879; /* Theme color */
+}
+
+.card-actions {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.card-actions a {
+  color: #34495e;
+  font-size: 1.5rem;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.card-actions a:hover {
+  color: #009879;
+  transform: scale(1.1);
+}
+
+/* Add this at the end of frontend/src/pages/salary/SalaryProfile.css */
+
+/* --- Action Buttons in Card Footer --- */
+.action-button {
+  /* Base styling for both buttons and links to look the same */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Specific style for the primary "Update" button */
+.action-button:first-of-type {
+  background-color: #3498db; /* A nice blue for editing */
+  color: white;
+}
+
+.action-button:first-of-type:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+/* Specific style for the secondary "History" link button */
+.action-button:last-of-type {
+  background-color: transparent;
+  color: #34495e;
+  border-color: #bdc3c7;
+}
+
+.action-button:last-of-type:hover {
+  background-color: #ecf0f1;
+  border-color: #95a5a6;
+}
+
+
+/* --- Cancel Button (for use below the form) --- */
+.cancel-button {
+  display: block;
+  width: 100%;
+  max-width: 600px; /* Match the form's max-width */
+  margin: 1rem auto 0; /* Center it below the form */
+  padding: 12px 15px;
+  background-color: #e74c3c; /* A distinct red for a 'cancel' or 'back' action */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.cancel-button:hover {
+  background-color: #c0392b;
+}
