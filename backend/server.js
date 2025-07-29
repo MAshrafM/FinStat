@@ -16,6 +16,9 @@ app.use(express.json());
 // Define a simple test route
 app.get('/', (req, res) => res.send('API Running'));
 
+//ROUTES
+app.use('/api/paychecks', require('./routes/paychecks'));
+
 // Define the port the server will run on. 
 // We use 5000 for the backend to avoid conflict with the React frontend (which usually runs on 3000)
 const PORT = process.env.PORT || 5000;
