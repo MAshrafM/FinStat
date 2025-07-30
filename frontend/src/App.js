@@ -22,6 +22,10 @@ import ManageInsurancePage from './pages/insurance/ManageInsurancePage';
 // Taxes
 import TaxesPage from './pages/taxes/TaxesPage';
 import ManageTaxBracketsPage from './pages/taxes/ManageTaxBracketsPage';
+// Expenditures
+import ExpenditureLogPage from './pages/expenditure/ExpenditureLogPage';
+import AddExpenditurePage from './pages/expenditure/AddExpenditurePage';
+import EditExpenditurePage from './pages/expenditure/EditExpenditurePage';
 
 import './App.css';
 
@@ -47,6 +51,9 @@ function App() {
             <Route path="/social-insurance/manage" element={<ManageInsurancePage />} />
             <Route path="/taxes" element={<TaxesPage />} />
             <Route path="/taxes/manage" element={<ManageTaxBracketsPage />} />
+            <Route path="/expenditures" element={<ExpenditureLogPage />} />
+            <Route path="/expenditures/new" element={<AddExpenditurePage />} />
+            <Route path="/expenditures/edit/:id" element={<EditExpenditurePage />} />
           </Routes>
         </main>
       </div>
