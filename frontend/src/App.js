@@ -16,6 +16,9 @@ import SalaryHistory from './pages/salary/SalaryHistory';
 import EditProfilePage from './pages/salary/EditProfilePage';
 import EditHistoryRecord from './pages/salary/EditHistoryRecord';
 import UpdateSalary from './pages/salary/UpdateSalary';
+// Social Insurance
+import SocialInsurancePage from './pages/insurance/SocialInsurancePage';
+import ManageInsurancePage from './pages/insurance/ManageInsurancePage';
 import './App.css';
 
 function App() {
@@ -36,6 +39,8 @@ function App() {
             <Route path="/salary-profile/edit" element={<EditProfilePage />} />
             <Route path="/salary-profile/history/edit/:historyId" element={<EditHistoryRecord />} />
             <Route path="/salary-profile/update" element={<UpdateSalary />} />
+            <Route path="/social-insurance" element={<SocialInsurancePage />} />
+            <Route path="/social-insurance/manage" element={<ManageInsurancePage />} />
           </Routes>
         </main>
       </div>

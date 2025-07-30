@@ -8,7 +8,6 @@ import '../../components/PaycheckTable.css'; // Reuse the nice table styles
 
 const SalaryHistory = () => {
   const [profile, setProfile] = useState(null);
-  console.log(profile)
   useEffect(() => {
     loadProfile();
   }, []);

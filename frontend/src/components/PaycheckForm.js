@@ -8,6 +8,7 @@ const PaycheckForm = ({ onFormSubmit, initialData }) => {
   const [type, setType] = useState('Cash');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
+  const [insuranceDeduction, setInsuranceDeduction] = useState('');
 
   // Determine if we are in "edit" mode based on presence of initialData
   const isEditMode = Boolean(initialData);
@@ -19,6 +20,7 @@ const PaycheckForm = ({ onFormSubmit, initialData }) => {
       setType(initialData.type);
       setAmount(initialData.amount);
       setNote(initialData.note);
+      setInsuranceDeduction(initialData.insuranceDeduction);
     } else {
       // If in create mode, set default month
       const currentMonth = new Date().toISOString().slice(0, 7);
@@ -33,7 +35,7 @@ const PaycheckForm = ({ onFormSubmit, initialData }) => {
       return;
     }
     // Call the single, generalized submit handler
-    onFormSubmit({ month, type, amount: Number(amount), note });
+    onFormSubmit({ month, type, amount: Number(amount), note, insuranceDeduction: Number(insuranceDeduction) });
   };
 
   return (
@@ -62,6 +64,11 @@ const PaycheckForm = ({ onFormSubmit, initialData }) => {
       <div className="form-group">
         <label htmlFor="note">Note</label>
         <input id="note" type="text" placeholder="e.g., 'Monthly Salary'" value={note} onChange={(e) => setNote(e.target.value)} />
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="insuranceDeduction">Insurance Deduction</label>
+        <input id="insuranceDeduction" type="number" placeholder='e.g., 100' value={insuranceDeduction} onChange={(e) => setInsuranceDeduction(e.target.value)} />
       </div>
 
       {/* Change button text based on mode */}

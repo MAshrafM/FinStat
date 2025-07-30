@@ -19,6 +19,10 @@ const PaycheckSchema = new mongoose.Schema({
     type: String,
     trim: true, // Removes whitespace from start and end
   },
+  insuranceDeduction: {
+    type: Number,
+    default: 0,
+  },
   date: {
     type: Date,
     default: Date.now, // Automatically sets the creation date
