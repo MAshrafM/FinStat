@@ -19,6 +19,10 @@ import UpdateSalary from './pages/salary/UpdateSalary';
 // Social Insurance
 import SocialInsurancePage from './pages/insurance/SocialInsurancePage';
 import ManageInsurancePage from './pages/insurance/ManageInsurancePage';
+// Taxes
+import TaxesPage from './pages/taxes/TaxesPage';
+import ManageTaxBracketsPage from './pages/taxes/ManageTaxBracketsPage';
+
 import './App.css';
 
 function App() {
@@ -41,6 +45,8 @@ function App() {
             <Route path="/salary-profile/update" element={<UpdateSalary />} />
             <Route path="/social-insurance" element={<SocialInsurancePage />} />
             <Route path="/social-insurance/manage" element={<ManageInsurancePage />} />
+            <Route path="/taxes" element={<TaxesPage />} />
+            <Route path="/taxes/manage" element={<ManageTaxBracketsPage />} />
           </Routes>
         </main>
       </div>

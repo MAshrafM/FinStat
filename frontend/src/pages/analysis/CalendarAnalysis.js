@@ -22,6 +22,12 @@ const CalendarAnalysis = () => {
 
   const years = Object.keys(yearlyData).sort((a, b) => b - a); // Sort years descending
 
+  const grandTotal = years.reduce((sum, year) => sum + yearlyData[year].reduce((s, p) => s + p.amount, 0), 0);
+  const periodDetails = years.map(year => ({
+    key: year,
+    value: yearlyData[year].reduce((s, p) => s + p.amount, 0),
+  }));
+
   // Define month labels for a calendar year
   const calendarMonthLabels = (year) => [
     `${year}-01`, `${year}-02`, `${year}-03`, `${year}-04`,
@@ -34,15 +40,12 @@ const CalendarAnalysis = () => {
       <h1>Calendar Year Analysis</h1>
       {years.length > 0 ? (
         <>
-        <SummaryRow periodData={yearlyData} periodTitle="Yearly" />
-        {years.map(year => (
-          <AnalysisCard
-            key={year}
-            title={`Calendar Year ${year}`}
-            paychecks={yearlyData[year]}
-            monthLabels={calendarMonthLabels(year)}
-          />
-        ))}
+        <SummaryRow
+            grandTotal={grandTotal}
+            grandTotalTitle="Grand Total"
+            periodDetails={periodDetails}
+            periodTitle="Yearly Totals & Growth"
+        />
         </>
       ) : (
         <p>No paycheck data available to analyze.</p>

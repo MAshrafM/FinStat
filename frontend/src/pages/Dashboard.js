@@ -1,7 +1,7 @@
 // frontend/src/pages/Dashboard.js
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaRegListAlt, FaRegCalendarAlt, FaChartLine, FaUserTie, FaShieldAlt } from 'react-icons/fa'; // Import new icons
+import { FaRegListAlt, FaRegCalendarAlt, FaChartLine, FaUserTie, FaShieldAlt, FaFileInvoiceDollar } from 'react-icons/fa'; // Import new icons
 import './Dashboard.css'; // We will create this CSS file
 
 const Dashboard = () => {
@@ -34,6 +34,11 @@ const Dashboard = () => {
           <FaShieldAlt size={50} />
           <h2>Social Insurance</h2>
           <p>Track yearly registered income and paycheck deductions.</p>
+        </Link>
+        <Link to="/taxes" className="dashboard-card">
+          <FaFileInvoiceDollar size={50} />
+          <h2>Taxes</h2>
+          <p>View tax brackets and track yearly tax deductions.</p>
         </Link>
       </div>
     </div>

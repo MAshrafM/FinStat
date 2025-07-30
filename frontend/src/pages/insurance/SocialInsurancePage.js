@@ -5,6 +5,7 @@ import { getPaychecks } from '../../services/paycheckService';
 import { getRecords } from '../../services/socialInsuranceService';
 import { formatCurrency } from '../../utils/formatters';
 import { FaEdit } from 'react-icons/fa';
+import SummaryRow from '../../components/SummaryRow';
 import '../salary/SalaryProfile.css'; // Reuse styles
 
 const SocialInsurancePage = () => {
@@ -28,6 +29,15 @@ const SocialInsurancePage = () => {
     return record.burden - totalDeducted;
   };
 
+  const totalInsurancePaid = paychecks.reduce((sum, p) => sum + (p.insuranceDeduction || 0), 0);
+  
+  const yearlyBurdenDetails = insuranceRecords
+    .sort((a, b) => b.year - a.year) // Ensure sorted descending for rate of change calculation
+    .map(record => ({
+      key: record.year,
+      value: record.burden, // The value we want to track is the burden
+  }));
+
   return (
     <div className="page-container">
       <div className="page-header">
@@ -36,6 +46,15 @@ const SocialInsurancePage = () => {
           <FaEdit /> Manage Yearly Records
         </Link>
       </div>
+
+      {insuranceRecords.length > 0 && (
+        <SummaryRow
+          grandTotal={totalInsurancePaid}
+          grandTotalTitle="Total Insurance Paid to Date"
+          periodDetails={yearlyBurdenDetails}
+          periodTitle="Yearly Burden & Rate of Change"
+        />
+      )}
 
       {/* Display Cards */}
       <div className="profile-grid">

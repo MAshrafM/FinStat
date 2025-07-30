@@ -9,6 +9,8 @@ const PaycheckForm = ({ onFormSubmit, initialData }) => {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [insuranceDeduction, setInsuranceDeduction] = useState('');
+  const [grossAmount, setGrossAmount] = useState(''); 
+  const [taxDeduction, setTaxDeduction] = useState('');
 
   // Determine if we are in "edit" mode based on presence of initialData
   const isEditMode = Boolean(initialData);
@@ -21,6 +23,8 @@ const PaycheckForm = ({ onFormSubmit, initialData }) => {
       setAmount(initialData.amount);
       setNote(initialData.note);
       setInsuranceDeduction(initialData.insuranceDeduction);
+      setGrossAmount(initialData.grossAmount);
+      setTaxDeduction(initialData.taxDeduction);
     } else {
       // If in create mode, set default month
       const currentMonth = new Date().toISOString().slice(0, 7);
@@ -35,7 +39,14 @@ const PaycheckForm = ({ onFormSubmit, initialData }) => {
       return;
     }
     // Call the single, generalized submit handler
-    onFormSubmit({ month, type, amount: Number(amount), note, insuranceDeduction: Number(insuranceDeduction) });
+    onFormSubmit({ 
+      month, type,
+      amount: Number(amount),
+      note,
+      insuranceDeduction: Number(insuranceDeduction),
+      grossAmount: Number(grossAmount),
+      taxDeduction: Number(taxDeduction),
+    });
   };
 
   return (
@@ -69,6 +80,16 @@ const PaycheckForm = ({ onFormSubmit, initialData }) => {
       <div className="form-group">
         <label htmlFor="insuranceDeduction">Insurance Deduction</label>
         <input id="insuranceDeduction" type="number" placeholder='e.g., 100' value={insuranceDeduction} onChange={(e) => setInsuranceDeduction(e.target.value)} />
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="taxDeduction">Tax Deduction</label>
+        <input id="taxDeduction" type="number" placeholder='e.g., 100' value={taxDeduction} onChange={(e) => setTaxDeduction(e.target.value)} />
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="agrossAmount">Insurance Deduction</label>
+        <input id="grossAmount" type="number" placeholder='e.g., 100' value={grossAmount} onChange={(e) => setGrossAmount(e.target.value)} />
       </div>
 
       {/* Change button text based on mode */}

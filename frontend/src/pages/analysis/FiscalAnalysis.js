@@ -29,6 +29,12 @@ const FiscalAnalysis = () => {
 
   const fiscalYears = Object.keys(fiscalYearlyData).sort().reverse();
 
+  const grandTotal = fiscalYears.reduce((sum, fy) => sum + fiscalYearlyData[fy].reduce((s, p) => s + p.amount, 0), 0);
+  const periodDetails = fiscalYears.map(fy => ({
+    key: fy,
+    value: fiscalYearlyData[fy].reduce((s, p) => s + p.amount, 0),
+  }));
+
   // Define month labels for a fiscal year
   const fiscalMonthLabels = (fiscalYearLabel) => {
     const startYear = parseInt(fiscalYearLabel.substring(3, 7));
@@ -44,15 +50,12 @@ const FiscalAnalysis = () => {
       <h1>Fiscal Year Analysis</h1>
       {fiscalYears.length > 0 ? (
         <>
-        <SummaryRow periodData={fiscalYearlyData} periodTitle="Fiscal Year" />
-        {fiscalYears.map(fy => (
-          <AnalysisCard
-            key={fy}
-            title={fy}
-            paychecks={fiscalYearlyData[fy]}
-            monthLabels={fiscalMonthLabels(fy)}
-          />
-        ))}
+        <SummaryRow
+            grandTotal={grandTotal}
+            grandTotalTitle="Grand Total"
+            periodDetails={periodDetails}
+            periodTitle="Fiscal Year Totals & Growth"
+        />
         </>
       ) : (
         <p>No paycheck data available to analyze.</p>

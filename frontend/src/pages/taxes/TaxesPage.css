@@ -1,0 +1,79 @@
+/* frontend/src/pages/taxes/TaxesPage.css */
+.tax-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+.tax-card h3 {
+  margin-top: 0;
+}
+.tax-card p {
+  color: #6c757d;
+  font-style: italic;
+  margin-bottom: 1.5rem;
+}
+
+.tax-bracket-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr 1.5fr; /* Adjust column ratios as needed */
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.tax-bracket-edit-row:last-of-type {
+  border-bottom: none;
+}
+
+.level-indicator {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #333;
+  padding-bottom: 12px; /* Align with input padding */
+}
+
+.yearly-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  min-width: 240px;
+}
+
+.summary-item span {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.summary-item strong {
+  font-size: 1.4rem;
+  color: #343a40;
+}
+
+/* Style for the more important summary items */
+.summary-item.highlight {
+  background-color: #e9f5ff; /* A light blue highlight */
+}
+
+.summary-item.highlight strong {
+  color: #0056b3;
+}

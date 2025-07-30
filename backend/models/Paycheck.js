@@ -23,6 +23,14 @@ const PaycheckSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  grossAmount: {
+    type: Number,
+    default: 0,
+  },
+  taxDeduction: {
+    type: Number,
+    default: 0,
+  },
   date: {
     type: Date,
     default: Date.now, // Automatically sets the creation date
