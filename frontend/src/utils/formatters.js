@@ -16,3 +16,29 @@ export const formatCurrency = (amount) => {
     currency: 'USD',
   }).format(number);
 };
+
+/**
+ * Formats a date string or Date object into DD/MM/YYYY format.
+ * @param {string | Date} dateInput - The date to format.
+ * @returns {string} The formatted date string.
+ */
+export const formatDate = (dateInput) => {
+  if (!dateInput) return '';
+  const date = new Date(dateInput);
+  // Get UTC parts to avoid timezone issues
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+  const year = date.getUTCFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+/**
+ * Formats a date for use in an HTML date input (YYYY-MM-DD).
+ * @param {string | Date} dateInput - The date to format.
+ * @returns {string} The formatted date string.
+ */
+export const formatDateForInput = (dateInput) => {
+  if (!dateInput) return '';
+  const date = new Date(dateInput);
+  return date.toISOString().split('T')[0];
+};

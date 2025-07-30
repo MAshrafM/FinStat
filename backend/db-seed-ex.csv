@@ -1,0 +1,1760 @@
+date,bank,cash,transactionType,description
+23-May-19,8700,300,na, Start 
+28-May-19,10300,300,T, Monthly Salary 
+8-Jun-19,5300,300,W, Apartment Installment 
+27-Jun-19,6200,600,T, Monthly Salary 
+4-Jul-19,3300,600,W, Apartment Installment 
+16-Jul-19,5800,300,T, Monthly Salary 
+18-Jul-19,3800,400,W, Apartment Installment 
+28-Jul-19,6400,400,T, Monthly Salary and extra 
+28-Aug-19,8300,300,T, Monthly Salary 
+21-Sep-19,10000,300,T, Turnaround bonus 
+26-Sep-19,11800,300,T, Monthly Salary 
+3-Oct-19,16000,300,T, End of Year Bonus 
+5-Oct-19,11000,300,W, Electrical and Pluming 
+10-Oct-19,8000,300,W, Electric Meter 
+13-Oct-19,21700,300,T, Bond Deactivation 
+17-Oct-19,21900,200,T, Training money 
+28-Oct-19,23500,100,T, Monthly Salary 
+31-Oct-19,22500,400,W, 550LE New Suit on Sale 
+7-Nov-19,17400,600,W,Plumber and Electrician fees
+27-Nov-19,20500,500,T,Monthly Salary
+29-Nov-19,19000,400,W,Electrician extra materials and building editing
+13-Dec-19,17900,100,W,Carbenter and Water meter
+26-Dec-19,20500,200,T,Monthly Salary
+13-Jan-20,19600,300,W,Syndicate Renewal
+16-Jan-20,20500,300,T,Company Surpluse for Jan
+21-Jan-20,16500,800,W,Water Meter
+27-Jan-20,19200,600,T,Monthly salary
+6-Feb-20,20500,400,T,Two month Bonus
+13-Feb-20,16500,350,W,Mobile and Apartment Installment
+27-Feb-20,19200,200,T,Monthly Salary
+27-Feb-20,15200,600,W,Mobile and Apartment Installment
+21-Mar-20,14300,200,W,Hard drive Mothers Day Cronavirus
+26-Mar-20,16900,200,T,Monthly Salary
+1-Apr-20,17500,300,T,Coronavirus Bonus na Internet expenses
+15-Apr-20,18400,200,T,Ramadan and Surplus
+28-Apr-20,21700,100,T,Monthly salary
+29-Apr-20,16700,100,W,Apartment Installment
+3-May-20,16300,100,W,Elevator Shoes mobile Internet
+7-May-20,16700,100,T,Surplus
+21-May-20,19200,300,T,Monthly Salary
+21-May-20,16200,300,W,Apartment Installment
+9-Jun-20,16300,200,T,"1month extra, mobile, internet "
+16-Jun-20,17500,200,T,2 months extra
+23-Jun-20,9800,100,W,Ceramic
+25-Jun-20,13000,100,T,Monthly Salary
+26-Jun-20,8300,100,W,Cement Plaster + cash
+1-Jul-20,9100,100,T,Bank interest
+7-Jul-20,9300,100,W,ceramic transport return
+16-Jul-20,12100,100,T,bonus
+18-Jul-20,8300,200,W,reset cement plaster and ceramic
+27-Jul-20,13100,200,T,Monthly Salary
+27-Jul-20,9100,200,W,Ceramic
+13-Aug-20,10000,200,T,2 months extra
+13-Aug-20,8500,200,W,ceramic debit
+22-Aug-20,8000,300,W,Dentist + Cash
+27-Aug-20,11500,300,T,monthly salary
+30-Aug-20,7000,700,W,ceramic debit
+2-Sep-20,7000,300,W,carpenter material
+5-Sep-20,7000,100,W,Carpenter
+15-Sep-20,8700,100,T,Surplus Schools 1 month
+17-Sep-20,5200,100,W,Painter
+24-Sep-20,8100,100,T,vacation surplus
+24-Sep-20,5100,100,W,painter
+27-Sep-20,8900,100,T,monthly salary
+27-Sep-20,5400,100,T,AL Installment + Aunt Savings
+1-Oct-20,21500,100,T,yearly bonus
+2-Oct-20,16400,100,W,AL Installment
+4-Oct-20,12400,400,W,AL Installment
+14-Oct-20,8000,400,W,Conciliation and building hall
+24-Oct-20,8000,100,W,Dentist + Cash
+27-Oct-20,13000,100,T,monthly salary
+28-Oct-20,10100,700,T,Aunt Saving + Concilation drawing + Cash
+1-Nov-20,11700,700,T,sector bonus
+10-Nov-20,11700,300,W,internet + mobile + new suit + food
+26-Nov-20,15700,300,T,Monthly salary
+27-Nov-20,10500,300,W,Gas Appliances 
+27-Dec-20,14400,300,T,monthly salary
+28-Dec-20,12600,300,W,Aunt Saving + Cash
+11-Jan-21,14500,300,T,sector bonus
+19-Jan-21,28100,300,T,Surplus + Bonus
+22-Jan-21,25100,1000,W,Aunt Saving + New Shose + family outing + cash
+27-Jan-21,29200,1000,T,Monthly salary
+29-Jan-21,22200,800,W,New laptop + apartment installment
+9-Feb-21,23700,600,T,2 months extra
+25-Feb-21,28000,400,T,monthly salary
+25-Feb-21,26500,400,W,Aunt Saving
+21-Mar-21,26500,200,W,Mother's day
+25-Mar-21,28400,200,T,month surplus Ramadan
+25-Mar-21,32400,200,T,monthly salary
+25-Mar-21,15400,200,W,Engagment Gold + Dress
+27-Mar-21,15400,600,W,Aunt Saving + Cash
+2-Apr-21,13400,1000,W,Engament Tungesten + Makeup + shoes + underware + sockes
+6-Apr-21,16400,1000,T,vacation support
+7-Apr-21,18200,1000,T,sector bonus
+9-Apr-21,18200,700,W,Photographer + Tie + Gift + Cousines gift
+15-Apr-21,24200,600,T,Surplus
+22-Apr-21,26800,600,T,Bonus
+27-Apr-21,30900,600,T,Monthly Salary + Surplus Eid + Aunt Savings
+6-May-21,32200,600,T,2 months extra
+27-May-21,38700,600,T,Monthly Salary + Taxes + Surplus Plan na Aunt Savings
+1-Jun-21,33200,600,W,Gypsum Board + Outings 
+13-Jun-21,33900,200,T,One Month Basic na Khalil na Electrical Charge na WeddTrasport
+13-Jun-21,32100,200,W,Mazloum Sink & Toilet
+19-Jun-21,31100,400,W,Outing + Building Electrical Bill + door mat
+20-Jun-21,30600,400,W,Kitchen Sink + deodrants
+21-Jun-21,27500,400,W,Marbel
+25-Jun-21,27100,400,W,Outing na Vodafone Sim
+28-Jun-21,30500,400,T,monthly salary
+29-Jun-21,29300,800,W,Aunt Saving + Building Elec Bill Return
+1-Jul-21,29800,800,T,Bank interest
+3-Jul-21,29800,200,W,Building Elec Bill
+6-Jul-21,31400,200,T,1 month surplus Eid
+13-Jul-21,30300,200,W,Birthday Gift na Internet
+15-Jul-21,51200,200,T,End of Year Surplus + Sector Bonus
+16-Jul-21,42700,200,W,Acrylic kitchen
+21-Jul-21,42200,200,W,Eid Gift
+28-Jul-21,45600,200,T,monthly salary
+29-Jul-21,44100,200,W,aunt saving
+4-Aug-21,55800,200,T,bonus
+8-Aug-21,54500,500,W,Aunt Gift + Telephon Bribe
+10-Aug-21,54000,300,W,Telephone number
+15-Aug-21,55500,100,T,2 months basic
+23-Aug-21,54800,200,W,Food na Cash na outings
+26-Aug-21,57400,200,T,monthly salary na aunt savings
+27-Aug-21,50800,200,W,Washing Machine
+27-Aug-21,41900,500,W,Refrigerator
+11-Sep-21,38500,300,W,Electrical Spots material na outings
+13-Sep-21,40300,300,T,1 month schools na outings
+14-Sep-21,36300,300,W,Electrical Finish
+17-Sep-21,34300,300,W,Electrical Technician
+20-Sep-21,34100,300,W,Outing na Cash
+23-Sep-21,32000,300,W,Futec na Outing na Cash na Electrician
+28-Sep-21,36000,300,T,monthly salary
+28-Sep-21,35000,1700,na,Cash
+30-Sep-21,61300,1700,T,End of Year Bonus
+30-Sep-21,61300,100,W,Extra Futic na Futic Tech na Outing na Air buds
+7-Oct-21,60100,300,W,Door Faces na Mkalil na Cinema Outing
+13-Oct-21,59500,300,W,Carpenter Tech na Prophet Birth gift
+21-Oct-21,55500,200,W,Painter
+23-Oct-21,54000,500,W,Painter Material na Outing 
+28-Oct-21,58100,500,T,monthly salary
+31-Oct-21,59800,400,T,sector bonus na painter cleaning
+4-Nov-21,61300,200,T,2 month basic
+6-Nov-21,61100,300,W,food na cash na smartwatch
+11-Nov-21,60500,600,W,Outing na Cash
+23-Nov-21,60100,500,W,Outing na lunches na Cash
+26-Nov-21,57300,500,W,Faucets na Outing
+28-Nov-21,61300,500,T,monthly salary na deodrant
+29-Nov-21,61000,400,W,shower na outing
+7-Dec-21,60000,400,W,water filter na outing
+10-Dec-21,59500,900,na,Cash to be paid to plumber
+14-Dec-21,59000,400,W,Plumber Extra na Plumber Tech. na Food
+20-Dec-21,58500,200,W,Lunches
+28-Dec-21,62600,200,T,monthly salary
+30-Dec-21,61000,400,W,Stairs na Outing
+1-Jan-22,61900,400,T,Bank interest
+1-Jan-22,61400,800,W,New Year Snaks
+10-Jan-22,61000,400,W,Outing na lunches na Cash na Kitchen lamp
+13-Jan-22,63000,400,T,Sector bonus
+13-Jan-22,62700,200,W,mother in law birthday gift and cake
+20-Jan-22,77700,200,T,Surplus + Bonus
+23-Jan-22,77200,500,na,Cash na lunches
+26-Jan-22,81600,400,T,monthly salary
+29-Jan-22,81200,400,W,Sushi outing na lunches
+3-Feb-22,84500,300,T,4 month basic
+6-Feb-22,84300,400,W,Match outing
+8-Feb-22,84300,200,W,Elec bill na food
+10-Feb-22,84100,200,W,outing
+11-Feb-22,83750,200,W,clothes
+11-Feb-22,81200,200,W,Valentine gold gift 3.1g
+14-Feb-22,80700,300,W,Valentine day gifts na cash
+22-Feb-22,80400,300,W,Outing na lunches
+24-Feb-22,80100,300,W,Outing na lunches
+27-Feb-22,78000,100,W,Masters admission na outing
+27-Feb-22,77000,100,W,Winter Wedding homeware
+28-Feb-22,81400,100,T,Monthly Salary
+2-Mar-22,81200,2200,W,Masters admission return na outing
+4-Mar-22,71200,7200,W,furniture down payment
+5-Mar-22,56200,7200,W,furniture down payment
+6-Mar-22,43000,400,W,furniture down payment
+9-Mar-22,46700,400,W,Ramadan and Surplus
+13-Mar-22,37500,400,W,Microwave na TV na Cash
+28-Mar-22,41700,400,T,monthly salary
+5-Apr-22,44000,400,T,Sector bonus
+6-Apr-22,44000,300,W,bathroom accessories
+7-Apr-22,44500,300,T,Training money
+9-Apr-22,41100,400,W,chandeliers na iftar Ramadan
+12-Apr-22,47700,400,T,Surplus
+13-Apr-22,47300,400,W,Khalil na Shift sweet na iftar
+14-Apr-22,49000,400,T,Eid surplus
+21-Apr-22,56400,400,T,monthly salary
+23-Apr-22,52400,400,W,wedding installments
+6-May-22,49200,400,W,furniture down payment na outing
+12-May-22,54600,400,T,5 month basic
+14-May-22,53700,400,W,building na cash
+16-May-22,53500,300,W,food
+19-May-22,49000,800,W,qr na furniture installment na outing
+26-May-22,54300,800,T,monthly salary
+27-May-22,52300,0,W,moving furniture day
+29-May-22,52000,300,na,Cash
+1-Jun-22,47000,2300,W,wedding installments
+3-Jun-22,40500,1800,W,Wedding dress na makeup na tv holder na food
+5-Jun-22,37600,1800,W,Thailand Visa
+7-Jun-22,37600,700,W,Suit
+10-Jun-22,37600,200,W,Shoes
+10-Jun-22,22600,15200,na,honeymoon cash
+11-Jun-22,7600,30200,na,honeymoon cash
+12-Jun-22,8000,30600,W,crowdfolwer
+14-Jun-22,8000,29800,W,Africa Vaccines na food na suit access
+14-Jun-22,8000,200,W,honeymoon installment
+16-Jun-22,5000,1000,W,Honeymoon na lamps
+17-Jun-22,5000,1500,T,Uncle Menam Wedding Gift
+19-Jun-22,4800,1950,W,Wedding gift na mobiles
+22-Jun-22,2000,4750,W,Travel expenses
+23-Jun-22,3000,4150,T,month eid
+27-Jun-22,0,4150,W,Souvniers na dinner
+28-Jun-22,12800,3500,T,Month Salary + Bonus na Travel na Food
+30-Jun-22,11100,2500,W,Marriage Certificate na wife cash
+2-Jul-22,11100,2200,W,house supplies
+4-Jul-22,11100,1900,W,House Supplies
+6-Jul-22,33100,1900,T,Surplus + Bonus
+7-Jul-22,20100,1600,W,Sharp AC na House supplies
+14-Jul-22,17600,1300,W,house supplies na Motor Maint na Apart. Inst
+16-Jul-22,15600,1100,W,Dress na Makeup na Birthday
+16-Jul-22,14800,500,W,Apartment Protection na Transfer
+23-Jul-22,14200,250,W,Electricity na house supplies na friends na club
+23-Jul-22,11400,1250,W,Vaccum Cleaner na wifi extender
+25-Jul-22,11400,1050,W,House supplies na computer fix
+26-Jul-22,11400,550,W,Household 
+28-Jul-22,32100,550,T,Individual Bonus
+29-Jul-22,32100,350,W,Lunch and Treat
+29-Jul-22,31100,350,W,Wife Allowance
+30-Jul-22,28100,3350,na,Cash = Apartment protec.
+30-Jul-22,25100,3350,W,Apartment Installment
+31-Jul-22,25100,3000,W,Mkhalil na household
+4-Aug-22,29700,2800,T,4 month basic na house supplies
+5-Aug-22,29700,600,W,Apartment Protection na supplies
+6-Aug-22,29700,300,W,Electric Meter na Supplies
+9-Aug-22,29200,600,W,House Supplies
+10-Aug-22,10200,600,S,3 Year Bond / Credit Card Insurance
+10-Aug-22,10200,250,W,Supplies na fish lunch na syndicate stamp na mebo
+13-Aug-22,9500,900,W,House Supplies
+16-Aug-22,8800,300,W,Clothes na flowers na house supplies na water meter
+22-Aug-22,8000,300,W,Motor Maint na Lunch na Wife cash
+24-Aug-22,7500,300,W,Electrical Bill na Lunch na House Supplies
+25-Aug-22,15400,300,T,2 month basic + monthly salary
+26-Aug-22,15100,300,W,House Supplies
+30-Aug-22,14500,300,W,Meat na Cash Wife
+1-Sep-22,13600,600,W,Credit Card na House Supplies na Electricity na Gas
+2-Sep-22,13600,450,W,House Supplies na lunch
+6-Sep-22,13300,300,W,Building Maint 3 month na outing luches
+8-Sep-22,12500,100,W,Wife Allowance (German Course)
+11-Sep-22,12000,300,W,Mkhalil na household
+13-Sep-22,11500,300,W,Meat / Fish na Cat Box na House supplies
+20-Sep-22,11000,300,W,Training Transfer na Chicken / Pizza na House Supplies
+26-Sep-22,16500,300,T,Monthly Salary
+27-Sep-22,15200,300,W,Credit Card Payment
+28-Sep-22,92700,300,T,yearly bonus
+28-Sep-22,72700,300,W,Apartment Installment
+28-Sep-22,76300,300,S,Wife Savings na wife allowance na wife course
+1-Oct-22,73000,2000,W,Gas na Cat Sand na Chicken na Outing na fruits na Meat
+5-Oct-22,73000,1400,W,Fish na House Supplies na Building na Electricity
+11-Oct-22,73200,1400,T,Bond Intreset
+13-Oct-22,75100,1400,T,Sector Bonus
+13-Oct-22,74100,1400,W,brother wedding gift
+13-Oct-22,74100,750,W,cat vaccine na hairdresser na house supplies na bag na choco
+15-Oct-22,74100,350,W,Wife na transfere wedding
+17-Oct-22,74100,250,W,landline na house supplies
+18-Oct-22,74400,250,T,Training allowance
+18-Oct-22,74100,300,W,Electricity na Breakfast na Work Meal
+20-Oct-22,74100,100,W,Wife na Veggies na Fruits
+25-Oct-22,73300,700,W,Work Meal na House Supplies
+27-Oct-22,83500,700,T,Monthly Salary + 4 Month Basic 
+28-Oct-22,82400,700,W,Credit Payment
+28-Oct-22,79900,700,W,Apartment Installment
+28-Oct-22,79900,500,W,fruits na basket na house supplies
+28-Oct-22,83800,500,S,Wife Savings
+29-Oct-22,83800,200,W,Chicken na Lock
+29-Oct-22,83000,1000,na,Cash
+29-Oct-22,83000,1400,S,Wife Savings
+30-Oct-22,83000,1200,W,Carpenter
+31-Oct-22,83000,950,W,Shrimps na Fruits
+1-Nov-22,83000,850,W,Work Meal na Work Tea
+1-Nov-22,83000,650,W,Electricity
+2-Nov-22,83300,650,T,Amoro Wife Transaction
+2-Nov-22,83300,450,W,Wife Cash for Meals Inst
+2-Nov-22,83300,400,W,Dinner
+7-Nov-22,82800,200,W,Wife Savings na House Supplies na Fruits
+9-Nov-22,80250,250,W,Kindle na Galaxy Tab Accessories
+13-Nov-22,79850,400,W,Wife Cash Lunch na House Supplies
+15-Nov-22,79850,150,W,Wife Cash 
+15-Nov-22,79850,1100,T,Wife Voda to Cash
+15-Nov-22,79650,1100,W,Washing Machine Detergent
+17-Nov-22,79650,650,W,Wife Cash na House Supplies na Chicken
+17-Nov-22,79300,650,W,Internet na mobile na orange na Mc na Ghoneim Credit
+18-Nov-22,79300,400,W,Mother in Law visit and House supplies
+18-Nov-22,79100,400,W,Fathallah credit payment
+19-Nov-22,79100,300,W,Dinner at work
+20-Nov-22,79000,300,W,Lunch Liver
+20-Nov-22,77500,300,W,Wife Aid
+21-Nov-22,76600,300,W,Noon Camera na Wireless buds
+21-Nov-22,74050,300,W,Winter Clothes
+21-Nov-22,75550,300,T,Wife Return
+22-Nov-22,75550,200,W,Work
+24-Nov-22,75000,500,W,Moslem na work na house supplies + wife
+25-Nov-22,75000,600,T,work + wife
+27-Nov-22,80700,450,T,Work na Chicken + Monthly Salary
+28-Nov-22,84000,350,T,Wife Savings na Noor Pie
+29-Nov-22,83600,750,na,Work Meal na Honey
+30-Nov-22,83600,680,W,Work Meal na Desert
+1-Dec-22,83600,580,W,House Suppies na Gas
+4-Dec-22,83600,1350,T,Wife Cash na Fish na Voda na Internet na Fathallah
+5-Dec-22,83600,1200,W,Fish na Deliece 
+7-Dec-22,83500,1200,S,Thndr
+7-Dec-22,83500,900,W,Lunch El Baraka na Wife
+8-Dec-22,83500,800,W,House Supplies
+9-Dec-22,83300,750,W,Bond Intreset na credit payment na house supplies
+10-Dec-22,83300,500,W,Chicken na Trousers na Wife
+11-Dec-22,83200,450,S,Thndr na Work Meal
+12-Dec-22,83200,400,W,Work Meal
+12-Dec-22,78400,400,W,Wife Cash
+13-Dec-22,78400,100,W,Fish Meals na fruits
+15-Dec-22,78000,100,S,Ahly Mutual Fund 5
+18-Dec-22,77500,400,W,Medicine na Fruits
+18-Dec-22,77500,300,W,Wife and other supplies
+22-Dec-22,77000,500,W,Electricity na Meals na house supplies
+22-Dec-22,76500,500,W,Gifts
+27-Dec-22,82000,500,T,Monthly Salary
+27-Dec-22,81500,300,W,Credit Payment na Wife Cash
+28-Dec-22,81500,300,na,Work Meals na Filter
+30-Dec-22,83300,300,T,Account interest na house supplies
+1-Jan-23,81300,150,W,Credit Card Payment installment + Paypall na Meals na Mobile
+2-Jan-23,81200,250,na,Meals na mobile na Gas na Thndr
+3-Jan-23,80800,250,W,Credit Payment na Seminar 
+9-Jan-23,80400,140,W,Family In Law Lunch na Work Meals na House Supplies
+9-Jan-23,79900,140,W,Wife Cash
+10-Jan-23,79400,600,W,Cash
+11-Jan-23,75500,900,W,Living Table na building maint na vet 
+11-Jan-23,75700,900,T,bond interest
+12-Jan-23,94000,900,T,Surplus + Bonus
+12-Jan-23,81500,900,W,Apartment Installment
+12-Jan-23,68600,900,W,Wife money
+12-Jan-23,67500,900,W,Electricity na chicken na transfer na visit
+15-Jan-23,67300,400,W,credit payment na meals na house supplies
+19-Jan-23,61200,1300,W,Dahab Winter Travel
+22-Jan-23,60700,1150,W,Sunblock na house supplies
+27-Jan-23,59700,450,W,Dahab Winter Travel Expenses
+27-Jan-23,75700,450,T,Individual Bonus + salary
+28-Jan-23,75700,150,W,chicken na house supplies
+29-Jan-23,74100,1250,W,wife cash na wife allowance + ve cash
+29-Jan-23,71600,1250,W,Apartement installment
+31-Jan-23,71600,1000,W,House supplies
+31-Jan-23,67100,1000,S,Ahly Mutual Fund 4
+31-Jan-23,67100,800,W,Fish na supplies
+1-Feb-23,65200,800,W,Credit Card Payment installment na Meal
+2-Feb-23,72200,800,T,2 month Basic Q2 + 4 month Basic Surplus
+2-Feb-23,71400,800,W,Credit Card Payment Installment
+2-Feb-23,71100,800,S,Thndr + Ahly MF
+2-Feb-23,71100,600,W,Chicken na Work Meal
+4-Feb-23,67100,800,S,Valentine gold gift 2.29g
+5-Feb-23,67100,500,W,Chicken na Work Meal na Eng. Samak
+7-Feb-23,66900,450,W,House Supplies na Wife Cash
+9-Feb-23,66900,250,S,Ahly MF na Meal
+10-Feb-23,66900,450,T,Meal return
+11-Feb-23,67100,450,T,bond interest
+11-Feb-23,67000,450,S,Thndr
+11-Feb-23,67000,350,W,Fruits
+12-Feb-23,67000,300,W,Gas na Vegies na Ghoneim
+12-Feb-23,67000,200,S,Work Meal na Thndr
+13-Feb-23,52000,15200,na,Gold Purchase deal 
+13-Feb-23,52000,15600,W,Cash na Dinner
+14-Feb-23,55200,15600,T,Days off 17.5
+14-Feb-23,50200,15600,W,Apartament Installment
+15-Feb-23,50200,400,S,Gold Purchase na Valentine Dinner na House Supplies na 2.1K inst
+19-Feb-23,50200,100,W,House Supplies
+20-Feb-23,49800,400,W,Coffee shop na House supplies
+21-Feb-23,49800,300,W,Work Meal
+22-Feb-23,49800,100,W,House Supplies na Wife Cash
+23-Feb-23,49500,400,na,cash
+24-Feb-23,49500,200,W,Pizza Supplies na house supplies
+27-Feb-23,49500,50,W,House Supplies
+28-Feb-23,55000,50,T,Monthly Salary
+28-Feb-23,52700,50,W,Credit Card Payment Gold na Ghoniem
+28-Feb-23,51700,50,W,Wife allowance
+28-Feb-23,50700,50,W,Wife MSc. Out of 1850
+28-Feb-23,50700,400,T,Cash prepaid
+1-Mar-23,48900,400,W,Credit Card Payment (Dish Washer na Tablet)
+1-Mar-23,48900,150,W,Grilled Chicken
+1-Mar-23,46400,150,W,Apartment Installment
+4-Mar-23,46200,150,W,Credit Card Payment Gas Meter
+4-Mar-23,46200,150,W,House supplies (Mango na Butter…) Noor Meal
+5-Mar-23,45000,1300,W,Work Meal 
+6-Mar-23,44800,50,W,Meat
+6-Mar-23,44300,500,W,House supplies na cat sand
+7-Mar-23,44000,500,S,Thndr
+7-Mar-23,44000,300,W,Wife Valentine Gift na Transport
+7-Mar-23,44000,200,W,Fish Meal 
+7-Mar-23,44000,0,W,Electric Bill
+8-Mar-23,46200,0,T,2 Month Basic Ramadan
+8-Mar-23,45500,700,W,Cash
+8-Mar-23,45500,350,W,Chicken na work Meak
+8-Mar-23,45385,350,W,Credit Card Payment
+8-Mar-23,45000,350,S,Thndr
+9-Mar-23,45000,300,W,Fish
+9-Mar-23,41450,300,S,Ahly MF 4 na MF 5
+10-Mar-23,41450,100,W,House Supplies
+11-Mar-23,41700,100,T,Bond Interest
+12-Mar-23,41700,500,na,Cash from Prepaid
+13-Mar-23,41400,500,S,Thndr
+14-Mar-23,41000,500,S,Thndr
+14-Mar-23,41100,300,W,Wife Cash na House Supplies
+15-Mar-23,41100,200,W,Barber na House Supplies
+15-Mar-23,35500,300,W,Air Fryer Kenwood 5.5L
+15-Mar-23,35500,1700,na,Cash from Prepaid
+15-Mar-23,35500,1500,W,Ramadan supplies
+16-Mar-23,35500,1300,W,Breakfast and supplies
+16-Mar-23,35500,1000,W,Ghoneim Ramadan
+16-Mar-23,35500,900,W,Coffee shop na House supplies
+17-Mar-23,35500,700,W,Birthday Gift
+18-Mar-23,35500,400,W,Mc & Institute
+19-Mar-23,35500,200,W,Lunch
+20-Mar-23,35500,100,W,Fish Lunch
+21-Mar-23,35500,500,na,Cash Prepaid na Work Meal
+23-Mar-23,35500,400,W,House Supplies
+26-Mar-23,35500,50,W,Chicken na Cleaners
+28-Mar-23,41000,50,T,Monthly Salary
+28-Mar-23,41000,550,T,Cash Prepaid
+28-Mar-23,40700,550,S,Thndr
+29-Mar-23,40700,350,W,House Supplies na Marvel na Gas Meter na Water Meter
+1-Apr-23,38700,350,W,Credit Card Payment (Dish Washer na Tablet)
+1-Apr-23,38300,350,W,Wife cash na SAMA CHOCO na House Supplies
+4-Apr-23,38300,200,W,Fruits na House Supplies
+5-Apr-23,38000,150,W,breakfast na friend outing
+6-Apr-23,51300,150,T,Surplus + eid month
+6-Apr-23,51300,600,na,preoaid cash
+8-Apr-23,51300,500,W,house supplies
+9-Apr-23,51300,200,W,wife allowance na ghoniem na internet na house supplies
+11-Apr-23,51500,200,T,bond interest
+11-Apr-23,43100,200,W,new mobile redmi note 11s
+11-Apr-23,43000,200,W,Thndr
+13-Apr-23,42200,1000,na,Cash
+13-Apr-23,44100,1000,T,Sector Bonus
+14-Apr-23,44100,800,W,Socks
+14-Apr-23,44100,550,W,House Supplies
+14-Apr-23,44100,400,W,Lunch
+14-Apr-23,43200,1300,W,Cash
+15-Apr-23,43200,700,W,Mkhalil yearly
+15-Apr-23,43200,400,W,Wife allowance na gel
+16-Apr-23,43200,100,W,Fruits na House Supplies
+17-Apr-23,42700,600,W,Cash
+17-Apr-23,42700,500,W,Lunch supplies
+18-Apr-23,42700,400,W,lunch pizza
+19-Apr-23,53200,400,T,Salary + 1month surplus
+19-Apr-23,51700,400,W,Kahk na cloth Eid credit payment
+21-Apr-23,51700,200,W,Electric Bill
+21-Apr-23,51700,0,W,House Suppliesna Biscuits
+21-Apr-23,50700,0,W,Wife Eid Gift
+21-Apr-23,50000,700,na,Cash
+22-Apr-23,50000,200,W,Wife Allowance na House Supplies na Coffe Shop
+24-Apr-23,50000,700,na,Cash Prepaid
+24-Apr-23,50000,450,W,Meat na House Supplies
+26-Apr-23,50000,200,W,Meat na Breakfast
+27-Apr-23,49900,150,S,Thndr
+27-Apr-23,49500,500,W,Breakfast
+28-Apr-23,49500,300,W,Fish Lunch
+29-Apr-23,48500,1300,W,Cash withdraw
+29-Apr-23,48500,1000,W,Chicken
+29-Apr-23,48500,750,W,Meat
+29-Apr-23,48500,700,W,Veggies
+29-Apr-23,48500,600,W,Veggies
+29-Apr-23,48500,300,W,Wife Home Cloth
+29-Apr-23,48500,200,W,Plastics and Choppers
+29-Apr-23,48500,150,W,Breakfast
+29-Apr-23,48200,150,W,Wife allowance na Wife Gill
+30-Apr-23,48200,100,W,House Supplies
+30-Apr-23,47700,600,W,Cash Withdraw
+30-Apr-23,47700,400,W,Building Maint 4 month
+2-May-23,58100,400,T,2 months + 6 months Basic
+2-May-23,55600,400,W,Credit Card Payment (Dish W na Tablet na Mothers Day) na Ghoniem
+2-May-23,52600,400,S,Thndr
+2-May-23,52100,400,W,Wife Brother Transfer
+3-May-23,52100,300,W,House supplies
+4-May-23,52100,100,W,Flowers
+4-May-23,51600,600,W,Cash withdraw
+6-May-23,51600,200,W,House Supplies na Manshia na Décor na breakfast
+6-May-23,51600,100,W,Dinner
+7-May-23,51100,600,W,Cash withdraw
+7-May-23,51100,400,W,Fruits na House Supplies
+8-May-23,51100,250,W,Shrimps
+9-May-23,51100,150,W,House Supplies
+11-May-23,57100,150,T,Individual Bonus
+11-May-23,57300,150,T,bond interest
+11-May-23,56700,150,W,Credit Card Payment (House Supplies)
+11-May-23,56500,150,S,Thndr
+12-May-23,55500,1150,W,Cash withdraw
+12-May-23,55500,750,W,Meat na House Supplies
+12-May-23,55500,700,W,Dinner
+13-May-23,55200,700,W,Wife Weekly Allowance
+14-May-23,55200,400,W,Meat na potatoes na house supplies
+18-May-23,55200,200,W,Transportation na house supplies
+18-May-23,53200,200,S,Thndr
+18-May-23,53200,50,W,Wife na Outing na House supplies
+19-May-23,52700,350,W,Electric Bill
+19-May-23,52200,550,W,Wife Weekly Allowance
+19-May-23,52200,400,W,Santos outing
+20-May-23,52200,100,W,Chicken na fruits
+21-May-23,51700,600,W,Cash Withdraw
+23-May-23,50750,600,W,Credit card payment
+23-May-23,50750,400,W,house supplies
+25-May-23,57750,400,T,Monthly Salary
+25-May-23,57750,300,W,Work Meal
+27-May-23,57750,0,W,Fruits na House Supplies
+27-May-23,57400,0,W,Wife Weekly Allowance
+27-May-23,56700,400,W,marrige cert na net na water na cash
+27-May-23,56500,450,W,house supplies
+30-May-23,56500,650,T,internet cash back
+1-Jun-23,54300,650,W,Credit Card Payment
+1-Jun-23,54300,500,W,House supplies
+1-Jun-23,54300,250,W,Fish and Crabs Lunch
+1-Jun-23,54300,100,W,Outing
+2-Jun-23,54200,100,W,Mc Outing
+3-Jun-23,53700,100,W,Wife Weekly Allowance
+5-Jun-23,53200,600,W,Cash Withdraw
+5-Jun-23,53200,350,W,house supplies
+7-Jun-23,53200,100,W,Breakfasts na House supplies
+8-Jun-23,52000,400,W,Meat na chicken na rice na tahini
+11-Jun-23,52200,400,T,bond interest
+11-Jun-23,52200,100,W,house supplies
+11-Jun-23,52200,1100,T,Wife for San Giovanni
+11-Jun-23,52200,700,W,San Giovani Outing na house supplies
+13-Jun-23,60600,700,T,Month Eid +  month Surplus
+15-Jun-23,60600,500,W,Electric Bill
+18-Jun-23,60000,600,W,Beach na Supplies na breakfasts
+20-Jun-23,54200,600,W,San Giovani Wedding Anniversary stay 2 nights
+20-Jun-23,54200,100,W,Wife allowance na Lunches na supplies
+21-Jun-23,53500,600,W,House supplies
+22-Jun-23,63000,600,T,monthly Salary + sector bonus
+23-Jun-23,61800,650,W,Eid Meat
+23-Jun-23,61800,400,W,Father Birthday gift
+24-Jun-23,61800,150,W,Cheese na cleaners
+25-Jun-23,61000,250,W,Wife allowance na eid cleaning na wife hair na supplies
+27-Jun-23,60000,500,W,Fruits na Wife Eid
+30-Jun-23,59000,450,W,Wife Eid Gift
+1-Jul-23,58200,450,W,Credit Card Payment
+2-Jul-23,58200,200,W,house supplies bills
+4-Jul-23,57700,200,W,Nelly Birthday na Fathallah
+4-Jul-23,57700,500,na,prepaid to cash
+8-Jul-23,56900,650,W,wife allowance lunch
+8-Jul-23,56900,500,W,vet 
+8-Jul-23,56900,300,W,Electric Bill
+8-Jul-23,56900,150,W,House supplies na dinner
+9-Jul-23,56600,450,W,Cash
+10-Jul-23,52600,750,S,Buy Dollars
+10-Jul-23,52600,450,W,Wife allowance in advance
+10-Jul-23,52600,300,W,Lunch
+11-Jul-23,52800,300,T,bond interest
+11-Jul-23,96900,300,T,End of Year Surplus
+12-Jul-23,86900,10000,W,Cat Sand na Lunch na House Supplies
+12-Jul-23,86300,10000,W,Amazon Prime Day purchases
+13-Jul-23,86300,4400,W,Gold ring birthday gift
+13-Jul-23,86300,4050,W,Balbaa Dinner Kabab
+16-Jul-23,86300,3700,W,Chicken
+16-Jul-23,86300,3500,W,Electric Bill
+16-Jul-23,86300,3250,W,Pizza Supplies
+16-Jul-23,86300,3100,W,Vet na Medicin
+19-Jul-23,86300,3000,W,House Supplies
+19-Jul-23,86300,2900,W,Wife Inst. Travel na Visit Expenses
+20-Jul-23,86300,2800,W,Work Expenses
+21-Jul-23,85600,2800,W,Credit Card Payment ( Mokambo na Netflix na Ghoneim)
+21-Jul-23,85600,2700,W,House Supplies
+22-Jul-23,85600,2400,W,Wife Sea Outing with girlfreind
+22-Jul-23,85600,2200,W,Fish Lunch
+22-Jul-23,85600,2100,W,House Supplies
+23-Jul-23,85600,2000,W,House Supplies
+24-Jul-23,85600,1950,W,Work Meal
+24-Jul-23,85600,1700,W,Meat
+24-Jul-23,85600,1500,W,Electric Bill
+25-Jul-23,85600,1400,W,Breakfast na Salad na Mango
+26-Jul-23,85300,1400,W,Wife Swimsuit
+26-Jul-23,85300,900,W,Summer Vac Bag na Mango na Supplies
+27-Jul-23,127300,900,T,Individual Bonus + salary
+27-Jul-23,126800,900,W,Credit Card Payment
+27-Jul-23,125100,900,S,Thndr
+27-Jul-23,125100,700,W,Marzoq Outing
+29-Jul-23,86600,700,S,Gold
+31-Jul-23,86600,400,W,Work Meal na Fruits na Supplies
+1-Aug-23,86000,400,W,Wife allowance na Cousine B Gift
+1-Aug-23,85000,400,W,Credit Card Payments + MF Bonus
+1-Aug-23,85000,300,W,Wife transportation na medicine
+2-Aug-23,84000,1300,W,Cash
+2-Aug-23,84000,900,W,Chicken
+2-Aug-23,84000,600,W,Meat
+2-Aug-23,84000,450,W,Lunch supplies
+2-Aug-23,72000,450,S,Dollars
+3-Aug-23,86100,450,T,10 Months basic Q4
+3-Aug-23,81100,450,S,Thndr
+4-Aug-23,80100,1450,W,Cash Withdraw
+4-Aug-23,80100,1350,W,Breakfast Supplies
+4-Aug-23,80100,1150,W,Building Maint 4 month
+4-Aug-23,80100,750,W,Electric Bill
+4-Aug-23,80100,550,W,Nour Dinner
+4-Aug-23,80100,500,W,Dinner drinks
+7-Aug-23,80100,350,W,Trousers cut na supplies
+8-Aug-23,80100,300,W,Work Meal
+8-Aug-23,79600,800,W,Cash
+10-Aug-23,79300,800,W,Credit Card Payment (Mc Outing)
+10-Aug-23,79300,700,W,Barber na House Supplies
+11-Aug-23,79500,700,T,bond interest
+11-Aug-23,79500,600,W,Tahini na Lunches na Chocolate
+11-Aug-23,79500,500,W,Pizza Supplies na Mango
+12-Aug-23,79500,400,W,Breakfast na medicine
+12-Aug-23,79500,300,W,Lunch Supplies Meat Loaf
+12-Aug-23,79300,300,W,Wife allowance
+13-Aug-23,79300,200,W,Work Meal
+13-Aug-23,79000,200,W,Wife Supplies
+13-Aug-23,78500,700,W,Cash Withdraw
+14-Aug-23,78500,500,W,Wife na supplies na breakfast
+14-Aug-23,79700,500,T,Training
+14-Aug-23,77700,2500,W,Cash Withdraw
+15-Aug-23,77700,2250,W,Building Keys na Breakfast na Nour Dinner
+16-Aug-23,77700,2100,W,Flowers
+16-Aug-23,77700,2000,W,work meal
+16-Aug-23,62700,2000,S,Bank bond 19% 3Y
+17-Aug-23,62700,1900,W,Work meal
+18-Aug-23,62700,1800,W,Mango
+19-Aug-23,62200,1800,W,credit card payment
+20-Aug-23,62200,1650,W,Work Meal na dinner
+21-Aug-23,62200,1500,W,Work Meal na dinner
+21-Aug-23,62200,1400,W,House supplies
+22-Aug-23,61600,1400,W,Credit card payment
+22-Aug-23,61600,1250,W,Work Meal
+22-Aug-23,61600,1050,W,Wife supplies
+23-Aug-23,61600,1000,W,Veggies
+23-Aug-23,61600,750,W,Fish
+23-Aug-23,61600,650,W,Chickens
+23-Aug-23,61600,600,W,Transportations
+23-Aug-23,61600,550,W,Wife
+24-Aug-23,57600,4550,W,Summer Vac Money
+24-Aug-23,57600,4000,W,Ice Box
+24-Aug-23,57600,3450,W,Meat
+24-Aug-23,57400,3450,W,Credit card payment
+24-Aug-23,57400,3200,W,Wife hat na dinner
+24-Aug-23,54400,6200,W,Summer Vac Money
+25-Aug-23,54100,6200,W,credit card payment tickets
+27-Aug-23,64800,6200,T,Monthly salary + 2M basic
+27-Aug-23,64000,6200,W,Credit card payment fathallah
+27-Aug-23,64000,6800,T,MIL Tickets
+31-Aug-23,64000,4100,W,Summer Vac Spending
+1-Sep-23,63000,4100,W,CCP Installments
+1-Sep-23,63000,3700,W,Electric Bill na water/gas/internet prepaid
+3-Sep-23,63000,2500,W,Chicken na breakfasts na house supplies na Mango na Nour
+5-Sep-23,63000,2300,W,Work Meal House Supplies
+9-Sep-23,63000,1500,W,House Suppliesna Meat na Chicken
+13-Sep-23,63000,1300,W,Training Transportation na House Supplies na Fruits
+13-Sep-23,63000,1000,W,Wife allowance
+13-Sep-23,63200,1000,T,bond interest
+14-Sep-23,63200,800,W,House Supplies na Halaby
+15-Sep-23,63500,800,T,bond interest
+15-Sep-23,62800,800,W,credit card payment (amazon ae na wife bright na wife miniso)
+16-Sep-23,62800,300,W,Wife Allowance na Building Maint
+17-Sep-23,62000,800,W,mango na gas heater maint na supplies
+18-Sep-23,62000,500,W,Sea food lunch
+20-Sep-23,62000,200,W,Work meals
+21-Sep-23,61000,950,W,National ID
+21-Sep-23,61000,800,W,Club breakfast
+22-Sep-23,61000,600,W,Pizza Supplies na Prophet birth drink
+23-Sep-23,61000,300,W,Electric Bill
+23-Sep-23,58750,300,W,Wife new cloth na shoes na bag na makeup
+23-Sep-23,58500,300,W,Wife Weekly Allowance
+23-Sep-23,58500,100,W,Lunch Al Baraka
+24-Sep-23,58000,500,W,Breakfast and Eggs
+24-Sep-23,58000,400,W,Meat
+26-Sep-23,65500,400,T,Monthly salary
+26-Sep-23,65500,150,W,work meals
+27-Sep-23,64500,1150,W,cash
+27-Sep-23,64600,1150,T,MF dividened
+27-Sep-23,64600,1050,W,wife
+27-Sep-23,64600,1000,W,breakfast
+27-Sep-23,64600,700,W,lunch
+27-Sep-23,64600,600,W,Lottery photo
+27-Sep-23,64600,300,W,Fruits na supplies
+27-Sep-23,64600,200,W,lunch na supplies
+1-Oct-23,64600,200,W,Landline na We Mobile na Gas Bill na Water Bill Prepaid
+1-Oct-23,63550,200,W,CCP Installments
+1-Oct-23,63300,200,W,Wife Weekly Allowance
+1-Oct-23,63300,100,W,Lunch
+1-Oct-23,62100,1300,W,Cash
+2-Oct-23,62100,1100,W,Lunch
+2-Oct-23,62100,500,W,Meat
+3-Oct-23,62100,400,W,Barber
+4-Oct-23,208800,400,T,Bonus
+4-Oct-23,208800,300,W,House Supplies
+4-Oct-23,208800,200,W,Lunch
+4-Oct-23,207300,1700,W,Cash
+5-Oct-23,135500,1700,S,Gold
+8-Oct-23,135500,1500,W,lunch na supplies
+8-Oct-23,128500,1500,S,Thunder
+9-Oct-23,121200,1500,S,MF 4
+10-Oct-23,121200,1300,W,Lunches na dinner
+11-Oct-23,121200,1200,W,lunch
+11-Oct-23,114500,1200,S,Dollars
+11-Oct-23,114200,1200,W,wife allowance
+11-Oct-23,114400,1200,W,bond interest
+12-Oct-23,106800,1200,S,MF 5
+12-Oct-23,106800,1000,W,House Supplies
+13-Oct-23,106300,1000,W,Wife lunch na allowance
+14-Oct-23,106300,700,W,Fruits na supplies
+15-Oct-23,106300,500,W,Wife tansport na lunch
+15-Oct-23,106200,500,S,Menthum MF
+16-Oct-23,101300,500,S,Menthum MF
+16-Oct-23,98300,500,S,Thndr
+16-Oct-23,98300,300,W,lunch na dinner
+17-Oct-23,101300,300,T,Sector Bonus
+17-Oct-23,101500,300,T,bond interest
+18-Oct-23,99400,300,S,Dollars
+19-Oct-23,99400,200,W,Pizza Ingredients
+19-Oct-23,99400,0,W,Electric Bill
+19-Oct-23,99000,400,W,Cash
+20-Oct-23,99000,200,W,Lunch
+22-Oct-23,98200,200,W,CCP (Noon na Ghoneim na Netflix)
+22-Oct-23,98000,200,W,Wife Allowance
+22-Oct-23,98000,100,W,house supplies
+22-Oct-23,97200,900,W,Cash
+22-Oct-23,97200,650,W,Lunches na dinner
+25-Oct-23,97000,650,W,CCP
+25-Oct-23,97000,450,W,Nour Dinner
+26-Oct-23,104300,450,T,Monthly salary
+26-Oct-23,104000,450,W,CCP
+26-Oct-23,103800,450,W,CCP
+26-Oct-23,103000,1250,W,Cash
+26-Oct-23,103000,1000,W,Fish Lunch
+29-Oct-23,103000,800,W,Chicken
+29-Oct-23,103000,700,W,Wife supplies
+30-Oct-23,103000,400,W,Dinner Tiabas
+30-Oct-23,89000,400,W,Movinpick Soma bay
+30-Oct-23,84000,400,S,Menthum MF
+31-Oct-23,84000,200,W,Work lunch na supplies
+31-Oct-23,84200,200,T,MF Coupon
+31-Oct-23,83500,900,W,Cash
+1-Nov-23,82600,900,W,CCP (Noon 5/6 na Noon 3/12 TVna Noon 1/6 AE Shirt)
+1-Nov-23,68000,900,S,MF 4
+1-Nov-23,68000,700,W,House supplies
+2-Nov-23,68000,600,W,House Supplies
+5-Nov-23,72600,600,T,4 Months Basic
+5-Nov-23,72400,600,W,CCP Noon
+5-Nov-23,72400,500,W,Travel expenses
+5-Nov-23,70400,500,S,Thndr
+8-Nov-23,67400,500,S,Thndr
+8-Nov-23,65400,500,S,Menthum MF
+8-Nov-23,65400,300,W,House Supplies
+10-Nov-23,65400,500,T,bond interest
+10-Nov-23,65400,400,W,House Supplies
+11-Nov-23,65400,200,W,Lunch
+14-Nov-23,65300,200,W,Phone
+14-Nov-23,65300,0,W,dinner na transportation
+15-Nov-23,64800,0,W,Amazon
+15-Nov-23,64500,300,W,Cash
+15-Nov-23,62000,300,S,Thndr
+15-Nov-23,62000,0,W,Luch
+15-Nov-23,61000,1000,W,Cash
+15-Nov-23,61000,800,W,Dinner
+17-Nov-23,61200,800,W,bond interest
+17-Nov-23,61000,800,W,Vodafone
+17-Nov-23,60500,800,W,Wife
+17-Nov-23,60500,500,W,Meat na Medicine
+18-Nov-23,60500,400,W,Nour Lunch
+19-Nov-23,60500,200,W,Work Lunch na Breakfast na Medicine
+19-Nov-23,60200,500,W,Cash
+19-Nov-23,58000,500,S,Dollars
+20-Nov-23,58000,350,W,Supplies na breakfast
+21-Nov-23,57500,850,W,Cash
+21-Nov-23,57500,650,W,Electric Bill
+21-Nov-23,57500,500,W,Wife supplies
+21-Nov-23,57000,500,W,CCP
+23-Nov-23,57000,200,W,Coffe shop na breakfasts na lunches
+24-Nov-23,56900,200,W,CCP
+24-Nov-23,56100,200,W,NOON AE Clothes
+24-Nov-23,55300,1000,W,Cash
+26-Nov-23,55300,800,W,House supplies
+27-Nov-23,63500,800,T,Monthly salary
+27-Nov-23,63200,800,W,ccp
+27-Nov-23,60200,800,W,Menthum MF
+27-Nov-23,60000,800,W,wife allowance
+28-Nov-23,60200,600,W,Cash
+28-Nov-23,59600,600,W,Perfumes
+28-Nov-23,59600,400,W,Lunch
+28-Nov-23,59400,400,W,CCP
+30-Nov-23,59800,300,T,MF Coupon na supplies
+1-Dec-23,59000,300,W,Noon 6/6 na Noon 4/12 na Noon 2/6
+1-Dec-23,49600,300,S,Dollars
+2-Dec-23,49300,300,W,wife makeup
+2-Dec-23,49050,300,W,wife allowance
+2-Dec-23,48800,500,W,Breakfast
+2-Dec-23,48700,500,W,Meat
+3-Dec-23,48600,500,W,Work Lunch
+3-Dec-23,48600,400,W,House Supplies
+4-Dec-23,48600,250,W,Lunch
+5-Dec-23,48300,550,W,cash
+5-Dec-23,48300,300,W,lunch na meat
+7-Dec-23,48200,250,W,lunch na dinner
+8-Dec-23,47700,750,W,Cash
+8-Dec-23,47700,500,W,Meat
+8-Dec-23,47700,400,W,Wife Allowance part
+10-Dec-23,48050,400,T,Trainning
+10-Dec-23,48050,300,W,Work Lunch
+11-Dec-23,48050,100,W,House Supplies
+11-Dec-23,48300,100,W,bond interest
+12-Dec-23,47900,100,W,Wife allowan part 2 na Scarfs na 800 Prepaid Shoes
+12-Dec-23,47400,600,W,Cash
+12-Dec-23,47400,450,W,Chicken Burger
+12-Dec-23,47400,300,W,Chicken Burger
+13-Dec-23,47400,250,W,Fruits
+14-Dec-23,47100,550,W,Cash
+14-Dec-23,47100,450,W,Sidibishir Guard
+14-Dec-23,47100,350,W,Transportation na dinner
+15-Dec-23,47100,150,W,building maint 10na11na12na1
+16-Dec-23,47300,150,T,bond interest
+16-Dec-23,47050,150,W,wife allowance
+16-Dec-23,46700,150,W,wife nero
+16-Dec-23,46200,450,W,Cash na chicken
+18-Dec-23,43500,450,W,Wife clothes na netflix na ghoniem na mc
+18-Dec-23,43500,300,W,House supplies
+19-Dec-23,43500,50,W,food
+20-Dec-23,43000,550,W,Cash
+20-Dec-23,43000,350,W,Meat
+22-Dec-23,42900,350,W,Wife
+22-Dec-23,42900,100,W,Fish na Medicin
+23-Dec-23,42900,0,W,Fruits
+23-Dec-23,42700,0,W,wife
+23-Dec-23,42300,400,W,cash
+23-Dec-23,42300,300,W,coffee
+25-Dec-23,42300,0,W,Fish na House Supplies
+27-Dec-23,50200,0,T,monthly salary
+27-Dec-23,49800,0,W,CCP 
+27-Dec-23,49800,500,na,prepaid to cash
+28-Dec-23,49800,350,W,work lunch na tea
+28-Dec-23,49800,150,W,Coffee shop na House supplies
+29-Dec-23,49800,100,W,fruits
+29-Dec-23,49800,1500,T,mom tooth
+30-Dec-23,49800,1200,W,wife allowance
+30-Dec-23,49800,1100,W,wife house shopping
+31-Dec-24,49800,1000,W,House Supplies
+1-Jan-24,50200,1000,T,MF Coupon
+1-Jan-24,53400,1000,T,Saving Account yearly interest
+1-Jan-24,52400,1000,W,CCP 5/12 3/6 1/12 1/12 Noon
+2-Jan-24,52400,800,W,LUNCH
+3-Jan-24,61500,800,T,Stock Bonus
+3-Jan-24,58000,800,S,Thndr
+3-Jan-24,56550,800,S,MF 4
+3-Jan-24,55350,800,S,MF 5
+3-Jan-24,55750,800,S,Menthum Interest
+3-Jan-24,52750,800,S,Menthum MF
+4-Jan-24,52100,800,W,CCP Amazon Dumbbells
+4-Jan-24,52100,700,W,coffe shop
+4-Jan-24,52100,600,W,work lunch
+4-Jan-24,52100,400,W,lunch 
+5-Jan-24,52100,200,W,Meat
+6-Jan-24,52100,50,W,Lunch
+7-Jan-24,51800,50,W,Wife Allowance
+7-Jan-24,51600,50,W,Electric Bill
+7-Jan-24,51100,550,W,Cash
+8-Jan-24,51100,500,W,Wife transportation na medicine
+9-Jan-24,51100,250,W,house supplies
+10-Jan-24,51100,150,W,lunch
+10-Jan-24,50600,150,W,Wife allowance na cleaning lady
+11-Jan-24,68700,150,T,Half Year Surplus
+11-Jan-24,68900,150,T,bond interest
+11-Jan-24,68100,150,W,CCP
+11-Jan-24,68100,100,W,work lunch
+11-Jan-24,68000,200,na,Cash
+12-Jan-24,68000,0,W,wife na work lunch
+14-Jan-24,67300,0,W,MIL Birthday gift
+14-Jan-24,66500,0,W,meat
+14-Jan-24,66000,500,W,cash
+14-Jan-24,65700,500,W,CCP
+14-Jan-24,65700,400,W,barber na wife
+16-Jan-24,70000,400,T,Sector Bonus
+16-Jan-24,69800,400,W,CCP
+16-Jan-24,69700,400,W,Work lunch
+16-Jan-24,69700,200,W,Dinner
+16-Jan-24,69900,200,T,bond interest
+17-Jan-24,69700,200,W,Internet
+18-Jan-24,69500,200,W,wife allowance
+19-Jan-24,69400,200,W,wife allowance
+19-Jan-24,69000,600,W,Cash
+19-Jan-24,69000,400,W,House supplies
+19-Jan-24,69000,300,W,House supplies
+22-Jan-24,68400,300,W,CCP 
+23-Jan-24,68100,300,W,CCP
+23-Jan-24,68100,200,W,Work Lunch
+23-Jan-24,67600,700,W,Cash
+24-Jan-24,67100,700,W,CCP
+24-Jan-24,85900,700,T,Monthly Salary + Individual Bonus
+24-Jan-24,85900,400,W,Lunch
+24-Jan-24,85400,900,W,Cash
+25-Jan-24,85400,800,W,house supplies
+26-Jan-24,85400,600,W,Market
+26-Jan-24,85400,300,W,Dinner na fruit na dessert
+27-Jan-24,85200,300,W,Wife allowance
+27-Jan-24,85100,400,W,Cash
+28-Jan-24,85100,300,W,Lunch
+29-Jan-24,85100,200,W,Lunch
+30-Jan-24,84600,700,W,Cash
+30-Jan-24,84600,400,W,Wife
+30-Jan-24,84600,300,W,House supplies
+31-Jan-24,84600,100,W,house supplies
+1-Feb-24,85100,100,T,MF Interest
+1-Feb-24,81100,100,S,Thndr
+1-Feb-24,99300,100,S,Menthum Withdraw
+1-Feb-24,97900,100,W,CCP (6/12 na 4/6 na 2/12 na 2/12 na 1/6)
+1-Feb-24,96200,100,W,Table
+1-Feb-24,87500,100,S,MF 4
+1-Feb-24,82500,100,S,Thndr
+1-Feb-24,82500,0,W,Lunch
+1-Feb-24,81500,1000,na,cash
+2-Feb-24,81500,600,W,meat na market
+3-Feb-24,81500,450,W,Wife na market
+4-Feb-24,81250,450,W,Wife allowance
+4-Feb-24,81100,450,W,CCP
+4-Feb-24,81100,350,W,Lunch na Dinner
+5-Feb-24,53400,350,S,Gold
+6-Feb-24,53400,300,W,dinner
+7-Feb-24,60500,300,T,Basic Months
+7-Feb-24,60500,150,W,Wife
+7-Feb-24,60500,50,W,Dinner
+8-Feb-24,60000,550,W,Cash
+8-Feb-24,60000,450,W,Lunch
+9-Feb-24,60000,150,W,Meat na snacks
+10-Feb-24,59000,1050,W,bond interest na CCP na Lunch
+11-Feb-24,58800,900,W,vodafone na dinner na lunch 
+12-Feb-24,58200,850,W,CCP na Breakfast
+13-Feb-24,57700,650,W,Wife
+13-Feb-24,57700,600,W,Breakfast
+14-Feb-24,57600,600,W,CCP
+14-Feb-24,57600,300,W,Wife na Breakfast
+15-Feb-24,57200,650,W,cash na breakfast
+15-Feb-24,55800,650,S,MF 5
+15-Feb-24,55600,650,W,We Internet
+15-Feb-24,55900,650,T,Bond Interest
+15-Feb-24,55800,550,W,We mobile na Lunch
+16-Feb-24,55800,350,W,Wife
+17-Feb-24,55600,350,W,Lunch
+18-Feb-24,55600,250,W,Dinner na Wife
+18-Feb-24,55300,250,W,Wife Debt
+18-Feb-24,53900,250,S,Dollars
+18-Feb-24,53700,250,W,CCP
+19-Feb-24,53000,900,W,cash na breakfast
+19-Feb-24,53000,700,W,Electric Bill
+19-Feb-24,53000,600,W,House supplies
+20-Feb-24,53000,250,W,Ramadan clean
+20-Feb-24,53000,100,W,lunch na cloth shorten
+21-Feb-24,52500,500,W,lunch
+21-Feb-24,51700,500,W,Wife na house supplies
+21-Feb-24,51700,200,W,Dinner
+22-Feb-24,51200,450,W,lunch na supplies
+22-Feb-24,51200,400,W,Wife
+23-Feb-24,51200,300,W,Breakfast
+23-Feb-24,50700,300,W,Wife
+25-Feb-24,50350,200,W,Lunch na Breakfast
+25-Feb-24,50100,200,W,CCP
+26-Feb-24,50100,100,W,Dinner
+27-Feb-24,60100,100,T,Monthly Salary + 2 Month basic Ramadan
+28-Feb-24,58100,2000,W,Breakfast na wife
+28-Feb-24,58100,1800,W,Lunch
+28-Feb-24,58100,1700,W,Ramadan Gift
+29-Feb-24,58100,1600,W,Dinner
+1-Mar-24,56700,1600,W,CCP ghoniem na (7/12 na 5/6 na 3/12 na 3/12 na 2/6)
+1-Mar-24,57300,1400,T,MF Interest na Lunch
+2-Mar-24,55800,1300,W,wife monthly pocket money na breakfast
+3-Mar-24,55800,1200,W,Lunch
+3-Mar-24,55800,1100,W,Coffe na Dinner
+4-Mar-24,55800,900,W,Lunch
+5-Mar-24,55800,700,W,Lunch na Breakfast
+6-Mar-24,55800,550,W,Barber na Breakfast
+7-Mar-24,55800,250,W,Coffe na Lunch na Dinner
+8-Mar-24,55800,200,W,snacks
+8-Mar-24,55800,900,na,Cash from Prepaid
+9-Mar-24,55800,850,W,Breakfast
+9-Mar-24,55800,500,W,Lunch
+10-Mar-24,55400,500,W,wife gift to others na cat litter
+10-Mar-24,55400,200,W,lunch 
+11-Mar-24,55400,200,W,Bond interest na Chicken
+13-Mar-24,55400,900,na,Cash from Prepaid na we na ghoneim
+14-Mar-24,52900,900,S,Thndr
+15-Mar-24,52900,500,W,Fruits na supplies
+16-Mar-24,53100,500,W,bond interest
+21-Mar-24,52500,500,W,Supper Ramadan na Wife na Work Kettle na Supplies
+22-Mar-24,52500,250,W,House supplies
+23-Mar-24,51700,250,W,Noon Eid clothes
+24-Mar-24,51700,200,W,Transport na gift
+25-Mar-24,51700,50,W,Electric Bill
+25-Mar-24,51400,50,W,Wife Bag
+26-Mar-24,60300,50,T,Monthly Salary + 1m Basic
+26-Mar-24,59500,850,W,Cash
+26-Mar-24,57000,850,S,Thndr
+26-Mar-24,57000,800,W,Dinner
+27-Mar-24,57000,450,W,Meat na Chicken na Pizza
+27-Mar-24,57000,350,W,Transport na dinner
+28-Mar-24,57000,0,W,Outing Breakfast na Coffee Shop na transport
+28-Mar-24,57000,850,na,prepaid to cash na Marvel Prepaid
+29-Mar-24,56600,850,W,Amazon Supplies
+29-Mar-24,56600,650,W,Wife
+29-Mar-24,55600,650,W,Wife friend Meal prep
+29-Mar-24,55300,650,W,CCP 
+30-Mar-24,55300,350,W,House supplies na barber
+31-Mar-24,54650,350,W,Wife Lab results
+31-Mar-24,55400,300,T,MF Coupons
+1-Apr-24,55400,100,W,Wife
+2-Apr-24,54900,600,W,Cash
+2-Apr-24,54800,600,W,Bank Fees
+2-Apr-24,53800,600,W,CCP (8/12 na 6/6 na 4/12 na 3/6 na 1/6 na 4/12) Noon
+2-Apr-24,53500,600,W,Amazon na orange
+3-Apr-24,52500,600,W,wife feast prep
+4-Apr-24,70200,600,T,Q3 Surplus + 1m Surplus + Difference
+4-Apr-24,70200,250,W,House Supplies na lunch
+5-Apr-24,70200,100,W,Supplies na breakfast
+6-Apr-24,70200,0,W,Wife
+6-Apr-24,69400,750,W,dinner
+7-Apr-24,68700,750,W,Eid Fiter Zakah Mkhalil
+7-Apr-24,63700,750,S,Thndr
+8-Apr-24,62600,750,W,wife lab
+9-Apr-24,62600,0,W,Salted fish na onions na kahk ingred. na litter na pepsi na chips na peanuts
+9-Apr-24,61500,1000,W,cash
+9-Apr-24,61700,1000,T,bond interest
+10-Apr-24,61100,600,W,Wife Eid Gift
+10-Apr-24,61100,450,W,Eid Visits
+13-Apr-24,61100,250,W,dinnersnatransport
+14-Apr-24,60100,250,W,Wife Lenses
+15-Apr-24,59800,250,W,Detergents
+15-Apr-24,59300,550,W,Electric Bill
+16-Apr-24,59300,500,W,Lunch Supplies
+17-Apr-24,59600,450,T,Bond Interest
+18-Apr-24,59000,350,W,Wife Lenses na Breakfast na Nelly
+20-Apr-24,56000,1000,W,CCP na Breakfast
+21-Apr-24,56000,400,W,wife gym na meat na breakfast na dinner na transport
+22-Apr-24,56000,200,W,wife transport na lunch na dinner
+23-Apr-24,55000,900,W,work meal na fruits 
+24-Apr-24,66100,900,T,1M Salary + Sector Bonus
+24-Apr-24,61100,900,S,Thndr
+25-Apr-24,61300,550,W,breakfast na wife
+27-Apr-24,61700,300,na,Prepaid to acc na meat na dinner
+28-Apr-24,61200,750,W,breakfast
+29-Apr-24,61200,300,W,Lunch na breakfast na drinks
+29-Apr-24,53200,300,W,Laptop Wife
+29-Apr-24,53200,250,W,Wife
+30-Apr-24,53900,250,S,MF Coupons
+30-Apr-24,53200,250,W,CCP
+30-Apr-24,53200,200,W,Wife
+30-Apr-24,53200,150,W,Dinner
+1-May-24,53200,50,W,Chicken
+1-May-24,52200,50,W,CCP(9/12 na 5/12 na 4/6 na 2/6 na 5/12)
+2-May-24,51200,600,W,Burger na Tahini na Barber na Transport Hospital
+3-May-24,51200,150,W,Fish Lunch na Litter na Rice na Dinner na Wife
+4-May-24,50500,750,W,cash na breakfast na dinner
+5-May-24,50500,650,W,wife
+6-May-24,50500,550,W,vegetables na breakfast
+7-May-24,49000,550,W,wife allowance
+7-May-24,49000,300,W,Meat na Breakfast
+8-May-24,49000,250,W,dinner
+9-May-24,59100,250,T,6m basic Q3
+9-May-24,59100,200,W,breakfast
+9-May-24,61100,200,T,birthday gift
+10-May-24,60600,300,W,fish lunch na potatoes na pepsi na breakfast
+10-May-24,60600,100,W,Building Maintenance 4M Till May
+11-May-24,60100,500,W,Wife na Breakfast
+12-May-24,57600,500,S,Thndr
+12-May-24,55100,500,W,CCP
+12-May-24,55300,500,T,Bond Interest
+13-May-24,55300,450,W,dinner
+14-May-24,55300,250,W,breakfast na lunch na coffe
+14-May-24,52500,250,S,Thndr
+15-May-24,52500,50,W,Electric Bill
+15-May-24,52500,0,W,Breakfasr
+15-May-24,52000,300,W,Work Tea na Work Meal
+16-May-24,59200,300,T,Individual Bonus
+16-May-24,59400,300,T,Bond Interest
+16-May-24,59100,300,W,Meat na Lunch
+17-May-24,58200,1200,W,Cash
+17-May-24,57200,1200,W,Wife Summer ware
+17-May-24,57200,1100,W,Work Lunch
+17-May-24,57200,1000,W,Dinner
+18-May-24,57200,900,W,wife
+19-May-24,55300,450,W,Wife birthday gift na wife summer ware na lunch 
+21-May-24,55000,350,W,Wife Summerware na breakfast
+24-May-24,54500,600,W,Dinner na breakfast na work meal
+25-May-24,53500,1450,W,lunch na breakfast
+26-May-24,53500,1200,W,AC Fix na breakfast
+27-May-24,61600,1200,T,1M Salary
+27-May-24,61600,1000,W,Fruits na Veggies na breakfast na Sweets
+28-May-24,61600,950,W,Transport
+28-May-24,61600,900,W,Breakfast
+29-May-24,61800,650,W,Wife
+30-May-24,67100,600,T,1m basic + 1m surplus eid
+30-May-24,65900,600,W,CCP
+30-May-24,65000,600,W,Meat na chicken na house supplies 
+31-May-24,65700,600,S,MF Coupons
+31-May-24,65500,600,W,CCP
+31-May-24,65500,500,W,Cat Litter
+31-May-24,65500,300,W,Fish Lunch
+1-Jun-24,63500,300,W,CCP (10/12 na 6/12 na 5/6 na 3/6 na 6/12) na wife shoes
+2-Jun-24,63500,200,W,wife
+2-Jun-24,61500,2150,W,Breakfast
+3-Jun-24,61500,2050,W,Wife
+4-Jun-24,61300,2050,W,Work Meal
+4-Jun-24,61300,1050,W,Wife allowance
+4-Jun-24,61300,650,W,Electric Bill
+5-Jun-24,59100,650,S,Thndr
+9-Jun-24,59100,400,W,lunch na breakfast
+10-Jun-24,59100,150,W,work meal na dinner
+11-Jun-24,54100,5150,W,cash
+11-Jun-24,54100,1250,W,Eid meat
+11-Jun-24,54100,1200,W,breakfast
+11-Jun-24,54100,650,W,to dad
+11-Jun-24,54100,1650,T,from mil
+11-Jun-24,54300,1650,T,bond interest
+12-Jun-24,54300,1500,W,Wife na Breakfast
+13-Jun-24,54300,1400,W,Work Meal
+13-Jun-24,54300,1300,W,Mkhalil Eid
+13-Jun-24,54300,1850,T,dad meat
+14-Jun-24,54300,1550,W,breakfast na lunch na snacks
+15-Jun-24,54500,1550,T,bond interest
+15-Jun-24,54500,550,W,eid wife gift
+15-Jun-24,54500,200,W,litter na rice na pepsi na dinner na transport
+16-Jun-24,54000,450,W,fruits na pepsi
+16-Jun-24,54000,650,T,mil eid gift
+16-Jun-24,54000,600,W,taxi
+17-Jun-24,54000,500,W,mango
+18-Jun-24,54000,450,W,snacks
+19-Jun-24,54000,150,W,flowers na breakfast na snacks
+21-Jun-24,54000,0,W,dinner
+22-Jun-24,53000,350,W,wife allowance na fruits na dinner na bills
+23-Jun-24,51600,350,W,CCP na water bill
+23-Jun-24,51600,200,W,Wife na Veggies na Fruits
+24-Jun-24,51000,700,W,breakfast
+24-Jun-24,51000,500,W,Lunch
+25-Jun-24,51000,200,W,Electric Bill
+25-Jun-24,51000,50,W,Litter na dinner
+26-Jun-24,59100,50,T,1m Salary
+26-Jun-24,59000,50,W,Mobile bill
+27-Jun-24,59000,400,T,dinner na wife cash debit
+28-Jun-24,59600,400,T,MF Coupons
+28-Jun-24,58400,900,W,Lunch na work na ghoneim na wife debit na dineer
+28-Jun-24,58400,700,W,"Electrical Building Maint (6,7,8,9)"
+29-Jun-24,58400,500,W,Liver na dinner
+30-Jun-24,58200,500,W,Travel expenses
+30-Jun-24,58400,500,W,Ice Cream 
+30-Jun-24,58400,400,W,Juice na Water
+1-Jul-24,57100,400,W,CCP (11/12 na 7/12 na 6/6 na 4/6 na 7/12)
+1-Jul-24,54100,400,S,Thndr
+2-Jul-24,54100,200,W,Taxi na Jucie
+2-Jul-24,53600,700,W,Cash
+3-Jul-24,53900,700,T,Gonamini
+3-Jul-24,54200,600,T,Careem na Taxi + Go mini
+4-Jul-24,57600,600,T,2m Basic
+4-Jul-24,57200,600,W,CCP (Ikea na Juice na Icecream)
+4-Jul-24,55700,600,W,WIFE
+4-Jul-24,55700,550,W,DINNER
+5-Jul-24,55700,350,W,Wife na Veggies na Fruits
+6-Jul-24,55500,350,W,WORK MEAL
+6-Jul-24,55500,300,W,DINNER
+7-Jul-24,55500,50,W,WORK MEAL na DINNER na FRUITS
+8-Jul-24,54100,900,W,CHICKEN na LUNCH
+9-Jul-24,112800,900,T,Surplus
+9-Jul-24,108400,900,S,MF 4
+9-Jul-24,103900,900,S,Thndr
+10-Jul-24,103700,900,W,Work Meal
+10-Jul-24,103700,750,W,Transport na snaks
+10-Jul-24,104000,400,W,Ice Box
+10-Jul-24,104000,200,W,Water filter na dinner
+10-Jul-24,101100,200,S,MF 5
+10-Jul-24,101400,200,T,Bond Interest
+11-Jul-24,100000,1600,W,Cash
+14-Jul-24,99700,1600,W,Dad tickets
+14-Jul-24,99700,1200,W,Electric Bill
+14-Jul-24,99700,850,W,house supplies
+15-Jul-24,99700,350,W,Calamary meal
+15-Jul-24,99700,150,W,house supplies
+16-Jul-24,99700,0,W,Wife na Breakfast
+16-Jul-24,98700,900,W,transport na outing
+16-Jul-24,43700,900,S,Gold
+17-Jul-24,48500,900,T,Sector Bonus
+17-Jul-24,48700,900,T,Bond interest
+18-Jul-24,46300,900,W,CCP
+18-Jul-24,46300,700,W,transport na cat litter na breakfast
+19-Jul-24,45300,500,W,wife na dinner na lunch
+21-Jul-24,45300,200,W,lunch na wife
+22-Jul-24,45100,200,W,work lunch
+24-Jul-24,93300,200,T,1m salary + individual bonus
+24-Jul-24,93300,0,W,mango na meat
+24-Jul-24,92300,850,W,cash
+25-Jul-24,91000,850,W,CCP
+25-Jul-24,91000,600,W,work mreal na breakfast
+26-Jul-24,89000,2600,W,Marwan na Dad insta cash
+26-Jul-24,89000,2400,W,wife
+26-Jul-24,89000,2350,W,breakfast
+27-Jul-24,89000,2200,W,breakfast natransport
+28-Jul-24,89000,2000,W,work  meal
+28-Jul-24,89000,2050,T,Dinner + dad prepaid 
+29-Jul-24,89000,1850,W,Electric Bill
+30-Jul-24,89000,1650,W,Lunch
+31-Jul-24,81000,1650,S,Thndr
+31-Jul-24,77000,650,W,Cash to Dad
+31-Jul-24,77000,400,W,Breakfast na Chicken
+31-Jul-24,76700,400,W,Wife
+1-Aug-24,77450,400,T,MF Coupons
+1-Aug-24,76000,400,W,CCP
+1-Aug-24,61400,400,S,MF 4
+1-Aug-24,61400,200,W,Lunch na breakfast
+1-Aug-24,60600,200,W,Wife 0.5 allowance
+3-Aug-24,59600,1100,W,wife
+4-Aug-24,59600,700,W,Wife
+5-Aug-24,59600,300,W,Work Lunch
+6-Aug-24,59600,50,W,Fish Meal
+6-Aug-24,59600,0,W,Breakfast
+7-Aug-24,59600,5000,T,Dad Repayment
+7-Aug-24,59800,5000,T,Work Meal Repayment
+7-Aug-24,59800,4400,W,Electric Bill
+7-Aug-24,59800,3750,W,Lunch na Breakfast
+8-Aug-24,78100,3750,T,8m+2m Basic Q1
+8-Aug-24,77300,3750,W,CCP
+8-Aug-24,72300,3750,S,Thndr
+8-Aug-24,72400,3550,W,Work meal
+8-Aug-24,63700,3550,S,MF 5
+9-Aug-24,63900,3550,T,Bond interest
+9-Aug-24,63900,3450,W,Mango
+10-Aug-24,63700,3450,W,Wife
+10-Aug-24,63700,3400,W,Breakfast
+11-Aug-24,63700,2600,W,Wife
+12-Aug-24,63950,2200,W,Work Lunch na dinner
+13-Aug-24,64100,2000,W,Work Lunch + Thndr test
+14-Aug-24,64100,1750,W,Fish Lunch
+15-Aug-24,64100,1300,W,Lunch na dinner
+15-Aug-24,63500,1300,W,CCP
+15-Aug-24,63300,1300,W,Meal Repayment
+16-Aug-24,63700,1300,T,Meal Repayment + Bond Interest
+19-Aug-24,63700,900,W,Lunch na breakfasts na Building Entrance
+20-Aug-24,63700,800,W,Work Lunch
+20-Aug-24,63700,650,W,Dinner na mango
+21-Aug-24,63700,450,W,breakfast na lunch na club
+21-Aug-24,62700,450,W,Vacation Under Payment p1
+22-Aug-24,60200,2500,W,Bakery na vegetables na snacks na water
+23-Aug-24,60200,1600,W,vacation car
+23-Aug-24,54600,1600,W,vacation villa
+23-Aug-24,54600,1500,W,villa clean
+25-Aug-24,53500,1500,W,backpack na perfume 
+26-Aug-24,53500,3500,T,MIL Payment
+26-Aug-24,53500,2800,W,vacation car
+26-Aug-24,53400,2600,W,vodafone na dinner
+27-Aug-24,66500,2600,T,1m salary + 2m basic
+27-Aug-24,64900,2600,W,CCP
+28-Aug-24,64900,2000,W,wife na fruit na breakfast na lunch
+29-Aug-24,64900,1950,W,Breakfast
+30-Aug-24,65700,1950,T,Training
+30-Aug-24,66700,1950,T,MF Coupons
+30-Aug-24,66700,1650,W,breakfast na lunch na drinks
+31-Aug-24,66700,1600,W,breakfast
+1-Sep-24,65700,1600,W,Wife allowance
+1-Sep-24,65700,1250,W,work meal na drinks na dinner
+2-Sep-24,64000,1250,W,CCP
+2-Sep-24,64000,1000,W,Lunch na drinks
+4-Sep-24,64000,800,W,DINNER
+5-Sep-24,64000,700,W,WORK MEAL
+5-Sep-24,62000,700,S,THNDR
+5-Sep-24,61500,600,W,Electric Bill
+5-Sep-24,61500,500,W,dinner
+7-Sep-24,61500,300,W,Breakfast na dinner
+9-Sep-24,61000,800,W,cash
+9-Sep-24,61000,600,W,work meal
+10-Sep-24,61000,100,W,work meaL na MEAT na DINNER
+11-Sep-24,61200,100,T,BOND INTEREST
+11-Sep-24,61000,100,W,DUOLINGO
+12-Sep-24,60000,1000,W,TRANSPORT na ROOSTER
+13-Sep-24,60000,800,W,BREAKFAST na VEGETABLES
+14-Sep-24,59000,800,W,WIFE
+14-Sep-24,59000,550,W,WORK MEAL na DINNEDR
+15-Sep-24,59000,500,W,BREAKFAST
+15-Sep-24,58000,500,W,Wife
+16-Sep-24,58200,500,T,Bond interest
+16-Sep-24,57700,700,W,Medicine na meal
+17-Sep-24,57700,450,W,Wife na Breakfast na dinner
+18-Sep-24,57200,400,W,Marwan na work Meal
+19-Sep-24,57200,150,W,Fish na breakfast
+20-Sep-24,57200,50,W,Breakfast na dinner
+20-Sep-24,56400,550,W,Cleanning
+21-Sep-24,56400,500,W,Medicine
+21-Sep-24,56400,700,T,Dad Repayment
+22-Sep-24,56400,500,W,noor lunch
+23-Sep-24,56400,450,W,breakfast
+24-Sep-24,56400,200,W,post office na cleanning na breakfast
+25-Sep-24,56400,150,W,breakfast
+26-Sep-24,65100,150,T,monthly salary
+26-Sep-24,63800,150,W,ccp
+26-Sep-24,62800,1850,T,cash na dad hospital
+26-Sep-24,62800,1200,W,nora debit na litter na breakfast
+27-Sep-24,62800,950,W,fish meal
+28-Sep-24,62100,950,W,ccp
+28-Sep-24,62100,700,W,Coffee shop na House supplies
+30-Sep-24,61500,700,W,Wife food fruit 
+1-Oct-24,62500,700,T,MF Coupons
+1-Oct-24,62000,700,W,CCP
+2-Oct-24,58500,700,S,Thndr
+2-Oct-24,57500,700,W,Wife Allowance
+2-Oct-24,57500,350,W,Fish meal
+2-Oct-24,57500,250,W,wife
+3-Oct-24,57500,100,W,work meal
+3-Oct-24,203300,100,T,Yearly Bonus
+3-Oct-24,196800,100,S,Thndr
+3-Oct-24,195300,1500,W,photo
+4-Oct-24,195300,1400,W,dinner
+5-Oct-24,193700,1400,W,ahmed
+5-Oct-24,193700,750,W,supplies
+7-Oct-24,193500,700,W,work meal na dinner
+8-Oct-24,195100,700,T,Ahmed repayment
+8-Oct-24,184900,700,S,MF 4
+8-Oct-24,184900,400,W,Work Meal na dinner
+9-Oct-24,184900,250,W,fruits
+10-Oct-24,180500,250,S,MF 4
+10-Oct-24,165100,250,S,MF 5
+10-Oct-24,164100,1000,W,Transport
+10-Oct-24,163900,1000,W,Amazon
+11-Oct-24,164100,1000,T,Bond Interest
+13-Oct-24,162600,1000,W,CCP
+13-Oct-24,162600,600,W,Breakfast na Wife na Chicken
+15-Oct-24,160600,600,W,Wife
+15-Oct-24,160600,550,W,Dinner
+16-Oct-24,160800,550,T,Bond Interest
+16-Oct-24,160800,400,W,Dinner
+17-Oct-24,160800,100,W,Rooster na Dinner na Snacks
+18-Oct-24,160300,550,W,Dinner
+18-Oct-24,160100,550,W,Work Meal
+18-Oct-24,160000,550,W,We Internet
+19-Oct-24,57000,550,S,Gold
+19-Oct-24,57000,250,W,Dinner
+20-Oct-24,56000,850,W,barber na wife na coffee
+21-Oct-24,56000,550,W,wife na breakfast
+22-Oct-24,56000,500,W,breakfast
+23-Oct-24,56000,800,T,dad grocieries na work meal na dinner
+24-Oct-24,54800,800,W,CCP
+24-Oct-24,63600,800,T,1M Salary
+24-Oct-24,63600,450,W,market run na snacks
+25-Oct-24,63600,350,W,lunch na breakfast
+26-Oct-24,62800,350,W,CCP
+26-Oct-24,62800,50,W,Electric bill
+26-Oct-24,62800,0,W,breakfast
+27-Oct-24,62800,0,W,breakfast
+28-Oct-24,62000,600,W,Lunch
+30-Oct-24,62000,500,W,Breakfast
+31-Oct-24,62000,400,W,Work Lunch
+1-Nov-24,63200,400,T,MF Coupons
+1-Nov-24,63200,300,W,breakfast
+1-Nov-24,62200,300,W,Wife
+1-Nov-24,61800,300,W,CCP
+2-Nov-24,61800,200,W,breakfast
+5-Nov-24,61600,100,W,Internet na breakfast
+6-Nov-24,61000,100,W,Wife
+6-Nov-24,60750,100,W,BRO
+6-Nov-24,60250,200,W,BREAKFAST na MEAL
+7-Nov-24,60250,0,W,LUNCH na STATIRS CLEAN
+7-Nov-24,60250,300,T,WIFE CASH
+8-Nov-24,59900,300,W,CCP
+8-Nov-24,59500,300,W,WIFE
+8-Nov-24,58900,600,W,Mango na dinner
+10-Nov-24,58900,550,W,breakfast
+11-Nov-24,58500,500,W,LUNCH na BREAKFAST
+12-Nov-24,58500,300,W,MEAL
+12-Nov-24,60600,300,T,Sector Bonus
+13-Nov-24,60200,550,W,MEAL DINNER
+14-Nov-24,59400,550,W,CCP
+14-Nov-24,58500,550,W,LC WAIKIKI
+14-Nov-24,62200,550,T,2m Basic
+14-Nov-24,62200,300,W,fish
+14-Nov-24,62200,150,W,Buildin Maint till Nov
+14-Nov-24,62100,150,W,SWEETS
+15-Nov-24,61400,150,W,WIFE
+15-Nov-24,61000,800,T,Bond Interest
+16-Nov-24,61000,700,W,dinner
+17-Nov-24,61000,500,W,LUNCH
+18-Nov-24,61000,450,W,DINNER
+19-Nov-24,60200,400,W,MEAL na MEAT na DINNER
+20-Nov-24,57500,250,W,MARKET na MEAL na WIFE WINTER WARE
+20-Nov-24,57000,250,W,CCP
+21-Nov-24,57000,100,W,WIFE na BREAKFAST
+23-Nov-24,57000,0,W,Breakfasts
+24-Nov-24,56500,400,W,WORK MEAL + Dad repayment
+25-Nov-24,55600,400,W,CCP
+25-Nov-24,55600,250,W,Wife
+26-Nov-24,54600,1200,W,breakfast
+27-Nov-24,64200,1200,T,1M Salary
+27-Nov-24,61600,1200,W,Wife
+27-Nov-24,61500,1200,S,EFG One
+27-Nov-24,61300,1200,W,Work Meal
+27-Nov-24,60500,1150,W,Dad Repayment na Dinner
+28-Nov-24,59900,1150,W,CCP
+28-Nov-24,59500,1150,S,EFG One
+28-Nov-24,59500,1000,W,house supplies
+29-Nov-24,59500,750,W,DINNER na MEAT
+30-Nov-24,59300,400,W,Electric bill na breakfast na work meal
+1-Dec-24,58900,400,W,CCP
+1-Dec-24,58800,400,W,GAS METER
+1-Dec-24,60100,400,T,MF COUPONS
+1-Dec-24,60100,200,W,lunch
+2-Dec-24,60100,100,W,Coffee shop na House supplies
+2-Dec-24,60100,250,T,Dad Repayment
+3-Dec-24,60100,0,W,Lunch
+4-Dec-24,58900,50,W,wife na lunch
+5-Dec-24,57900,600,W,Lunch na breakfast
+8-Dec-24,57900,500,W,Breakfast
+9-Dec-24,58000,250,W,Work meak na dinner
+10-Dec-24,58000,100,W,Work meak na dinner
+11-Dec-24,58300,100,T,Bond Interest
+11-Dec-24,53500,100,W,Wife Course
+12-Dec-24,53000,550,W,breakfast
+13-Dec-24,53000,250,W,Lunch na Snacks
+14-Dec-24,52000,1200,W,breakfast
+14-Dec-24,52000,1050,W,dinner
+15-Dec-24,52000,1000,W,Snacks
+16-Dec-24,52000,800,W,Breakfast na transport na coffee
+17-Dec-24,52300,800,T,Bond interest
+17-Dec-24,52300,650,W,Barber na Breakfast
+18-Dec-24,52300,500,W,Lunch na dinner
+19-Dec-24,52300,150,W,Netflix na Work meal
+20-Dec-24,52300,100,W,breakfast
+21-Dec-24,51800,100,W,CCP
+22-Dec-24,51300,500,W,Work meal
+22-Dec-24,51300,400,W,Dinner
+24-Dec-24,51300,300,W,breakfast na dinner
+25-Dec-24,51300,200,W,BREAKFAST
+25-Dec-24,60100,200,T,1M Salary
+25-Dec-24,58300,200,W,WIFE
+25-Dec-24,58100,200,W,CCP
+26-Dec-24,57400,750,W,LUNCH na DINNER
+27-Dec-24,57400,550,W,LUNCH
+28-Dec-24,56900,550,W,BREAKFAST na LUNCH na DINNER na SLIPPERS
+29-Dec-24,56900,200,W,LUNCH na COFFE
+30-Dec-24,55900,650,W,SYNDICATE na LUNCH
+31-Dec-24,55900,350,W,Electric Bill
+31-Dec-24,55900,200,W,breakfast na snacks
+31-Dec-24,55500,200,W,Amazon
+1-Jan-25,56700,200,T,MF 4 COUPONS
+1-Jan-25,61000,200,T,Banck Account Interest
+1-Jan-25,60100,200,W,CCP
+2-Jan-25,75500,200,T,bond bonus
+2-Jan-25,74300,200,W,WIFE
+2-Jan-25,74100,150,W,Lunch na dinner
+3-Jan-25,73600,150,W,CCP
+4-Jan-25,73100,600,W,BREAKFAST
+5-Jan-25,63100,600,S,Thndr
+5-Jan-25,63100,400,W,Lunch
+6-Jan-25,63100,300,W,breakfast nahouse
+8-Jan-25,61350,300,W,Midyear Vac
+8-Jan-25,61100,300,W,Wife
+8-Jan-25,61100,100,W,Work Lunch
+8-Jan-25,60400,800,na,Cash
+10-Jan-25,60700,800,T,Bond interest
+10-Jan-25,60000,800,W,House Supplies Meat
+11-Jan-25,59800,800,W,Internet na breakfast
+11-Jan-25,59800,800,na,Midyear Vac return na wife na carpets
+13-Jan-25,59800,700,W,coffee
+14-Jan-25,59800,500,W,HOUSE SUPPLIES
+14-Jan-25,78900,500,T,Surplus
+14-Jan-25,78400,500,W,CCP
+14-Jan-25,76400,500,S,EFG One
+16-Jan-25,74400,500,W,Wife course
+16-Jan-25,73400,500,W,CCP
+16-Jan-25,73400,400,W,Meat
+16-Jan-25,74500,400,T,MF 5  Coupons
+17-Jan-25,71400,400,S,MF 5
+17-Jan-25,71600,400,T,BOND INTEREST
+17-Jan-25,70600,900,W,CHICKEN
+17-Jan-25,70600,600,W,LUNCH
+18-Jan-25,70600,450,W,Buildin Maint till Feb
+18-Jan-25,70600,200,W,LUNCH
+20-Jan-25,70100,450,W,Fruit na breakfasts
+22-Jan-25,69500,100,W,Work Lunch na ghoneim
+23-Jan-25,67900,1000,W,Lunch na dinner na Duck
+25-Jan-25,67900,950,W,Breakfast
+26-Jan-25,67900,800,W,Breakfast na barber
+26-Jan-25,57900,800,na,Wife Loan
+27-Jan-25,57900,650,W,Work Lunch
+27-Jan-25,67600,650,T,1m salary
+27-Jan-25,67300,650,W,ccp
+27-Jan-25,67300,600,W,dinner
+29-Jan-25,77300,600,na,Loan repayment
+29-Jan-25,77300,250,W,breakfast na fruits
+30-Jan-25,77100,250,W,Work lunch
+30-Jan-25,78300,250,T,MF 4 COUPONS
+30-Jan-25,77800,700,W,DINNER
+30-Jan-25,71600,700,S,MF 5
+31-Jan-25,71600,250,W,BREAKFAST na DINNER na LUNCH
+1-Feb-25,70700,250,W,CCP
+1-Feb-25,69200,250,W,WIFE
+1-Feb-25,68500,900,W,dinner
+2-Feb-25,68500,850,W,BREAKFAST
+2-Feb-25,73800,850,T,Sector Bonus
+3-Feb-25,70800,700,W,Wife
+4-Feb-25,70800,600,W,meals
+5-Feb-25,70400,600,W,CCP
+5-Feb-25,70400,450,W,MEALS
+6-Feb-25,70000,450,W,Electric Bill
+6-Feb-25,70000,200,W,Lunch
+9-Feb-25,69000,1100,W,Breakfasts
+10-Feb-25,69000,700,W,BREAKFAST na LUNCH
+11-Feb-25,69000,500,W,TRANS na NELLY
+12-Feb-25,68700,700,W,BREAKFAT na GHONEIM na DAD
+12-Feb-25,82700,700,T,7M BASIC 
+12-Feb-25,83000,700,T,BOND INTEREST
+13-Feb-25,81500,700,W,Wife Lab
+13-Feb-25,75000,700,W,Wife Valentine Day gift License
+13-Feb-25,75000,500,W,Lunch
+13-Feb-25,68900,500,S,MF 5
+15-Feb-25,68900,100,W,Wife na Nelly na Lunch
+16-Feb-25,68000,900,W,Breakfast
+16-Feb-25,66000,900,S,EFG One
+17-Feb-25,66200,900,T,Bond Interest
+18-Feb-25,66200,500,W,Dinner na breakfast
+19-Feb-25,77200,500,T,Individual Bonus
+19-Feb-25,76500,800,W,Dinner na breakfast
+19-Feb-25,76500,600,W,wife book
+20-Feb-25,76500,300,W,WORK MEAL na DINNER
+20-Feb-25,79500,300,T,EAAC
+21-Feb-25,79000,700,W,DINNER
+22-Feb-25,79000,600,W,BREAKFAST
+23-Feb-25,77800,500,W,WIFE na BREAKFAST
+23-Feb-25,77800,350,W,Lunch
+24-Feb-25,77300,100,W,House supplies na breakfast na lunch
+25-Feb-25,76500,50,W,Wife na breakfast na license taxi
+26-Feb-25,85100,50,T,1m salary
+26-Feb-25,84600,500,W,Dinner
+27-Feb-25,83800,400,W,Wife na breakfast
+27-Feb-25,75800,400,S,MF 5
+27-Feb-25,77000,400,T,MF COUPONS
+27-Feb-25,76000,400,W,Wife
+1-Mar-25,75100,400,W,CCP
+1-Mar-25,75100,350,W,Sohor
+3-Mar-25,75100,150,W,wife na supplies
+4-Mar-25,75100,100,W,Supplies
+5-Mar-25,74300,1000,T,Wife return na supplies
+6-Mar-25,74300,600,W,SNACKS na WIFE
+7-Mar-25,74300,500,W,WIFE
+9-Mar-25,74300,200,W,SUPPLIES na MEAT
+10-Mar-25,72800,200,W,Wife
+10-Mar-25,73000,200,T,BOND INTEREST
+10-Mar-25,73000,50,W,LUNCH
+12-Mar-25,72000,900,W,dunner
+14-Mar-25,71500,500,W,MIL Breakfast
+15-Mar-25,71500,350,W,WIFE na DINNER
+16-Mar-25,76900,350,T,1m basic + 1m surplus eid
+16-Mar-25,75900,900,W,Coffee shop na Wife
+17-Mar-25,75900,550,W,Lunch na Barber na Snacks
+17-Mar-25,76100,550,T,Bond Interest
+18-Mar-25,71100,550,S,Thndr
+18-Mar-25,70600,550,W,wife
+18-Mar-25,70600,300,W,Medicine
+18-Mar-25,82600,300,T,EAAC
+18-Mar-25,77600,300,S,EFG One
+18-Mar-25,77500,300,W,CCP NETFLIX
+19-Mar-25,76500,900,W,Lunch
+19-Mar-25,76500,250,W,Wife
+20-Mar-25,76000,650,W,Dinner
+21-Mar-25,76000,600,W,snacks
+23-Mar-25,75500,800,W,House supplies
+25-Mar-25,75500,300,W,Electric bill na snacks
+26-Mar-25,87100,300,T,1m salary
+27-Mar-25,86400,300,W,Wife
+27-Mar-25,86400,0,W,Nelly Food Sand na Snacks
+28-Mar-25,87600,0,T,MF COUPONS
+28-Mar-25,87600,1000,T,Wife TMT 
+28-Mar-25,87600,900,W,Snacks
+29-Mar-25,88100,900,T,MIL GIFT
+29-Mar-25,88100,1700,T,Lazorde na Wife
+30-Mar-25,88100,1600,W,supplies
+31-Mar-25,85100,1600,W,Eid Cloth na Eid Wife
+31-Mar-25,85100,1500,W,Medicine
+1-Apr-25,82500,1500,W,CCP
+5-Apr-25,82500,900,W,Wife na Lunches na Snacks
+6-Apr-25,82500,900,W,dolors repayment na wife gift
+7-Apr-25,77500,900,S,Thndr
+7-Apr-25,77500,700,W,Work Meak
+8-Apr-25,77500,500,W,Work Meak
+8-Apr-25,64700,500,S,gold
+9-Apr-25,64700,400,W,breakfast
+9-Apr-25,59700,400,S,Thndr
+10-Apr-25,72700,400,T,Q3 Surplus
+10-Apr-25,71900,800,W,Outing
+11-Apr-25,71900,500,W,Wife na breakfast
+12-Apr-25,72100,500,W,BOND INTEREST
+12-Apr-25,72100,400,W,Wife
+13-Apr-25,71400,950,W,breakfast na wife
+13-Apr-25,71400,700,W,lunch
+14-Apr-25,70900,900,W,WIFE na BREAKFAST
+15-Apr-25,70900,200,W,WIFE na MEALS
+16-Apr-25,70100,200,W,WIFE
+16-Apr-25,69600,600,W,BREAKFAST
+16-Apr-25,62100,600,S,MF 4
+17-Apr-25,53900,600,S,MF 5
+17-Apr-25,54100,600,T,Bond Interest
+17-Apr-25,54100,150,W,LUNCHES
+18-Apr-25,54100,50,W,MIL Visit
+19-Apr-25,66100,50,T,EAAC
+19-Apr-25,65100,50,W,Wife
+20-Apr-25,64200,650,W,BREAKFAST na LUNCH
+21-Apr-25,64200,550,W,BREAKFAST na MEDICINE
+21-Apr-25,64200,350,W,BUILDING MAINT
+22-Apr-25,64000,200,W,lunch na dinner na trans
+23-Apr-25,63200,900,W,WIFE na BREAKFAST
+24-Apr-25,63200,750,W,Breakfast na transport na coffee
+25-Apr-25,63200,650,W,DINNER
+26-Apr-25,63200,550,W,BREAKFAST
+27-Apr-25,71300,550,T,1M SALARY
+27-Apr-25,69300,550,W,WIFE na MIL GIFT na CURTAIN
+27-Apr-25,68500,550,W,CCP Amazon
+27-Apr-25,67800,550,W,Mkhalil Eid
+27-Apr-25,67800,400,W,LUNCH na DINNER
+28-Apr-25,67800,100,W,LUNCH na DINNER
+29-Apr-25,67200,550,W,LUNCH na DINNER
+30-Apr-25,67200,500,W,Breakfast na WIFE
+1-May-25,67200,350,W,BREAKFAST na VEGETABLES
+1-May-25,67200,0,W,LUNCH
+1-May-25,68600,0,T,MF COUPONS
+1-May-25,67300,0,W,CCP
+2-May-25,66300,650,W,Breakfast na Lunch
+3-May-25,66300,350,W,Meat na dinner
+4-May-25,66300,250,W,breakfast
+4-May-25,70300,250,T,Sector Bonus
+5-May-25,68300,100,W,Wife
+6-May-25,66800,1200,W,Lunch na Coffee Shop
+7-May-25,66800,1100,W,Breakfast
+7-May-25,77700,1100,T,6.5m basic Q3
+7-May-25,77900,1100,T,BOND INTEREST
+8-May-25,77900,500,W,Electrical Bill na Lunch na House Supplies
+8-May-25,77700,500,W,Work lunch
+11-May-25,77000,1100,W,BREAKFAST
+12-May-25,77000,900,W,lunch na dinner
+13-May-25,84500,900,T,EAAC
+13-May-25,83500,800,W,WIFE
+13-May-25,83500,600,W,DINNER
+14-May-25,83500,500,W,BREAKFAST
+14-May-25,82400,500,W,CCP
+14-May-25,77400,500,S,Thndr
+15-May-25,77500,300,W,work lunch
+15-May-25,66300,300,S,GOLD
+16-May-25,65600,900,W,DINNER
+16-May-25,65100,900,W,WIFE
+16-May-25,74100,900,T,Gold wife
+17-May-25,74100,450,W,Breakfast na lunch na coffee na transport
+18-May-25,73600,850,W,breakfast
+18-May-25,73400,850,W,lunch
+19-May-25,73600,850,T,BOND INTEREST
+19-May-25,73600,650,W,LUNCH na WIFE
+20-May-25,73000,600,W,AMAZON na WE na BREAKFAST
+21-May-25,73000,300,W,BREAKFAST na LUNCH
+22-May-25,82900,300,T,Individual bonus
+22-May-25,81900,300,W,wife
+22-May-25,81600,300,W,dinner
+24-May-25,80900,800,W,lunch
+25-May-25,80900,700,W,BREAKFAST
+25-May-25,80900,450,W,WIFE na FRUIT na BISCUITS
+26-May-25,80300,900,W,work lunch
+26-May-25,80300,550,W,LUNCH
+27-May-25,90300,550,T,1M SALARY
+27-May-25,90300,350,W,dinner
+28-May-25,90300,250,W,BREAKFAST
+28-May-25,89500,250,W,CCP
+29-May-25,88500,1200,W,breakfast
+29-May-25,88100,1200,W,WIFE
+31-May-25,87300,1100,W,DINNER
+1-Jun-25,88600,1100,T,MF COUPONS
+1-Jun-25,85400,1100,W,CCP
+1-Jun-25,80900,1100,S,MF 4
+1-Jun-25,80900,1000,W,BREAKFAST
+2-Jun-25,77400,1000,W,Eid Meat
+2-Jun-25,77400,700,W,Lunch
+2-Jun-25,77400,400,W,Wife
+2-Jun-25,75400,2300,W,WIFE TRANSPORT
+3-Jun-25,75400,2200,W,Breakfast
+3-Jun-25,65000,2200,S,MF 5
+4-Jun-25,64700,2200,W,Meat Eid Cont
+4-Jun-25,64700,2000,W,breakfast na snacks
+5-Jun-25,64700,1900,W,dinner
+6-Jun-25,61000,1900,W,Wife Eid
+6-Jun-25,61000,1800,W,Transport
+9-Jun-25,61000,1300,W,Electric bill na transport
+10-Jun-25,61000,1150,W,OUTING na TRANSPORT
+11-Jun-25,61000,950,W,Wife na Breakfast
+11-Jun-25,61300,950,T,BOND INTEREST
+11-Jun-25,73300,950,T,EAAC
+12-Jun-25,73300,900,W,Breakfast
+15-Jun-25,68300,900,S,EFG
+15-Jun-25,68300,750,W,BREAKFAST
+16-Jun-25,68500,750,T,BOND INTEREST
+16-Jun-25,68300,750,W,CCP
+16-Jun-25,68300,550,W,Coffee shop na dinner
+17-Jun-25,68300,300,W,Lucnh
+19-Jun-25,67500,950,W,supplies
+20-Jun-25,67500,650,W,DINNER
+21-Jun-25,66700,650,W,WIFE
+21-Jun-25,65100,1350,W,Work meals
+22-Jun-25,65100,1200,W,LUNCH
+23-Jun-25,65100,950,W,LUNCH na FRUITS
+24-Jun-25,73200,950,T,1M SALARY
+24-Jun-25,73200,750,W,LUNCH na DINNER
+25-Jun-25,73200,550,W,LUNCH
+26-Jun-25,70800,550,W,EAAC SUB
+26-Jun-25,70500,350,W,LUNCH
+27-Jun-25,67800,2700,W,LUNCH na DINNER
+28-Jun-25,67800,2500,W,LUNCH na DINNER
+29-Jun-25,64800,5400,W,BREAKFAST
+30-Jun-25,63800,5400,W,Wife
+30-Jun-25,63800,5350,W,Breakfast
+1-Jul-25,65200,5350,T,MF 4 Coupons
+1-Jul-25,65200,4100,W,transport
+2-Jul-25,64000,4100,W,EAAC SUB
+2-Jul-25,62900,4100,W,CCP
+2-Jul-25,62900,4000,W,Service
+5-Jul-25,62900,2800,W,Transport
+5-Jul-25,62900,2300,W,Electric bill
+5-Jul-25,62900,2200,W,Snacks
+6-Jul-25,62900,2100,W,breakfast
+7-Jul-25,62900,1800,W,WIFE
+7-Jul-25,62900,1650,W,Lunch na Snacks
+8-Jul-25,62900,1350,W,COFFEE na DINNER
+8-Jul-25,77900,1350,T,EAAC
+9-Jul-25,77900,1200,W,BARBER na SNAKES
+10-Jul-25,144700,1200,T,Surplus
+10-Jul-25,144700,950,W,Lunch na Breakfast
+11-Jul-25,143200,950,W,WIFE
+11-Jul-25,143200,850,W,BREAKFAST
+12-Jul-25,143200,650,W,LUNCH
+13-Jul-25,133200,650,S,FWRY MF
+14-Jul-25,133400,650,T,Bond Interest
+14-Jul-25,133600,300,W,BREAKFAST na LUNCH
+14-Jul-25,131600,1700,W,Flowers Wife BD
+14-Jul-25,121600,1700,S,Thndr
+15-Jul-25,121100,1450,W,Wife
+15-Jul-25,121100,1300,W,breakfast na lunch
+16-Jul-25,121100,800,W,House supplies na FRUIT
+17-Jul-25,121300,800,T,BOND INTEREST
+17-Jul-25,120700,800,W,CCP
+17-Jul-25,120200,800,W,WIFE
+17-Jul-25,119300,300,W,FOOD na FISH na CHICKEN na MEAT
+17-Jul-25,118300,1200,W,COFFE
+19-Jul-25,118300,1100,W,Drinks
+20-Jul-25,118300,1000,W,Breakfast
+21-Jul-25,117600,1000,W,house supplies
+21-Jul-25,116900,1000,W,CCP
+21-Jul-25,116900,900,W,Wife
+22-Jul-25,116900,700,W,Coffee Shop
+23-Jul-25,109700,700,S,MF 5
+24-Jul-25,109700,550,W,wife na transport
+25-Jul-25,109200,450,W,ELectric bill
+25-Jul-25,108600,450,W,CCP
+25-Jul-25,108500,400,W,BREAKFAST na LUNCH
+26-Jul-25,108000,800,W,BREAKFAST na DINNER
+27-Jul-25,122500,800,T,SALARY + SECTOR BONUS
+27-Jul-25,117500,800,S,EFG
+27-Jul-25,117700,600,W,wife
+28-Jul-25,115400,600,W,CCP
+29-Jul-25,115400,350,W,Wife na dinner
+29-Jul-25,99400,350,S,Bank Bond

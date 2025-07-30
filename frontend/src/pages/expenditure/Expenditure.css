@@ -1,0 +1,67 @@
+/* frontend/src/pages/expenditure/Expenditure.css */
+
+.transactional-section {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background-color: #fdfdff;
+}
+
+.transactional-section h4 {
+  grid-column: 1 / -1; /* Make title span all columns */
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.current-value, .new-total {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.current-value span, .new-total span {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.current-value strong, .new-total strong {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.new-total strong {
+  color: #0056b3; /* Highlight the new total */
+}
+
+.transaction-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.transaction-input select {
+  flex-basis: 40%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.transaction-input input {
+  flex-basis: 60%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.form-divider {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 2rem 0;
+}
