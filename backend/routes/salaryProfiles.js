@@ -83,4 +83,61 @@ router.post('/', async (req, res) => {
   }
 });
 
+// @route   PUT /api/salary-profile/history/:historyId
+// @desc    Update a specific record in the salary history
+router.put('/history/:historyId', async (req, res) => {
+  try {
+    const { historyId } = req.params;
+    const updatedRecordData = req.body;
+
+    const profile = await SalaryProfile.findOne();
+    if (!profile) {
+      return res.status(404).json({ msg: 'Profile not found' });
+    }
+
+    // Find the specific history record by its _id
+    const historyRecord = profile.salaryHistory.id(historyId);
+    if (!historyRecord) {
+      return res.status(404).json({ msg: 'History record not found' });
+    }
+
+    // Update the fields of the found sub-document
+    historyRecord.set(updatedRecordData);
+
+    await profile.save();
+    res.json(profile);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+     }
+});
+
+
+// @route   DELETE /api/salary-profile/history/:historyId
+// @desc    Delete a specific record from the salary history
+router.delete('/history/:historyId', async (req, res) => {
+  try {
+    const { historyId } = req.params;
+
+    const profile = await SalaryProfile.findOne();
+    if (!profile) {
+      return res.status(404).json({ msg: 'Profile not found' });
+    }
+
+    // Find the index of the history record to remove
+    const removeIndex = profile.salaryHistory.map(item => item.id).indexOf(historyId);
+    if (removeIndex === -1) {
+      return res.status(404).json({ msg: 'History record not found' });
+    }
+
+    // Pull the item from the array
+    profile.salaryHistory.splice(removeIndex, 1);
+    await profile.save();
+    res.json(profile);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;

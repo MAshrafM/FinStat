@@ -236,3 +236,14 @@
 .cancel-button:hover {
   background-color: #c0392b;
 }
+
+.empty-history-card .card-body {
+  text-align: center;
+  padding: 2rem;
+}
+
+.empty-history-card p {
+  color: #6c757d;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}

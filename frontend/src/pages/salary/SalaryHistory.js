@@ -1,16 +1,28 @@
 // frontend/src/pages/salary/SalaryHistory.js
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { getProfile } from '../../services/salaryService';
+import { Link } from 'react-router-dom';
+import { getProfile, deleteHistoryRecord  } from '../../services/salaryService';
 import { formatCurrency } from '../../utils/formatters';
+import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import '../../components/PaycheckTable.css'; // Reuse the nice table styles
 
 const SalaryHistory = () => {
   const [profile, setProfile] = useState(null);
-
+  console.log(profile)
   useEffect(() => {
-    getProfile().then(setProfile);
+    loadProfile();
   }, []);
+
+  const loadProfile = () => {
+    getProfile().then(setProfile);
+  };
+
+  const handleDelete = async (historyId) => {
+    if (window.confirm('Are you sure you want to delete this historical record? This cannot be undone.')) {
+      await deleteHistoryRecord(historyId);
+      loadProfile(); // Refresh the data
+    }
+  };
 
   if (!profile) return <div className="page-container">Loading...</div>;
 
@@ -38,11 +50,12 @@ const SalaryHistory = () => {
               <th>Others</th>
               <th>Prepaid</th>
               <th>Bonds</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {sortedHistory.map(record => (
-              <tr key={record._id}>
+              <tr key={record._id} data-id={record._id}>
                 <td>{new Date(record.effectiveDate).toLocaleDateString()}</td>
                 <td>{formatCurrency(record.basicSalary)}</td>
                 <td>{formatCurrency(record.basicProduction)}</td>
@@ -54,6 +67,15 @@ const SalaryHistory = () => {
                 <td>{formatCurrency(record.others)}</td>
                 <td>{formatCurrency(record.prepaid)}</td>
                 <td>{formatCurrency(record.bonds)}</td>
+                <td className="action-cell"> {/* <-- ADD ACTIONS CELL */}
+                  <Link to={`/salary-profile/history/edit/${record._id}`}>
+                    <FaPencilAlt className="action-icon edit-icon" />
+                  </Link>
+                  <FaTrash
+                    className="action-icon delete-icon"
+                    onClick={() => handleDelete(record._id)}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>

@@ -38,6 +38,30 @@ const SalaryProfilePage = () => {
     return <div className="page-container">Loading...</div>;
   }
 
+  if (profile && profile.salaryHistory.length === 0) {
+    return (
+      <div className="page-container">
+        <div className="profile-card empty-history-card" style={{maxWidth: '800px', margin: '0 auto'}}>
+           <div className="card-header">
+            <div className="header-content">
+              <h3>{profile.name}</h3>
+              <p>{profile.title} - {profile.year}</p>
+            </div>
+            <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
+              <FaUserEdit />
+            </Link>
+          </div>
+          <div className="card-body">
+            <h4>No Salary Details Found</h4>
+            <p>This profile doesn't have any salary history yet. Add the first set of salary details to get started.</p>
+            <Link to="/salary-profile/update" className="submit-button" style={{marginTop: '1rem', textDecoration: 'none'}}>
+              Add Initial Salary Details
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
   // If we are in editing mode (or creating for the first time)
   if (isEditing) {
     return (
@@ -89,9 +113,9 @@ const SalaryProfilePage = () => {
             <strong>{formatCurrency(profile.currentSalary.prepaid)}</strong>
           </div>
           <div className="card-actions">
-            <button className="action-button" onClick={() => setIsEditing(true)} title="Update Salary">
-              <FaEdit /> Update
-            </button>
+            <Link to="/salary-profile/update" className="action-button" title="Update Salary">
+                <FaEdit /> Update
+            </Link>
             <Link to="/salary-profile/history" className="action-button" title="View History">
               <FaHistory /> History
             </Link>

@@ -21,3 +21,19 @@ export const updateProfileDetails = (profileDetails) => {
     body: JSON.stringify(profileDetails),
   }).then(res => res.json());
 };
+
+// Edit History Record
+export const updateHistoryRecord = (historyId, recordData) => {
+  return fetch(`${API_URL}/history/${historyId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(recordData),
+  }).then(res => res.json());
+};
+
+// Delete History Record
+export const deleteHistoryRecord = (historyId) => {
+  return fetch(`${API_URL}/history/${historyId}`, {
+    method: 'DELETE',
+  }).then(res => res.json());
+};

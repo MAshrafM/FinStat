@@ -35,7 +35,11 @@ const SalaryForm = ({ onFormSubmit, initialData = {}, mode = 'create' }) => {
       });
       // Optionally pre-fill the form with the latest salary details to make small edits easier
       if (initialData.currentSalary) {
-        setSalaryDetails({ ...initialData.currentSalary, effectiveDate: new Date().toISOString().slice(0, 10) });
+        const { _id, ...restOfSalaryDetails } = initialData.currentSalary;
+        setSalaryDetails({ 
+        ...restOfSalaryDetails, 
+        effectiveDate: new Date().toISOString().slice(0, 10) 
+        });
       }
     }
   }, [initialData, mode]);
@@ -54,11 +58,13 @@ const SalaryForm = ({ onFormSubmit, initialData = {}, mode = 'create' }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const dataToSubmit = {
-        ...profileData,
-        salaryDetails: salaryDetails,
-    };
-    onFormSubmit(dataToSubmit);
+    if (mode === 'create') {
+    // This is for creating the profile for the very first time
+        onFormSubmit({ ...profileData, salaryDetails });
+    } else {
+        // This is for adding a new salary record to an existing profile
+        onFormSubmit(salaryDetails);
+    }
   };
 
   const salaryFields = [
