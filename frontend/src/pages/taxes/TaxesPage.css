@@ -55,7 +55,7 @@
   background-color: #fff;
   border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  min-width: 240px;
+  min-width: 150px;
 }
 
 .summary-item span {
@@ -76,4 +76,78 @@
 
 .summary-item.highlight strong {
   color: #0056b3;
+}
+
+.grand-summary-card {
+  background-color: #f0f4f8; /* A slightly different background */
+  border: 1px solid #d6e0ea;
+  margin-bottom: 2rem;
+}
+
+.grand-summary-card h3 {
+  text-align: center;
+  color: #34495e;
+}
+
+.top-summary-container {
+  display: flex; /* This is the key property to align items horizontally */
+  gap: 2rem; /* Creates a nice space between the two cards */
+  align-items: stretch; /* Ensures both cards stretch to the same height */
+  margin-bottom: 2rem; /* Space below the container before the yearly tables */
+  width: 100%; 
+}
+
+/* 
+  By default, flex items shrink or grow. We want them to share the space.
+  We'll make each card take up roughly half the space.
+*/
+.top-summary-container > .tax-card {
+  flex-basis: 50%; /* Tell each card to aim for 50% of the container's width */
+  flex-shrink: 1;  /* Allow the card to shrink if needed */
+  flex-grow: 1;    /* Allow the card to grow if there's extra space */
+  
+  /* This is crucial: it prevents the card's content from stretching it too wide */
+  min-width: 0; 
+  
+  margin-bottom: 0;
+}
+
+.grand-summary-card .yearly-summary-grid {
+  /* Ensure the grid inside the summary card wraps properly */
+  grid-template-columns: repeat(2, minmax(130px, 1fr));
+}
+
+.summary-item.rate-of-change {
+  background-color: #f8f9fa; /* Make it stand out slightly */
+}
+
+.summary-item.rate-of-change strong {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* We can reuse the change-positive/negative/neutral classes from SummaryRow.css if they are globally available.
+   If not, we define them here. */
+.summary-item.rate-of-change strong.change-positive {
+  color: #c0392b; /* Red for increase in deductions */
+}
+.summary-item.rate-of-change strong.change-negative {
+  color: #27ae60; /* Green for decrease in deductions */
+}
+.summary-item.rate-of-change strong.change-neutral {
+  color: #7f8c8d; /* Gray for N/A */
+}
+
+@media (max-width: 1024px) {
+  .top-summary-container {
+    flex-direction: column; /* Stack them on top of each other */
+    align-items: stretch; /* Ensure they take up full width */
+  }
+
+  /* Re-add the margin-bottom for spacing when stacked */
+  .top-summary-container > .tax-card {
+    margin-bottom: 2rem;
+  }
 }

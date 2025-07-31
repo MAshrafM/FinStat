@@ -2,31 +2,16 @@
 import React from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import '../../components/PaycheckTable.css'; // Reuse table styles
+import { FaArrowUp, FaArrowDown, FaMinus } from 'react-icons/fa';
 import './TaxesPage.css'; // For new styles
 
-const YearlyTaxTable = ({ year, processedPaychecks, taxBrackets }) => {
+const YearlyTaxTable = ({ year, processedPaychecks, yearlySummary, taxBrackets }) => {
 
-  const yearlyTotals = processedPaychecks.reduce((totals, p) => {
-    totals.grossAmount += p.grossAmount || 0;
-    totals.taxDeduction += p.taxDeduction || 0;
-    totals.insuranceDeduction += p.insuranceDeduction || 0;
-    if (p.type === 'Prepaid') {
-        totals.prepaid += p.amount || 0;
-    } else {
-        totals.amount += p.amount || 0;
-    }
-    return totals;
-  }, {
-    grossAmount: 0,
-    prepaid: 0,
-    amount: 0,
-    taxDeduction: 0,
-    insuranceDeduction: 0,
-  });
+  const totalDeductions = yearlySummary.taxDeduction + yearlySummary.insuranceDeduction;
+  const grossAll = yearlySummary.grossAmount + yearlySummary.prepaid;
+  const netAll = yearlySummary.amount + yearlySummary.prepaid;
+  const rateOfChange = yearlySummary.rateOfChange || 0;
 
-  const totalDeductions = yearlyTotals.taxDeduction + yearlyTotals.insuranceDeduction;
-  const grossAll = yearlyTotals.grossAmount + yearlyTotals.prepaid;
-  const netAll = yearlyTotals.amount + yearlyTotals.prepaid;
 
   // Helper to get a color based on the tax bracket level
   const getColorForLevel = (level) => {
@@ -39,13 +24,24 @@ const YearlyTaxTable = ({ year, processedPaychecks, taxBrackets }) => {
     <div className="tax-card" style={{ marginTop: '2rem' }}>
       <h3>Tax Deductions for {year}</h3>
       <div className="yearly-summary-grid">
-        <div className="summary-item"><span>Sum of Gross</span><strong>{formatCurrency(yearlyTotals.grossAmount)}</strong></div>
-        <div className="summary-item"><span>Sum of Prepaid</span><strong>{formatCurrency(yearlyTotals.prepaid)}</strong></div>
-        <div className="summary-item"><span>Sum of Net</span><strong>{formatCurrency(yearlyTotals.amount)}</strong></div>
-        <div className="summary-item"><span>Sum of Tax Ded.</span><strong>{formatCurrency(yearlyTotals.taxDeduction)}</strong></div>
+        <div className="summary-item"><span>Sum of Gross</span><strong>{formatCurrency(yearlySummary.grossAmount)}</strong></div>
+        <div className="summary-item"><span>Sum of Prepaid</span><strong>{formatCurrency(yearlySummary.prepaid)}</strong></div>
+        <div className="summary-item"><span>Sum of Net</span><strong>{formatCurrency(yearlySummary.amount)}</strong></div>
+        <div className="summary-item"><span>Sum of Tax Ded.</span><strong>{formatCurrency(yearlySummary.taxDeduction)}</strong></div>
         <div className="summary-item highlight"><span>Total Deductions</span><strong>{formatCurrency(totalDeductions)}</strong></div>
         <div className="summary-item highlight"><span>Gross (All)</span><strong>{formatCurrency(grossAll)}</strong></div>
         <div className="summary-item highlight"><span>Net (All)</span><strong>{formatCurrency(netAll)}</strong></div>
+        <div className="summary-item rate-of-change">
+          <span>vs. Previous Year</span>
+          {rateOfChange === 0 ? (
+            <strong className="change-neutral"><FaMinus /> N/A</strong>
+          ) : (
+            <strong className={rateOfChange > 0 ? 'change-positive' : 'change-negative'}>
+              {rateOfChange > 0 ? <FaArrowUp /> : <FaArrowDown />}
+              {Math.floor(rateOfChange)}%
+            </strong>
+          )}
+        </div>
       </div>
 
       <div className="table-container">
