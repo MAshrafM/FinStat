@@ -18,7 +18,7 @@ const AddExpenditurePage = () => {
   const [cashChange, setCashChange] = useState(0);
   const [cashOp, setCashOp] = useState('-'); // '+' or '-'
   
-  const [transactionType, setTransactionType] = useState('log');
+  const [transactionType, setTransactionType] = useState('W');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(formatDateForInput(new Date()));
 
