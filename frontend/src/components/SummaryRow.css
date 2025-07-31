@@ -55,12 +55,12 @@
   gap: 0.3rem;
 }
 
-.change-positive {
+.period-change > .change-positive {
   color: #28a745; /* Green for positive */
 }
-.change-negative {
+.period-change > .change-negative {
   color: #dc3545; /* Red for negative */
 }
-.change-neutral {
+.period-change > .change-neutral {
   color: #6c757d; /* Gray for neutral/N/A */
 }
