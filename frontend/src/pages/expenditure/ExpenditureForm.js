@@ -1,78 +1,242 @@
 // frontend/src/pages/expenditure/ExpenditureForm.js
 import React, { useState, useEffect } from 'react';
-import { formatDateForInput } from '../../utils/formatters';
+import { formatDateForInput, formatCurrency } from '../../utils/formatters';
 import '../../components/PaycheckForm.css'; // Reuse form styles
+import { FaPlus, FaMinus } from 'react-icons/fa';
+import './Expenditure.css'; // For new styles
 
-const ExpenditureForm = ({ onSubmit, initialData ={}, mode = 'create' }) => {
-  console.log(initialData)
-  const [formData, setFormData] = useState({
-    date: formatDateForInput(new Date()),
-    bank: '',
-    cash: '',
-    transactionType: 'na', // Default value
-    description: '',
-  });
+const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastRecord = { bank: 0, cash: 0 } }) => {  
+  // State for form inputs
+  const [transactionValue, setTransactionValue] = useState('');
+  const [transactionType, setTransactionType] = useState('W');
+  const [withdrawSource, setWithdrawSource] = useState('Bank'); // For W type
+  const [logBankOp, setLogBankOp] = useState('+'); // For 'na' type
+  const [logCashOp, setLogCashOp] = useState('+'); // For 'na' type
+  const [description, setDescription] = useState('');
+  const [date, setDate] = useState(formatDateForInput(new Date()));
 
   useEffect(() => {
     if (mode === 'edit' && initialData) {
-      setFormData({
-        date: formatDateForInput(initialData.date),
-        bank: initialData.bank || '',
-        cash: initialData.cash || '',
-        transactionType: initialData.transactionType || 'na',
-        description: initialData.description || '',
-      });
+      setDate(formatDateForInput(initialData.date));
+      setTransactionType(initialData.transactionType || 'W');
+      setDescription(initialData.description || '');
+      
+      // For edit mode, calculate transaction value from the difference
+      // This is a simplified approach - you might need to adjust based on your data structure
+      if (initialData.transactionValue !== undefined) {
+        setTransactionValue(initialData.transactionValue.toString());
+      }
     }
   }, [initialData, mode]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  // Calculate new totals based on transaction type
+  const calculateNewTotals = () => {
+    const value = parseFloat(transactionValue) || 0;
+    //let newBank = mode === 'create' ? lastRecord.bank : (initialData.bank || 0);
+    //let newCash = mode === 'create' ? lastRecord.cash : (initialData.cash || 0);
+    let newBank = lastRecord.bank ? lastRecord.bank : (initialData.bank || 0);
+    let newCash = lastRecord.cash ? lastRecord.cash : (initialData.cash || 0);
+    // Only calculate changes for create mode
+    //if (mode === 'create') {
+      switch (transactionType) {
+        case 'T': // Top-up
+          newBank += value;
+          break;
+        case 'S': // Saving
+          newBank -= value;
+          break;
+        case 'W': // Withdraw
+          if (withdrawSource === 'Bank') {
+            newBank -= value;
+          } else {
+            newCash -= value;
+          }
+          break;
+        case 'na': // Log
+          if (logBankOp === '+') {
+            newBank += value;
+          } else {
+            newBank -= value;
+          }
+          if (logCashOp === '+') {
+            newCash += value;
+          } else {
+            newCash -= value;
+          }
+          break;
+        default:
+          break;
+      }
+    //}
+
+    return { newBank, newCash };
   };
+
+  const { newBank, newCash } = calculateNewTotals();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Convert numeric fields from string to number before submitting
+    const value = parseFloat(transactionValue);
+    if (isNaN(value) || value <= 0) {
+      alert('Please enter a valid positive transaction value.');
+      return;
+    }
+
     const dataToSubmit = {
-      ...formData,
-      bank: Number(formData.bank),
-      cash: Number(formData.cash),
+      date,
+      bank: newBank,
+      cash: newCash,
+      transactionValue: value,
+      transactionType,
+      description,
     };
+
     onSubmit(dataToSubmit);
   };
 
-  const transactionTypes = ['W', 'T', 'S', 'na'];
-
   return (
-    <form onSubmit={handleSubmit} className="paycheck-form-container" style={{maxWidth: '600px'}}>
-      <h3>{mode === 'create' ? 'Add New Expenditure Log' : 'Edit Expenditure Log'}</h3>
+    <form onSubmit={handleSubmit} className="paycheck-form-container" style={{maxWidth: '700px'}}>
+      <h3>{mode === 'create' ? 'Create New Expenditure Log' : 'Edit Expenditure Log'}</h3>
       
-      <div className="form-group">
-        <label htmlFor="date">Date</label>
-        <input id="date" type="date" name="date" value={formData.date} onChange={handleChange} required />
+      {/* Current/Target Balances Display */}
+      <div className="current-balances">
+        <div className="balance-item">
+          <span>Bank</span>
+          <strong style={{color: newBank >= 0 ? 'green' : 'red'}}>
+            {formatCurrency(newBank)}
+          </strong>
+        </div>
+        <div className="balance-item">
+          <span>Cash</span>
+          <strong style={{color: newCash >= 0 ? 'green' : 'red'}}>
+            {formatCurrency(newCash)}
+          </strong>
+        </div>
       </div>
-      <div className="form-group">
-        <label htmlFor="bank">Bank</label>
-        <input id="bank" type="number" name="bank" value={formData.bank} onChange={handleChange} required />
+
+      <hr className="form-divider" />
+
+      {/* Transaction Value and Type Side by Side */}
+      <div className="value-type-row">
+        <div className="form-group">
+          <label>Transaction Value'</label>
+          <input 
+            type="number" 
+            value={transactionValue} 
+            onChange={e => setTransactionValue(e.target.value)} 
+            placeholder="Enter amount"
+            required 
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Transaction Type</label>
+          <select 
+            value={transactionType} 
+            onChange={e => setTransactionType(e.target.value)} 
+            required
+          >
+            <option value="W">Withdraw</option>
+            <option value="T">Top-up</option>
+            <option value="S">Saving</option>
+            <option value="na">Log</option>
+          </select>
+        </div>
       </div>
+
+      {/* Conditional Options Based on Transaction Type */}
+      {transactionType === 'W' && (
+        <div className="form-group">
+          <label>Withdraw From</label>
+          <select value={withdrawSource} onChange={e => setWithdrawSource(e.target.value)}>
+            <option value="Bank">Bank</option>
+            <option value="Cash">Cash</option>
+          </select>
+        </div>
+      )}
+
+      {transactionType === 'na' && (
+        <div className="log-operations">
+          <div className="operation-group">
+            <h4>Bank Operation</h4>
+            <div className="radio-group">
+              <label className="radio-option">
+                <input 
+                  type="radio" 
+                  name="bankOp" 
+                  value="+" 
+                  checked={logBankOp === '+'} 
+                  onChange={e => setLogBankOp(e.target.value)} 
+                />
+                <FaPlus />
+              </label>
+              <label className="radio-option">
+                <input 
+                  type="radio" 
+                  name="bankOp" 
+                  value="-" 
+                  checked={logBankOp === '-'} 
+                  onChange={e => setLogBankOp(e.target.value)} 
+                />
+                <FaMinus />
+              </label>
+            </div>
+          </div>
+          
+          <div className="operation-group">
+            <h4>Cash Operation</h4>
+            <div className="radio-group">
+              <label className="radio-option">
+                <input 
+                  type="radio" 
+                  name="cashOp" 
+                  value="+" 
+                  checked={logCashOp === '+'} 
+                  onChange={e => setLogCashOp(e.target.value)} 
+                />
+                <FaPlus />
+              </label>
+              <label className="radio-option">
+                <input 
+                  type="radio" 
+                  name="cashOp" 
+                  value="-" 
+                  checked={logCashOp === '-'} 
+                  onChange={e => setLogCashOp(e.target.value)} 
+                />
+                <FaMinus />
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {mode === 'edit' && (
+        <div className="edit-mode-notice">
+          <p><em>Note: In edit mode, the balances shown reflect the target values after this transaction.</em></p>
+        </div>
+      )}
+
+      <hr className="form-divider" />
+
+      {/* Date and Description */}
       <div className="form-group">
-        <label htmlFor="cash">Cash</label>
-        <input id="cash" type="number" name="cash" value={formData.cash} onChange={handleChange} required />
+        <label>Date</label>
+        <input type="date" value={date} onChange={e => setDate(e.target.value)} required />
       </div>
+
       <div className="form-group">
-        <label htmlFor="transactionType">Transaction Type</label>
-        <select id="transactionType" name="transactionType" value={formData.transactionType} onChange={handleChange} required>
-          {transactionTypes.map(type => (
-            <option key={type} value={type}>{type}</option>
-          ))}
-        </select>
-      </div>
-      <div className="form-group">
-        <label htmlFor="description">Description</label>
-        <textarea id="description" name="description" value={formData.description} onChange={handleChange} rows="3"></textarea>
+        <label>Description</label>
+        <textarea 
+          value={description} 
+          onChange={e => setDescription(e.target.value)} 
+          rows="3"
+          placeholder="Enter transaction description..."
+        ></textarea>
       </div>
 
       <button type="submit" className="submit-button">
-        {mode === 'create' ? 'Add Log' : 'Save Changes'}
+        {mode === 'create' ? 'Create New Log' : 'Save Changes'}
       </button>
     </form>
   );

@@ -39,21 +39,7 @@ const ExpenditureLogPage = () => {
     }
 
     const sortedByTimestamp = [...expenditures].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-    // STEP 2: Calculate the transaction value based on the *truly* previous day's record.
-    const calculated = sortedByTimestamp.map((current, index) => {
-      // The very first record in history has no previous day to compare to. Its transaction is 0.
-      if (index === 0) {
-        return { ...current, transaction: 0 };
-      }
-      
-      // Now, `previous` is guaranteed to be the record from the day before.
-      const previous = sortedByTimestamp[index - 1];
-      const transaction = (current.bank + current.cash) - (previous.bank + previous.cash);
-      return { ...current, transaction };
-    });
-
-    setProcessedExpenditures(calculated.reverse());
+    setProcessedExpenditures(sortedByTimestamp.reverse());
     }, [expenditures]);
 
   const handleDelete = async (id) => {
@@ -91,8 +77,12 @@ const ExpenditureLogPage = () => {
                 <td>{formatDate(log.date)}</td>
                 <td>{formatCurrency(log.bank)}</td>
                 <td>{formatCurrency(log.cash)}</td>
-                <td style={{ color: log.transaction > 0 ? 'green' : 'red' }}>
-                  {formatCurrency(log.transaction)}
+                <td style={{ 
+                  color: log.transactionType === 'W' ? 'red' : 
+                        log.transactionType === 'S' ? 'rgba(194, 139, 0, 0.9)' : 
+                        log.transactionType === 'T' ? 'green' :  'gray' 
+                }}>
+                  <strong>{formatCurrency(log.transactionValue)}</strong>
                 </td>
                 <td>{transactionTypeMap[log.transactionType] || log.transactionType}</td>
                 <td>{log.description}</td>

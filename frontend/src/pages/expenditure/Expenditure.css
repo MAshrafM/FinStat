@@ -65,3 +65,137 @@
   border-top: 1px solid #e0e0e0;
   margin: 2rem 0;
 }
+
+.search-result-card {
+  background-color: #e8f6f3; /* A distinct, pleasant color */
+  border: 1px solid #a3e4d7;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.search-result-card .summary-item {
+  display: inline-flex; /* Make it fit its content */
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  background-color: #fff;
+}
+.current-balances {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.balance-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 150px;
+}
+
+.balance-item span {
+  font-size: 1.1rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.balance-item strong {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+/* Value and Type Side by Side */
+.value-type-row {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.value-type-row .form-group {
+  flex: 1;
+}
+
+/* Log Operations - Centered with Radio Icons */
+.log-operations {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  margin: 1rem 0;
+}
+
+.operation-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.operation-group h4 {
+  margin: 0;
+  color: #495057;
+  font-size: 1.1rem;
+}
+
+.radio-group {
+  display: flex;
+  gap: 2rem;
+}
+
+.radio-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 1rem;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.radio-option:hover {
+  border-color: #007bff;
+  background-color: #f8f9ff;
+}
+
+.radio-option input[type="radio"] {
+  display: none;
+}
+
+.radio-option input[type="radio"]:checked + i {
+  color: #007bff;
+  transform: scale(1.2);
+}
+
+.radio-option i {
+  font-size: 1.5rem;
+  color: #6c757d;
+  transition: all 0.3s ease;
+}
+
+.radio-option input[type="radio"]:checked ~ {
+  border-color: #007bff;
+  background-color: #e7f1ff;
+}
+
+.edit-mode-notice {
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.edit-mode-notice p {
+  margin: 0;
+  color: #856404;
+}

@@ -4,23 +4,6 @@ const router = express.Router();
 const Expenditure = require('../models/Expenditure');
 
 
-router.post('/', async (req, res) => {
-  try {
-    const newPaycheck = new Paycheck({
-      month: req.body.month,
-      type: req.body.type,
-      amount: req.body.amount,
-      note: req.body.note,
-    });
-
-    const paycheck = await newPaycheck.save();
-    res.json(paycheck);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
-
 // @route   GET api/expenditure/all
 // @desc    Get ALL expenditure without pagination (for analysis pages)
 router.get('/all', async (req, res) => {
