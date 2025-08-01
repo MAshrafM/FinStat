@@ -1,15 +1,22 @@
 // frontend/src/pages/analysis/FiscalAnalysis.js
 import React, { useState, useEffect } from 'react';
 import { getPaychecks } from '../../services/paycheckService';
-import AnalysisCard from '../../components/AnalysisCard';
 import SummaryRow from '../../components/SummaryRow';
+import AnalysisCard from '../../components/AnalysisCard';
 
 const FiscalAnalysis = () => {
   const [fiscalYearlyData, setFiscalYearlyData] = useState({});
+    const [paychecks, setPaychecks] = useState({});
+  
+    useEffect(() => {
+      getPaychecks().then(data => {
+        setPaychecks(data);
+      }).catch(err => console.error("Failed to load paychecks for analysis:", err));
+    }, []);
+
 
   useEffect(() => {
-    const processData = async () => {
-      const paychecks = await getPaychecks();
+    if (!Array.isArray(paychecks)) return;
       const groupedByFiscalYear = paychecks.reduce((acc, p) => {
         const date = new Date(p.month + '-02'); // Use 2nd day to avoid timezone issues
         const month = date.getMonth(); // 0 = Jan, 6 = July
@@ -23,9 +30,7 @@ const FiscalAnalysis = () => {
         return acc;
       }, {});
       setFiscalYearlyData(groupedByFiscalYear);
-    };
-    processData();
-  }, []);
+  }, [paychecks]);
 
   const fiscalYears = Object.keys(fiscalYearlyData).sort().reverse();
 
@@ -48,15 +53,21 @@ const FiscalAnalysis = () => {
   return (
     <div className="page-container">
       <h1>Fiscal Year Analysis</h1>
-      {fiscalYears.length > 0 ? (
-        <>
-        <SummaryRow
+      <SummaryRow
             grandTotal={grandTotal}
             grandTotalTitle="Grand Total"
             periodDetails={periodDetails}
-            periodTitle="Fiscal Year Totals & Growth"
-        />
-        </>
+            periodTitle="Fiscal Yearly Totals & Growth"
+      />
+      {fiscalYears.length > 0 ? (
+        fiscalYears.map(fy => (
+            <AnalysisCard
+              key={fy}
+              title={fy}
+              paychecks={fiscalYearlyData[fy]}
+              monthLabels={fiscalMonthLabels(fy)}
+            />
+        ))
       ) : (
         <p>No paycheck data available to analyze.</p>
       )}

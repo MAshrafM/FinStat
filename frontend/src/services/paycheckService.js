@@ -2,9 +2,15 @@
 const API_URL = 'http://localhost:5000/api/paychecks';
 
 // Get all paychecks
-export const getPaychecks = async ( ) => {
-  const response = await fetch(API_URL);
+export const getPaychecks = async () => {
+  const response = await fetch(`${API_URL}/all`);
   return await response.json();
+};
+
+export const getPaychecksLog = async (page = 1, limit = 15) => {
+  const response = await fetch(`${API_URL}?page=${page}&limit=${limit}`);
+  return await response.json();
+
 };
 
 // Get a single paycheck by its ID ===

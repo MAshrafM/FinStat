@@ -1,0 +1,31 @@
+/* frontend/src/components/PaginationControls.css */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.pagination-container button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+}
+
+.pagination-container button:hover:not(:disabled) {
+  background-color: #f0f0f0;
+}
+
+.pagination-container button:disabled {
+  cursor: not-allowed;
+  color: #aaa;
+}
+
+.pagination-container span {
+  font-weight: 500;
+  color: #555;
+}

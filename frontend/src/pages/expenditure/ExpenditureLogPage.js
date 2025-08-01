@@ -5,6 +5,7 @@ import { getExpenditures, deleteExpenditure } from '../../services/expenditureSe
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { FaPlus, FaPencilAlt, FaTrash } from 'react-icons/fa';
 import '../../components/PaycheckTable.css'; // Reuse table styles
+import PaginationControls from '../../components/PaginationControls';
 
 const transactionTypeMap = {
   W: 'Withdraw',
@@ -17,12 +18,18 @@ const ExpenditureLogPage = () => {
   const [expenditures, setExpenditures] = useState([]);
   const [processedExpenditures, setProcessedExpenditures] = useState([]);
 
-  useEffect(() => {
-    loadExpenditures();
-  }, []);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const loadExpenditures = () => {
-    getExpenditures().then(setExpenditures);
+  useEffect(() => {
+    loadExpenditures(currentPage);
+  }, [currentPage]);
+
+  const loadExpenditures = (page) => {
+    getExpenditures(page).then(response => {
+      setExpenditures(response.data); // The data is now in a 'data' property
+      setTotalPages(response.totalPages);
+    });
   };
 
   useEffect(() => {
@@ -98,6 +105,11 @@ const ExpenditureLogPage = () => {
           </tbody>
         </table>
       </div>
+      <PaginationControls
+        page={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };
