@@ -3,12 +3,57 @@ const express = require('express');
 const router = express.Router();
 const Expenditure = require('../models/Expenditure');
 
+
+router.post('/', async (req, res) => {
+  try {
+    const newPaycheck = new Paycheck({
+      month: req.body.month,
+      type: req.body.type,
+      amount: req.body.amount,
+      note: req.body.note,
+    });
+
+    const paycheck = await newPaycheck.save();
+    res.json(paycheck);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   GET api/expenditure/all
+// @desc    Get ALL expenditure without pagination (for analysis pages)
+router.get('/all', async (req, res) => {
+  try {
+    const expenditures = await Expenditure.find().sort({ createdAt: -1 });
+    res.json(expenditures); // Returns the plain array
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }});
+
 // @route   GET api/expenditures
 // @desc    Get all expenditure logs, sorted by date descending
 router.get('/', async (req, res) => {
   try {
-    const expenditures = await Expenditure.find().sort({ date: -1 });
-    res.json(expenditures);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10; // Default to 10 items per page
+    const skip = (page - 1) * limit;
+    // Get total number of documents for pagination calculation
+    const total = await Expenditure.countDocuments();
+
+    // Get the paginated data, sorted by creation date to be consistent
+    const expenditures = await Expenditure.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      data: expenditures,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (err) {
     res.status(500).send('Server Error');
   }

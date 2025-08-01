@@ -1,24 +1,28 @@
 // frontend/src/pages/analysis/CalendarAnalysis.js
 import React, { useState, useEffect } from 'react';
 import { getPaychecks } from '../../services/paycheckService';
-import AnalysisCard from '../../components/AnalysisCard';
 import SummaryRow from '../../components/SummaryRow';
+import AnalysisCard from '../../components/AnalysisCard';
 
 const CalendarAnalysis = () => {
   const [yearlyData, setYearlyData] = useState({});
+  const [paychecks, setPaychecks] = useState({});
 
   useEffect(() => {
-    const processData = async () => {
-      const paychecks = await getPaychecks();
-      const groupedByYear = paychecks.reduce((acc, p) => {
-        const year = p.month.substring(0, 4); // "2024-07" -> "2024"
-        (acc[year] = acc[year] || []).push(p);
-        return acc;
-      }, {});
-      setYearlyData(groupedByYear);
-    };
-    processData();
+    getPaychecks().then(data => {
+      setPaychecks(data);
+    }).catch(err => console.error("Failed to load paychecks for analysis:", err));
   }, []);
+
+  useEffect(() => {
+    if (!Array.isArray(paychecks)) return;
+    const groupedByYear = paychecks.reduce((acc, p) => {
+      const year = p.month.substring(0, 4); // "2024-07" -> "2024"
+      (acc[year] = acc[year] || []).push(p);
+      return acc;
+    }, {});
+    setYearlyData(groupedByYear);
+  }, [paychecks]);
 
   const years = Object.keys(yearlyData).sort((a, b) => b - a); // Sort years descending
 
@@ -38,15 +42,21 @@ const CalendarAnalysis = () => {
   return (
     <div className="page-container">
       <h1>Calendar Year Analysis</h1>
-      {years.length > 0 ? (
-        <>
-        <SummaryRow
+      <SummaryRow
             grandTotal={grandTotal}
             grandTotalTitle="Grand Total"
             periodDetails={periodDetails}
             periodTitle="Yearly Totals & Growth"
-        />
-        </>
+      />
+      {years.length > 0 ? (
+        years.map(year => (
+          <AnalysisCard
+            key={year}
+            title={`Calendar Year ${year}`}
+            paychecks={yearlyData[year]}
+            monthLabels={calendarMonthLabels(year)}
+          />
+        ))
       ) : (
         <p>No paycheck data available to analyze.</p>
       )}
