@@ -16,6 +16,11 @@ const ExpenditureSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
+  transactionValue:{
+    type: Number,
+    required: true,
+    default: 0,
+  },
   transactionType: {
     type: String,
     required: true,

@@ -12,6 +12,10 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend,
 const ExpenditureAnalysisPage = () => {
   const [yearlyData, setYearlyData] = useState({});
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [allExpenditures, setAllExpenditures] = useState([]); // <-- Store the original, unfiltered data
+  const [allPaychecks, setAllPaychecks] = useState([]);
+  const [searchTerm, setSearchTerm] = useState(''); // <--  State for the search term
+  const [searchTotal, setSearchTotal] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -19,11 +23,37 @@ const ExpenditureAnalysisPage = () => {
         getPaychecks()
     ]).then(([expenditures, paychecks]) => {
       // Pass both to the processing function
-      processData(expenditures, paychecks);
+      setAllExpenditures(expenditures); // Store the full dataset
+      setAllPaychecks(paychecks);     // Store the full dataset
     }).catch(err => console.error("Failed to load analysis data:", err));
   }, []);
 
-  const processData = (expenditures, paychecks) => {
+  // ---  useEffect to re-process data when filters change ---
+  useEffect(() => {
+    // Only run if we have data to process
+    if (allExpenditures.length > 0) {
+      processData(allExpenditures, allPaychecks, searchTerm);
+    }
+  }, [allExpenditures, allPaychecks, searchTerm]); // Re-run when search term changes!
+
+  const processData = (expenditures, paychecks, currentSearchTerm) => {
+    // --- Filter data based on search term first ---
+    let filteredExpenditures = expenditures;
+    let currentSearchTotal = null;
+
+    if (currentSearchTerm && currentSearchTerm.trim() !== '') {
+      const lowercasedTerm = currentSearchTerm.toLowerCase();
+      filteredExpenditures = expenditures.filter(item => 
+        item.description && item.description.toLowerCase().includes(lowercasedTerm)
+      );
+
+      // Calculate the total for the searched items
+      currentSearchTotal = filteredExpenditures.reduce((sum, item) => {
+        return sum + item.transactionValue;
+      }, 0);
+    }
+    setSearchTotal(currentSearchTotal);
+
     const groupedData = {};
     const initializeYear = (year) => {
     if (!groupedData[year]) {
@@ -34,27 +64,24 @@ const ExpenditureAnalysisPage = () => {
             totalTopups: 0,
             totalSavings: 0,
         };
-    }
-  };
-  expenditures.forEach((item, index) => {
+      }
+    };
+  expenditures.forEach((item) => {
     const year = new Date(item.date).getFullYear().toString();
     initializeYear(year);
     
     const month = new Date(item.date).getMonth();
-    const previousRecord = expenditures[index + 1];
-    const transactionValue = previousRecord 
-      ? (item.bank + item.cash) - (previousRecord.bank + previousRecord.cash)
-      : 0;
+    const transactionValue = item.transactionValue;
 
-    if (item.transactionType === 'W' && transactionValue < 0) {
-      groupedData[year].byMonth[month].withdrawals += Math.abs(transactionValue);
-      groupedData[year].totalWithdrawals += Math.abs(transactionValue);
-    } else if (item.transactionType === 'T' && transactionValue > 0) {
+    if (item.transactionType === 'W') {
+      groupedData[year].byMonth[month].withdrawals += transactionValue;
+      groupedData[year].totalWithdrawals += transactionValue;
+    } else if (item.transactionType === 'T') {
       groupedData[year].byMonth[month].topups += transactionValue;
       groupedData[year].totalTopups += transactionValue;
-    } else if (item.transactionType === 'S' && transactionValue < 0) {
-      groupedData[year].byMonth[month].savings += Math.abs(transactionValue);
-      groupedData[year].totalSavings += Math.abs(transactionValue);
+    } else if (item.transactionType === 'S') {
+      groupedData[year].byMonth[month].savings += transactionValue;
+      groupedData[year].totalSavings += transactionValue;
     }
     
     groupedData[year].byType[item.transactionType]++;
@@ -161,6 +188,20 @@ const ExpenditureAnalysisPage = () => {
     <div className="page-container">
       <div className="page-header">
         <h1>Expenditure Analysis</h1>
+
+        {/* --- Search Input Field --- */}
+        <div className="form-group">
+          <label htmlFor="search-input">Filter by Description:</label>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="e.g., groceries, fuel..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            style={{ minWidth: '250px' }}
+          />
+        </div>
+
         <div className="form-group">
           <label htmlFor="year-select">Select Year:</label>
           <select id="year-select" value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
@@ -168,6 +209,17 @@ const ExpenditureAnalysisPage = () => {
           </select>
         </div>
       </div>
+
+      {/* --- NEW: Display Search Result Card --- */}
+      {searchTotal !== null && (
+        <div className="tax-card search-result-card">
+          <h3>Filtered Results for "{searchTerm}"</h3>
+          <div className="summary-item highlight">
+            <span>Total Spending</span>
+            <strong>{formatCurrency(searchTotal)}</strong>
+          </div>
+        </div>
+      )}
 
       <div className="top-summary-container">
         <div className="tax-card">

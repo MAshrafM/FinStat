@@ -1,39 +1,52 @@
 // frontend/src/pages/expenditure/EditExpenditurePage.js
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getExpenditureById, updateExpenditure } from '../../services/expenditureService';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import { updateExpenditure, getExpenditureById } from '../../services/expenditureService';
 import ExpenditureForm from './ExpenditureForm';
 
 const EditExpenditurePage = () => {
-  const { id } = useParams();
   const navigate = useNavigate();
-  const [initialData, setInitialData] = useState(null);
+  const { id } = useParams();
+  const [expenditure, setExpenditure] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     getExpenditureById(id)
-      .then(setInitialData)
-      .catch(err => console.error("Failed to fetch expenditure:", err));
+      .then(data => {
+        setExpenditure(data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch expenditure:", err);
+        setIsLoading(false);
+      });
   }, [id]);
 
-  const handleUpdateExpenditure = async (data) => {
+  const handleSubmit = async (dataToSubmit) => {
     try {
-      await updateExpenditure(id, data);
+      await updateExpenditure(id, dataToSubmit);
       navigate('/expenditures');
     } catch (error) {
       console.error("Failed to update expenditure:", error);
+      console.error("Error details:", error.message);
+      alert(`Failed to update expenditure: ${error.message}`);
     }
   };
 
-  if (!initialData) {
-    return <div className="page-container">Loading...</div>;
+  if (isLoading) {
+    return <div className="page-container">Loading expenditure...</div>;
+  }
+
+  if (!expenditure) {
+    return <div className="page-container">Expenditure not found</div>;
   }
 
   return (
     <div className="page-container">
-      <ExpenditureForm
-        onSubmit={handleUpdateExpenditure}
-        initialData={initialData}
+      <ExpenditureForm 
+        onSubmit={handleSubmit}
         mode="edit"
+        initialData={expenditure}
       />
       <Link to="/expenditures" className="cancel-button" style={{textDecoration: 'none'}}>
         Cancel
