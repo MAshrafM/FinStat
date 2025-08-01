@@ -1,8 +1,8 @@
 // frontend/src/pages/AddPaycheck.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import PaycheckForm from '../components/PaycheckForm';
-import { createPaycheck } from '../services/paycheckService';
+import PaycheckForm from '../../components/PaycheckForm';
+import { createPaycheck } from '../../services/paycheckService';
 
 const AddPaycheck = () => {
   const navigate = useNavigate(); // Hook to programmatically navigate

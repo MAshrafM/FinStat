@@ -4,9 +4,9 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 // Paycheck Log
-import PaycheckLog from './pages/PaycheckLog';
-import AddPaycheck from './pages/AddPaycheck';
-import EditPaycheck from './pages/EditPaycheck';
+import PaycheckLog from './pages/paycheck/PaycheckLog';
+import AddPaycheck from './pages/paycheck/AddPaycheck';
+import EditPaycheck from './pages/paycheck/EditPaycheck';
 // Pay Analysis
 import CalendarAnalysis from './pages/analysis/CalendarAnalysis';
 import FiscalAnalysis from './pages/analysis/FiscalAnalysis';

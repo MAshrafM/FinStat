@@ -1,8 +1,8 @@
 // frontend/src/pages/EditPaycheck.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import PaycheckForm from '../components/PaycheckForm';
-import { getPaycheckById, updatePaycheck } from '../services/paycheckService';
+import PaycheckForm from '../../components/PaycheckForm';
+import { getPaycheckById, updatePaycheck } from '../../services/paycheckService';
 
 const EditPaycheck = () => {
   const { id } = useParams(); // Gets the ':id' from the URL

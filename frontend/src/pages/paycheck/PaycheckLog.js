@@ -1,8 +1,8 @@
 // frontend/src/pages/PaycheckLog.js
 import React, { useState, useEffect } from 'react';
-import PaycheckTable from '../components/PaycheckTable';
-import { getPaychecksLog, deletePaycheck } from '../services/paycheckService';
-import PaginationControls from '../components/PaginationControls';
+import PaycheckTable from '../../components/PaycheckTable';
+import { getPaychecksLog, deletePaycheck } from '../../services/paycheckService';
+import PaginationControls from '../../components/PaginationControls';
 
 const PaycheckLog = () => {
   const [paychecks, setPaychecks] = useState([]);
