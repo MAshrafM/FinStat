@@ -22,6 +22,7 @@ app.use('/api/salary-profile', require('./routes/salaryProfiles'));
 app.use('/api/social-insurance', require('./routes/socialInsurance'));
 app.use('/api/tax-brackets', require('./routes/taxBrackets'));
 app.use('/api/expenditures', require('./routes/expenditures'));
+app.use('/api/trades', require('./routes/trade'));
 
 // Define the port the server will run on. 
 // We use 5000 for the backend to avoid conflict with the React frontend (which usually runs on 3000)

@@ -3,6 +3,7 @@ backend/node_modules
 frontend/node_modules
 
 # Ignore environment files (for storing secrets)
+.vs
 .env
 backend/.env
 frontend/.env
