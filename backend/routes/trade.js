@@ -14,11 +14,13 @@ router.get('/', async (req, res) => {
 
   // 1. Build a dynamic query object
   const query = {};
-  if (broker) {
-    query.broker = broker; // If a broker is provided, add it to the query
-  }
-
-  try {
+    if (broker && broker != 'TopUp') {
+        query.broker = broker; // If a broker is provided, add it to the query
+    } else if (broker === 'TopUp') {
+        query.type =  'TopUp'; // If 'TopUp' is specified, filter by type
+    }
+    
+    try {
     const trades = await Trade.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
     const total = await Trade.countDocuments(query);
     res.json({
