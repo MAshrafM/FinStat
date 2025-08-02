@@ -67,6 +67,7 @@ const TradeLogPage = () => {
         <button onClick={() => handleFilterClick(null)} className={!brokerFilter ? 'active' : ''}>All Brokers</button>
         <button onClick={() => handleFilterClick('Thndr')} className={brokerFilter === 'Thndr' ? 'active' : ''}>Thndr</button>
         <button onClick={() => handleFilterClick('EFG')} className={brokerFilter === 'EFG' ? 'active' : ''}>EFG</button>
+              <button onClick={() => handleFilterClick('TopUp')}>Top Ups</button>
       </div>
 
       <div className="table-container">
