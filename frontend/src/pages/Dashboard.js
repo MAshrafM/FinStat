@@ -3,7 +3,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaRegListAlt, FaRegCalendarAlt, FaChartArea,
          FaUserTie, FaShieldAlt, FaFileInvoiceDollar,
-         FaMoneyBillWave, FaChartPie, FaChartLine } from 'react-icons/fa'; // Import new icons
+         FaMoneyBillWave, FaChartPie, FaChartLine,
+         FaBookOpen } from 'react-icons/fa'; // Import new icons
 import './Dashboard.css'; // We will create this CSS file
 
 const Dashboard = () => {
@@ -56,7 +57,12 @@ const Dashboard = () => {
           <FaChartLine size={50} />
           <h2>Stock Trading</h2>
           <p>Log and track all your stock market trades.</p>
-        </Link>
+              </Link>
+              <Link to="/trade-summary" className="dashboard-card">
+                  <FaBookOpen size={50} />
+                  <h2>Trade Summary</h2>
+                  <p>View aggregated results of your trading positions.</p>
+              </Link>
       </div>
     </div>
   );
