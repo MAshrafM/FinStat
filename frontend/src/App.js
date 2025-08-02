@@ -31,6 +31,7 @@ import ExpenditureAnalysisPage from './pages/expenditure/ExpenditureAnalysisPage
 import TradeLogPage from './pages/trades/TradeLogPage';
 import AddTradePage from './pages/trades/AddTradePage';
 import EditTradePage from './pages/trades/EditTradePage';
+import TradeSummaryPage from './pages/trades/TradeSummaryPage';
 
 import './App.css';
 
@@ -62,7 +63,8 @@ function App() {
             <Route path="/expenditure-analysis" element={<ExpenditureAnalysisPage />} />
             <Route path="/trades" element={<TradeLogPage />} />
             <Route path="/trades/new" element={<AddTradePage />} />
-            <Route path="/trades/edit/:id" element={<EditTradePage />} />
+                      <Route path="/trades/edit/:id" element={<EditTradePage />} />
+                      <Route path="/trade-summary" element={<TradeSummaryPage />} />
           </Routes>
         </main>
       </div>

@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Trade = require('../models/Trade');
+const axios = require('axios');
 
 // @route   GET api/trades
 // @desc    Get all trades (with pagination)
@@ -39,6 +40,95 @@ router.get('/all', async (req, res) => {
   } catch (err) {
     res.status(500).send('Server Error');
   }
+});
+
+// @route   GET api/trades/summary
+// @desc    Get a summary of trades grouped by broker, stock, and iteration
+// @access  Public
+router.get('/summary', async (req, res) => {
+    try {
+        const summary = await Trade.aggregate([
+            // Stage 1: Group documents by the unique combination of broker, stockCode, and iteration
+            {
+                $group: {
+                    _id: {
+                        broker: "$broker",
+                        stockCode: "$stockCode",
+                        iteration: "$iteration"
+                    },
+                    // Stage 2: Use conditional aggregation to calculate separate sums
+
+                    // Sum totalValue ONLY if type is 'Buy'
+                    totalBuyValue: {
+                        $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$totalValue", 0] }
+                    },
+                    // Sum totalValue ONLY if type is 'Sell'
+                    totalSellValue: {
+                        $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$totalValue", 0] }
+                    },
+                    // Sum totalValue ONLY if type is 'Dividend'
+                    totalDividendValue: {
+                        $sum: { $cond: [{ $eq: ["$type", "Dividend"] }, "$totalValue", 0] }
+                    },
+
+                    totalSharesBought: {
+                        $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$shares", 0] }
+                    },
+                    totalSharesSold: {
+                        $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$shares", 0] }
+                    },
+                    totalSharesDividend: {
+                        $sum: { $cond: [{ $eq: ["$type", "Dividend"] }, "$shares", 0] }
+                    },
+
+                    totalFees: { $sum: "$fees" },           // Sum up the fees
+                    tradeCount: { $sum: 1 },                // Count the number of trades in the group
+                    firstTradeDate: { $min: "$date" },      // Find the earliest trade date in the group
+                    lastTradeDate: { $max: "$date" }        // Find the latest trade date in the group
+                }
+            },
+            // Stage 3: Add a new field to calculate the final Realized Profit/Loss
+            {
+                $addFields: {
+                    realizedPL: {
+                        $subtract: [
+                            { $add: ["$totalSellValue", "$totalDividendValue"] }, // (Sells + Dividends)
+                            "$totalBuyValue"                                      // - Buys
+                        ]
+                    },
+                    totDeals: {
+                        $subtract: ["$totalSellValue", "$totalBuyValue"] // Total deals = Total sells - Total buys"
+                    },
+                    currentShares: {
+                        $subtract: [
+                            { $add: ["$totalSharesBought", "$totalSharesDividend"] }, // Total shares bought and dividends
+                            "$totalSharesSold"                                         // - Total shares sold
+                            ]
+                    },
+                }
+            },
+            // Stage 4: Sort the results for a clean display
+            {
+                $sort: {
+                    "_id.stockCode": 1, // Sort by stock code
+                    "lastTradeDate": -1 // Then by the most recent activity
+                }
+            }
+        ]);
+        res.json(summary);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+router.get('/market-prices', async (req, res) => {
+    try {
+        const response = await axios.get('https://english.mubasher.info/api/1/stocks/prices?country=eg');
+        res.json(response.data);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch market prices' });
+    }
 });
 
 // @route   POST api/trades
@@ -88,5 +178,6 @@ router.delete('/:id', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
 
 module.exports = router;

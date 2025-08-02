@@ -48,3 +48,7 @@
   font-weight: bold;
   text-align: right;
 }
+td > p {
+    margin: 0;
+    padding: 1px;
+}

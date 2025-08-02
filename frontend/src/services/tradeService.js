@@ -24,7 +24,17 @@ export const getAllTrades = () => {
   return fetch(`${API_URL}/all`).then(res => res.json());
 };
 // Note: We need to add the /all route to the backend for this to work.
+/** 
+ * Fetches an aggregated summary of all trades.
+ * @returns { Promise < Array >} A promise that resolves to the summary data array.
+ */
+export const getTradeSummary = () => {
+    return fetch(`${API_URL}/summary`).then(res => res.json());
+};
 
+export const getMarketData = () => {
+    return fetch(`${API_URL}/market-prices`).then(res => res.json());
+};
 /**
  * Fetches a single trade by its ID.
  * @param {string} id - The ID of the trade.

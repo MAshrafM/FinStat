@@ -113,8 +113,10 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
       
       {formData.type === 'Dividend' && (
          <div className="form-group">
-          <label>Dividend Amount</label>
-          <input type="number" step="0.01" name="totalValue" placeholder="Enter total dividend received" value={formData.totalValue} onChange={handleCashChange} required />
+          <label>Dividend Amount Cash</label>
+                  <input type="number" step="0.01" name="totalValue" placeholder="Enter total dividend received" value={formData.totalValue} onChange={handleCashChange} required />
+                  <label>Dividend Amount Shares</label>
+                  <input type="number" name="shares" placeholder="Enter total dividend received" value={formData.shares} onChange={handleChange} required />
         </div>
       )}
 
