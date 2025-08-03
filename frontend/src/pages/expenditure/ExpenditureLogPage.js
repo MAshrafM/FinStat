@@ -1,5 +1,5 @@
-// frontend/src/pages/expenditure/ExpenditureLogPage.js
-import React, { useState, useEffect } from 'react';
+﻿// frontend/src/pages/expenditure/ExpenditureLogPage.js
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getExpenditures, deleteExpenditure } from '../../services/expenditureService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
@@ -17,20 +17,20 @@ const transactionTypeMap = {
 const ExpenditureLogPage = () => {
   const [expenditures, setExpenditures] = useState([]);
   const [processedExpenditures, setProcessedExpenditures] = useState([]);
-
+    const [selectedType, setSelectedType] = useState('all'); 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    loadExpenditures(currentPage);
-  }, [currentPage]);
-
-  const loadExpenditures = (page) => {
-    getExpenditures(page).then(response => {
+    const loadExpenditures = useCallback((page, selectedType) => {
+    getExpenditures(page, 25, selectedType).then(response => {
       setExpenditures(response.data); // The data is now in a 'data' property
       setTotalPages(response.totalPages);
     });
-  };
+    }, [selectedType]);
+
+    useEffect(() => {
+        loadExpenditures(currentPage, selectedType);
+    }, [currentPage, selectedType, loadExpenditures]);
 
   useEffect(() => {
     if (expenditures.length === 0) {
@@ -47,7 +47,12 @@ const ExpenditureLogPage = () => {
       await deleteExpenditure(id);
       loadExpenditures();
     }
-  };
+    };
+
+    const handleYearFilter = (type) => {
+        setSelectedType(type);
+        setCurrentPage(1); // Reset to first page when changing filter
+    };
 
   // Calculate the 'Transaction' value on the frontend
   return (
@@ -57,7 +62,63 @@ const ExpenditureLogPage = () => {
         <Link to="/expenditures/new" className="nav-button">
           <FaPlus /> Add New Log
         </Link>
-      </div>
+          </div>
+
+          {/* Filter Section */}
+          <div className="filter-section" style={{ marginBottom: '2rem' }}>
+              <div className="tax-card">
+                  <h3>🔍 Filter by Type</h3>
+                  <div className="filter-buttons" style={{
+                      display: 'flex',
+                      gap: '0.5rem',
+                      flexWrap: 'wrap'
+                  }}>
+                      <button
+                          onClick={() => handleYearFilter('all')}
+                          style={{
+                              padding: '0.5rem 1rem',
+                              border: selectedType === 'all' ? '2px solid #3b82f6' : '1px solid #d1d5db',
+                              borderRadius: '6px',
+                              backgroundColor: selectedType === 'all' ? '#eff6ff' : 'white',
+                              color: selectedType === 'all' ? '#1e40af' : '#374151',
+                              cursor: 'pointer',
+                              fontWeight: selectedType === 'all' ? '600' : '400'
+                          }}
+                      >
+                          All Types
+                      </button>
+                      {Object.keys(transactionTypeMap).map(type => (
+                          <button
+                              key={type}
+                              onClick={() => handleYearFilter(type)}
+                              style={{
+                                  padding: '0.5rem 1rem',
+                                  border: selectedType === type ? '2px solid #3b82f6' : '1px solid #d1d5db',
+                                  borderRadius: '6px',
+                                  backgroundColor: selectedType === type ? '#eff6ff' : 'white',
+                                  color: selectedType === type ? '#1e40af' : '#374151',
+                                  cursor: 'pointer',
+                                  fontWeight: selectedType === type ? '600' : '400'
+                              }}
+                          >
+                              {transactionTypeMap[type]}
+                          </button>
+                      ))}
+                  </div>
+                  {selectedType !== 'all' && (
+                      <div style={{
+                          marginTop: '1rem',
+                          padding: '0.75rem',
+                          backgroundColor: '#f3f4f6',
+                          borderRadius: '6px',
+                          fontSize: '0.9rem',
+                          color: '#4b5563'
+                      }}>
+                          📅 Showing Expenditures for {transactionTypeMap[selectedType]} only
+                      </div>
+                  )}
+              </div>
+          </div>
       <div className="table-container">
         <table className="styled-table">
           <thead>

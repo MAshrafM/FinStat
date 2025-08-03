@@ -2,8 +2,8 @@
 const API_URL = 'http://localhost:5000/api/expenditures';
 
 // Update the getExpenditures function
-export const getExpenditures = (page = 1, limit = 10) => {
-  return fetch(`${API_URL}?page=${page}&limit=${limit}`).then(res => res.json());
+export const getExpenditures = (page = 1, limit = 25, type) => {
+  return fetch(`${API_URL}?page=${page}&limit=${limit}&type=${type}`).then(res => res.json());
 };
 export const getAllExpendituresForAnalysis = () => {
   return fetch(`${API_URL}/all`).then(res => res.json());

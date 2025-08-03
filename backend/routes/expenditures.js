@@ -21,12 +21,18 @@ router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10; // Default to 10 items per page
-    const skip = (page - 1) * limit;
+      const skip = (page - 1) * limit;
+      const type = req.query.type; // Optional filter by type
+
+      const query = {};
+      if (type != 'all') {
+          query.transactionType = type; // Filter by type if provided
+      }
     // Get total number of documents for pagination calculation
-    const total = await Expenditure.countDocuments();
+    const total = await Expenditure.countDocuments(query);
 
     // Get the paginated data, sorted by creation date to be consistent
-    const expenditures = await Expenditure.find()
+    const expenditures = await Expenditure.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
