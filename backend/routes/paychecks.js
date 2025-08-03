@@ -44,12 +44,18 @@ router.get('/', async (req, res) => {
   try {
     // Find all paychecks and sort them by date in descending order
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 15; // Can use a different limit
-    const skip = (page - 1) * limit;
+    const limit = parseInt(req.query.limit, 10) || 25; // Can use a different limit
+      const skip = (page - 1) * limit;
+      const year = parseInt(req.query.year);
 
-    const total = await Paycheck.countDocuments();
+      // Build query for year filter
+      const query = {};
+      if (!isNaN(year)) {
+          query.month = query.month = { $regex: `^${year}` };
+      }
+    const total = await Paycheck.countDocuments(query);
 
-    const paychecks = await Paycheck.find()
+    const paychecks = await Paycheck.find(query)
       .sort({ month: -1, createdAt: -1 }) // Sort by month, then creation time
       .skip(skip)
       .limit(limit);
