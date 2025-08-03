@@ -32,6 +32,10 @@ import TradeLogPage from './pages/trades/TradeLogPage';
 import AddTradePage from './pages/trades/AddTradePage';
 import EditTradePage from './pages/trades/EditTradePage';
 import TradeSummaryPage from './pages/trades/TradeSummaryPage';
+// Mutual Funds
+import MutualFundLogPage from './pages/mutual-funds/MutualFundLogPage';
+import AddMutualFundPage from './pages/mutual-funds/AddMutualFundPage';
+import EditMutualFundPage from './pages/mutual-funds/EditMutualFundPage';
 
 import './App.css';
 
@@ -65,6 +69,9 @@ function App() {
             <Route path="/trades/new" element={<AddTradePage />} />
                       <Route path="/trades/edit/:id" element={<EditTradePage />} />
                       <Route path="/trade-summary" element={<TradeSummaryPage />} />
+                      <Route path="/mutual-funds" element={<MutualFundLogPage />} />
+                      <Route path="/mutual-funds/new" element={<AddMutualFundPage />} />
+                      <Route path="/mutual-funds/edit/:id" element={<EditMutualFundPage />} />
           </Routes>
         </main>
       </div>
