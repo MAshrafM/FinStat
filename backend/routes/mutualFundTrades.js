@@ -10,9 +10,17 @@ router.get('/', async (req, res) => {
     const limit = 25;
     const skip = (page - 1) * limit;
 
+    const type = req.query.type; // Optional filter by type
+
+    const query = {};
+
+    if (type && type !== 'all') {
+        query.type = type; // Filter by type if provided
+        }
+
     try {
-        const trades = await MutualFundTrade.find().sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
-        const total = await MutualFundTrade.countDocuments();
+        const trades = await MutualFundTrade.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
+        const total = await MutualFundTrade.countDocuments(query);
         res.json({
             data: trades,
             totalPages: Math.ceil(total / limit),

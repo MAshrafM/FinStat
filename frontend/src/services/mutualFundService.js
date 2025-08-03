@@ -7,8 +7,8 @@ const API_URL = 'http://localhost:5000/api/mutual-funds'; // Or your configured 
  * @param {number} page - The page number to fetch.
  * @returns {Promise<Object>} A promise that resolves to the paginated data object.
  */
-export const getMutualFundTrades = (page = 1) => {
-    return fetch(`${API_URL}?page=${page}`).then(res => res.json());
+export const getMutualFundTrades = (page = 1, type) => {
+    return fetch(`${API_URL}?page=${page}&type=${type}`).then(res => res.json());
 };
 
 /**
