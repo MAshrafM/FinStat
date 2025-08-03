@@ -31,7 +31,7 @@ const MutualFundLogPage = () => {
         if (window.confirm('Are you sure you want to delete this transaction?')) {
             try {
                 await deleteTrade(id);
-                loadTrades(currentPage); // Refresh the list
+                loadTrades(currentPage, selectType); // Refresh the list
             } catch (err) {
                 console.error("Failed to delete transaction:", err);
                 alert('Failed to delete transaction.');
