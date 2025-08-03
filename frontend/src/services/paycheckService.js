@@ -7,8 +7,8 @@ export const getPaychecks = async () => {
   return await response.json();
 };
 
-export const getPaychecksLog = async (page = 1, limit = 15) => {
-  const response = await fetch(`${API_URL}?page=${page}&limit=${limit}`);
+export const getPaychecksLog = async (page = 1, limit = 15, year) => {
+    const response = await fetch(`${API_URL}?page=${page}&limit=${limit}&year=${year}`);
   return await response.json();
 
 };
