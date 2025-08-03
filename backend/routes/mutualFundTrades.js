@@ -31,6 +31,16 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/code/:code', async (req, res) => {
+    try {
+        const trade = await MutualFundTrade.find({ code: req.params.code });
+        if (!trade || trade.length === 0) return res.status(404).json({ msg: 'Trade not found' });
+        res.json(trade);
+        } catch (err) {
+            res.status(500).send('Server Error');
+        }
+});
+
 router.get('/all', async (req, res) => {
     try {
         const trades = await MutualFundTrade.find().sort({ date: -1, createdAt: -1 });

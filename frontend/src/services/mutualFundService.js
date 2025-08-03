@@ -11,6 +11,12 @@ export const getMutualFundTrades = (page = 1, type) => {
     return fetch(`${API_URL}?page=${page}&type=${type}`).then(res => res.json());
 };
 
+export const getMutualFundByCode = (code) => {
+
+    return fetch(`${API_URL}/code/${code}`).then(res => res.json());
+
+    };
+
 /**
  * Get all Mutual funds trades without pagination.
  * @returns
