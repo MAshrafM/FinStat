@@ -9,4 +9,5 @@ backend/.env
 frontend/.env
 
 # Seed data
-backend/db-seed.csv
+backend/*.csv
+backend/seeder*
