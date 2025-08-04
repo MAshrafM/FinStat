@@ -83,6 +83,18 @@ const Sidebar = () => {
             icon: "📚",
             title: "Fund Summary",
             description: "Investment results"
+        },
+        {
+            path: "/gold-wallet",
+            icon: "🏅",
+            title: "Gold Logs",
+            description: "Track gold investments"
+        },
+        {
+            path: "/gold-wallet/summary",
+            icon: "📘",
+            title: "Gold Summary",
+            description: "Gold investment results"
         }
     ];
 
