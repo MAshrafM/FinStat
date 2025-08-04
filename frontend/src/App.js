@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 // Paycheck Log
 import PaycheckLog from './pages/paycheck/PaycheckLog';
@@ -42,9 +43,10 @@ import './App.css';
 
 function App() {
   return (
-    <Router>
+      <Router>
       <div className="App">
-        <Navbar />
+              <Navbar />
+        <Sidebar  />
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Dashboard />} />
