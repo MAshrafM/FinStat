@@ -36,6 +36,7 @@ import TradeSummaryPage from './pages/trades/TradeSummaryPage';
 import MutualFundLogPage from './pages/mutual-funds/MutualFundLogPage';
 import AddMutualFundPage from './pages/mutual-funds/AddMutualFundPage';
 import EditMutualFundPage from './pages/mutual-funds/EditMutualFundPage';
+import MutualFundSummaryPage from './pages/mutual-funds/MutualFundSummaryPage';
 
 import './App.css';
 
@@ -72,6 +73,7 @@ function App() {
                       <Route path="/mutual-funds" element={<MutualFundLogPage />} />
                       <Route path="/mutual-funds/new" element={<AddMutualFundPage />} />
                       <Route path="/mutual-funds/edit/:id" element={<EditMutualFundPage />} />
+                      <Route path="/mutual-funds/summary" element={<MutualFundSummaryPage />} />
           </Routes>
         </main>
       </div>
