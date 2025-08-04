@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { FaRegListAlt, FaRegCalendarAlt, FaChartArea,
          FaUserTie, FaShieldAlt, FaFileInvoiceDollar,
          FaMoneyBillWave, FaChartPie, FaChartLine,
-         FaBookOpen, FaBuilding } from 'react-icons/fa'; // Import new icons
+        FaBookOpen, FaBuilding, FaBook } from 'react-icons/fa'; // Import new icons
 import './Dashboard.css'; // We will create this CSS file
 
 const Dashboard = () => {
@@ -67,6 +67,11 @@ const Dashboard = () => {
                   <FaBuilding size={50} />
                   <h2>Mutual Funds</h2>
                   <p>Log and track your mutual fund investments.</p>
+              </Link>
+              <Link to="/mutual-funds/summary" className="dashboard-card">
+                  <FaBook size={50} />
+                  <h2>Mutual Fund Summary</h2>
+                  <p>View aggregated results of your fund investments.</p>
               </Link>
       </div>
     </div>

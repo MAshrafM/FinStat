@@ -26,6 +26,14 @@ export const getAllMutualFundTrades = () => {
 };
 
 /**
+ * Fetches an aggregated summary of all mutual fund holdings.
+ * @returns {Promise<Array>} A promise that resolves to the summary data array.
+ */
+export const getMutualFundSummary = () => {
+    return fetch(`${API_URL}/summary`).then(res => res.json());
+};
+
+/**
  * Fetches a single mutual fund trade by its ID.
  * @param {string} id - The ID of the trade.
  * @returns {Promise<Object>} A promise that resolves to the trade object.

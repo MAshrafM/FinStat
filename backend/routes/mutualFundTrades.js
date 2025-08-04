@@ -62,6 +62,75 @@ router.post('/', async (req, res) => {
     }
 });
 
+// @route   GET api/mutual-funds/summary
+// @desc    Get a summary of mutual funds grouped by fund code
+// @access  Public
+router.get('/summary', async (req, res) => {
+    try {
+        const summary = await MutualFundTrade.aggregate([
+            // Stage 1: Group documents by the fund code
+            {
+                $group: {
+                    _id: {
+                        code: "$code",
+                        name: "$name" // Also group by name to have it available
+                    },
+                    // Stage 2: Use conditional aggregation to calculate totals
+                    totalBuyValue: {
+                        $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$totalValue", 0] }
+                    },
+                    totalSellValue: {
+                        $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$totalValue", 0] }
+                    },
+                    totalUnitsBought: {
+                        $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$units", 0] }
+                    },
+                    totalUnitsSold: {
+                        $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$units", 0] }
+                    },
+                    totalCouponValue: {
+                        $sum: { $cond: [{ $eq: ["$type", "Coupon"] }, "$totalValue", 0] }
+                    }
+                }
+            },
+            // Stage 3: Add new fields for final calculations
+            {
+                $addFields: {
+                    currentUnits: {
+                        $subtract: ["$totalUnitsBought", "$totalUnitsSold"]
+                    },
+                    // Calculate average price: total spent / total units bought
+                    // Add a check to prevent division by zero
+                    averagePrice: {
+                        $cond: [
+                            { $gt: ["$totalUnitsBought", 0] },
+                            { $divide: ["$totalBuyValue", "$totalUnitsBought"] },
+                            0
+                        ]
+                    }
+                }
+            },
+            // Stage 4: Add another fields stage for calculations that depend on the previous one
+            {
+                $addFields: {
+                    totalValue: {
+                        $subtract: ["$totalBuyValue", "$totalSellValue"]
+                    }
+                }
+            },
+            {
+                $sort: {
+                    "_id.name": 1 // Sort by fund name
+                }
+            }
+        ]);
+        res.json(summary);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 // @route   GET api/mutual-funds/:id
 // @desc    Get a single trade by ID
 router.get('/:id', async (req, res) => {
