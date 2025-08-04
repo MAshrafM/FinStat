@@ -38,6 +38,12 @@ import MutualFundLogPage from './pages/mutual-funds/MutualFundLogPage';
 import AddMutualFundPage from './pages/mutual-funds/AddMutualFundPage';
 import EditMutualFundPage from './pages/mutual-funds/EditMutualFundPage';
 import MutualFundSummaryPage from './pages/mutual-funds/MutualFundSummaryPage';
+// Gold Logs
+import GoldLogPage from './pages/gold/GoldLogPage';
+import AddGoldPage from './pages/gold/AddGoldPage';
+import EditGoldPage from './pages/gold/EditGoldPage';
+import GoldSummaryPage from './pages/gold/GoldSummaryPage';
+
 
 import './App.css';
 
@@ -76,6 +82,10 @@ function App() {
                       <Route path="/mutual-funds/new" element={<AddMutualFundPage />} />
                       <Route path="/mutual-funds/edit/:id" element={<EditMutualFundPage />} />
                       <Route path="/mutual-funds/summary" element={<MutualFundSummaryPage />} />
+                      <Route path="/gold-wallet" element={<GoldLogPage />} />
+                      <Route path="/gold-wallet/new" element={<AddGoldPage />} />
+                      <Route path="/gold-wallet/edit/:id" element={<EditGoldPage />} />
+                      <Route path="/gold-wallet/summary" element={<GoldSummaryPage />} />
           </Routes>
         </main>
       </div>
