@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import { FaRegListAlt, FaRegCalendarAlt, FaChartArea,
          FaUserTie, FaShieldAlt, FaFileInvoiceDollar,
          FaMoneyBillWave, FaChartPie, FaChartLine,
-            FaBookOpen, FaBuilding, FaBook,
-    FaGem, FaBalanceScale } from 'react-icons/fa'; // Import new icons
+         FaBookOpen, FaBuilding, FaBook,
+         FaGem, FaBalanceScale, FaScroll } from 'react-icons/fa'; // Import new icons
 import './Dashboard.css'; // We will create this CSS file
 
 const Dashboard = () => {
@@ -83,6 +83,11 @@ const Dashboard = () => {
                   <FaBalanceScale size={50} />
                   <h2>Gold Summary</h2>
                   <p>View summary and performance of your gold assets.</p>
+              </Link>
+              <Link to="/certificates" className="dashboard-card">
+                  <FaScroll size={50} />
+                  <h2>Bank Certificates</h2>
+                  <p>Track your fixed-income certificates of deposit.</p>
               </Link>
       </div>
     </div>

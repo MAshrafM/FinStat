@@ -43,6 +43,10 @@ import GoldLogPage from './pages/gold/GoldLogPage';
 import AddGoldPage from './pages/gold/AddGoldPage';
 import EditGoldPage from './pages/gold/EditGoldPage';
 import GoldSummaryPage from './pages/gold/GoldSummaryPage';
+// Certificates
+import CertificateLogPage from './pages/certificates/CertificateLogPage';
+import AddCertificatePage from './pages/certificates/AddCertificatePage';
+import EditCertificatePage from './pages/certificates/EditCertificatePage';
 
 
 import './App.css';
@@ -86,6 +90,9 @@ function App() {
                       <Route path="/gold-wallet/new" element={<AddGoldPage />} />
                       <Route path="/gold-wallet/edit/:id" element={<EditGoldPage />} />
                       <Route path="/gold-wallet/summary" element={<GoldSummaryPage />} />
+                      <Route path="/certificates" element={<CertificateLogPage />} />
+                      <Route path="/certificates/new" element={<AddCertificatePage />} />
+                      <Route path="/certificates/edit/:id" element={<EditCertificatePage />} />
           </Routes>
         </main>
       </div>

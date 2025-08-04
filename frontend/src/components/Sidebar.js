@@ -95,6 +95,12 @@ const Sidebar = () => {
             icon: "📘",
             title: "Gold Summary",
             description: "Gold investment results"
+        },
+        {
+            path: "/certificates",
+            icon: "",
+            title: "Bank Certificates",
+            description: "Fixed investment"
         }
     ];
 

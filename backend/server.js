@@ -25,6 +25,8 @@ app.use('/api/expenditures', require('./routes/expenditures'));
 app.use('/api/trades', require('./routes/trade'));
 app.use('/api/mutual-funds', require('./routes/mutualFundTrades'));
 app.use('/api/golds', require('./routes/golds'));
+app.use('/api/certificates', require('./routes/certificates'));
+
 
 // Define the port the server will run on. 
 // We use 5000 for the backend to avoid conflict with the React frontend (which usually runs on 3000)
