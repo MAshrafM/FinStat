@@ -34,6 +34,14 @@ export const getMutualFundSummary = () => {
 };
 
 /**
+ * Fetches the last price of mutual funds from an external API.
+ * @returns {Promise<Object>} A promise that resolves to the last price data object.
+ */
+export const getLastPrice = (fundName) => {
+    return fetch(`${API_URL}/last-price?name=${fundName}`).then(res => res.json());
+};
+
+/**
  * Fetches a single mutual fund trade by its ID.
  * @param {string} id - The ID of the trade.
  * @returns {Promise<Object>} A promise that resolves to the trade object.

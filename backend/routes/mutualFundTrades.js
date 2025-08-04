@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const MutualFundTrade = require('../models/MutualFundTrade');
+const axios = require('axios');
 
 // @route   GET api/mutual-funds
 // @desc    Get all mutual fund trades (with pagination)
@@ -46,6 +47,19 @@ router.get('/all', async (req, res) => {
         const trades = await MutualFundTrade.find().sort({ date: -1, createdAt: -1 });
         res.json(trades);
     } catch (err) {
+        res.status(500).send('Server Error');
+    }
+});
+
+// @ route   GET api/mutual-funds/last-price
+// @desc    Get the last price of a mutual fund
+router.get('/last-price', async (req, res) => {
+    try {
+        const fundName = req.query.name; // Get the fund name from query parameters
+        const response = await axios.get(`https://english.mubasher.info/api/1/funds?country=eg&name=${fundName}`);
+        res.json(response.data);
+    } catch (err) {
+        console.error(err.message);
         res.status(500).send('Server Error');
     }
 });
