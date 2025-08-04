@@ -6,11 +6,12 @@
   background-color: #282c34;
   padding: 1rem 2rem;
   color: white;
+  margin-left: 45px;
 }
 .navbar-brand a {
   color: white;
   text-decoration: none;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: bold;
 }
 .navbar-links .nav-button {
