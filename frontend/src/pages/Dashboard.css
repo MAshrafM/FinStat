@@ -31,3 +31,33 @@
   color: #666;
   font-size: 0.9rem;
 }
+.dashboard-card-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.dashboard-card-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .dashboard-card-item .description {
+        font-weight: bold;
+        color: #333;
+    }
+
+    .dashboard-card-item .value {
+        color: #009879;
+        font-weight: bold;
+    }
+.dashboard-card-item {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.3rem;
+}
+
+    .dashboard-card-item:last-child {
+        border-bottom: none;
+    }

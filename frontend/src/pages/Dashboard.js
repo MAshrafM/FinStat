@@ -5,14 +5,41 @@ import { FaRegListAlt, FaRegCalendarAlt, FaChartArea,
          FaUserTie, FaShieldAlt, FaFileInvoiceDollar,
          FaMoneyBillWave, FaChartPie, FaChartLine,
          FaBookOpen, FaBuilding, FaBook,
-         FaGem, FaBalanceScale, FaScroll } from 'react-icons/fa'; // Import new icons
+    FaGem, FaBalanceScale, FaScroll
+} from 'react-icons/fa'; // Import new icons
+import { useData } from '../context/DataContext';
+import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
 import './Dashboard.css'; // We will create this CSS file
 
 const Dashboard = () => {
+    const { overallTotalPaid, goldtotalNow } = useData(); // Access any global data if needed
   return (
     <div className="page-container">
       <h1>Welcome to Your Dashboard</h1>
-      <p>Select a feature to get started.</p>
+          <p>Select a feature to get started.</p>
+          <div className="dashboard-grid">
+              <div className="dashboard-card">
+                  <h3>Gold</h3>
+                  <div class="dashboard-card-items">
+                      <div class="dashboard-card-item">
+                          <span class="description">Total Paid:</span>
+                          <span class="value">{formatCurrency(overallTotalPaid)}</span>
+                      </div>
+                      <div class="dashboard-card-item">
+                          <span class="description">Total Now:</span>
+                          <span class="value">{formatCurrency(goldtotalNow)}</span>
+                      </div>
+                      <div class="dashboard-card-item">
+                          <span class="description">Change:</span>
+                          <span class="value">{(((goldtotalNow / overallTotalPaid) - 1) * 100).toFixed(2)}%</span>
+                      </div>
+                  </div>
+              </div>
+              <div className="dashboard-card">
+                  <h3>Gold Now</h3>
+                  <h2>{formatCurrency(goldtotalNow)}</h2>
+              </div>
+          </div>
       <div className="dashboard-grid">
         <Link to="/salary-profile" className="dashboard-card">
           <FaUserTie size={50} />
