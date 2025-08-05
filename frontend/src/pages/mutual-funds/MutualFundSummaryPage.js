@@ -1,75 +1,13 @@
 // frontend/src/pages/mutual-funds/MutualFundSummaryPage.js
-import React, { useState, useEffect } from 'react';
-import { getMutualFundSummary, getLastPrice } from '../../services/mutualFundService';
+import React from 'react';
+import { useData } from '../../context/DataContext';
 import { formatCurrency } from '../../utils/formatters';
 import '../trades/Trades.css'; // Reuse styles
 import '../../components/SummaryRow.css'; // Reuse styles
 
 const MutualFundSummaryPage = () => {
-    const [summaryData, setSummaryData] = useState([]);
-    const [overallTotals, setOverallTotals] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [lastPriceData, setLastPriceData] = useState(null);
-
-    const loadLastPrice = async (fundName) => {
-        if (fundName) {
-            try {
-                const lastprices = await Promise.all(fundName.map(name => {
-                    return getLastPrice(name).then(data => {
-                        let fName = data.rows.find(f => f.name === name);
-                        if (!fName) {
-                            console.warn(`No data found for fund: ${name}`);
-                            return { name, lastPrice: 0 }; // Default to 0 if no data found
-                        }
-                        return { name, lastPrice: fName.price || 0 }; // Default to 0 if no price found
-                    });
-                }));
-                setLastPriceData(lastprices);
-                
-            } catch (error) {
-                console.error("Error loading last prices:", error);
-                setLastPriceData([]);
-            }
-        }
-    };
-
-    useEffect(() => {
-        const loadData = async () => {
-            try {
-                const data = await getMutualFundSummary();
-                setSummaryData(data);
-
-                // Load last prices for all funds
-                await loadLastPrice(data.map(item => item._id.name));
-                // Calculate the overall totals for the summary row
-                const totalOfAllMF = data.reduce((sum, item) => sum + item.totalValue, 0);
-                const totalOfAllCoupons = data.reduce((sum, item) => sum + item.totalCouponValue, 0);
-                const newTotal = totalOfAllMF - totalOfAllCoupons;
-                // Calculate the current Selling value
-                const totalSellingValue = data.reduce((sum, item) =>
-                    sum + ((lastPriceData.find(f => f.name === item._id.name).lastPrice || 0) * item.currentUnits), 0
-                );
-                const totalProfit = ((totalSellingValue / newTotal) - 1) * 100;
-                setOverallTotals({
-                    totalOfAllMF,
-                    totalOfAllCoupons,
-                    newTotal,
-                    totalSellingValue,
-                    totalProfit
-                });
-
-            } catch (err) {
-                console.error("Failed to load mutual fund summary:", err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        loadData();
-    }, [lastPriceData]);
-
-
-
+    const { mfSummaryData, overallTotals, lastPriceData, isLoading } = useData();
+    
     if (isLoading) {
         return <p className="page-container">Loading summary data...</p>;
     }
@@ -122,7 +60,7 @@ const MutualFundSummaryPage = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {summaryData.map((item, index) => {
+                        {mfSummaryData.map((item, index) => {
                             const valueWithoutCoupons = item.totalValue - item.totalCouponValue;
                             const row = lastPriceData.find(n => n.name === item._id.name);
                             const sellingValue = row.lastPrice * item.currentUnits;

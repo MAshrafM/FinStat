@@ -1,26 +1,19 @@
 ﻿// frontend/src/pages/certificates/CertificateLogPage.js
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { getCertificates, deleteCertificate } from '../../services/certificateService';
+import { deleteCertificate } from '../../services/certificateService';
 import { formatDate, formatCurrency } from '../../utils/formatters';
+import { useData } from '../../context/DataContext';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import '../trades/Trades.css'; // Reuse styles
 
 const CertificateLogPage = () => {
-    const [certificates, setCertificates] = useState([]);
-
-    const loadCertificates = () => {
-        getCertificates().then(setCertificates).catch(err => console.error("Failed to load certificates:", err));
-    };
-
-    useEffect(() => {
-        loadCertificates();
-    }, []);
+    // Use the global data context
+    const { certificates } = useData(); // Access any global data if needed
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this certificate?')) {
             await deleteCertificate(id);
-            loadCertificates();
         }
     };
 
