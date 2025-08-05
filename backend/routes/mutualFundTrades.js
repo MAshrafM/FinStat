@@ -3,10 +3,11 @@ const express = require('express');
 const router = express.Router();
 const MutualFundTrade = require('../models/MutualFundTrade');
 const axios = require('axios');
+const auth = require('../middleware/auth');
 
 // @route   GET api/mutual-funds
 // @desc    Get all mutual fund trades (with pagination)
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     const page = Number.isInteger(Number(req.query.page)) && Number(req.query.page) > 0 ? Number(req.query.page) : 1;
     const limit = 25;
     const skip = (page - 1) * limit;
@@ -32,7 +33,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/code/:code', async (req, res) => {
+router.get('/code/:code', auth, async (req, res) => {
     try {
         const trade = await MutualFundTrade.find({ code: req.params.code });
         if (!trade || trade.length === 0) return res.status(404).json({ msg: 'Trade not found' });
@@ -42,7 +43,7 @@ router.get('/code/:code', async (req, res) => {
         }
 });
 
-router.get('/all', async (req, res) => {
+router.get('/all', auth, async (req, res) => {
     try {
         const trades = await MutualFundTrade.find().sort({ date: -1, createdAt: -1 });
         res.json(trades);
@@ -53,7 +54,7 @@ router.get('/all', async (req, res) => {
 
 // @ route   GET api/mutual-funds/last-price
 // @desc    Get the last price of a mutual fund
-router.get('/last-price', async (req, res) => {
+router.get('/last-price', auth, async (req, res) => {
     try {
         const fundName = req.query.name; // Get the fund name from query parameters
         const response = await axios.get(`https://english.mubasher.info/api/1/funds?country=eg&name=${fundName}`);
@@ -66,7 +67,7 @@ router.get('/last-price', async (req, res) => {
 
 // @route   POST api/mutual-funds
 // @desc    Create a new trade
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     try {
         const newTrade = new MutualFundTrade(req.body);
         await newTrade.save();
@@ -79,7 +80,7 @@ router.post('/', async (req, res) => {
 // @route   GET api/mutual-funds/summary
 // @desc    Get a summary of mutual funds grouped by fund code
 // @access  Public
-router.get('/summary', async (req, res) => {
+router.get('/summary', auth, async (req, res) => {
     try {
         const summary = await MutualFundTrade.aggregate([
             // Stage 1: Group documents by the fund code
@@ -147,7 +148,7 @@ router.get('/summary', async (req, res) => {
 
 // @route   GET api/mutual-funds/:id
 // @desc    Get a single trade by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
     try {
         const trade = await MutualFundTrade.findById(req.params.id);
         if (!trade) return res.status(404).json({ msg: 'Trade not found' });
@@ -159,7 +160,7 @@ router.get('/:id', async (req, res) => {
 
 // @route   PUT api/mutual-funds/:id
 // @desc    Update a trade
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     try {
         const trade = await MutualFundTrade.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!trade) return res.status(404).json({ msg: 'Trade not found' });
@@ -171,7 +172,7 @@ router.put('/:id', async (req, res) => {
 
 // @route   DELETE api/mutual-funds/:id
 // @desc    Delete a trade
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
         const trade = await MutualFundTrade.findByIdAndDelete(req.params.id);
         if (!trade) return res.status(404).json({ msg: 'Trade not found' });

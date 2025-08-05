@@ -3,10 +3,11 @@ const express = require('express');
 const router = express.Router();
 const Trade = require('../models/Trade');
 const axios = require('axios');
+const auth = require('../middleware/auth');
 
 // @route   GET api/trades
 // @desc    Get all trades (with pagination)
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 25;
   const skip = (page - 1) * limit;
@@ -35,7 +36,7 @@ router.get('/', async (req, res) => {
 
 // @route   GET api/trades
 // @desc    Get all trades (with pagination)
-router.get('/all', async (req, res) => {
+router.get('/all', auth, async (req, res) => {
   try {
     const trades = await Trade.find().sort({createdAt:-1});
     res.json(trades);
@@ -47,7 +48,7 @@ router.get('/all', async (req, res) => {
 // @route   GET api/trades/summary
 // @desc    Get a summary of trades grouped by broker, stock, and iteration
 // @access  Public
-router.get('/summary', async (req, res) => {
+router.get('/summary', auth, async (req, res) => {
     try {
         const summary = await Trade.aggregate([
             // Stage 1: Group documents by the unique combination of broker, stockCode, and iteration
@@ -124,7 +125,7 @@ router.get('/summary', async (req, res) => {
     }
 });
 
-router.get('/market-prices', async (req, res) => {
+router.get('/market-prices', auth, async (req, res) => {
     try {
         const response = await axios.get('https://english.mubasher.info/api/1/stocks/prices?country=eg');
         res.json(response.data);
@@ -135,7 +136,7 @@ router.get('/market-prices', async (req, res) => {
 
 // @route   POST api/trades
 // @desc    Create a new trade
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const newTrade = new Trade(req.body);
     await newTrade.save();
@@ -147,7 +148,7 @@ router.post('/', async (req, res) => {
 
 // @route   GET api/trades/:id
 // @desc    Get a single trade by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const trade = await Trade.findById(req.params.id);
     if (!trade) return res.status(404).json({ msg: 'Trade not found' });
@@ -159,7 +160,7 @@ router.get('/:id', async (req, res) => {
 
 // @route   PUT api/trades/:id
 // @desc    Update a trade
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   try {
     const trade = await Trade.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!trade) return res.status(404).json({ msg: 'Trade not found' });
@@ -171,7 +172,7 @@ router.put('/:id', async (req, res) => {
 
 // @route   DELETE api/trades/:id
 // @desc    Delete a trade
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     const trade = await Trade.findByIdAndDelete(req.params.id);
     if (!trade) return res.status(404).json({ msg: 'Trade not found' });
