@@ -1,58 +1,14 @@
 // frontend/src/pages/gold/GoldSummaryPage.js
-import React, { useState, useEffect } from 'react';
-import { getGoldSummary, getGoldPrice } from '../../services/goldService';
+import React from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import '../trades/Trades.css'; // Reuse styles
 import '../../components/SummaryRow.css'; // Reuse styles
+import { useData } from '../../context/DataContext';
 
 const GoldSummaryPage = () => {
-    const [summaryData, setSummaryData] = useState([]);
-    const [marketPrices, setMarketPrices] = useState({}); // To store { "24": price, "22": price }
-    const [overallTotalPaid, setOverallTotalPaid] = useState(0);
-    const [isLoading, setIsLoading] = useState(true);
-    const [totalNow, setTotalNow] = useState(0);
-
-    useEffect(() => {
-        // Fetch both your internal summary and the external market data
-        Promise.all([
-            getGoldSummary(),
-            getGoldPrice()
-        ])
-            .then(([summary, prices]) => {
-                setSummaryData(summary);
-                console.log(prices);
-                if (!prices || Object.keys(prices).length === 0) {
-                    console.warn("No market prices found, using default values");
-                    // Fallback to default prices if none are provided
-                    prices = {
-                        "24": 0,
-                        "22": 0,
-                        "18": 0,
-                    };
-                }
-                setMarketPrices(prices); 
-
-                // Calculate the overall total paid for the summary row
-                const totalPaid = summary.reduce((sum, item) => sum + item.totalPaid, 0);
-                setOverallTotalPaid(totalPaid);
-
-                const totalNow = summary.reduce((previous, item) => {
-                    const karat = item._id;
-                    const currentPricePerGram = prices[karat] || 0;
-                    const currentValue = item.totalWeight * currentPricePerGram;
-                    return previous + currentValue;
-                }, 0);
-
-                setTotalNow(totalNow);
-
-                setIsLoading(false);
-            })
-            .catch(err => {
-                console.error("Failed to load data:", err);
-                setIsLoading(false);
-            });
-    }, []);
-
+    // Use the global data context if needed
+    const { goldSummary, marketPrices,  overallTotalPaid, goldtotalNow, isLoading, } = useData(); // Access any global data if needed
+   
     if (isLoading) {
         return <p className="page-container">Loading gold summary and market prices...</p>;
     }
@@ -71,11 +27,11 @@ const GoldSummaryPage = () => {
                 </div>
                 <div className="summary-item highlight">
                     <span>Total Amount Now (All Karats)</span>
-                    <strong>{formatCurrency(totalNow)}</strong>
+                    <strong>{formatCurrency(goldtotalNow)}</strong>
                 </div>
                 <div className="summary-item highlight">
                     <span>Rate of Change</span>
-                    <strong>{(((totalNow / overallTotalPaid) - 1) * 100).toFixed(2)}%</strong>
+                    <strong>{(((goldtotalNow / overallTotalPaid) - 1) * 100).toFixed(2)}%</strong>
                 </div>
             </div>
 
@@ -92,7 +48,7 @@ const GoldSummaryPage = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {summaryData.map((item) => {
+                        {goldSummary.map((item) => {
                             const karat = item._id;
                             const currentPricePerGram = marketPrices[karat] || 0;
                             const currentValue = item.totalWeight * currentPricePerGram;

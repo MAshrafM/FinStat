@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
+
 import LandingPage from './pages/LandingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
@@ -58,41 +59,40 @@ function App() {
           <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/paycheck-log" element={<PaycheckLog />} />
-                <Route path="/paycheck-log/new" element={<AddPaycheck />} />
-                <Route path="/paycheck-log/edit/:id" element={<EditPaycheck />} />
-                <Route path="/analysis/calendar" element={<CalendarAnalysis />} />
-                <Route path="/analysis/fiscal" element={<FiscalAnalysis />} />
-                <Route path="/salary-profile" element={<SalaryProfilePage />} />
-                <Route path="/salary-profile/history" element={<SalaryHistory />} />
-                <Route path="/salary-profile/edit" element={<EditProfilePage />} />
-                <Route path="/salary-profile/history/edit/:historyId" element={<EditHistoryRecord />} />
-                <Route path="/salary-profile/update" element={<UpdateSalary />} />
-                <Route path="/social-insurance" element={<SocialInsurancePage />} />
-                <Route path="/social-insurance/manage" element={<ManageInsurancePage />} />
-                <Route path="/taxes" element={<TaxesPage />} />
-                <Route path="/taxes/manage" element={<ManageTaxBracketsPage />} />
-                <Route path="/expenditures" element={<ExpenditureLogPage />} />
-                <Route path="/expenditures/new" element={<AddExpenditurePage />} />
-                <Route path="/expenditures/edit/:id" element={<EditExpenditurePage />} />
-                <Route path="/expenditure-analysis" element={<ExpenditureAnalysisPage />} />
-                <Route path="/trades" element={<TradeLogPage />} />
-                <Route path="/trades/new" element={<AddTradePage />} />
-                <Route path="/trades/edit/:id" element={<EditTradePage />} />
-                <Route path="/trade-summary" element={<TradeSummaryPage />} />
-                <Route path="/mutual-funds" element={<MutualFundLogPage />} />
-                <Route path="/mutual-funds/new" element={<AddMutualFundPage />} />
-                <Route path="/mutual-funds/edit/:id" element={<EditMutualFundPage />} />
-                <Route path="/mutual-funds/summary" element={<MutualFundSummaryPage />} />
-                <Route path="/gold-wallet" element={<GoldLogPage />} />
-                <Route path="/gold-wallet/new" element={<AddGoldPage />} />
-                <Route path="/gold-wallet/edit/:id" element={<EditGoldPage />} />
-                <Route path="/gold-wallet/summary" element={<GoldSummaryPage />} />
-                <Route path="/certificates" element={<CertificateLogPage />} />
-                <Route path="/certificates/new" element={<AddCertificatePage />} />
-                <Route path="/certificates/edit/:id" element={<EditCertificatePage />} />
-
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/paycheck-log" element={<PaycheckLog />} />
+                    <Route path="/paycheck-log/new" element={<AddPaycheck />} />
+                    <Route path="/paycheck-log/edit/:id" element={<EditPaycheck />} />
+                    <Route path="/analysis/calendar" element={<CalendarAnalysis />} />
+                    <Route path="/analysis/fiscal" element={<FiscalAnalysis />} />
+                    <Route path="/salary-profile" element={<SalaryProfilePage />} />
+                    <Route path="/salary-profile/history" element={<SalaryHistory />} />
+                    <Route path="/salary-profile/edit" element={<EditProfilePage />} />
+                    <Route path="/salary-profile/history/edit/:historyId" element={<EditHistoryRecord />} />
+                    <Route path="/salary-profile/update" element={<UpdateSalary />} />
+                    <Route path="/social-insurance" element={<SocialInsurancePage />} />
+                    <Route path="/social-insurance/manage" element={<ManageInsurancePage />} />
+                    <Route path="/taxes" element={<TaxesPage />} />
+                    <Route path="/taxes/manage" element={<ManageTaxBracketsPage />} />
+                    <Route path="/expenditures" element={<ExpenditureLogPage />} />
+                    <Route path="/expenditures/new" element={<AddExpenditurePage />} />
+                    <Route path="/expenditures/edit/:id" element={<EditExpenditurePage />} />
+                    <Route path="/expenditure-analysis" element={<ExpenditureAnalysisPage />} />
+                    <Route path="/trades" element={<TradeLogPage />} />
+                    <Route path="/trades/new" element={<AddTradePage />} />
+                    <Route path="/trades/edit/:id" element={<EditTradePage />} />
+                    <Route path="/trade-summary" element={<TradeSummaryPage />} />
+                    <Route path="/mutual-funds" element={<MutualFundLogPage />} />
+                    <Route path="/mutual-funds/new" element={<AddMutualFundPage />} />
+                    <Route path="/mutual-funds/edit/:id" element={<EditMutualFundPage />} />
+                    <Route path="/mutual-funds/summary" element={<MutualFundSummaryPage />} />
+                    <Route path="/gold-wallet" element={<GoldLogPage />} />
+                    <Route path="/gold-wallet/new" element={<AddGoldPage />} />
+                    <Route path="/gold-wallet/edit/:id" element={<EditGoldPage />} />
+                    <Route path="/gold-wallet/summary" element={<GoldSummaryPage />} />
+                    <Route path="/certificates" element={<CertificateLogPage />} />
+                    <Route path="/certificates/new" element={<AddCertificatePage />} />
+                      <Route path="/certificates/edit/:id" element={<EditCertificatePage />} />
               </Route>
           </Routes>
     </Router>
