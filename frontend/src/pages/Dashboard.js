@@ -12,32 +12,135 @@ import { formatCurrency } from '../utils/formatters'; // Utility to format curre
 import './Dashboard.css'; // We will create this CSS file
 
 const Dashboard = () => {
-    const { overallTotalPaid, goldtotalNow } = useData(); // Access any global data if needed
+    const {
+        overallTotalPaid,
+        goldtotalNow,
+        certificateSummary,
+        overallTotals,
+        summaryMetrics,
+        bankAccountData,
+    } = useData(); // Access any global data if needed
   return (
     <div className="page-container">
       <h1>Welcome to Your Dashboard</h1>
           <p>Select a feature to get started.</p>
+          <div className="dashboard-summary">
+                  <h2>Total Current Holdings</h2>
+                  <h2>
+                      {
+                          formatCurrency(
+                              goldtotalNow +
+                              certificateSummary.totalActiveAmount +
+                              overallTotals.totalSellingValue +
+                              summaryMetrics.topUps + summaryMetrics.totalProfitNow +
+                              bankAccountData.bank +
+                              (900 * 50)
+                          )
+                      }
+                  </h2>
+          </div>
+          <div className="dashboard-summary">
           <div className="dashboard-grid">
               <div className="dashboard-card">
                   <h3>Gold</h3>
-                  <div class="dashboard-card-items">
-                      <div class="dashboard-card-item">
-                          <span class="description">Total Paid:</span>
-                          <span class="value">{formatCurrency(overallTotalPaid)}</span>
+                  <div className="dashboard-card-items">
+                      <div className="dashboard-card-item">
+                          <span className="description">Total Paid:</span>
+                          <span className="value">{formatCurrency(overallTotalPaid)}</span>
                       </div>
-                      <div class="dashboard-card-item">
-                          <span class="description">Total Now:</span>
-                          <span class="value">{formatCurrency(goldtotalNow)}</span>
+                      <div className="dashboard-card-item">
+                          <span className="description">Total Now:</span>
+                          <span className="value">{formatCurrency(goldtotalNow)}</span>
                       </div>
-                      <div class="dashboard-card-item">
-                          <span class="description">Change:</span>
-                          <span class="value">{(((goldtotalNow / overallTotalPaid) - 1) * 100).toFixed(2)}%</span>
+                      <div className="dashboard-card-item">
+                          <span className="description">Change:</span>
+                              <span className="value">{(((goldtotalNow / overallTotalPaid) - 1) * 100).toFixed(2)}%</span>
                       </div>
                   </div>
               </div>
               <div className="dashboard-card">
-                  <h3>Gold Now</h3>
-                  <h2>{formatCurrency(goldtotalNow)}</h2>
+                  <h3>Bank Certificates</h3>
+                  <div className="dashboard-card-items">
+                      <div className="dashboard-card-item">
+                          <span className="description">Total Active Amount</span>
+                          <span className="value">{formatCurrency(certificateSummary.totalActiveAmount)}</span>
+                      </div>
+                      <div className="dashboard-card-item">
+                          <span className="description">Expected Returns</span>
+                          <span className="value">{formatCurrency(certificateSummary.totalExpectedReturns)}</span>
+                      </div>
+                      <div className="dashboard-card-item">
+                          <span className="description">Change:</span>
+                          <span className="value">{(((certificateSummary.totalExpectedReturns / certificateSummary.totalActiveAmount) - 1) * 100).toFixed(2)}%</span>
+                      </div>
+                  </div>
+              </div>
+
+              <div className="dashboard-card">
+                  <h3>MF Funds</h3>
+                  <div className="dashboard-card-items">
+                      <div className="dashboard-card-item">
+                          <span className="description">Total Amount</span>
+                          <span className="value">{formatCurrency(overallTotals.totalOfAllMF)}</span>
+                      </div>
+                      <div className="dashboard-card-item">
+                          <span className="description">Selling Value</span>
+                          <span className="value">{formatCurrency(overallTotals.totalSellingValue)}</span>
+                      </div>
+                      <div className="dashboard-card-item">
+                          <span className="description">Change:</span>
+                              <span className="value">{(overallTotals.totalProfit).toFixed(2)} %</span>
+                      </div>
+                  </div>
+              </div>
+
+              <div className="dashboard-card">
+                  <h3>Stock Trading</h3>
+                  <div className="dashboard-card-items">
+                      <div className="dashboard-card-item">
+                          <span className="description">Total Amount</span>
+                          <span className="value">{formatCurrency(summaryMetrics.topUps)}</span>
+                      </div>
+                      <div className="dashboard-card-item">
+                          <span className="description">Current Value</span>
+                          <span className="value">{formatCurrency(summaryMetrics.topUps + summaryMetrics.totalProfitNow)}</span>
+                      </div>
+                      <div className="dashboard-card-item">
+                          <span className="description">Change:</span>
+                              <span className="value">{((summaryMetrics.totalProfitNow / summaryMetrics.topUps) * 100).toFixed(2)} %</span>
+                      </div>
+                  </div>
+                  </div>
+                  <div className="dashboard-card">
+                      <h3>Bank Account</h3>
+                      <div className="dashboard-card-items">
+                          <div className="dashboard-card-item">
+                              <span className="description">Balance</span>
+                              <span className="value">{formatCurrency(bankAccountData.bank)}</span>
+                          </div>
+                          <div className="dashboard-card-item">
+                              <span className="description">Foreign $</span>
+                              <span className="value">900$ + 184$ ~ 50L.E/$</span>
+                          </div>
+                          <div className="dashboard-card-item">
+                              <span className="description">Foreign $/LE</span>
+                              <span className="value">{formatCurrency(900 * 50)} | {formatCurrency(184 * 5)} </span>
+                          </div>
+                      </div>
+                  </div>
+                  <div className="dashboard-card">
+                      <h3>Realstate</h3>
+                      <div className="dashboard-card-items">
+                          <div className="dashboard-card-item">
+                              <span className="description">Paid</span>
+                              <span className="value">{formatCurrency(334125)}</span>
+                          </div>
+                          <div className="dashboard-card-item">
+                              <span className="description">Estimated Sell</span>
+                              <span className="value">{formatCurrency(800000)}</span>
+                          </div>
+                      </div>
+                  </div>
               </div>
           </div>
       <div className="dashboard-grid">

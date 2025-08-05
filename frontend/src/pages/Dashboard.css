@@ -1,9 +1,9 @@
 /* frontend/src/pages/Dashboard.css */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, minmax(350px, 1fr));
   gap: 2rem;
-  margin-top: 3rem;
+  margin: auto;
 }
 
 .dashboard-card {
@@ -61,3 +61,20 @@
     .dashboard-card-item:last-child {
         border-bottom: none;
     }
+
+.dashboard-summary {
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+    gap: 2rem;
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
+}
+
+.dashboard-summary h2 {
+    flex-basis: 100%;
+    color: #007bff; /* Theme color */
+    margin: 0;
+}

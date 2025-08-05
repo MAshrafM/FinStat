@@ -1,12 +1,19 @@
 // frontend/src/pages/trades/TradeSummaryPage.js
-import React, { useState, useEffect } from 'react';
-import { getAllTrades, getTradeSummary, getMarketData } from '../../services/tradeService';
+import React from 'react';
+//import { getAllTrades, getTradeSummary, getMarketData } from '../../services/tradeService';
+import { useData } from '../../context/DataContext';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import './Trades.css'; // Reuse the same CSS file
 import '../../components/SummaryRow.css'; // Reuse summary row styles'
 
 const TradeSummaryPage = () => {
-    //const [trades, setTrades] = useState([]);
+    const { openPosData,
+        endPosData,
+        stMarketPrices,
+        summaryMetrics,
+        isLoading, } = useData();
+        /*
+    const [trades, setTrades] = useState([]);
     const [summaryData, setSummaryData] = useState([]);
     const [openPosData, setOpenPosData] = useState([]);
     const [endPosData, setEndPosData] = useState([]);
@@ -80,6 +87,7 @@ const TradeSummaryPage = () => {
         setOpenPosData(openPositions)
         setEndPosData(closedPositions);
     };
+    */
     function daysBetween(date1, date2) {
         if (!date1 || !date2) return '';
         const d1 = new Date(date1);
@@ -165,7 +173,7 @@ const TradeSummaryPage = () => {
                                 <td>{formatCurrency(Math.abs(item.avgBuy))}</td>
                                 <td>{formatCurrency(Math.abs(item.targetPrice))}</td>
                                 <td>{formatCurrency(Math.abs(item.targetSell))}</td>
-                                <td style={{ color: Math.abs(item.avgPrice) > marketPrices[item._id.stockCode] ? '#c0392b' : '#27ae60' }}>${marketPrices[item._id.stockCode]}</td>
+                                <td style={{ color: Math.abs(item.avgPrice) > stMarketPrices[item._id.stockCode] ? '#c0392b' : '#27ae60' }}>${stMarketPrices[item._id.stockCode]}</td>
                                 <td className="total-value" style={{ color: item.totalValueNow >= item.totalBuyValue ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totalValueNow)}</td>
                                 <td className="total-value" style={{ color: item.changeNow > 0 ? '#27ae60' : '#c0392b' }} >{item.changeNow.toFixed(2)}%</td>
                                 <td>{formatCurrency(item.totalFees)}</td>

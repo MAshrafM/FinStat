@@ -26,7 +26,7 @@ const ExpenditureLogPage = () => {
       setExpenditures(response.data); // The data is now in a 'data' property
       setTotalPages(response.totalPages);
     });
-    }, [selectedType]);
+    }, []);
 
     useEffect(() => {
         loadExpenditures(currentPage, selectedType);
