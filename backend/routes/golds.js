@@ -3,12 +3,13 @@ const express = require('express');
 const router = express.Router();
 const Gold = require('../models/Gold');
 const axios = require('axios');
+const auth = require('../middleware/auth');
 
 // Standard CRUD routes, very similar to our other features
 
 // @route   GET api/golds
 // @desc    Get all gold logs (with pagination)
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     const page = Number.isInteger(Number(req.query.page)) && Number(req.query.page) > 0 ? Number(req.query.page) : 1;
     const limit = 25;
     const skip = (page - 1) * limit;
@@ -28,7 +29,7 @@ router.get('/', async (req, res) => {
 
 // @route   GET api/golds
 // @desc    Get all gold logs (without pagination)
-router.get('/all', async (req, res) => {
+router.get('/all', auth, async (req, res) => {
     try {
         const logs = await Gold.find().sort({ date: -1, createdAt: -1 });
         res.json(logs);
@@ -39,7 +40,7 @@ router.get('/all', async (req, res) => {
 
 // @route   GET api/golds/summary
 // @desc    Get summary of gold logs
-router.get('/summary', async (req, res) => {
+router.get('/summary', auth, async (req, res) => {
     try {
         const summary = await Gold.aggregate([
             // Stage 1: Group documents by the karat
@@ -67,7 +68,7 @@ router.get('/summary', async (req, res) => {
 
 // @route   GET api/golds/price
 // @desc    Get the current gold price per gram
-router.get('/price', async (req, res) => {
+router.get('/price', auth, async (req, res) => {
     try {
         const response = await axios.get('https://dahabmasr.com/api/price/fetch', {
             headers: {
@@ -98,7 +99,7 @@ router.get('/price', async (req, res) => {
 
 // @route   POST api/golds
 // @desc    Create a new gold log
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     try {
         const newLog = new Gold(req.body);
         await newLog.save();
@@ -110,7 +111,7 @@ router.post('/', async (req, res) => {
 
 // @route   GET api/golds/:id
 // @desc    Get a single log by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
     try {
         const log = await Gold.findById(req.params.id);
         if (!log) return res.status(404).json({ msg: 'Log not found' });
@@ -122,7 +123,7 @@ router.get('/:id', async (req, res) => {
 
 // @route   PUT api/golds/:id
 // @desc    Update a log
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     try {
         const log = await Gold.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!log) return res.status(404).json({ msg: 'Log not found' });
@@ -134,7 +135,7 @@ router.put('/:id', async (req, res) => {
 
 // @route   DELETE api/golds/:id
 // @desc    Delete a log
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     try {
         const log = await Gold.findByIdAndDelete(req.params.id);
         if (!log) return res.status(404).json({ msg: 'Log not found' });

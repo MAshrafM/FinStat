@@ -2,10 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const SalaryProfile = require('../models/SalaryProfile');
+const auth = require('../middleware/auth');
 
 // @route   GET api/salary-profile
 // @desc    Get the single salary profile. If it doesn't exist, it can be created by the client.
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     // Find the one and only profile.
     const profile = await SalaryProfile.findOne();
@@ -18,7 +19,7 @@ router.get('/', async (req, res) => {
 
 // @route   PUT api/salary-profile
 // @desc    Update the main details of the single salary profile
-router.put('/', async (req, res) => {
+router.put('/', auth, async (req, res) => {
   try {
     const { name, title, position, year } = req.body;
 
@@ -44,7 +45,7 @@ router.put('/', async (req, res) => {
 
 // @route   POST api/salary-profile
 // @desc    Create or update the single salary profile.
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const { name, title, position, year, salaryDetails } = req.body;
 
@@ -85,7 +86,7 @@ router.post('/', async (req, res) => {
 
 // @route   PUT /api/salary-profile/history/:historyId
 // @desc    Update a specific record in the salary history
-router.put('/history/:historyId', async (req, res) => {
+router.put('/history/:historyId', auth, async (req, res) => {
   try {
     const { historyId } = req.params;
     const updatedRecordData = req.body;
@@ -115,7 +116,7 @@ router.put('/history/:historyId', async (req, res) => {
 
 // @route   DELETE /api/salary-profile/history/:historyId
 // @desc    Delete a specific record from the salary history
-router.delete('/history/:historyId', async (req, res) => {
+router.delete('/history/:historyId', auth, async (req, res) => {
   try {
     const { historyId } = req.params;
 

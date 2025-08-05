@@ -1,14 +1,14 @@
 // backend/routes/paychecks.js
 const express = require('express');
 const router = express.Router();
-
+const auth = require('../middleware/auth');
 // Bring in the Paycheck model
 const Paycheck = require('../models/Paycheck');
 
 // @route   POST api/paychecks
 // @desc    Create a new paycheck
 // @access  Public
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const newPaycheck = new Paycheck({
       month: req.body.month,
@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
 
 // @route   GET api/paychecks/all
 // @desc    Get ALL paychecks without pagination (for analysis pages)
-router.get('/all', async (req, res) => {
+router.get('/all', auth, async (req, res) => {
   try {
     const paychecks = await Paycheck.find().sort({ month: -1 });
     res.json(paychecks); // Returns the plain array
@@ -40,7 +40,7 @@ router.get('/all', async (req, res) => {
 // @route   GET api/paychecks
 // @desc    Get all paychecks
 // @access  Public
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     // Find all paychecks and sort them by date in descending order
     const page = parseInt(req.query.page, 10) || 1;
@@ -74,7 +74,7 @@ router.get('/', async (req, res) => {
 // @route   GET api/paychecks/:id
 // @desc    Get a single paycheck by ID
 // @access  Public
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const paycheck = await Paycheck.findById(req.params.id);
 
@@ -96,7 +96,7 @@ router.get('/:id', async (req, res) => {
 // @route   PUT api/paychecks/:id
 // @desc    Update a paycheck
 // @access  Public
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   try {
     const paycheck = await Paycheck.findByIdAndUpdate(
       req.params.id,
@@ -116,7 +116,7 @@ router.put('/:id', async (req, res) => {
 // @route   DELETE api/paychecks/:id
 // @desc    Delete a paycheck
 // @access  Public
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     const paycheck = await Paycheck.findById(req.params.id);
     if (!paycheck) {

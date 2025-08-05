@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const TaxBracket = require('../models/TaxBracket');
+const auth = require('../middleware/auth');
 
 // The initial set of tax brackets if none exist in the DB
 const initialBrackets = [
@@ -15,7 +16,7 @@ const initialBrackets = [
 
 // @route   GET api/tax-brackets
 // @desc    Get the current tax brackets. If none exist, create and return them.
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     let taxInfo = await TaxBracket.findOne({ identifier: 'singleton' });
 
@@ -33,7 +34,7 @@ router.get('/', async (req, res) => {
 
 // @route   PUT api/tax-brackets
 // @desc    Update the entire set of tax brackets
-router.put('/', async (req, res) => {
+router.put('/', auth, async (req, res) => {
   try {
     const { brackets } = req.body; // Expecting an array of bracket objects
 

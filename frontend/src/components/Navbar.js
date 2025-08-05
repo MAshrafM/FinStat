@@ -10,7 +10,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <Link to="/">Finance Dashboard</Link>
+        <Link to="/dashboard">Finance Dashboard</Link>
       </div>
       <div className="navbar-links">
         {/* Only show the "Add New Log" button on the paycheck log page */}

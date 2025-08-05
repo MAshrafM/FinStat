@@ -1,14 +1,21 @@
 // frontend/src/services/socialInsuranceService.js
-
 // Define the base URL for the backend API in one central place.
 const API_URL = 'http://localhost:5000/api/social-insurance';
+
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+        'Content-Type': 'application/json',
+        'x-auth-token': token || '', // Include the token in the 'x-auth-token' header
+    };
+};
 
 /**
  * Fetches all social insurance records from the backend.
  * @returns {Promise<Array>} A promise that resolves to an array of records.
  */
 export const getRecords = ( ) => {
-  return fetch(API_URL).then(res => {
+    return fetch(API_URL, { headers: getAuthHeaders() }).then(res => {
     if (!res.ok) throw new Error('Failed to fetch social insurance records.');
     return res.json();
   });
@@ -22,7 +29,7 @@ export const getRecords = ( ) => {
 export const saveRecord = (record) => {
   return fetch(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
     body: JSON.stringify(record),
   }).then(res => {
     if (!res.ok) throw new Error('Failed to save social insurance record.');
