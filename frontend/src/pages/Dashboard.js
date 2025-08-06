@@ -9,6 +9,7 @@ import { FaRegListAlt, FaRegCalendarAlt, FaChartArea,
 } from 'react-icons/fa'; // Import new icons
 import { useData } from '../context/DataContext';
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
+import { safePercentage } from '../utils/helper'; // Import safe division and percentage functions }
 import './Dashboard.css'; // We will create this CSS file
 
 const Dashboard = () => {
@@ -54,7 +55,7 @@ const Dashboard = () => {
                       </div>
                       <div className="dashboard-card-item">
                           <span className="description">Change:</span>
-                              <span className="value">{(((goldtotalNow / overallTotalPaid) - 1) * 100).toFixed(2)}%</span>
+                              <span className="value">{safePercentage(goldtotalNow, overallTotalPaid)}%</span>
                       </div>
                   </div>
               </div>
@@ -71,7 +72,7 @@ const Dashboard = () => {
                       </div>
                       <div className="dashboard-card-item">
                           <span className="description">Change:</span>
-                          <span className="value">{(((certificateSummary.totalExpectedReturns / certificateSummary.totalActiveAmount) - 1) * 100).toFixed(2)}%</span>
+                              <span className="value">{safePercentage(certificateSummary.totalExpectedReturns, certificateSummary.totalActiveAmount)}%</span>
                       </div>
                   </div>
               </div>
@@ -89,7 +90,7 @@ const Dashboard = () => {
                       </div>
                       <div className="dashboard-card-item">
                           <span className="description">Change:</span>
-                              <span className="value">{(overallTotals.totalProfit).toFixed(2)} %</span>
+                              <span className="value">{(overallTotals.totalProfit)} %</span>
                       </div>
                   </div>
               </div>
@@ -106,8 +107,8 @@ const Dashboard = () => {
                           <span className="value">{formatCurrency(summaryMetrics.topUps + summaryMetrics.totalProfitNow)}</span>
                       </div>
                       <div className="dashboard-card-item">
-                          <span className="description">Change:</span>
-                              <span className="value">{((summaryMetrics.totalProfitNow / summaryMetrics.topUps) * 100).toFixed(2)} %</span>
+                              <span className="description">Change:</span>
+                              <span className="value">{safePercentage((summaryMetrics.totalProfitNow + summaryMetrics.topUps), summaryMetrics.topUps)} %</span>
                       </div>
                   </div>
                   </div>

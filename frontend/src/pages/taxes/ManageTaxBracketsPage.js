@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getBrackets, updateBrackets } from '../../services/taxService';
-import '../../components/PaycheckForm.css'; // Reuse form styles
+import '../../components/Form.css'; // Reuse form styles
 import './TaxesPage.css'; // Reuse tax card styles
 
 const ManageTaxBracketsPage = () => {

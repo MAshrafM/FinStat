@@ -1,7 +1,7 @@
 // frontend/src/pages/taxes/YearlyTaxTable.js
 import React from 'react';
 import { formatCurrency } from '../../utils/formatters';
-import '../../components/PaycheckTable.css'; // Reuse table styles
+import '../../components/Table.css'; // Reuse table styles
 import { FaArrowUp, FaArrowDown, FaMinus } from 'react-icons/fa';
 import './TaxesPage.css'; // For new styles
 

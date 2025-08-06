@@ -1,7 +1,7 @@
 // frontend/src/pages/EditPaycheck.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import PaycheckForm from '../../components/PaycheckForm';
+import PaycheckForm from './PaycheckForm';
 import { getPaycheckById, updatePaycheck } from '../../services/paycheckService';
 
 const EditPaycheck = () => {

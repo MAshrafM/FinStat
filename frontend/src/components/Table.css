@@ -1,6 +1,6 @@
 /* frontend/src/components/PaycheckTable.css */
 .table-container {
-  width: 100%;
+  width: 110%;
   overflow-x: auto; /* For responsiveness on small screens */
 }
 

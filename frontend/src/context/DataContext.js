@@ -7,6 +7,7 @@ import { getCertificates } from '../services/certificateService';
 import { getMutualFundSummary, getLastPrice } from '../services/mutualFundService';
 import { getAllTrades, getTradeSummary, getMarketData } from '../services/tradeService';
 import { getLatestExpenditure } from '../services/expenditureService';
+import { safeDivision, safePercentage } from '../utils/helper'; // Import any helper functions you need 
 // ... import other services as needed (mutual funds, certificates, etc.)
 
 // 1. Create the Context
@@ -81,17 +82,17 @@ export const DataProvider = ({ children }) => {
         const closedPositions = [];
         for (const item of data) {
             if (item.currentShares > 0 && item._id.iteration >= 0) {
-                item.avgPrice = item.realizedPL / item.currentShares; // avgPrice is the average price of shares currently held
-                item.avgBuy = item.totDeals / item.currentShares; // avgBuy is the average price paid for shares
+                item.avgPrice = Math.abs(item.realizedPL / item.currentShares); // avgPrice is the average price of shares currently held
+                item.avgBuy = Math.abs(item.totDeals / item.currentShares); // avgBuy is the average price paid for shares
                 item.targetPrice = item.avgPrice * (1 + marginProfit); // Target price is avgPrice + margin profit  
                 item.targetSell = item.avgBuy * (1 + marginProfit); // Target sell price is avgBuy + margin profit
                 item.totalValueNow = market[item._id.stockCode] * item.currentShares;
-                item.changeNow = ((item.totalValueNow / Math.abs(item.realizedPL)) - 1) * 100; // Calculate change percentage
+                item.changeNow = safePercentage(item.totalValueNow, Math.abs(item.realizedPL)); // Calculate change percentage
                 openPositions.push(item);
 
             } else {
                 if (item._id.stockCode) {
-                    item.profitPercentage = (item.realizedPL / item.totalBuyValue) * 100; // profitPercentage is the percentage profit made on the trade
+                    item.profitPercentage = safeDivision(item.realizedPL, item.totalBuyValue); // profitPercentage is the percentage profit made on the trade
                     closedPositions.push(item);
                 }
             }
@@ -167,7 +168,7 @@ export const DataProvider = ({ children }) => {
                 const totalSellingValue = mfSummaryData.reduce((sum, item) =>
                     sum + ((lastPriceData.find(f => f.name === item._id.name).lastPrice || 0) * item.currentUnits), 0
                 );
-                const totalProfit = ((totalSellingValue / newTotal) - 1) * 100;
+                const totalProfit = safePercentage(totalSellingValue, newTotal);
                 
                 setOverallTotals({
                     totalOfAllMF,

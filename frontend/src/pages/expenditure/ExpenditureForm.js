@@ -1,7 +1,7 @@
 // frontend/src/pages/expenditure/ExpenditureForm.js
 import React, { useState, useEffect } from 'react';
 import { formatDateForInput, formatCurrency } from '../../utils/formatters';
-import '../../components/PaycheckForm.css'; // Reuse form styles
+import '../../components/Form.css'; // Reuse form styles
 import { FaPlus, FaMinus } from 'react-icons/fa';
 import './Expenditure.css'; // For new styles
 

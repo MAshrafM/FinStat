@@ -1,7 +1,7 @@
 // frontend/src/pages/AddPaycheck.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import PaycheckForm from '../../components/PaycheckForm';
+import PaycheckForm from './PaycheckForm';
 import { createPaycheck } from '../../services/paycheckService';
 
 const AddPaycheck = () => {

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { getProfile, deleteHistoryRecord  } from '../../services/salaryService';
 import { formatCurrency } from '../../utils/formatters';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
-import '../../components/PaycheckTable.css'; // Reuse the nice table styles
+import '../../components/Table.css'; // Reuse the nice table styles
 
 const SalaryHistory = () => {
   const [profile, setProfile] = useState(null);

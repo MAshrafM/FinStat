@@ -175,7 +175,7 @@ const TradeSummaryPage = () => {
                                 <td>{formatCurrency(Math.abs(item.targetSell))}</td>
                                 <td style={{ color: Math.abs(item.avgPrice) > stMarketPrices[item._id.stockCode] ? '#c0392b' : '#27ae60' }}>${stMarketPrices[item._id.stockCode]}</td>
                                 <td className="total-value" style={{ color: item.totalValueNow >= item.totalBuyValue ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totalValueNow)}</td>
-                                <td className="total-value" style={{ color: item.changeNow > 0 ? '#27ae60' : '#c0392b' }} >{item.changeNow.toFixed(2)}%</td>
+                                <td className="total-value" style={{ color: item.changeNow > 0 ? '#27ae60' : '#c0392b' }} >{item.changeNow}%</td>
                                 <td>{formatCurrency(item.totalFees)}</td>
                                 <td>{item.tradeCount}</td>
                                 <td>{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</td>
@@ -213,7 +213,7 @@ const TradeSummaryPage = () => {
                                 <td className="total-value" style={{ color: item.realizedPL >= 0 ? '#27ae60' : '#c0392b' }}>
                                     {formatCurrency(item.realizedPL)}
                                 </td>
-                                <td style={{ color: item.profitPercentage >= 0 ? '#27ae60' : '#c0392b' }}>{item.profitPercentage.toFixed(2)} %</td>
+                                <td style={{ color: item.profitPercentage >= 0 ? '#27ae60' : '#c0392b' }}>{item.profitPercentage} %</td>
                                 <td> {formatCurrency(item.totalBuyValue)}</td>
                                 <td> {formatCurrency(item.totalSellValue)}</td>
                                 <td>{formatCurrency(item.totalFees)}</td>

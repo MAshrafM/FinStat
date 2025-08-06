@@ -1,6 +1,6 @@
 // frontend/src/components/SalaryForm.js
 import React, { useState, useEffect } from 'react';
-import './PaycheckForm.css'; // We can reuse the form styling we already have
+import './Form.css'; // We can reuse the form styling we already have
 
 const SalaryForm = ({ onFormSubmit, initialData = {}, mode = 'create' }) => {
   const [profileData, setProfileData] = useState({

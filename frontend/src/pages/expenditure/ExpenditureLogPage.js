@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { getExpenditures, deleteExpenditure } from '../../services/expenditureService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { FaPlus, FaPencilAlt, FaTrash } from 'react-icons/fa';
-import '../../components/PaycheckTable.css'; // Reuse table styles
+import '../../components/Table.css'; // Reuse table styles
 import PaginationControls from '../../components/PaginationControls';
 
 const transactionTypeMap = {

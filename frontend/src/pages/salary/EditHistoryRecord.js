@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getProfile, updateHistoryRecord } from '../../services/salaryService';
-import '../../components/PaycheckForm.css'; // Reuse form styles
+import '../../components/Form.css'; // Reuse form styles
 
 const EditHistoryRecord = () => {
   const { historyId } = useParams();
