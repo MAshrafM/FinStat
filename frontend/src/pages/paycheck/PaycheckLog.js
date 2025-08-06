@@ -1,6 +1,6 @@
 ﻿// frontend/src/pages/PaycheckLog.js
 import React, { useState, useEffect, useCallback } from 'react';
-import PaycheckTable from '../../components/PaycheckTable';
+import PaycheckTable from './PaycheckTable';
 import { getPaychecksLog, deletePaycheck, getPaychecks } from '../../services/paycheckService';
 import PaginationControls from '../../components/PaginationControls';
 import { formatCurrency } from '../../utils/formatters';

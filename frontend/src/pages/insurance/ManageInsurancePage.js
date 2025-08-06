@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { saveRecord } from '../../services/socialInsuranceService';
-import '../../components/PaycheckForm.css'; // Reuse form styles
+import '../../components/Form.css'; // Reuse form styles
 
 const ManageInsurancePage = () => {
   const navigate = useNavigate();

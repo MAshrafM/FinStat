@@ -57,7 +57,7 @@ function App() {
   return (
       <Router>
           <Routes>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="*" element={<LandingPage />} />
               <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/paycheck-log" element={<PaycheckLog />} />

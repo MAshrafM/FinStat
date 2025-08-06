@@ -2,8 +2,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa'; // Import the trash icon
-import { formatCurrency } from '../utils/formatters';
-import './PaycheckTable.css'; // We will update this file next
+import { formatCurrency } from '../../utils/formatters';
+import '../../components/Table.css'; // We will update this file next
 
 const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
   const groupPaychecksByMonth = () => {

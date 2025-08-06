@@ -1,6 +1,6 @@
 // frontend/src/components/PaycheckForm.js
 import React, { useState, useEffect } from 'react';
-import './PaycheckForm.css';
+import '../../components/Form.css';
 
 // The component now accepts 'onFormSubmit' and optional 'initialData'
 const PaycheckForm = ({ onFormSubmit, initialData }) => {
@@ -88,7 +88,7 @@ const PaycheckForm = ({ onFormSubmit, initialData }) => {
       </div>
 
       <div className="form-group">
-        <label htmlFor="agrossAmount">Insurance Deduction</label>
+        <label htmlFor="agrossAmount">Gross Amount</label>
         <input id="grossAmount" type="number" placeholder='e.g., 100' value={grossAmount} onChange={(e) => setGrossAmount(e.target.value)} />
       </div>
 

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getProfile, updateProfileDetails } from '../../services/salaryService';
-import '../../components/PaycheckForm.css'; // Reuse form styles
+import '../../components/Form.css'; // Reuse form styles
 
 const EditProfilePage = () => {
   const navigate = useNavigate();
