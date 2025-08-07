@@ -15,6 +15,7 @@ router.get('/', auth, async (req, res) => {
 
   // 1. Build a dynamic query object
   const query = {};
+  query.user = req.user.id;
     if (broker && broker != 'TopUp') {
         query.broker = broker; // If a broker is provided, add it to the query
     } else if (broker === 'TopUp') {
@@ -38,7 +39,7 @@ router.get('/', auth, async (req, res) => {
 // @desc    Get all trades (with pagination)
 router.get('/all', auth, async (req, res) => {
   try {
-    const trades = await Trade.find().sort({createdAt:-1});
+    const trades = await Trade.find({ user: req.user.id }).sort({createdAt:-1});
     res.json(trades);
   } catch (err) {
     res.status(500).send('Server Error');
@@ -138,7 +139,7 @@ router.get('/market-prices', auth, async (req, res) => {
 // @desc    Create a new trade
 router.post('/', auth, async (req, res) => {
   try {
-    const newTrade = new Trade(req.body);
+    const newTrade = new Trade({...req.body, user: req.user.id});
     await newTrade.save();
     res.json(newTrade);
   } catch (err) {
@@ -150,7 +151,7 @@ router.post('/', auth, async (req, res) => {
 // @desc    Get a single trade by ID
 router.get('/:id', auth, async (req, res) => {
   try {
-    const trade = await Trade.findById(req.params.id);
+    const trade = await Trade.findById({...req.params.id, user: req.user.id});
     if (!trade) return res.status(404).json({ msg: 'Trade not found' });
     res.json(trade);
   } catch (err) {
@@ -162,8 +163,10 @@ router.get('/:id', auth, async (req, res) => {
 // @desc    Update a trade
 router.put('/:id', auth, async (req, res) => {
   try {
-    const trade = await Trade.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    let trade = await Trade.findById(req.params.id);
     if (!trade) return res.status(404).json({ msg: 'Trade not found' });
+    if(trade.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+    trade = await Trade.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(trade);
   } catch (err) {
     res.status(400).json({ msg: err.message });
@@ -174,8 +177,10 @@ router.put('/:id', auth, async (req, res) => {
 // @desc    Delete a trade
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const trade = await Trade.findByIdAndDelete(req.params.id);
+    let trade = await Trade.findById(req.params.id);
     if (!trade) return res.status(404).json({ msg: 'Trade not found' });
+    if(trade.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+    trade = await Trade.findByIdAndDelete(req.params.id);
     res.json({ msg: 'Trade deleted successfully' });
   } catch (err) {
     res.status(500).send('Server Error');

@@ -11,3 +11,4 @@ frontend/.env
 # Seed data
 backend/*.csv
 backend/seeder*
+backend/migration

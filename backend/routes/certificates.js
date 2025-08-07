@@ -11,7 +11,7 @@ const auth = require('../middleware/auth');
 router.get('/', auth, async (req, res) => {
     try {
         // No pagination needed for this feature as the list is usually short
-        const certificates = await Certificate.find().sort({ startDate: -1 });
+        const certificates = await Certificate.find({ user: req.user.id }).sort({ startDate: -1 });
         res.json(certificates);
     } catch (err) {
         res.status(500).send('Server Error');
@@ -22,7 +22,7 @@ router.get('/', auth, async (req, res) => {
 // @desc    Create a new certificate
 router.post('/', auth, async (req, res) => {
     try {
-        const newCertificate = new Certificate(req.body);
+        const newCertificate = new Certificate({...req.body, user: req.user.id});
         await newCertificate.save();
         res.json(newCertificate);
     } catch (err) {
@@ -46,8 +46,10 @@ router.get('/:id', auth, async (req, res) => {
 // @desc    Update a certificate
 router.put('/:id', auth, async (req, res) => {
     try {
-        const certificate = await Certificate.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        let certificate = await Certificate.findById(req.params.id);
         if (!certificate) return res.status(404).json({ msg: 'Certificate not found' });
+        if(certificate.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        certificate = await Certificate.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(certificate);
     } catch (err) {
         res.status(400).json({ msg: err.message });
@@ -58,8 +60,10 @@ router.put('/:id', auth, async (req, res) => {
 // @desc    Delete a certificate
 router.delete('/:id', auth, async (req, res) => {
     try {
-        const certificate = await Certificate.findByIdAndDelete(req.params.id);
+        let certificate = await Certificate.findById(req.params.id);
         if (!certificate) return res.status(404).json({ msg: 'Certificate not found' });
+        if(certificate.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        certificate = await Certificate.findByIdAndDelete(req.params.id);
         res.json({ msg: 'Certificate deleted successfully' });
     } catch (err) {
         res.status(500).send('Server Error');

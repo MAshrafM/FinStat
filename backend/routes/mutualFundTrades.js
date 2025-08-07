@@ -18,6 +18,7 @@ router.get('/', auth, async (req, res) => {
 
     if (type && type !== 'all') {
         query.type = type; // Filter by type if provided
+        query.user = req.user.id;
         }
 
     try {
@@ -35,7 +36,7 @@ router.get('/', auth, async (req, res) => {
 
 router.get('/code/:code', auth, async (req, res) => {
     try {
-        const trade = await MutualFundTrade.find({ code: req.params.code });
+        const trade = await MutualFundTrade.find({ code: req.params.code, user: req.user.id });
         if (!trade || trade.length === 0) return res.status(404).json({ msg: 'Trade not found' });
         res.json(trade);
         } catch (err) {
@@ -45,7 +46,7 @@ router.get('/code/:code', auth, async (req, res) => {
 
 router.get('/all', auth, async (req, res) => {
     try {
-        const trades = await MutualFundTrade.find().sort({ date: -1, createdAt: -1 });
+        const trades = await MutualFundTrade.find({ user: req.user.id }).sort({ date: -1, createdAt: -1 });
         res.json(trades);
     } catch (err) {
         res.status(500).send('Server Error');
@@ -69,7 +70,7 @@ router.get('/last-price', auth, async (req, res) => {
 // @desc    Create a new trade
 router.post('/', auth, async (req, res) => {
     try {
-        const newTrade = new MutualFundTrade(req.body);
+        const newTrade = new MutualFundTrade({...req.body, user: req.user.id});
         await newTrade.save();
         res.json(newTrade);
     } catch (err) {
@@ -162,8 +163,10 @@ router.get('/:id', auth, async (req, res) => {
 // @desc    Update a trade
 router.put('/:id', auth, async (req, res) => {
     try {
-        const trade = await MutualFundTrade.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        let trade = await MutualFundTrade.findById(req.params.id);
         if (!trade) return res.status(404).json({ msg: 'Trade not found' });
+        if(trade.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        trade = await MutualFundTrade.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(trade);
     } catch (err) {
         res.status(400).json({ msg: err.message });
@@ -174,8 +177,10 @@ router.put('/:id', auth, async (req, res) => {
 // @desc    Delete a trade
 router.delete('/:id', auth, async (req, res) => {
     try {
-        const trade = await MutualFundTrade.findByIdAndDelete(req.params.id);
+        let trade = await MutualFundTrade.findById(req.params.id);
         if (!trade) return res.status(404).json({ msg: 'Trade not found' });
+        if(trade.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        trade = await MutualFundTrade.findByIdAndDelete(req.params.id);
         res.json({ msg: 'Trade deleted successfully' });
     } catch (err) {
         res.status(500).send('Server Error');
