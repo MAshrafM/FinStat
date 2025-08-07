@@ -9,7 +9,7 @@ const auth = require('../middleware/auth');
 router.get('/', auth, async (req, res) => {
   try {
     // Find the one and only profile.
-    const profile = await SalaryProfile.findOne();
+    const profile = await SalaryProfile.findOne({ user: req.user.id });
     res.json(profile); // Will return the profile or null if it doesn't exist
   } catch (err) {
     console.error(err.message);
@@ -50,7 +50,7 @@ router.post('/', auth, async (req, res) => {
     const { name, title, position, year, salaryDetails } = req.body;
 
     // Try to find the existing profile.
-    let profile = await SalaryProfile.findOne();
+    let profile = await SalaryProfile.findOne({ user: req.user.id });
 
     if (profile) {
       // --- UPDATE EXISTING PROFILE ---
@@ -91,7 +91,7 @@ router.put('/history/:historyId', auth, async (req, res) => {
     const { historyId } = req.params;
     const updatedRecordData = req.body;
 
-    const profile = await SalaryProfile.findOne();
+    const profile = await SalaryProfile.findOne({ user: req.user.id });
     if (!profile) {
       return res.status(404).json({ msg: 'Profile not found' });
     }
@@ -120,7 +120,7 @@ router.delete('/history/:historyId', auth, async (req, res) => {
   try {
     const { historyId } = req.params;
 
-    const profile = await SalaryProfile.findOne();
+    const profile = await SalaryProfile.findOne(req.user.id);
     if (!profile) {
       return res.status(404).json({ msg: 'Profile not found' });
     }

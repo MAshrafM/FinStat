@@ -1,8 +1,14 @@
 // backend/models/SalaryProfile.js
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 // This sub-schema defines the salary components for a specific period.
 const SalaryDetailSchema = new mongoose.Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User', // This creates a reference to the User model
+    required: true,
+  },
   effectiveDate: {
     type: Date,
     required: true,
@@ -22,6 +28,11 @@ const SalaryDetailSchema = new mongoose.Schema({
 
 // This is the main schema for a salary profile.
 const SalaryProfileSchema = new mongoose.Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User', // This creates a reference to the User model
+    required: true,
+  },
   name: {
     type: String,
     required: true,

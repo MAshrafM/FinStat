@@ -15,8 +15,8 @@ router.get('/', auth, async (req, res) => {
     const skip = (page - 1) * limit;
 
     try {
-        const logs = await Gold.find().sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
-        const total = await Gold.countDocuments();
+        const logs = await Gold.find({ user: req.user.id }).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
+        const total = await Gold.countDocuments({ user: req.user.id });
         res.json({
             data: logs,
             totalPages: Math.ceil(total / limit),
@@ -31,7 +31,7 @@ router.get('/', auth, async (req, res) => {
 // @desc    Get all gold logs (without pagination)
 router.get('/all', auth, async (req, res) => {
     try {
-        const logs = await Gold.find().sort({ date: -1, createdAt: -1 });
+        const logs = await Gold.find({ user: req.user.id }).sort({ date: -1, createdAt: -1 });
         res.json(logs);
     } catch (err) {
         res.status(500).send('Server Error');
@@ -101,7 +101,7 @@ router.get('/price', auth, async (req, res) => {
 // @desc    Create a new gold log
 router.post('/', auth, async (req, res) => {
     try {
-        const newLog = new Gold(req.body);
+        const newLog = new Gold({...req.body, user: req.user.id});
         await newLog.save();
         res.json(newLog);
     } catch (err) {
@@ -125,8 +125,10 @@ router.get('/:id', auth, async (req, res) => {
 // @desc    Update a log
 router.put('/:id', auth, async (req, res) => {
     try {
-        const log = await Gold.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!log) return res.status(404).json({ msg: 'Log not found' });
+        let log = await Gold.findById(req.params.id);
+        if (!log) return res.status(404).json({ msg: 'Gold not found' });
+        if(log.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        log = await Gold.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(log);
     } catch (err) {
         res.status(400).json({ msg: err.message });
@@ -137,8 +139,10 @@ router.put('/:id', auth, async (req, res) => {
 // @desc    Delete a log
 router.delete('/:id', auth, async (req, res) => {
     try {
-        const log = await Gold.findByIdAndDelete(req.params.id);
-        if (!log) return res.status(404).json({ msg: 'Log not found' });
+        let log = await Gold.findById(req.params.id);
+        if (!log) return res.status(404).json({ msg: 'Gold not found' });
+        if(log.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        log = await Gold.findByIdAndDelete(req.params.id);
         res.json({ msg: 'Log deleted successfully' });
     } catch (err) {
         res.status(500).send('Server Error');

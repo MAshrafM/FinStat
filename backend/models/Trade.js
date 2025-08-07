@@ -1,7 +1,13 @@
 // backend/models/Trade.js
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const TradeSchema = new mongoose.Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User', // This creates a reference to the User model
+    required: true,
+  },
   date: {
     type: Date,
     required: true,

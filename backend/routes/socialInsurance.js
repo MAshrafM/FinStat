@@ -9,7 +9,7 @@ const auth = require('../middleware/auth');
 router.get('/', auth, async (req, res) => {
   try {
     // Sort by year descending
-    const records = await SocialInsurance.find().sort({ year: -1 });
+    const records = await SocialInsurance.find({ user: req.user.id }).sort({ year: -1 });
     res.json(records);
   } catch (err) {
     console.error(err.message);

@@ -1,7 +1,13 @@
 // backend/models/Paycheck.js
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const PaycheckSchema = new mongoose.Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User', // This creates a reference to the User model
+    required: true,
+  },
   month: {
     type: String,
     required: true, // e.g., "2024-07" for July 2024

@@ -1,7 +1,13 @@
 // backend/models/SocialInsurance.js
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const SocialInsuranceSchema = new mongoose.Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User', // This creates a reference to the User model
+    required: true,
+  },
   year: {
     type: Number,
     required: true,

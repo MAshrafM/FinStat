@@ -15,6 +15,7 @@ router.post('/', auth, async (req, res) => {
       type: req.body.type,
       amount: req.body.amount,
       note: req.body.note,
+      user: req.user.id
     });
 
     const paycheck = await newPaycheck.save();
@@ -29,7 +30,7 @@ router.post('/', auth, async (req, res) => {
 // @desc    Get ALL paychecks without pagination (for analysis pages)
 router.get('/all', auth, async (req, res) => {
   try {
-    const paychecks = await Paycheck.find().sort({ month: -1 });
+    const paychecks = await Paycheck.find({ user: req.user.id }).sort({ month: -1 });
     res.json(paychecks); // Returns the plain array
   } catch (err) {
     console.error(err.message);
@@ -52,6 +53,7 @@ router.get('/', auth, async (req, res) => {
       const query = {};
       if (!isNaN(year)) {
           query.month = query.month = { $regex: `^${year}` };
+          query.user = req.user.id;
       }
     const total = await Paycheck.countDocuments(query);
 
@@ -76,7 +78,7 @@ router.get('/', auth, async (req, res) => {
 // @access  Public
 router.get('/:id', auth, async (req, res) => {
   try {
-    const paycheck = await Paycheck.findById(req.params.id);
+    const paycheck = await Paycheck.findById({...req.params.id, user: req.user.id});
 
     if (!paycheck) {
       return res.status(404).json({ msg: 'Paycheck not found' });
@@ -98,14 +100,14 @@ router.get('/:id', auth, async (req, res) => {
 // @access  Public
 router.put('/:id', auth, async (req, res) => {
   try {
-    const paycheck = await Paycheck.findByIdAndUpdate(
+    let paycheck = await Paycheck.findById(req.params.id);
+    if (!paycheck) return res.status(404).json({ msg: 'Paycheck not found' });
+    if(paycheck.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+    paycheck = await Paycheck.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true } // This option returns the document after the update
     );
-    if (!paycheck) {
-      return res.status(404).json({ msg: 'Paycheck not found' });
-    }
     res.json(paycheck);
   } catch (err) {
     console.error(err.message);
@@ -118,10 +120,9 @@ router.put('/:id', auth, async (req, res) => {
 // @access  Public
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const paycheck = await Paycheck.findById(req.params.id);
-    if (!paycheck) {
-      return res.status(404).json({ msg: 'Paycheck not found' });
-    }
+    let paycheck = await Paycheck.findById(req.params.id);
+    if (!paycheck) return res.status(404).json({ msg: 'Paycheck not found' });
+    if(paycheck.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
     await paycheck.deleteOne(); // Mongoose v6+ uses deleteOne()
     res.json({ msg: 'Paycheck removed' });
   } catch (err) {

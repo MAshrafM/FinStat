@@ -9,7 +9,7 @@ const auth = require('../middleware/auth');
 // @desc    Get ALL expenditure without pagination (for analysis pages)
 router.get('/all', auth, async (req, res) => {
   try {
-    const expenditures = await Expenditure.find().sort({ createdAt: -1 });
+    const expenditures = await Expenditure.find({ user: req.user.id }).sort({ createdAt: -1 });
     res.json(expenditures); // Returns the plain array
   } catch (err) {
     console.error(err.message);
@@ -28,6 +28,7 @@ router.get('/', auth, async (req, res) => {
       const query = {};
       if (type != 'all') {
           query.transactionType = type; // Filter by type if provided
+          query.user = req.user.id;
       }
     // Get total number of documents for pagination calculation
     const total = await Expenditure.countDocuments(query);
@@ -52,7 +53,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/latest', auth, async(req, res) =>{
   try{
     // Find one record, sort by the 'createdAt' timestamp descending to get the latest.
-    const latestExpenditure = await Expenditure.findOne().sort({ createdAt: -1 });
+    const latestExpenditure = await Expenditure.findOne({ user: req.user.id }).sort({ createdAt: -1 });
     res.json(latestExpenditure); 
   } catch (err) {
     console.error(err.message);
@@ -65,7 +66,7 @@ router.get('/latest', auth, async(req, res) =>{
 // @desc    Create a new expenditure log
 router.post('/', auth, async (req, res) => {
   try {
-    const newExpenditure = new Expenditure(req.body);
+    const newExpenditure = new Expenditure({...req.body, user: req.user.id});
     const expenditure = await newExpenditure.save();
     res.json(expenditure);
   } catch (err) {
@@ -89,8 +90,10 @@ router.get('/:id', auth, async (req, res) => {
 // @desc    Update an expenditure log
 router.put('/:id', auth, async (req, res) => {
   try {
-    const expenditure = await Expenditure.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    let expenditure = await Expenditure.findById(req.params.id);
     if (!expenditure) return res.status(404).json({ msg: 'Expenditure not found' });
+    if(expenditure.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+    expenditure = await Expenditure.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(expenditure);
   } catch (err) {
     res.status(500).send('Server Error');
@@ -101,8 +104,10 @@ router.put('/:id', auth, async (req, res) => {
 // @desc    Delete an expenditure log
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const expenditure = await Expenditure.findByIdAndDelete(req.params.id);
+    let expenditure = await Expenditure.findById(req.params.id);
     if (!expenditure) return res.status(404).json({ msg: 'Expenditure not found' });
+    if(expenditure.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+    expenditure = await Expenditure.findByIdAndDelete(req.params.id);
     res.json({ msg: 'Expenditure deleted' });
   } catch (err) {
     res.status(500).send('Server Error');

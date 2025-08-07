@@ -1,7 +1,13 @@
 // backend/models/Certificate.js
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const CertificateSchema = new mongoose.Schema({
+    user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User', // This creates a reference to the User model
+    required: true,
+  },
     name: {
         type: String,
         required: true,

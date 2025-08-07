@@ -10,6 +10,7 @@ import '../trades/Trades.css'; // Reuse styles
 const CertificateLogPage = () => {
     // Use the global data context
     const { certificates } = useData(); // Access any global data if needed
+    //console.log(certificates);
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this certificate?')) {
