@@ -3,7 +3,6 @@ const API_URL = 'http://localhost:5000/api/salary-profile';
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
-    console.log(token)
     return {
         'Content-Type': 'application/json',
         'x-auth-token': token || '', // Include the token in the 'x-auth-token' header

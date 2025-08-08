@@ -81,3 +81,57 @@
   border-color: #3498db; /* Same focus color as other inputs */
   box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
 }
+
+@media (max-width: 768px) {
+  .paycheck-form-container {
+    margin: 1rem auto;
+    padding: 1rem;
+    width: 90%; /* Slightly less width on mobile */
+  }
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+
+  .submit-button {
+    padding: 12px;
+    font-size: 1rem;
+  }
+}
+
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .paycheck-form-container {
+    width: 95%;
+    padding: 0.8rem;
+    margin: 0.5rem auto;
+  }
+
+  .paycheck-form-container h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 8px;
+    font-size: 0.9rem;
+    }
+
+  .submit-button {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+}

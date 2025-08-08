@@ -1,4 +1,4 @@
-/* frontend/src/components/PaycheckTable.css */
+/* frontend/src/components/Table.css */
 .table-container {
   width: 100%;
   max-width: 100vw; /* Ensures the table does not exceed viewport width */
@@ -132,6 +132,11 @@
   .styled-table td,
   .styled-table tr {
     display: block; /* Stack elements vertically */
+  }
+
+  .styled-table{
+    min-width: 100%; /* Full width for small screens */
+    font-size: 0.8rem;
   }
   .styled-table thead {
     display: none;

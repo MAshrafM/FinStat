@@ -42,11 +42,12 @@ export const DataProvider = ({ children }) => {
     const [stMarketPrices, setStMarketPrices] = useState({}); // Store market prices for stocks
     const [summaryMetrics, setSummaryMetrics] = useState({}); // Summary metrics if needed
     const [bankAccountData, setBankAccountData] = useState({}); // Bank account data if needed
-
+    // Responsive 
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    // Margin profit percentage for stocks
     const marginProfit = 0.2; // Margin profit percentage for calculations
 
     // Effect to fetch all data when the provider mounts
-
     const calculateProgress = (startDate, period) => {
         const start = new Date(startDate);
         const now = new Date();
@@ -226,6 +227,14 @@ export const DataProvider = ({ children }) => {
         fetchAllData();
     }, [lastPriceData, openPosData, endPosData]); // Empty dependency array means this runs once
 
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
     // The value that will be available to all consuming components
     const value = {
         goldSummary,
@@ -244,6 +253,7 @@ export const DataProvider = ({ children }) => {
         summaryMetrics,
         bankAccountData,
         isLoading,
+        isMobile,
         error,
     };
 

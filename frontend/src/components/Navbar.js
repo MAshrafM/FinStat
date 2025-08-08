@@ -12,14 +12,11 @@ const addLogRoutes = [
   'gold-wallet',
   'certificates'
 ];
-const Navbar = ({onSidebarToggle}) => {
+const Navbar = () => {
   const location = useLocation(); // Hook to get the current page URL
-  const currentPath = location.pathname.replace(/^\//, ''); // Normalize the path to avoid trailing slashes
+  const currentPath = location.pathname.replace(/^\//, ''); 
   return (
     <nav className="navbar">
-      <button className="sidebar-toggle" onClick={onSidebarToggle} aria-label="Toggle Sidebar">
-        <FaBars />
-      </button>
       {/* Navbar brand or title */}
       <div className="navbar-brand">
         <Link to="/dashboard">Finance Dashboard</Link>

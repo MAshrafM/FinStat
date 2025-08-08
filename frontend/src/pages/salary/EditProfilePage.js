@@ -57,11 +57,15 @@ const EditProfilePage = () => {
           <label>Year</label>
           <input type="number" name="year" value={formData.year} onChange={handleChange} required />
         </div>
-        <button type="submit" className="submit-button">Save Changes</button>
-      </form>
-      <Link to="/salary-profile" className="cancel-button" style={{textDecoration: 'none'}}>
-        Cancel
-      </Link>
+        <div className="button-group">
+          <button type="submit" className="submit-button">Save Changes</button>
+          <Link to="/salary-profile" className="cancel-button" style={{textDecoration: 'none'}}>
+          Cancel
+        </Link>
+        </div>
+        </form>
+        
+      
     </div>
   );
 };
