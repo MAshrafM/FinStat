@@ -1,10 +1,12 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState} from 'react';
+import { Link } from 'react-router-dom';
+import { useData } from '../context/DataContext';
 import './Sidebar.css'; // Assuming you have a CSS file for styling
 
 const Sidebar = () => {
+    const { isMobile } = useData();
     const [isExpanded, setIsExpanded] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
     const isCurrentlyExpanded = isMobile ? mobileOpen : isExpanded;
 
     const handleMouseEnter = () => {
@@ -19,18 +21,6 @@ const Sidebar = () => {
         }
     };
 
-
-    useEffect(() => {
-    const checkMobile = () => {
-        const mobile = window.innerWidth <= 768;
-        setIsMobile(mobile);  // <-- HERE
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-}, []);
 
     const menuItems = [
         {
@@ -172,8 +162,9 @@ const Sidebar = () => {
                 </div>
                 <nav className="sidebar-nav">
                     {menuItems.map((item, index) => (
-                        <div
+                        <Link
                             key={index}
+                            to={item.path}
                             className="sidebar-item"
                             title={!((isMobile && mobileOpen) || (!isMobile && isExpanded)) ? item.title : ''}
                             onClick={() => console.log(`Navigate to ${item.path}`)}
@@ -187,7 +178,7 @@ const Sidebar = () => {
                                     <span className="sidebar-description">{item.description}</span>
                                 </div>
                             )}
-                        </div>
+                        </Link>
                     ))}
                 </nav>
             </div>

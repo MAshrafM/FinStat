@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom';
 import { getProfile, deleteHistoryRecord  } from '../../services/salaryService';
 import { formatCurrency } from '../../utils/formatters';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
+import { useData } from '../../context/DataContext';
 import '../../components/Table.css'; // Reuse the nice table styles
 
 const SalaryHistory = () => {
   const [profile, setProfile] = useState(null);
+  const { isMobile } = useData(); // Get the mobile state from context
   useEffect(() => {
     loadProfile();
   }, []);
@@ -32,7 +34,7 @@ const SalaryHistory = () => {
     <div className="page-container">
       <div className="page-header">
         <h1>Salary History for {profile.name}</h1>
-        <Link to="/salary-profile" className="nav-button">Back to Profiles</Link>
+        {!isMobile && (<Link to="/salary-profile" className="nav-button">Back to Profiles</Link>)}
       </div>
       <div className="table-container">
         <table className="styled-table">
@@ -55,18 +57,18 @@ const SalaryHistory = () => {
           <tbody>
             {sortedHistory.map(record => (
               <tr key={record._id} data-id={record._id}>
-                <td>{new Date(record.effectiveDate).toLocaleDateString()}</td>
-                <td>{formatCurrency(record.basicSalary)}</td>
-                <td>{formatCurrency(record.basicProduction)}</td>
-                <td>{formatCurrency(record.variables)}</td>
-                <td>{formatCurrency(record.environment)}</td>
-                <td>{formatCurrency(record.meal)}</td>
-                <td>{formatCurrency(record.shift)}</td>
-                <td>{formatCurrency(record.supervising)}</td>
-                <td>{formatCurrency(record.others)}</td>
-                <td>{formatCurrency(record.prepaid)}</td>
-                <td>{formatCurrency(record.bonds)}</td>
-                <td className="action-cell"> {/* <-- ADD ACTIONS CELL */}
+                <td data-label="Date">{new Date(record.effectiveDate).toLocaleDateString()}</td>
+                <td data-label="Basic Salary">{formatCurrency(record.basicSalary)}</td>
+                <td data-label="Production">{formatCurrency(record.basicProduction)}</td>
+                <td data-label="Variables">{formatCurrency(record.variables)}</td>
+                <td data-label="Environment">{formatCurrency(record.environment)}</td>
+                <td data-label="Meal">{formatCurrency(record.meal)}</td>
+                <td data-label="Shift">{formatCurrency(record.shift)}</td>
+                <td data-label="Supervising">{formatCurrency(record.supervising)}</td>
+                <td data-label="Others">{formatCurrency(record.others)}</td>
+                <td data-label="Prepaid">{formatCurrency(record.prepaid)}</td>
+                <td data-label="Bonds">{formatCurrency(record.bonds)}</td>
+                <td data-label="Actions" className="action-cell"> {/* <-- ADD ACTIONS CELL */}
                   <Link to={`/salary-profile/history/edit/${record._id}`}>
                     <FaPencilAlt className="action-icon edit-icon" />
                   </Link>

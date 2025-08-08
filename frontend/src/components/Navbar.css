@@ -8,6 +8,9 @@
   color: white;
   margin-left: 45px;
 }
+.navbar-brand {
+  padding: 0 40px;
+}
 .navbar-brand a {
   color: white;
   text-decoration: none;

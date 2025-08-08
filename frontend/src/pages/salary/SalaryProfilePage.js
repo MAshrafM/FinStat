@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom';
 import { getProfile, saveProfile } from '../../services/salaryService';
 import { formatCurrency } from '../../utils/formatters';
 import { FaHistory, FaEdit, FaUserEdit } from 'react-icons/fa';
+import { useData } from '../../context/DataContext';
 import SalaryForm from '../../components/SalaryForm'; // We'll reuse this
 import './SalaryProfile.css';
 
 const SalaryProfilePage = () => {
+  const { isMobile } = useData();
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -47,9 +49,12 @@ const SalaryProfilePage = () => {
               <h3>{profile.name}</h3>
               <p>{profile.title} - {profile.year}</p>
             </div>
-            <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
+            {console.log(isMobile)}
+            {!isMobile && (
+              <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
               <FaUserEdit />
             </Link>
+            )}
           </div>
           <div className="card-body">
             <h4>No Salary Details Found</h4>
@@ -85,10 +90,15 @@ const SalaryProfilePage = () => {
             <div className="header-content">
               <h3>{profile.title} {profile.name}</h3>
               <p>{profile.position} - {profile.year}</p>
+              {isMobile && (
+                <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
+                  <FaUserEdit />
+                </Link>
+              )}
             </div>
-          <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
+          {!isMobile && (<Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
             <FaUserEdit />
-          </Link>
+          </Link>)}
         </div>
         <div className="card-body">
           <h4>Current Salary Details (as of {new Date(profile.currentSalary.effectiveDate).toLocaleDateString()})</h4>

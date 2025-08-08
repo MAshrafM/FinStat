@@ -218,8 +218,7 @@
 /* --- Cancel Button (for use below the form) --- */
 .cancel-button {
   display: block;
-  width: 100%;
-  max-width: 600px; /* Match the form's max-width */
+  width: 90%;
   margin: 1rem auto 0; /* Center it below the form */
   padding: 12px 15px;
   background-color: #e74c3c; /* A distinct red for a 'cancel' or 'back' action */
@@ -246,4 +245,72 @@
   color: #6c757d;
   font-size: 1.1rem;
   line-height: 1.6;
+}
+
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.submit-button,
+.cancel-button {
+    flex: 1;
+    padding: 15px;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.submit-button {
+    background-color: #009879;
+    color: white;
+    border: none;
+}
+
+.cancel-button {
+    background-color: #fff;
+    color: #dc3545;
+    border: 2px solid #dc3545;
+}
+
+.submit-button:hover {
+    background-color: #007a63;
+}
+
+.cancel-button:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .button-group {
+        gap: 0.8rem;
+        margin-top: 1rem;
+    }
+
+    .submit-button,
+    .cancel-button {
+        padding: 12px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .button-group {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .submit-button,
+    .cancel-button {
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+    a.cancel-button{
+      width: 90%;
+    }
 }
