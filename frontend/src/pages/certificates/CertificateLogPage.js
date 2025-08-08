@@ -242,11 +242,11 @@ const CertificateLogPage = () => {
 
                             return (
                                 <tr key={cert._id} style={{backgroundColor: isExpired ? '#ffebee' : 'transparent'}}>
-                                    <td style={{ fontWeight: 'bold' }}>{cert.name}</td>
-                                    <td className="total-value">{formatCurrency(cert.amount)}</td>
-                                    <td>{cert.interest.toFixed(2)}%</td>
-                                    <td>{cert.period} months</td>
-                                    <td>
+                                    <td style={{ fontWeight: 'bold' }} data-label="Name">{cert.name}</td>
+                                    <td className="total-value" data-label="Amount">{formatCurrency(cert.amount)}</td>
+                                    <td data-label="Interest">{cert.interest.toFixed(2)}%</td>
+                                    <td data-label="Period">{cert.period} months</td>
+                                    <td data-label="Progress">
                                         <ProgressBar
                                             progress={progress}
                                             isExpired={isExpired}
@@ -257,12 +257,12 @@ const CertificateLogPage = () => {
                                     <td style={{
                                         color: isExpired ? '#f44336' : 'inherit',
                                         fontWeight: isExpired ? 'bold' : 'normal'
-                                    }}>
+                                    }} data-label="Maturity Date">
                                         {formatDate(maturityDate)}
                                     </td>
-                                    <td>{formatCurrency(totalReturn)}</td>
-                                    <td>{formatCurrency(interest)}</td>
-                                    <td className="action-icons">
+                                    <td data-label="Return">{formatCurrency(totalReturn)}</td>
+                                    <td data-label="Total Interest">{formatCurrency(interest)}</td>
+                                    <td className="action-icons" data-label="Actions">
                                         <Link className="action-icon edit-icon" to={`/certificates/edit/${cert._id}`}><FaEdit /></Link>
                                         <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(cert._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
                                     </td>

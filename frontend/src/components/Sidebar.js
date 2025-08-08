@@ -1,9 +1,36 @@
-﻿import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import './Sidebar.css'; // Import the CSS for styling
+﻿import React, { useState, useEffect } from 'react';
+import './Sidebar.css'; // Assuming you have a CSS file for styling
 
 const Sidebar = () => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const isCurrentlyExpanded = isMobile ? mobileOpen : isExpanded;
+
+    const handleMouseEnter = () => {
+        if (!isMobile) {
+            setIsExpanded(true);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (!isMobile) {
+            setIsExpanded(false);
+        }
+    };
+
+
+    useEffect(() => {
+    const checkMobile = () => {
+        const mobile = window.innerWidth <= 768;
+        setIsMobile(mobile);  // <-- HERE
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+}, []);
 
     const menuItems = [
         {
@@ -98,48 +125,80 @@ const Sidebar = () => {
         },
         {
             path: "/certificates",
-            icon: "",
+            icon: "🏛️",
             title: "Bank Certificates",
             description: "Fixed investment"
         }
     ];
 
     return (
-        <div
-            className={`sidebar ${isExpanded ? 'expanded' : 'collapsed'}`}
-            onMouseEnter={() => setIsExpanded(true)}
-            onMouseLeave={() => setIsExpanded(false)}
+        <>
+        <style>
+            {`
+                .logo-text {
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: #6c7ce7;
+                    white-space: nowrap;
+                    opacity: ${isExpanded || mobileOpen ? '1' : '0'};
+                    transition: opacity 0.3s ease;
+                }
+                .sidebar-content {
+                    display: flex;
+                    flex-direction: column;
+                    opacity: ${isExpanded || mobileOpen ? '1' : '0'};
+                    transition: opacity 0.3s ease;
+                    min-width: 0;
+                }
+            `}
+        </style>
+        <button 
+            className="mobile-toggle"
+            onClick={() => setMobileOpen(!mobileOpen)}
         >
-            <div className="sidebar-header">
-                <div className="logo">
-                    <span className="menu-icon">☰</span>
-                    {isExpanded ? <span className="logo-text">FinanceHub</span> : null}
+            ☰
+        </button>
+            <div
+                className={`sidebar ${isCurrentlyExpanded ? 'expanded' : 'collapsed'}`}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+            >
+               
+                <div className="sidebar-header">
+                    <div className="logo">
+                        {!((isMobile && mobileOpen) || (!isMobile && isExpanded)) && <span className="menu-icon">☰</span>}
+                        {((isMobile && mobileOpen) || (!isMobile && isExpanded)) && <span className="logo-text">FinanceHub</span>}
+                    </div>
                 </div>
-            </div>
-
-            <nav className="sidebar-nav">
-                {menuItems.map((item, index) => {
-                    return (
-                        <Link
+                <nav className="sidebar-nav">
+                    {menuItems.map((item, index) => (
+                        <div
                             key={index}
-                            to={item.path}
                             className="sidebar-item"
-                            title={!isExpanded ? item.title : ''}
+                            title={!((isMobile && mobileOpen) || (!isMobile && isExpanded)) ? item.title : ''}
+                            onClick={() => console.log(`Navigate to ${item.path}`)}
                         >
                             <div className="sidebar-icon">
                                 <span className="icon-emoji">{item.icon}</span>
                             </div>
-                            {isExpanded ? 
-                            <div className="sidebar-content">
-                                <span className="sidebar-title">{item.title}</span>
-                                <span className="sidebar-description">{item.description}</span>
+                            {((isMobile && mobileOpen) || (!isMobile && isExpanded)) && (
+                                <div className="sidebar-content">
+                                    <span className="sidebar-title">{item.title}</span>
+                                    <span className="sidebar-description">{item.description}</span>
                                 </div>
-                                : null}
-                        </Link>
-                    );
-                })}
-            </nav>
-        </div>
+                            )}
+                        </div>
+                    ))}
+                </nav>
+            </div>
+
+            {mobileOpen && (
+                <div 
+                    className="sidebar-backdrop" 
+                    onClick={() => setMobileOpen(false)} 
+                />
+            )}
+        </>
     );
 };
 

@@ -1,14 +1,18 @@
 /* frontend/src/components/PaycheckTable.css */
 .table-container {
-  width: 110%;
+  width: 100%;
+  max-width: 100vw; /* Ensures the table does not exceed viewport width */
+  margin: 20px auto; /* Centers the table container */
   overflow-x: auto; /* For responsiveness on small screens */
 }
 
 .styled-table {
   width: 100%;
+  min-width: 600px; /* Ensures the table has a minimum width */
   border-collapse: collapse; /* Removes space between borders */
   font-size: 1rem;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  table-layout: auto;
 }
 
 .styled-table thead tr {
@@ -21,6 +25,9 @@
 .styled-table td {
   padding: 12px 15px;
   border: 1px solid #dddddd;
+  word-break: break-word; /* Ensures long text wraps within the cell */
+  white-space: normal; /* Prevents text from overflowing */
+  min-width: 100px; /* Ensures cells have a minimum width */
 }
 
 .styled-table tbody tr {
@@ -92,4 +99,54 @@
 }
 .delete-icon:hover {
   color: #e74c3c;
+}
+
+@media (max-width: 900px) {
+  .styled-table {
+    font-size: 0.9rem; /* Slightly smaller font on smaller screens */
+  }
+  .styled-table th,
+  .styled-table td {
+    padding: 8px 6px; /* Reduced padding for smaller screens */
+    min-width: 80px; /* Reduced minimum width for smaller screens */
+  }
+}
+
+@media (max-width: 600px) {
+  .styled-table {
+    font-size: 0.8rem; /* Further reduce font size on very small screens */
+    min-width: 400px;
+  }
+  .styled-table th,
+  .styled-table td {
+    padding: 6px 4px; /* Further reduced padding */
+    min-width: 60px; /* Further reduced minimum width */
+  }
+}
+
+@media (max-width: 400px) {
+  .styled-table,
+  .styled-table thead,
+  .styled-table tbody,
+  .styled-table th,
+  .styled-table td,
+  .styled-table tr {
+    display: block; /* Stack elements vertically */
+  }
+  .styled-table thead {
+    display: none;
+  }
+  .styled-table td {
+    position: relative;
+    padding-left: 50%;
+    min-width: unset;
+  }
+  .styled-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    top: 6px;
+    font-weight: bold;
+    white-space: nowrap;
+  }
 }
