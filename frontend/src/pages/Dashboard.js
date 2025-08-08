@@ -9,10 +9,13 @@ import { FaRegListAlt, FaRegCalendarAlt, FaChartArea,
 } from 'react-icons/fa'; // Import new icons
 import { useData } from '../context/DataContext';
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
-import { safePercentage } from '../utils/helper'; // Import safe division and percentage functions }
+import { safeDivision, safePercentage, normDiv } from '../utils/helper'; // Import safe division and percentage functions }
 import './Dashboard.css'; // We will create this CSS file
 
 const Dashboard = () => {
+    const initYear = 2022; // Set your initial year here
+    const currentYear = new Date().getFullYear();
+    const investmentPeriod = currentYear - initYear; // Calculate the number of years since initYear
     const {
         overallTotalPaid,
         goldtotalNow,
@@ -21,6 +24,7 @@ const Dashboard = () => {
         summaryMetrics,
         bankAccountData,
     } = useData(); // Access any global data if needed
+
   return (
     <div className="page-container">
       <h1>Welcome to Your Dashboard</h1>
@@ -55,7 +59,11 @@ const Dashboard = () => {
                       </div>
                       <div className="dashboard-card-item">
                           <span className="description">Change:</span>
-                              <span className="value">{safePercentage(goldtotalNow, overallTotalPaid)}%</span>
+                          <span className="value">{safePercentage(goldtotalNow, overallTotalPaid)}%</span>
+                      </div>
+                      <div className="dashboard-card-item">
+                          <span className="description">CAGR:</span>
+                          <span className="value">{((Math.pow(normDiv(goldtotalNow, overallTotalPaid), (1 / investmentPeriod)) - 1) * 100).toFixed(2)}%</span>
                       </div>
                   </div>
               </div>
@@ -73,6 +81,10 @@ const Dashboard = () => {
                       <div className="dashboard-card-item">
                           <span className="description">Change:</span>
                               <span className="value">{safePercentage(certificateSummary.totalExpectedReturns, certificateSummary.totalActiveAmount)}%</span>
+                      </div>
+                      <div className="dashboard-card-item">
+                          <span className="description">CAGR:</span>
+                          <span className="value">{((Math.pow(normDiv(certificateSummary.totalExpectedReturns, certificateSummary.totalActiveAmount), (1 / investmentPeriod)) - 1) * 100).toFixed(2)}%</span>
                       </div>
                   </div>
               </div>
@@ -92,6 +104,10 @@ const Dashboard = () => {
                           <span className="description">Change:</span>
                               <span className="value">{(overallTotals.totalProfit)} %</span>
                       </div>
+                      <div className="dashboard-card-item">
+                          <span className="description">CAGR:</span>
+                          <span className="value">{((Math.pow(normDiv(overallTotals.totalSellingValue, overallTotals.totalOfAllMF), (1 / investmentPeriod)) - 1) * 100).toFixed(2)}%</span>
+                      </div>
                   </div>
               </div>
 
@@ -109,6 +125,10 @@ const Dashboard = () => {
                       <div className="dashboard-card-item">
                               <span className="description">Change:</span>
                               <span className="value">{safePercentage((summaryMetrics.totalProfitNow + summaryMetrics.topUps), summaryMetrics.topUps)} %</span>
+                      </div>
+                      <div className="dashboard-card-item">
+                          <span className="description">CAGR:</span>
+                          <span className="value">{((Math.pow(normDiv((summaryMetrics.totalProfitNow + summaryMetrics.topUps), summaryMetrics.topUps), (1 / investmentPeriod)) - 1) * 100).toFixed(2)}%</span>
                       </div>
                   </div>
                   </div>
