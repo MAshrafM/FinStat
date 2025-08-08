@@ -151,3 +151,15 @@
     margin-bottom: 2rem;
   }
 }
+
+@media (max-width: 768px) {
+
+  .grand-summary-card .yearly-summary-grid {
+  /* Ensure the grid inside the summary card wraps properly */
+  grid-template-columns: repeat(1, minmax(130px, 1fr));
+}
+
+  .tax-bracket-edit-row {
+    grid-template-columns: 1fr 1fr; /* Stack the last two columns on smaller screens */
+  }
+}

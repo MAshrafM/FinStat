@@ -60,7 +60,6 @@ const TradeLogPage = () => {
     <div className="page-container">
       <div className="page-header">
         <h1>Stock Trade Log</h1>
-        <Link to="/trades/new" className="action-button">Add New Trade</Link>
       </div>
 
       <div className="filter-controls">
@@ -87,14 +86,14 @@ const TradeLogPage = () => {
           <tbody>
             {trades.map(trade => (
               <tr key={trade._id}>
-                <td>{formatDate(trade.date)}</td>
-                <td className={`trade-type-${trade.type.toLowerCase()}`}>{trade.type}</td>
-                <td>{trade.stockCode || 'N/A'}</td>
-                <td>{trade.shares || 'N/A'}</td>
-                <td>{trade.price ? formatCurrency(trade.price) : 'N/A'}</td>
-                <td>{formatCurrency(trade.fees)}</td>
-                <td className="total-value">{formatCurrency(trade.totalValue)}</td>
-                <td className="action-icons">
+                <td data-label="Date">{formatDate(trade.date)}</td>
+                <td data-label="Type" className={`trade-type-${trade.type.toLowerCase()}`}>{trade.type}</td>
+                <td data-label="Code">{trade.stockCode || 'N/A'}</td>
+                <td data-label="Shares">{trade.shares || 'N/A'}</td>
+                <td data-label="Price">{trade.price ? formatCurrency(trade.price) : 'N/A'}</td>
+                <td data-label="Fees">{formatCurrency(trade.fees)}</td>
+                <td data-label="Value" className="total-value">{formatCurrency(trade.totalValue)}</td>
+                <td data-label="Actions" className="action-icons">
                         <Link to={`/trades/edit/${trade._id}`}><FaEdit className="action-icon edit-icon" /></Link>
                         <FaTrash className="action-icon delete-icon"  onClick={() => handleDelete(trade._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
                 </td>

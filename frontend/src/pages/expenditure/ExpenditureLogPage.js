@@ -59,9 +59,6 @@ const ExpenditureLogPage = () => {
     <div className="page-container">
       <div className="page-header">
         <h1>Expenditure Log</h1>
-        <Link to="/expenditures/new" className="nav-button">
-          <FaPlus /> Add New Log
-        </Link>
           </div>
 
           {/* Filter Section */}
@@ -135,19 +132,19 @@ const ExpenditureLogPage = () => {
           <tbody>
             {processedExpenditures.map(log => (
               <tr key={log._id}>
-                <td>{formatDate(log.date)}</td>
-                <td>{formatCurrency(log.bank)}</td>
-                <td>{formatCurrency(log.cash)}</td>
-                <td style={{ 
+                <td data-label="Date">{formatDate(log.date)}</td>
+                <td data-label="Bank">{formatCurrency(log.bank)}</td>
+                <td data-label="Cash">{formatCurrency(log.cash)}</td>
+                <td data-label="Transaction" style={{ 
                   color: log.transactionType === 'W' ? 'red' : 
                         log.transactionType === 'S' ? 'rgba(194, 139, 0, 0.9)' : 
                         log.transactionType === 'T' ? 'green' :  'gray' 
                 }}>
                   <strong>{formatCurrency(log.transactionValue)}</strong>
                 </td>
-                <td>{transactionTypeMap[log.transactionType] || log.transactionType}</td>
-                <td>{log.description}</td>
-                <td className="action-cell">
+                <td data-label="Type">{transactionTypeMap[log.transactionType] || log.transactionType}</td>
+                <td data-label="Description">{log.description}</td>
+                <td  data-label="Action" className="action-cell">
                   <Link to={`/expenditures/edit/${log._id}`}><FaPencilAlt className="action-icon edit-icon" /></Link>
                   <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(log._id)} />
                 </td>

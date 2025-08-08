@@ -57,12 +57,12 @@ const GoldSummaryPage = () => {
 
                             return (
                                 <tr key={karat}>
-                                    <td style={{ fontWeight: 'bold' }}>{karat}K</td>
-                                    <td>{item.totalWeight.toFixed(2)}g</td>
-                                    <td>{formatCurrency(item.totalPaid)}</td>
-                                    <td>{currentPricePerGram}</td>
-                                    <td className="total-value">{formatCurrency(currentValue)}</td>
-                                    <td style={{ color: profitLoss >= 0 ? '#27ae60' : '#c0392b' }}>
+                                    <td data-label="Karat" style={{ fontWeight: 'bold' }}>{karat}K</td>
+                                    <td data-label="Weight">{item.totalWeight.toFixed(2)}g</td>
+                                    <td data-label="Paid">{formatCurrency(item.totalPaid)}</td>
+                                    <td data-label="Curr. Price">{currentPricePerGram}</td>
+                                    <td data-label="Value" className="total-value">{formatCurrency(currentValue)}</td>
+                                    <td data-label="Change" style={{ color: profitLoss >= 0 ? '#27ae60' : '#c0392b' }}>
                                         <p style={{ fontWeight: 'bold', margin: 0 }}>{formatCurrency(profitLoss)}</p>
                                         <p style={{ margin: 0, fontSize: '0.9em' }}>({rateOfChange.toFixed(2)}%)</p>
                                     </td>

@@ -313,4 +313,8 @@
     a.cancel-button{
       width: 90%;
     }
+
+    .profile-grid {
+        grid-template-columns: repeat(auto-fit, minmax(370px, 1fr)); /* Single column layout on small screens */
+    }
 }

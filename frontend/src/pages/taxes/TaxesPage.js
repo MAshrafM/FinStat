@@ -151,10 +151,10 @@ const TaxesPage = () => {
               <tbody>
                 {taxInfo.brackets.map(bracket => (
                   <tr key={bracket.level} style={{ backgroundColor: getColorForRate(bracket.rate) }}>
-                    <td>{bracket.level}</td>
-                    <td>{formatCurrency(bracket.from)}</td>
-                    <td>{formatCurrency(bracket.to)}</td>
-                    <td>{(bracket.rate * 100).toFixed(1)}%</td>
+                    <td data-label="Level">{bracket.level}</td>
+                    <td data-label="From">{formatCurrency(bracket.from)}</td>
+                    <td data-label="To">{formatCurrency(bracket.to)}</td>
+                    <td data-label="Rate">{(bracket.rate * 100).toFixed(1)}%</td>
                   </tr>
                 ))}
               </tbody>

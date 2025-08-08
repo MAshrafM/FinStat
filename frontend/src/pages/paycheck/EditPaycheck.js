@@ -18,6 +18,7 @@ const EditPaycheck = () => {
     fetchPaycheck();
   }, [id]);
 
+  console.log(existingPaycheck);
   const handleUpdatePaycheck = async (paycheckData) => {
     await updatePaycheck(id, paycheckData);
     navigate('/paycheck-log'); // Go back to the log after updating

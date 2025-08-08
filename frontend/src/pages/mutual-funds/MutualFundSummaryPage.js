@@ -39,7 +39,7 @@ const MutualFundSummaryPage = () => {
                     </div>
                     <div className="summary-item highlight">
                         <span>Profit</span>
-                        <strong>{overallTotals.totalProfit.toFixed(2)}%</strong>
+                        <strong>{overallTotals.totalProfit}%</strong>
                     </div>
                 </div>
             )}
@@ -67,18 +67,18 @@ const MutualFundSummaryPage = () => {
                             const totalProfit = ((sellingValue / valueWithoutCoupons) - 1) * 100;
                             return (
                                 <tr key={index}>
-                                    <td>
+                                    <td data-label="Code">
                                         <p style={{ fontWeight: 'bold' }}>{item._id.name}</p>
                                         <p className="broker">{item._id.code}</p>
                                     </td>
-                                    <td style={{ fontWeight: 'bold' }}>{item.currentUnits}</td>
-                                    <td>{formatCurrency(item.averagePrice)}</td>
-                                    <td className="total-value">{formatCurrency(item.totalValue)}</td>
-                                    <td>{formatCurrency(item.totalCouponValue)}</td>
-                                    <td>{formatCurrency(valueWithoutCoupons)}</td>
-                                    <td>{formatCurrency(row.lastPrice)}</td>
-                                    <td className="total-value" style={{ color: sellingValue > item.totalValue ? '#27ae60' : '#c0392b' }}>{formatCurrency(sellingValue)}</td>
-                                    <td style={{ color: totalProfit > 0 ? '#27ae60' : '#c0392b' }}>{totalProfit.toFixed(2)}</td>
+                                    <td data-label="Units" style={{ fontWeight: 'bold' }}>{item.currentUnits}</td>
+                                    <td data-label="Price">{formatCurrency(item.averagePrice)}</td>
+                                    <td data-label="Value" className="total-value">{formatCurrency(item.totalValue)}</td>
+                                    <td data-label="Coupons">{formatCurrency(item.totalCouponValue)}</td>
+                                    <td data-label="Value w/ Coupons">{formatCurrency(valueWithoutCoupons)}</td>
+                                    <td data-label="Curr. Price">{formatCurrency(row.lastPrice)}</td>
+                                    <td data-label="Sellinng Value" className="total-value" style={{ color: sellingValue > item.totalValue ? '#27ae60' : '#c0392b' }}>{formatCurrency(sellingValue)}</td>
+                                    <td data-label="Profit" style={{ color: totalProfit > 0 ? '#27ae60' : '#c0392b' }}>{totalProfit.toFixed(2)}%</td>
                                 </tr>
                             );
                         })}
