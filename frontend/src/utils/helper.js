@@ -11,3 +11,8 @@ export const safeDivision = (numerator, denominator) => {
     if (!denominator || denominator === 0) return '0.00';
     return ((numerator / denominator) * 100).toFixed(2);
 };
+
+export const normDiv = (numerator, denominator) => {
+    if (!denominator || denominator === 0) return '0.00';
+    return (numerator / denominator);
+}
