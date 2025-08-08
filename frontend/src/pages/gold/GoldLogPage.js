@@ -31,7 +31,6 @@ const GoldLogPage = () => {
         <div className="page-container">
             <div className="page-header">
                 <h1>Gold Wallet Log</h1>
-                <Link to="/gold-wallet/new" className="action-button">Add New Log</Link>
             </div>
             <div className="table-container">
                 <table className="styled-table">
@@ -55,18 +54,18 @@ const GoldLogPage = () => {
                             const feesPerGram = taxes / log.weight;
                             return (
                                 <tr key={log._id}>
-                                    <td>{formatDate(log.date)}</td>
-                                    <td>
+                                    <td data-label="Date">{formatDate(log.date)}</td>
+                                    <td data-label="Item">
                                         <p style={{ fontWeight: 'bold' }}>{log.item}</p>
                                         <p className="broker">{log.karat}K - by {log.seller || 'N/A'}</p>
                                     </td>
-                                    <td>{log.weight.toFixed(2)}g</td>
-                                    <td>{formatCurrency(log.price)}</td>
-                                    <td>{formatCurrency(totalPrice)}</td>
-                                    <td className="total-value">{formatCurrency(log.paid)}</td>
-                                    <td>{formatCurrency(taxes)}</td>
-                                    <td>{formatCurrency(feesPerGram)}</td>
-                                    <td className="action-icons">
+                                    <td data-label="Weight">{log.weight.toFixed(2)}g</td>
+                                    <td data-label="Price/g">{formatCurrency(log.price)}</td>
+                                    <td data-label="Price">{formatCurrency(totalPrice)}</td>
+                                    <td data-label="Paid" className="total-value">{formatCurrency(log.paid)}</td>
+                                    <td data-label="Taxes">{formatCurrency(taxes)}</td>
+                                    <td data-label="Cost/g">{formatCurrency(feesPerGram)}</td>
+                                    <td data-label="Actions" className="action-icons">
                                         <Link className="action-icon edit-icon" to={`/gold-wallet/edit/${log._id}`}><FaEdit /></Link>
                                         <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(log._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
                                     </td>

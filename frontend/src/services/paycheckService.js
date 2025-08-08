@@ -31,7 +31,7 @@ export const getPaycheckById = async (id) => {
 export const createPaycheck = async (paycheck) => {
   const response = await fetch(API_URL, {
     method: 'POST',
-      headers:  getAuthHeaders(),
+    headers:  getAuthHeaders(),
     body: JSON.stringify(paycheck),
   });
   return await response.json();

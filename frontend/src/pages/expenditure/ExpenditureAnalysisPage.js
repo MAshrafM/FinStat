@@ -238,7 +238,7 @@ const ExpenditureAnalysisPage = () => {
             <div className="top-summary-container" style={{ marginBottom: '2rem' }}>
                 <div className="tax-card">
                     <h3>Overall Summary (All Years)</h3>
-                    <div className="yearly-summary-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(150px, 1fr))' }}>
+                    <div className="yearly-summary-grid">
                         <div className="summary-item highlight" style={{ backgroundColor: '#fff0f2' }}>
                             <span>Total Withdrawals</span>
                             <strong>{formatCurrency(overallSummary.totalWithdrawals)}</strong>
@@ -370,7 +370,7 @@ const ExpenditureAnalysisPage = () => {
             <div className="top-summary-container">
                 <div className="tax-card">
                     <h3>Summary for {selectedYear}</h3>
-                    <div className="yearly-summary-grid" style={{ gridTemplateColumns: 'repeat(3, minmax(150px, 1fr))' }}>
+                    <div className="yearly-summary-grid">
                         <div className="summary-item highlight" style={{ backgroundColor: '#fff0f2' }}>
                             <span>Total Withdrawals</span>
                             <strong>{formatCurrency(dataForYear.totalWithdrawals)}</strong>

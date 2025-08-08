@@ -59,14 +59,14 @@ const YearlyTaxTable = ({ year, processedPaychecks, yearlySummary, taxBrackets }
           <tbody>
             {processedPaychecks.map(p => (
               <tr key={p._id}>
-                <td>{p.month}</td>
-                <td>{formatCurrency(p.grossAmount)}</td>
-                <td>{formatCurrency(p.taxDeduction)}</td>
-                <td>{p.effectiveRate.toFixed(2)}%</td>
-                <td style={{ backgroundColor: getColorForLevel(p.bracketLevel) }}>
+                <td data-label="Month">{p.month}</td>
+                <td data-label="Gross Amount">{formatCurrency(p.grossAmount)}</td>
+                <td data-label="Tax Deduction">{formatCurrency(p.taxDeduction)}</td>
+                <td data-label="Rate">{p.effectiveRate.toFixed(2)}%</td>
+                <td data-label="Bracket Lvl" style={{ backgroundColor: getColorForLevel(p.bracketLevel) }}>
                   {p.bracketLevel ? `Level ${p.bracketLevel}` : 'N/A'}
                 </td>
-                <td>{formatCurrency(p.amount)}</td>
+                <td data-label="Amount">{formatCurrency(p.amount)}</td>
               </tr>
             ))}
           </tbody>

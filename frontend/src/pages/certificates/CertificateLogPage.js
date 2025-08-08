@@ -137,7 +137,6 @@ const CertificateLogPage = () => {
         <div className="page-container">
             <div className="page-header">
                 <h1>Bank Certificates</h1>
-                <Link to="/certificates/new" className="action-button">Add New Certificate</Link>
             </div>
 
             <div style={{

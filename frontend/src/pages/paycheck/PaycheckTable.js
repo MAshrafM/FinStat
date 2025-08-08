@@ -41,15 +41,15 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
             <React.Fragment key={monthGroup.month}>
               {monthGroup.entries.map((entry, entryIndex) => (
                 <tr key={entry._id} className="tooltip-container" data-note={entry.note}>
-                  {entryIndex === 0 && <td rowSpan={monthGroup.rowCount}>{monthGroup.month}</td>}
-                  <td>{entry.type}</td>
-                  <td>{formatCurrency(entry.amount)}</td>
+                  {entryIndex === 0 && <td data-label="Month" rowSpan={monthGroup.rowCount}>{monthGroup.month}</td>}
+                  <td data-label="Type">{entry.type}</td>
+                  <td data-label="Amount">{formatCurrency(entry.amount)}</td>
                   {entryIndex === 0 && (
-                    <td rowSpan={monthGroup.rowCount}>
+                    <td  data-label="Total" rowSpan={monthGroup.rowCount}>
                       <strong>{formatCurrency(monthGroup.monthlyTotal)}</strong>
                     </td>
                   )}
-                  <td className="action-cell">
+                  <td data-label="Action" className="action-cell">
                     <Link to={`/paycheck-log/edit/${entry._id}`}>
                       <FaPencilAlt className="action-icon edit-icon" />
                     </Link>

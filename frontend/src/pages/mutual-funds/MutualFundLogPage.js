@@ -49,7 +49,6 @@ const MutualFundLogPage = () => {
         <div className="page-container">
             <div className="page-header">
                 <h1>Mutual Fund Log</h1>
-                <Link to="/mutual-funds/new" className="action-button">Add New Transaction</Link>
             </div>
 
             {/* Filter Section */}
@@ -124,17 +123,17 @@ const MutualFundLogPage = () => {
                     <tbody>
                         {trades.map(trade => (
                             <tr key={trade._id}>
-                                <td>{formatDate(trade.date)}</td>
-                                <td>
+                                <td data-label="Date">{formatDate(trade.date)}</td>
+                                <td data-label="Code">
                                     <p style={{ fontWeight: 'bold' }}>{trade.code}</p>
                                     <p className="broker">{trade.name}</p>
                                 </td>
-                                <td className={`trade-type-${trade.type.toLowerCase()}`}>{trade.type}</td>
-                                <td>{trade.units || 'N/A'}</td>
-                                <td>{trade.price ? formatCurrency(trade.price) : 'N/A'}</td>
-                                <td>{formatCurrency(trade.fees)}</td>
-                                <td className="total-value">{formatCurrency(trade.totalValue)}</td>
-                                <td className="action-icons">
+                                <td data-label="Type" className={`trade-type-${trade.type.toLowerCase()}`}>{trade.type}</td>
+                                <td data-label="Units">{trade.units || 'N/A'}</td>
+                                <td data-label="Price">{trade.price ? formatCurrency(trade.price) : 'N/A'}</td>
+                                <td data-label="Fees">{formatCurrency(trade.fees)}</td>
+                                <td data-label="Value" className="total-value">{formatCurrency(trade.totalValue)}</td>
+                                <td data-label="Actions" className="action-icons">
                                     <Link className="action-icon edit-icon" to={`/mutual-funds/edit/${trade._id}`}><FaEdit /></Link>
                                     <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(trade._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
                                 </td>

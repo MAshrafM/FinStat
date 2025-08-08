@@ -15,7 +15,10 @@ router.post('/', auth, async (req, res) => {
       type: req.body.type,
       amount: req.body.amount,
       note: req.body.note,
-      user: req.user.id
+      user: req.user.id,
+      insuranceDeduction: req.body.insuranceDeduction,
+      grossAmount: req.body.grossAmount,
+      taxDeduction: req.body.taxDeduction,
     });
 
     const paycheck = await newPaycheck.save();
@@ -78,7 +81,7 @@ router.get('/', auth, async (req, res) => {
 // @access  Public
 router.get('/:id', auth, async (req, res) => {
   try {
-    const paycheck = await Paycheck.findById({...req.params.id, user: req.user.id});
+    const paycheck = await Paycheck.findById(req.params.id);
 
     if (!paycheck) {
       return res.status(404).json({ msg: 'Paycheck not found' });
