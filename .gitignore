@@ -13,3 +13,6 @@ frontend/.env
 backend/*.csv
 backend/seeder*
 backend/migration
+backend/*.csv
+backend/seeder*
+backend/migration

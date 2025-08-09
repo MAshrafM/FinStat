@@ -17,6 +17,7 @@ const getAuthHeaders = () => {
  */
 export const getBrackets = ( ) => {
     return fetch(API_URL, { headers: getAuthHeaders() }).then(res => {
+    return fetch(API_URL, { headers: getAuthHeaders() }).then(res => {
     if (!res.ok) throw new Error('Failed to fetch tax brackets.');
     return res.json();
   });
@@ -30,6 +31,7 @@ export const getBrackets = ( ) => {
 export const updateBrackets = (brackets) => {
   return fetch(API_URL, {
     method: 'PUT',
+    headers: getAuthHeaders(),
     headers: getAuthHeaders(),
     body: JSON.stringify({ brackets }), // The API expects an object with a 'brackets' key
   }).then(res => {
