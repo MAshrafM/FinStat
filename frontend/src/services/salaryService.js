@@ -1,5 +1,6 @@
 // frontend/src/services/salaryService.js
-const API_URL = 'http://localhost:5000/api/salary-profile';
+import { BASE_API_URL } from '../config/api';
+const API_URL = `${BASE_API_URL}/salary-profile`;
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');

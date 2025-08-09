@@ -1,5 +1,6 @@
 // frontend/src/services/certificateService.js
-const API_URL = 'http://localhost:5000/api/certificates';
+import { BASE_API_URL } from '../config/api';
+const API_URL = `${BASE_API_URL}/certificates`; // Use the deployed backend URL
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');

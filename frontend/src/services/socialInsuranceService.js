@@ -1,6 +1,7 @@
 // frontend/src/services/socialInsuranceService.js
 // Define the base URL for the backend API in one central place.
-const API_URL = 'http://localhost:5000/api/social-insurance';
+import { BASE_API_URL } from '../config/api';
+const API_URL = `${BASE_API_URL}/social-insurance`;
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');

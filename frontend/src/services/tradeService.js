@@ -1,5 +1,6 @@
 // frontend/src/services/tradeService.js
-const API_URL = 'http://localhost:5000/api/trades'; // Or your configured API base URL
+import { BASE_API_URL } from '../config/api';
+const API_URL = `${BASE_API_URL}/trades`;
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');

@@ -1,5 +1,6 @@
 // frontend/src/services/taxService.js
-const API_URL = 'http://localhost:5000/api/tax-brackets';
+import { BASE_API_URL } from '../config/api';
+const API_URL = `${BASE_API_URL}/tax-brackets`;
 
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
