@@ -10,7 +10,10 @@ const app = express();
 connectDB();
 
 // This enables CORS for all routes, allowing our frontend to make requests
-app.use(cors()); 
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 // This allows us to accept JSON data in the body of requests
 app.use(express.json()); 
 
