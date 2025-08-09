@@ -10,14 +10,6 @@ const getAuthHeaders = () => {
     };
 };
 
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-        'Content-Type': 'application/json',
-        'x-auth-token': token || '', // Include the token in the 'x-auth-token' header
-    };
-};
-
 // Get all paychecks
 export const getPaychecks = async () => {
     const response = await fetch(`${API_URL}/all`, { headers: getAuthHeaders() });

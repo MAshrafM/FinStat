@@ -11,14 +11,6 @@ const getAuthHeaders = () => {
     };
 };
 
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-        'Content-Type': 'application/json',
-        'x-auth-token': token || '', // Include the token in the 'x-auth-token' header
-    };
-};
-
 /**
  * Fetches all social insurance records from the backend.
  * @returns {Promise<Array>} A promise that resolves to an array of records.

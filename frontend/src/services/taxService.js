@@ -17,7 +17,6 @@ const getAuthHeaders = () => {
  */
 export const getBrackets = ( ) => {
     return fetch(API_URL, { headers: getAuthHeaders() }).then(res => {
-    return fetch(API_URL, { headers: getAuthHeaders() }).then(res => {
     if (!res.ok) throw new Error('Failed to fetch tax brackets.');
     return res.json();
   });
