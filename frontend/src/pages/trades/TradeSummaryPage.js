@@ -12,82 +12,7 @@ const TradeSummaryPage = () => {
         stMarketPrices,
         summaryMetrics,
         isLoading, } = useData();
-        /*
-    const [trades, setTrades] = useState([]);
-    const [summaryData, setSummaryData] = useState([]);
-    const [openPosData, setOpenPosData] = useState([]);
-    const [endPosData, setEndPosData] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [marketPrices, setMarketPrices] = useState({}); // Store market prices for stocks
-    const [summaryMetrics, setSummaryMetrics] = useState(null); // Summary metrics if needed
-    const marginProfit = 0.2;
-
-    useEffect(() => {
-        Promise.all([
-            getTradeSummary(),
-            getMarketData(),
-            getAllTrades()
-        ]).then(([summaryData, marketData, trades]) => {
-            let marketMap = {};
-            if (marketData) {
-                marketMap = marketData.prices.reduce((acc, item) => {
-                    if (item.code) {
-                        acc[item.code] = item.value;
-                    }
-                    return acc;
-                }, {});
-                setMarketPrices(marketMap);
-            }
-            loadSummaryData(summaryData, marketMap);
-
-            if (trades && openPosData && endPosData) {
-                let totalBuy = trades.filter(t => t.type === 'Buy').reduce((sum, t) => sum + (t.totalValue || 0), 0);
-                let totalSell = trades.filter(t => t.type === 'Sell').reduce((sum, t) => sum + (t.totalValue || 0), 0);
-                let totalDividends = trades.filter(t => t.type === 'Dividend').reduce((sum, t) => sum + (t.totalValue || 0), 0);
-                const metrics = {};
-
-                metrics.topUps = trades.filter(t => t.type === 'TopUp').reduce((sum, t) => sum + (t.totalValue || 0), 0);
-                metrics.withdraws = trades.filter(t => t.type === 'Withdraw').reduce((sum, t) => sum + (t.totalValue || 0), 0);
-                metrics.totalFees = trades.reduce((sum, t) => sum + (t.fees || 0), 0);
-                metrics.totalTrades = openPosData.reduce((sum, t) => sum - (t.totDeals || 0), 0);
-                metrics.totalTradesNow = openPosData.reduce((sum, item) => sum + (item.totalValueNow || 0), 0);
-                metrics.walletBalance = metrics.topUps + totalSell + totalDividends - totalBuy - metrics.withdraws - metrics.totalFees;
-                metrics.realizedProfit = endPosData.reduce((sum, item) => sum + (item.totalSellValue || 0), 0) - endPosData.reduce((sum, item) => sum + (item.totalBuyValue || 0), 0);
-                metrics.totalProfitNow = metrics.totalTradesNow + metrics.walletBalance - metrics.topUps;
-
-                setSummaryMetrics(metrics);
-            }
-            setIsLoading(false);
-        }).catch(err => {
-            console.error("Failed to load trade summary:", err);
-            setIsLoading(false);
-        });
-    }, [summaryData, marketPrices, summaryMetrics, openPosData, endPosData]);
-    const loadSummaryData = (data, market) => {
-        const openPositions = [];
-        const closedPositions = [];
-        for (const item of data) {
-            if (item.currentShares > 0 && item._id.iteration >= 0) {
-                item.avgPrice = item.realizedPL / item.currentShares; // avgPrice is the average price of shares currently held
-                item.avgBuy = item.totDeals / item.currentShares; // avgBuy is the average price paid for shares
-                item.targetPrice = item.avgPrice * (1 + marginProfit); // Target price is avgPrice + margin profit  
-                item.targetSell = item.avgBuy * (1 + marginProfit); // Target sell price is avgBuy + margin profit
-                item.totalValueNow = market[item._id.stockCode] * item.currentShares;
-                item.changeNow = ((item.totalValueNow / Math.abs(item.realizedPL)) - 1)*100; // Calculate change percentage
-                openPositions.push(item);
-                
-            } else {
-                if (item._id.stockCode) {
-                    item.profitPercentage = (item.realizedPL / item.totalBuyValue) * 100; // profitPercentage is the percentage profit made on the trade
-                    closedPositions.push(item);
-                }
-            }
-        }
-        setSummaryData(data);
-        setOpenPosData(openPositions)
-        setEndPosData(closedPositions);
-    };
-    */
+        
     function daysBetween(date1, date2) {
         if (!date1 || !date2) return '';
         const d1 = new Date(date1);
@@ -163,10 +88,10 @@ const TradeSummaryPage = () => {
                                     <p>{item._id.iteration || '0'}</p>
                                     <p className="broker">{item._id.broker}</p>
                                 </td>
-                                <td className="total-value" style={{ color: item.realizedPL >= 0 ? '#27ae60' : '#c0392b' }}>
+                                <td className="total-value" style={{ color: Math.abs(item.realizedPL) <= item.totalValueNow ? '#27ae60' : '#c0392b' }}>
                                     {formatCurrency(Math.abs(item.realizedPL))}
                                 </td>
-                                <td style={{ color: item.realizedPL > item.totDeals ? '#27ae60' : '#c0392b' }}>{formatCurrency(Math.abs(item.totDeals))}</td>
+                                <td style={{ color: Math.abs(item.totDeals) <= item.totalValueNow ? '#27ae60' : '#c0392b' }}>{formatCurrency(Math.abs(item.totDeals))}</td>
             
                                 <td style={{ fontWeight: 'bold' }}>{item.currentShares}</td>
                                 <td>{formatCurrency(Math.abs(item.avgPrice))}</td>

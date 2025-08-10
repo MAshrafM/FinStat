@@ -23,11 +23,10 @@
 
 .styled-table th,
 .styled-table td {
-  padding: 12px 15px;
+  padding: 12px 6px;
   border: 1px solid #dddddd;
   word-break: break-word; /* Ensures long text wraps within the cell */
   white-space: normal; /* Prevents text from overflowing */
-  min-width: 100px; /* Ensures cells have a minimum width */
 }
 
 .styled-table tbody tr {
