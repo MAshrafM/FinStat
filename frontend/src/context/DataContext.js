@@ -8,6 +8,7 @@ import { getMutualFundSummary, getLastPrice } from '../services/mutualFundServic
 import { getAllTrades, getTradeSummary, getMarketData } from '../services/tradeService';
 import { getLatestExpenditure } from '../services/expenditureService';
 import { safeDivision, safePercentage } from '../utils/helper'; // Import any helper functions you need 
+import { getCurrency, getCurrencySummary } from '../services/currencyService'; // Import currency service functions
 // ... import other services as needed (mutual funds, certificates, etc.)
 
 // 1. Create the Context
@@ -44,6 +45,9 @@ export const DataProvider = ({ children }) => {
     const [stMarketPrices, setStMarketPrices] = useState({}); // Store market prices for stocks
     const [summaryMetrics, setSummaryMetrics] = useState({}); // Summary metrics if needed
     const [tradesData, setTradesData] = useState([]); // Store trades data in state
+    // Currency
+    const [currency, setCurrency] = useState([]); // Store currency data in state
+    const [currencySummary, setCurrencySummary] = useState({}); // Store currency summary if needed
 
     // Bank Account Data
     const [bankAccountData, setBankAccountData] = useState({}); // Bank account data if needed
@@ -245,7 +249,9 @@ export const DataProvider = ({ children }) => {
                     stSummaryData,
                     stMarketData,
                     trades,
-                    bankAccountData
+                    bankAccountData,
+                    currency,
+                    currencySummary,
                 ] = await Promise.all([
                     getGoldSummary(),
                     getGoldPrice(),
@@ -254,7 +260,9 @@ export const DataProvider = ({ children }) => {
                     getTradeSummary(),
                     getMarketData(),
                     getAllTrades(),
-                    getLatestExpenditure() 
+                    getLatestExpenditure(),
+                    getCurrency(), // Fetch currency data 
+                    getCurrencySummary(), // Fetch currency summary
                     // ... add other fetch calls here
                 ]);
                 setLoadingProgress(30); // Update loading progress
@@ -266,6 +274,8 @@ export const DataProvider = ({ children }) => {
                 setStSummaryData(stSummaryData);
                 setBankAccountData(bankAccountData);
                 setTradesData(trades);
+                setCurrency(currency); // Set currency data in state
+                setCurrencySummary(currencySummary); // Set currency summary in state
                 setLoadingProgress(50); // Update loading progress
 
                 // Calculate overall total paid and current value for gold
@@ -433,6 +443,8 @@ if (lastPriceData && lastPriceData.length > 0 && mfSummaryData && mfSummaryData.
         summaryMetrics,
         bankAccountData,
         tradesData,
+        currency,
+        currencySummary,
         isLoading,
         isMobile,
         error,

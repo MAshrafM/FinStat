@@ -49,6 +49,10 @@ import GoldSummaryPage from './pages/gold/GoldSummaryPage';
 import CertificateLogPage from './pages/certificates/CertificateLogPage';
 import AddCertificatePage from './pages/certificates/AddCertificatePage';
 import EditCertificatePage from './pages/certificates/EditCertificatePage';
+// Currency
+import CurrencyLogPage from './pages/currency/CurrencyLogPage';
+import AddCurrencyPage from './pages/currency/AddCurrencyPage';
+import EditCurrencyPage from './pages/currency/EditCurrencyPage';
 
 
 import './App.css';
@@ -58,7 +62,7 @@ function App() {
       <Router>
           <Routes>
               <Route path="*" element={<LandingPage />} />
-              <Route element={<ProtectedRoute />}>
+                <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/paycheck-log" element={<PaycheckLog />} />
                     <Route path="/paycheck-log/new" element={<AddPaycheck />} />
@@ -93,7 +97,10 @@ function App() {
                     <Route path="/certificates" element={<CertificateLogPage />} />
                     <Route path="/certificates/new" element={<AddCertificatePage />} />
                       <Route path="/certificates/edit/:id" element={<EditCertificatePage />} />
-              </Route>
+                    <Route path="/currency" element={<CurrencyLogPage />} />
+                    <Route path="/currency/new" element={<AddCurrencyPage />} />
+                    <Route path="/currency/edit/:id" element={<EditCurrencyPage />} />
+                </Route>
           </Routes>
     </Router>
   );

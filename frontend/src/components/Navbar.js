@@ -10,7 +10,8 @@ const addLogRoutes = [
   'trades',
   'mutual-funds',
   'gold-wallet',
-  'certificates'
+  'certificates',
+  'currency',
 ];
 const Navbar = () => {
   const location = useLocation(); // Hook to get the current page URL
