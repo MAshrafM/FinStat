@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getCards, getCardSummary, getDueTransactions, makeFullPayment } from '../../services/creditCardService';
 import AddTransactionModal from './AddTransactionModal';
 import PartialPaymentModal from './PartialPaymentModal';
+import AddCardModal from './AddCardModal';
 import { formatCurrency } from '../../utils/formatters';
 import '../trades/Trades.css'; // Reuse styles
 import './CreditCardPage.css'; // Custom styles for this page
@@ -16,6 +17,7 @@ const CreditCardPage = () => {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
 
   // Fetch the list of cards on initial load
   useEffect(() => {
@@ -59,11 +61,30 @@ const CreditCardPage = () => {
     setIsPaymentModalOpen(true); // Open the modal
   };
 
+  const loadCards = useCallback(() => {
+  getCards().then(data => {
+    setCards(data);
+    // If there's no card selected yet, or the selected one was deleted, select the first one
+    if (data.length > 0 && !cards.find(c => c._id === selectedCardId)) {
+      setSelectedCardId(data[0]._id);
+    } else if (data.length === 0) {
+      setSelectedCardId('');
+      setSummary(null);
+      setDueTransactions([]);
+    }
+  });
+}, [selectedCardId, cards]);
+
+useEffect(() => {
+  loadCards();
+}, []);
+
   return (
     <div className="page-container">
       <div className="page-header">
         <h1>Credit Card Center</h1>
         <div className="header-actions">
+          <button className="action-button" onClick={() => setIsCardModalOpen(true)} style={{ marginRight: '10px' }}>Add New Card</button>
           <button className="action-button" onClick={() => setIsTransactionModalOpen(true)}>Log Transaction</button>
           <div className="card-selector">
             <label>Select Card:</label>
@@ -133,6 +154,11 @@ const CreditCardPage = () => {
       onClose={() => setIsPaymentModalOpen(false)}
       transaction={selectedTransaction}
       onPaymentMade={loadCardData} // Pass the refresh function as a callback
+    />
+    <AddCardModal
+      isOpen={isCardModalOpen}
+      onClose={() => setIsCardModalOpen(false)}
+      onCardAdded={loadCards} // Pass the refresh function as a callback
     />
     </div>
   );
