@@ -86,4 +86,81 @@ router.get('/summary/:cardId', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/credit-cards/overall-summary
+// @desc    Get a summary of all credit cards for the logged-in user
+// @access  Private
+router.get('/overall-summary', auth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // 1. Get all cards for the user
+    const cards = await CreditCard.find({ user: userId });
+    if (cards.length === 0) {
+      return res.json({
+        totalLimit: 0,
+        totalOutstanding: 0,
+        totalAvailable: 0,
+        totalDueThisMonth: 0,
+      });
+    }
+
+    const cardIds = cards.map(c => c._id);
+
+    // 2. Calculate total limit
+    const totalLimit = cards.reduce((sum, card) => sum + card.limit, 0);
+
+    // 3. Calculate total spending across all cards
+    const totalSpendingResult = await CardTransaction.aggregate([
+      { $match: { card: { $in: cardIds }, user: userId } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+    const totalSpending = totalSpendingResult.length > 0 ? totalSpendingResult[0].total : 0;
+
+    // 4. Calculate total payments across all cards
+    const totalPaymentsResult = await CardPayment.aggregate([
+      { $match: { card: { $in: cardIds }, user: userId } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+    const totalPayments = totalPaymentsResult.length > 0 ? totalPaymentsResult[0].total : 0;
+
+    // 5. Calculate final totals
+    const totalOutstanding = totalSpending - totalPayments;
+    const totalAvailable = totalLimit - totalOutstanding;
+
+    // 6. Calculate total amount due this month (sum of all individual card dues)
+    let totalDueThisMonth = 0;
+    for (const card of cards) {
+        const now = new Date();
+        const billingDay = card.billingCycleDay;
+        const lastBillingDate = new Date(now.getFullYear(), now.getMonth(), billingDay);
+        if (now.getDate() < billingDay) {
+            lastBillingDate.setMonth(lastBillingDate.getMonth() - 1);
+        }
+        
+        const installmentDues = await CardTransaction.aggregate([
+            { $match: { card: card._id, user: userId, type: 'Installment' } },
+            { $group: { _id: null, total: { $sum: "$installmentDetails.monthlyPrincipal" } } }
+        ]);
+        totalDueThisMonth += installmentDues.length > 0 ? installmentDues[0].total : 0;
+
+        const purchaseDues = await CardTransaction.aggregate([
+            { $match: { card: card._id, user: userId, type: 'Purchase', date: { $gte: lastBillingDate } } },
+            { $group: { _id: null, total: { $sum: "$amount" } } }
+        ]);
+        totalDueThisMonth += purchaseDues.length > 0 ? purchaseDues[0].total : 0;
+    }
+
+    res.json({
+      totalLimit,
+      totalOutstanding,
+      totalAvailable,
+      totalDueThisMonth,
+      });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;

@@ -1,6 +1,6 @@
 // frontend/src/pages/credit-cards/CreditCardPage.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { getCards, getCardSummary, getDueTransactions, makeFullPayment } from '../../services/creditCardService';
+import { getCards, getCardSummary, getDueTransactions, makeFullPayment, getOverallSummary } from '../../services/creditCardService';
 import AddTransactionModal from './AddTransactionModal';
 import PartialPaymentModal from './PartialPaymentModal';
 import AddCardModal from './AddCardModal';
@@ -18,16 +18,21 @@ const CreditCardPage = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+  const [overallSummary, setOverallSummary] = useState(null);
 
   // Fetch the list of cards on initial load
   useEffect(() => {
-    getCards().then(data => {
-      setCards(data);
-      if (data.length > 0) {
-        setSelectedCardId(data[0]._id); // Select the first card by default
-      }
-    });
-  }, []);
+    Promise.all([
+    getOverallSummary(),
+    getCards()
+  ]).then(([overallData, cardsData]) => {
+    setOverallSummary(overallData);
+    setCards(cardsData);
+    if (cardsData.length > 0) {
+      setSelectedCardId(cardsData[0]._id);
+    }
+  }).catch(err => console.error("Failed to load initial page data:", err));
+}, []);
 
   // Function to fetch all data for the selected card
   const loadCardData = useCallback(() => {
@@ -96,6 +101,25 @@ useEffect(() => {
           </div>
         </div>
       </div>
+
+      {/* --- NEW OVERALL SUMMARY ROW --- */}
+    {overallSummary && (
+      <div className="summary-row" style={{ borderBottom: '2px solid #3498db', paddingBottom: '1rem', marginBottom: '2rem' }}>
+        <div className="summary-item">
+          <span>Total Available Credit</span>
+          <strong>{formatCurrency(overallSummary.totalAvailable)}</strong>
+        </div>
+        <div className="summary-item">
+          <span>Total Owed</span>
+          <strong>{formatCurrency(overallSummary.totalOutstanding)}</strong>
+        </div>
+        <div className="summary-item highlight">
+          <span>Total Due This Month</span>
+          <strong>{formatCurrency(overallSummary.totalDueThisMonth)}</strong>
+        </div>
+      </div>
+    )}
+    {/* --- END OF NEW ROW --- */}
 
       {isLoading && <p>Loading card details...</p>}
 

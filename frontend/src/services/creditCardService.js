@@ -11,7 +11,13 @@ export const createCard = (data) => fetch(`${API_URL}/cards`, { method: 'POST', 
 // --- Summary & Due Transactions ---
 export const getCardSummary = (cardId) => fetch(`${API_URL}/summary/${cardId}`, { headers: getAuthHeaders() }).then(res => res.json());
 export const getDueTransactions = (cardId) => fetch(`${API_URL}/transactions/due/${cardId}`, { headers: getAuthHeaders() }).then(res => res.json()); // We need to build this backend route
-
+/**
+ * Fetches an overall summary of all credit cards combined.
+ * @returns {Promise<Object>} A promise that resolves to the overall summary object.
+ */
+export const getOverallSummary = () => {
+  return fetch(`${API_URL}/overall-summary`, { headers: getAuthHeaders() }).then(res => res.json());
+};
 // --- Transaction & Payment Logging ---
 export const createTransaction = (data) => fetch(`${API_URL}/transactions`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(res => res.json());
 export const makeFullPayment = (transactionId) => fetch(`${API_URL}/payments/full`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ transactionId }) }).then(res => res.json()); // We need this backend route
