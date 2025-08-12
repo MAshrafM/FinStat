@@ -1,6 +1,8 @@
 // frontend/src/pages/credit-cards/CreditCardPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { getCards, getCardSummary, getDueTransactions, makeFullPayment } from '../../services/creditCardService';
+import AddTransactionModal from './AddTransactionModal';
+import PartialPaymentModal from './PartialPaymentModal';
 import { formatCurrency } from '../../utils/formatters';
 import '../trades/Trades.css'; // Reuse styles
 import './CreditCardPage.css'; // Custom styles for this page
@@ -11,6 +13,9 @@ const CreditCardPage = () => {
   const [summary, setSummary] = useState(null);
   const [dueTransactions, setDueTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   // Fetch the list of cards on initial load
   useEffect(() => {
@@ -50,21 +55,24 @@ const CreditCardPage = () => {
 
   // Placeholder for opening partial payment modal
   const handlePartialPayment = (transaction) => {
-    // Here you would open a modal and pass the transaction data to it
-    alert(`Opening partial payment form for "${transaction.description}"`);
+    setSelectedTransaction(transaction); // Set the transaction to be paid
+    setIsPaymentModalOpen(true); // Open the modal
   };
 
   return (
     <div className="page-container">
       <div className="page-header">
         <h1>Credit Card Center</h1>
-        <div className="card-selector">
-          <label>Select Card:</label>
-          <select value={selectedCardId} onChange={(e) => setSelectedCardId(e.target.value)}>
-            {cards.map(card => (
-              <option key={card._id} value={card._id}>{card.name} - {card.bank}</option>
-            ))}
-          </select>
+        <div className="header-actions">
+          <button className="action-button" onClick={() => setIsTransactionModalOpen(true)}>Log Transaction</button>
+          <div className="card-selector">
+            <label>Select Card:</label>
+            <select value={selectedCardId} onChange={(e) => setSelectedCardId(e.target.value)}>
+              {cards.map(card => (
+                <option key={card._id} value={card._id}>{card.name} - {card.bank}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -112,6 +120,20 @@ const CreditCardPage = () => {
           </div>
         </>
       )}
+
+      <AddTransactionModal
+      isOpen={isTransactionModalOpen}
+      onClose={() => setIsTransactionModalOpen(false)}
+      cardId={selectedCardId}
+      onTransactionAdded={loadCardData} // Pass the refresh function as a callback
+    />
+
+    <PartialPaymentModal
+      isOpen={isPaymentModalOpen}
+      onClose={() => setIsPaymentModalOpen(false)}
+      transaction={selectedTransaction}
+      onPaymentMade={loadCardData} // Pass the refresh function as a callback
+    />
     </div>
   );
 };
