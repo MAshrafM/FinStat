@@ -1,0 +1,32 @@
+/* frontend/src/pages/credit-cards/CreditCardPage.css */
+.card-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-selector label {
+  font-weight: bold;
+}
+.card-selector select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+.payment-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+.action-button-small {
+  padding: 5px 10px;
+  font-size: 0.9rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.action-button-small:hover {
+  background-color: #2980b9;
+}
