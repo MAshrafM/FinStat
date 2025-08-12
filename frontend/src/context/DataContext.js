@@ -8,7 +8,7 @@ import { getMutualFundSummary, getLastPrice } from '../services/mutualFundServic
 import { getAllTrades, getTradeSummary, getMarketData } from '../services/tradeService';
 import { getLatestExpenditure } from '../services/expenditureService';
 import { safeDivision, safePercentage } from '../utils/helper'; // Import any helper functions you need 
-import { getCurrency, getCurrencySummary } from '../services/currencyService'; // Import currency service functions
+import { getCurrency, getCurrencySummary, getCurrencyPrice } from '../services/currencyService'; // Import currency service functions
 // ... import other services as needed (mutual funds, certificates, etc.)
 
 // 1. Create the Context
@@ -18,6 +18,14 @@ const DataContext = createContext();
 export const useData = () => {
     return useContext(DataContext);
 };
+
+const currencyMap ={
+    'Dollar': 'USD',
+    'Euro': 'EUR',
+    'Pound': 'GBP',
+    'Yen': 'JPY',
+    'Riyal': 'SAR',
+}
 
 // 3. Create the Provider Component
 export const DataProvider = ({ children }) => {
@@ -48,6 +56,7 @@ export const DataProvider = ({ children }) => {
     // Currency
     const [currency, setCurrency] = useState([]); // Store currency data in state
     const [currencySummary, setCurrencySummary] = useState({}); // Store currency summary if needed
+    const [currencyPrice, setCurrencyPrice] = useState({}); // Store currency price if needed
 
     // Bank Account Data
     const [bankAccountData, setBankAccountData] = useState({}); // Bank account data if needed
@@ -252,6 +261,7 @@ export const DataProvider = ({ children }) => {
                     bankAccountData,
                     currency,
                     currencySummary,
+                    currencyPrice,
                 ] = await Promise.all([
                     getGoldSummary(),
                     getGoldPrice(),
@@ -263,6 +273,7 @@ export const DataProvider = ({ children }) => {
                     getLatestExpenditure(),
                     getCurrency(), // Fetch currency data 
                     getCurrencySummary(), // Fetch currency summary
+                    getCurrencyPrice(), // Fetch currency price
                     // ... add other fetch calls here
                 ]);
                 setLoadingProgress(30); // Update loading progress
@@ -275,7 +286,7 @@ export const DataProvider = ({ children }) => {
                 setBankAccountData(bankAccountData);
                 setTradesData(trades);
                 setCurrency(currency); // Set currency data in state
-                setCurrencySummary(currencySummary); // Set currency summary in state
+                setCurrencyPrice(currencyPrice); // Set currency price in state
                 setLoadingProgress(50); // Update loading progress
 
                 // Calculate overall total paid and current value for gold
@@ -364,6 +375,20 @@ export const DataProvider = ({ children }) => {
                     setSummaryMetrics(metrics);
                 }
 
+                if(currencySummary && currencyPrice && currencyPrice.length > 0) {
+                    currencySummary.map((curr) => {
+                        let currencyCode = currencyMap[curr._id]; // Fallback to name if not found
+                        let price = currencyPrice.find((p) => p.currencyID === currencyCode);
+                        if (price) {
+                            curr.currentPrice = price.sellRate;
+                        }
+            
+                    })
+                }
+
+                setCurrencySummary(currencySummary); // Set currency summary in state
+
+
                 
                 setLoadingProgress(100); // Update loading progress
             } catch (err) {
@@ -445,6 +470,7 @@ if (lastPriceData && lastPriceData.length > 0 && mfSummaryData && mfSummaryData.
         tradesData,
         currency,
         currencySummary,
+        currencyPrice,
         isLoading,
         isMobile,
         error,

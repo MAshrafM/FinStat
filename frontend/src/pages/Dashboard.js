@@ -5,11 +5,11 @@ import { FaRegListAlt, FaRegCalendarAlt, FaChartArea,
          FaUserTie, FaShieldAlt, FaFileInvoiceDollar,
          FaMoneyBillWave, FaChartPie, FaChartLine,
          FaBookOpen, FaBuilding, FaBook,
-    FaGem, FaBalanceScale, FaScroll
+    FaGem, FaBalanceScale, FaScroll, FaDollarSign
 } from 'react-icons/fa'; // Import new icons
 import { useData } from '../context/DataContext';
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
-import { safeDivision, safePercentage, normDiv } from '../utils/helper'; // Import safe division and percentage functions }
+import { safePercentage, normDiv } from '../utils/helper'; // Import safe division and percentage functions }
 import './Dashboard.css'; // We will create this CSS file
 
 const Dashboard = () => {
@@ -23,6 +23,7 @@ const Dashboard = () => {
         overallTotals,
         summaryMetrics,
         bankAccountData,
+        currencySummary,
     } = useData(); // Access any global data if needed
 
   return (
@@ -38,8 +39,8 @@ const Dashboard = () => {
                               certificateSummary.totalActiveAmount +
                               overallTotals.totalSellingValue +
                               summaryMetrics.topUps + summaryMetrics.totalProfitNow +
-                              bankAccountData.bank +
-                              (900 * 50)
+                              bankAccountData.bank + currencySummary.reduce((sum,item) => sum + (item.currentPrice * item.totalAmount), 0)
+                              
                           )
                       }
                   </h2>
@@ -71,11 +72,11 @@ const Dashboard = () => {
                   <h3>Bank Certificates</h3>
                   <div className="dashboard-card-items">
                       <div className="dashboard-card-item">
-                          <span className="description">Total Active Amount</span>
+                          <span className="description">Total Amount</span>
                           <span className="value">{formatCurrency(certificateSummary.totalActiveAmount)}</span>
                       </div>
                       <div className="dashboard-card-item">
-                          <span className="description">Expected Returns</span>
+                          <span className="description">Exp. Returns</span>
                           <span className="value">{formatCurrency(certificateSummary.totalExpectedReturns)}</span>
                       </div>
                       <div className="dashboard-card-item">
@@ -139,16 +140,36 @@ const Dashboard = () => {
                               <span className="description">Balance</span>
                               <span className="value">{formatCurrency(bankAccountData.bank)}</span>
                           </div>
-                          <div className="dashboard-card-item">
-                              <span className="description">Foreign $</span>
-                              <span className="value">900$ + 184$ ~ 50L.E/$</span>
-                          </div>
-                          <div className="dashboard-card-item">
-                              <span className="description">Foreign $/LE</span>
-                              <span className="value">{formatCurrency(900 * 50)} | {formatCurrency(184 * 5)} </span>
-                          </div>
                       </div>
                   </div>
+
+                  <div className="dashboard-card">
+                      <h3>Foreign Currency</h3>
+                      {currencySummary && currencySummary.length > 0 && (
+                    currencySummary.map((curr) => (
+                        <div className="dashboard-card-items">
+                            <div className="dashboard-card-item">
+                                <span className="description">Currency</span>
+                                <span className="value">{curr._id}</span>
+                            </div>
+                            <div className="dashboard-card-item">
+                                <span className="description">Total Amount</span>
+                                <span className="value">{formatCurrency(curr.totalAmount)}</span>
+                            </div>
+                            <div className="dashboard-card-item">
+                                <span className="description">Current Value</span>
+                                <span className="value">{formatCurrency(curr.currentPrice * curr.totalAmount)} </span>
+                            </div>
+
+                            <div className="dashboard-card-item">
+                                <span className="description">Rate</span>
+                                <span className="value">{safePercentage(curr.currentPrice * curr.totalAmount, curr.totalPrice)} %</span>
+                            </div>
+                        </div>
+                        
+                    ))
+                    )}
+                    </div>
                   <div className="dashboard-card">
                       <h3>Realstate</h3>
                       <div className="dashboard-card-items">
@@ -239,6 +260,11 @@ const Dashboard = () => {
                   <FaScroll size={50} />
                   <h2>Bank Certificates</h2>
                   <p>Track your fixed-income certificates of deposit.</p>
+              </Link>
+              <Link to="/currency" className="dashboard-card">
+                  <FaScroll size={50} />
+                  <h2>Foreign Currency</h2>
+                  <p>Track your Foreign Currency Wallet.</p>
               </Link>
       </div>
     </div>

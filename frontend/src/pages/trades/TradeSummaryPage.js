@@ -99,7 +99,7 @@ const TradeSummaryPage = () => {
                                 <td>{formatCurrency(Math.abs(item.targetPrice))}</td>
                                 <td>{formatCurrency(Math.abs(item.targetSell))}</td>
                                 <td style={{ color: Math.abs(item.avgPrice) > stMarketPrices[item._id.stockCode] ? '#c0392b' : '#27ae60' }}>${stMarketPrices[item._id.stockCode]}</td>
-                                <td className="total-value" style={{ color: item.totalValueNow >= item.totalBuyValue ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totalValueNow)}</td>
+                                <td className="total-value" style={{ color: item.totalValueNow >= Math.abs(item.totDeals) ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totalValueNow)}</td>
                                 <td className="total-value" style={{ color: item.changeNow > 0 ? '#27ae60' : '#c0392b' }} >{item.changeNow}%</td>
                                 <td>{formatCurrency(item.totalFees)}</td>
                                 <td>{item.tradeCount}</td>

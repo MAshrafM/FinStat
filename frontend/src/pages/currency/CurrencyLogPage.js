@@ -13,6 +13,7 @@ const CurrencyLogPage = () => {
     // Use the global data context
     const { currency, currencySummary } = useData(); // Access any global data if needed
 
+
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this certificate?')) {
             await deleteCurrency(id);
@@ -38,7 +39,13 @@ const CurrencyLogPage = () => {
                         <div className="summary-item">
                             <span>Total Paid:  <strong>{formatCurrency(curr.totalPrice)}</strong></span>
                         </div>
+                        <div className="summary-item">
+                            <span>Current Price:  <strong>{formatCurrency(curr.currentPrice)}</strong></span>
                         </div>
+                        <div className="summary-item">
+                            <span>Current Value:  <strong>{formatCurrency(curr.currentPrice * curr.totalAmount)}</strong></span>
+                        </div>
+                    </div>
                     ))
                 )}
 

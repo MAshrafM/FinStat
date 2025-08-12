@@ -4,6 +4,7 @@ const router = express.Router();
 const Certificate = require('../models/Currency');
 const auth = require('../middleware/auth');
 const Currency = require('../models/Currency');
+const axios = require('axios'); // Import axios for making HTTP requests
 
 // Standard CRUD routes, very similar to our other features
 
@@ -44,6 +45,31 @@ router.get('/summary', auth, async (req, res) => {
             }
         ]);
         res.json(summary);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+router.get('/price', auth, async (req, res) => {
+    try {
+        const response = await axios.get('https://www.cibeg.com/api/currency/rates', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Referer': 'https://www.cibeg.com/',
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-origin'
+            }
+        });
+
+        const data = response.data.rates;
+        
+        res.json( data );
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

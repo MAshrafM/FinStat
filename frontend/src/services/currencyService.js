@@ -13,6 +13,7 @@ const getAuthHeaders = () => {
 export const getCurrency = () => fetch(API_URL, { headers: getAuthHeaders() }).then(res => res.json());
 export const getCurrencySummary = () => fetch(`${API_URL}/summary`, { headers: getAuthHeaders() }).then(res =>res.json());
 export const getCurrencyById = (id) => fetch(`${API_URL}/${id}`, { headers: getAuthHeaders() }).then(res => res.json());
+export const getCurrencyPrice = () => fetch(`${API_URL}/price`, { headers: getAuthHeaders() }).then(res => res.json());
 export const createCurrency = (data) => fetch(API_URL, {
     method: 'POST',
     headers: getAuthHeaders(),
