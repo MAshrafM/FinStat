@@ -35,6 +35,7 @@ const AddCardModal = ({ isOpen, onClose, onCardAdded }) => {
         limit: parseFloat(formData.limit),
         billingCycleDay: day,
       };
+      console.log("Submitting card data:", dataToSubmit);
       await createCard(dataToSubmit);
       onCardAdded(); // Callback to refresh the card list on the parent page
       onClose(); // Close the modal

@@ -14,6 +14,15 @@ const CardTransactionSchema = new Schema({
     monthlyPrincipal: { type: Number },
     interest: { type: Number, default: 0 },
   },
+  status: {
+    type: String,
+    enum: ['Due', 'Paid', 'Partial'], // 'Due' is the default for new transactions
+    default: 'Due',
+  },
+  paidAmount: {
+    type: Number,
+    default: 0,
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('CardTransaction', CardTransactionSchema);
