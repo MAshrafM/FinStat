@@ -83,27 +83,27 @@ const TradeSummaryPage = () => {
                     <tbody>
                         {openPosData.map((item, index) => (
                             <tr key={index}>
-                                <td>
+                                <td data-label="Stock Code">
                                     <p style={{ fontWeight: 'bold' }}>{item._id.stockCode}</p>
                                     <p>{item._id.iteration || '0'}</p>
                                     <p className="broker">{item._id.broker}</p>
                                 </td>
-                                <td className="total-value" style={{ color: Math.abs(item.realizedPL) <= item.totalValueNow ? '#27ae60' : '#c0392b' }}>
+                                <td data-label="Realized P/L" className="total-value" style={{ color: Math.abs(item.realizedPL) <= item.totalValueNow ? '#27ae60' : '#c0392b' }}>
                                     {formatCurrency(Math.abs(item.realizedPL))}
                                 </td>
-                                <td style={{ color: Math.abs(item.totDeals) <= item.totalValueNow ? '#27ae60' : '#c0392b' }}>{formatCurrency(Math.abs(item.totDeals))}</td>
+                                <td data-label="Deals" style={{ color: Math.abs(item.totDeals) <= item.totalValueNow ? '#27ae60' : '#c0392b' }}>{formatCurrency(Math.abs(item.totDeals))}</td>
             
-                                <td style={{ fontWeight: 'bold' }}>{item.currentShares}</td>
-                                <td>{formatCurrency(Math.abs(item.avgPrice))}</td>
-                                <td>{formatCurrency(Math.abs(item.avgBuy))}</td>
-                                <td>{formatCurrency(Math.abs(item.targetPrice))}</td>
-                                <td>{formatCurrency(Math.abs(item.targetSell))}</td>
-                                <td style={{ color: Math.abs(item.avgPrice) > stMarketPrices[item._id.stockCode] ? '#c0392b' : '#27ae60' }}>${stMarketPrices[item._id.stockCode]}</td>
-                                <td className="total-value" style={{ color: item.totalValueNow >= Math.abs(item.totDeals) ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totalValueNow)}</td>
-                                <td className="total-value" style={{ color: item.changeNow > 0 ? '#27ae60' : '#c0392b' }} >{item.changeNow}%</td>
-                                <td>{formatCurrency(item.totalFees)}</td>
-                                <td>{item.tradeCount}</td>
-                                <td>{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</td>
+                                <td data-label="Shares" style={{ fontWeight: 'bold' }}>{item.currentShares}</td>
+                                <td data-label="Avg Price">{formatCurrency(Math.abs(item.avgPrice))}</td>
+                                <td data-label="Avg Buy">{formatCurrency(Math.abs(item.avgBuy))}</td>
+                                <td data-label="Target">{formatCurrency(Math.abs(item.targetPrice))}</td>
+                                <td data-label="Target Sell">{formatCurrency(Math.abs(item.targetSell))}</td>
+                                <td data-label="Current Price" style={{ color: Math.abs(item.avgPrice) > stMarketPrices[item._id.stockCode] ? '#c0392b' : '#27ae60' }}>${stMarketPrices[item._id.stockCode]}</td>
+                                <td data-label="Value Now" className="total-value" style={{ color: item.totalValueNow >= Math.abs(item.totDeals) ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totalValueNow)}</td>
+                                <td data-label="Change" className="total-value" style={{ color: item.changeNow > 0 ? '#27ae60' : '#c0392b' }} >{item.changeNow}%</td>
+                                <td data-label="Fees">{formatCurrency(item.totalFees)}</td>
+                                <td data-label="Count">{item.tradeCount}</td>
+                                <td data-label="Period">{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</td>
                                 
                             </tr>
                         ))}
@@ -130,21 +130,21 @@ const TradeSummaryPage = () => {
                     <tbody>
                         {endPosData.map((item, index) => (
                             <tr key={index}>
-                                <td>
+                                <td data-label="Code">
                                     <p style={{ fontWeight: 'bold' }}>{item._id.stockCode}</p>
                                     <p>{item._id.iteration || '0'}</p>
                                     <p className="broker">{item._id.broker}</p>
                                 </td>
-                                <td className="total-value" style={{ color: item.realizedPL >= 0 ? '#27ae60' : '#c0392b' }}>
+                                <td data-label="Realized P/L" className="total-value" style={{ color: item.realizedPL >= 0 ? '#27ae60' : '#c0392b' }}>
                                     {formatCurrency(item.realizedPL)}
                                 </td>
-                                <td style={{ color: item.profitPercentage >= 0 ? '#27ae60' : '#c0392b' }}>{item.profitPercentage} %</td>
-                                <td> {formatCurrency(item.totalBuyValue)}</td>
-                                <td> {formatCurrency(item.totalSellValue)}</td>
-                                <td>{formatCurrency(item.totalFees)}</td>
-                                <td>{item.tradeCount}</td>
-                                <td>{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</td>
-                                <td>
+                                <td data-label="Profit" style={{ color: item.profitPercentage >= 0 ? '#27ae60' : '#c0392b' }}>{item.profitPercentage} %</td>
+                                <td data-label="Total Buy"> {formatCurrency(item.totalBuyValue)}</td>
+                                <td data-label="Total Sell"> {formatCurrency(item.totalSellValue)}</td>
+                                <td data-label="Fees">{formatCurrency(item.totalFees)}</td>
+                                <td data-label="Count">{item.tradeCount}</td>
+                                <td data-label="Period">{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</td>
+                                <td data-label="Days">
                                     <span style={{ fontSize: '0.9em', color: '#888' }}>
                                         {daysBetween(item.firstTradeDate, item.lastTradeDate)} days
                                     </span>
