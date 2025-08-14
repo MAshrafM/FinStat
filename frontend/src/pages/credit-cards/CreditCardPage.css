@@ -1,0 +1,115 @@
+/* frontend/src/pages/credit-cards/CreditCardPage.css */
+.card-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 10px;
+}
+.card-selector label {
+  font-weight: bold;
+}
+.card-selector select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+.payment-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+.action-button-small {
+  padding: 5px 10px;
+  font-size: 0.9rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.action-button-small:hover {
+  background-color: #2980b9;
+}
+
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 15px;
+  color: white;
+  font-weight: bold;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.status-due {
+  background-color: #e74c3c; /* Red */
+}
+
+.status-paid {
+  background-color: #2ecc71; /* Green */
+}
+
+.status-partial {
+  background-color: #f39c12; /* Orange */
+}
+
+.actions-cell {
+  text-align: center;
+  white-space: nowrap; /* Prevents icons from wrapping on small screens */
+}
+
+.action-icon {
+  font-size: 1.2rem;
+  margin: 0 8px;
+  cursor: pointer;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.action-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Specific colors for each action */
+.action-icon.pay-full {
+  color: #2ecc71; /* Green */
+}
+.action-icon.pay-partial {
+  color: #f39c12; /* Orange */
+}
+.action-icon.edit {
+  color: #3498db; /* Blue */
+}
+.action-icon.delete {
+  color: #e74c3c; /* Red */
+}
+.header-actions{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .header-actions {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .card-selector {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .card-selector select {
+    width: 100%;
+    margin-top: 5px;
+  }
+  .actions-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .action-icon {
+    margin: 5px 0;
+  }
+}

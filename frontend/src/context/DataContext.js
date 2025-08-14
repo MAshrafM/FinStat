@@ -9,6 +9,7 @@ import { getAllTrades, getTradeSummary, getMarketData } from '../services/tradeS
 import { getLatestExpenditure } from '../services/expenditureService';
 import { safeDivision, safePercentage } from '../utils/helper'; // Import any helper functions you need 
 import { getCurrency, getCurrencySummary, getCurrencyPrice } from '../services/currencyService'; // Import currency service functions
+import { getOverallSummary } from '../services/creditCardService'; // Import credit card service functions
 // ... import other services as needed (mutual funds, certificates, etc.)
 
 // 1. Create the Context
@@ -60,6 +61,8 @@ export const DataProvider = ({ children }) => {
 
     // Bank Account Data
     const [bankAccountData, setBankAccountData] = useState({}); // Bank account data if needed
+    // Credit Cards
+    const [creditCardsSummary, setCreditCardsSummary] = useState([]); // Store credit card data in state
     // Responsive 
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     // Margin profit percentage for stocks
@@ -262,6 +265,7 @@ export const DataProvider = ({ children }) => {
                     currency,
                     currencySummary,
                     currencyPrice,
+                    creditCardsSummary,
                 ] = await Promise.all([
                     getGoldSummary(),
                     getGoldPrice(),
@@ -274,6 +278,7 @@ export const DataProvider = ({ children }) => {
                     getCurrency(), // Fetch currency data 
                     getCurrencySummary(), // Fetch currency summary
                     getCurrencyPrice(), // Fetch currency price
+                    getOverallSummary(), // Fetch credit card summary
                     // ... add other fetch calls here
                 ]);
                 setLoadingProgress(30); // Update loading progress
@@ -287,6 +292,7 @@ export const DataProvider = ({ children }) => {
                 setTradesData(trades);
                 setCurrency(currency); // Set currency data in state
                 setCurrencyPrice(currencyPrice); // Set currency price in state
+                setCreditCardsSummary(creditCardsSummary); // Set credit card summary in state
                 setLoadingProgress(50); // Update loading progress
 
                 // Calculate overall total paid and current value for gold
@@ -471,6 +477,7 @@ if (lastPriceData && lastPriceData.length > 0 && mfSummaryData && mfSummaryData.
         currency,
         currencySummary,
         currencyPrice,
+        creditCardsSummary,
         isLoading,
         isMobile,
         error,

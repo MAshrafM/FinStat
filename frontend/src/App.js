@@ -53,6 +53,9 @@ import EditCertificatePage from './pages/certificates/EditCertificatePage';
 import CurrencyLogPage from './pages/currency/CurrencyLogPage';
 import AddCurrencyPage from './pages/currency/AddCurrencyPage';
 import EditCurrencyPage from './pages/currency/EditCurrencyPage';
+// Credit Cards
+import CreditCardPage from './pages/credit-cards/CreditCardPage';
+
 
 
 import './App.css';
@@ -100,6 +103,7 @@ function App() {
                     <Route path="/currency" element={<CurrencyLogPage />} />
                     <Route path="/currency/new" element={<AddCurrencyPage />} />
                     <Route path="/currency/edit/:id" element={<EditCurrencyPage />} />
+                    <Route path="/credit-cards" element={<CreditCardPage />} />
                 </Route>
           </Routes>
     </Router>

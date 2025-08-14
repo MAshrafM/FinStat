@@ -5,7 +5,7 @@ import { FaRegListAlt, FaRegCalendarAlt, FaChartArea,
          FaUserTie, FaShieldAlt, FaFileInvoiceDollar,
          FaMoneyBillWave, FaChartPie, FaChartLine,
          FaBookOpen, FaBuilding, FaBook,
-    FaGem, FaBalanceScale, FaScroll, FaDollarSign
+    FaGem, FaBalanceScale, FaScroll, FaDollarSign, FaCreditCard
 } from 'react-icons/fa'; // Import new icons
 import { useData } from '../context/DataContext';
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
@@ -24,6 +24,7 @@ const Dashboard = () => {
         summaryMetrics,
         bankAccountData,
         currencySummary,
+        creditCardsSummary,
     } = useData(); // Access any global data if needed
 
   return (
@@ -139,6 +140,14 @@ const Dashboard = () => {
                           <div className="dashboard-card-item">
                               <span className="description">Balance</span>
                               <span className="value">{formatCurrency(bankAccountData.bank)}</span>
+                          </div>
+                          <div className="dashboard-card-item">
+                              <span className="description">Credit Av. Limit</span>
+                              <span className="value">{formatCurrency(creditCardsSummary.totalAvailable)}</span>
+                          </div>
+                          <div className="dashboard-card-item">
+                              <span className="description">Credit Due</span>
+                              <span className="value">{formatCurrency(creditCardsSummary.totalOutstanding)}</span>
                           </div>
                       </div>
                   </div>
@@ -262,9 +271,14 @@ const Dashboard = () => {
                   <p>Track your fixed-income certificates of deposit.</p>
               </Link>
               <Link to="/currency" className="dashboard-card">
-                  <FaScroll size={50} />
+                  <FaDollarSign size={50} />
                   <h2>Foreign Currency</h2>
                   <p>Track your Foreign Currency Wallet.</p>
+              </Link>
+              <Link to="/credit-cards" className="dashboard-card">
+                <FaCreditCard size={50} />
+                <h2>Credit Cards</h2>
+                <p>Manage credit card transactions and payments.</p>
               </Link>
       </div>
     </div>

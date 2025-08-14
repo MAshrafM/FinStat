@@ -32,6 +32,7 @@ app.use('/api/golds', require('./routes/golds'));
 app.use('/api/certificates', require('./routes/certificates'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/currency', require('./routes/currency'));
+app.use('/api/credit-cards', require('./routes/creditCards'));
 
 // Export the Express API
 module.exports = app;
