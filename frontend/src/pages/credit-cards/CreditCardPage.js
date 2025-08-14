@@ -1,8 +1,9 @@
 // frontend/src/pages/credit-cards/CreditCardPage.js
 import React, { useState, useEffect, useCallback } from 'react';
+import { useData } from '../../context/DataContext';
 import { FaCheckCircle, FaRegMoneyBillAlt, FaEdit, FaTrash } from 'react-icons/fa';
 import { getCards, getCardSummary, getDueTransactions, makeFullPayment,
-         getTransactions, getOverallSummary, deleteTransaction } from '../../services/creditCardService';
+         getTransactions, deleteTransaction } from '../../services/creditCardService';
 import AddTransactionModal from './AddTransactionModal';
 import PartialPaymentModal from './PartialPaymentModal';
 import AddCardModal from './AddCardModal';
@@ -12,6 +13,7 @@ import '../trades/Trades.css'; // Reuse styles
 import './CreditCardPage.css'; // Custom styles for this page
 
 const CreditCardPage = () => {
+  const { creditCardsSummary } = useData();
   const [cards, setCards] = useState([]);
   const [selectedCardId, setSelectedCardId] = useState('');
   const [summary, setSummary] = useState(null);
@@ -21,23 +23,19 @@ const CreditCardPage = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
-  const [overallSummary, setOverallSummary] = useState(null);
   const [transactionHistory, setTransactionHistory] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Fetch the list of cards on initial load
   useEffect(() => {
-    Promise.all([
-    getOverallSummary(),
     getCards()
-  ]).then(([overallData, cardsData]) => {
-    setOverallSummary(overallData);
-    setCards(cardsData);
-    if (cardsData.length > 0) {
-      setSelectedCardId(cardsData[0]._id);
-    }
-  }).catch(err => console.error("Failed to load initial page data:", err));
-}, []);
+    .then((cardsData) => {
+      setCards(cardsData);
+      if (cardsData.length > 0) {
+        setSelectedCardId(cardsData[0]._id);
+      }
+    }).catch(err => console.error("Failed to load initial page data:", err));
+  }, []);
 
   // Function to fetch all data for the selected card
  const loadCardData = useCallback(() => {
@@ -108,13 +106,21 @@ useEffect(() => {
   loadCards();
 }, []);
 
+const totalPaid = transactionHistory.reduce((sum, tx) => {
+  return sum + (tx.status === 'Paid' ? tx.amount : 0);
+}, 0);
+const totalDue = transactionHistory.reduce((sum, tx) => {
+  return sum + (tx.status === 'Due' ? tx.amount : 0);
+}, 0);
+const totalPartial = transactionHistory.reduce((sum, tx) => {
+  return sum + (tx.status === 'Partial' ? tx.paidAmount : 0);
+}, 0);
+
   return (
     <div className="page-container">
       <div className="page-header">
         <h1>Credit Card Center</h1>
         <div className="header-actions">
-          <button className="action-button" onClick={() => setIsCardModalOpen(true)} style={{ marginRight: '10px' }}>Add New Card</button>
-          <button className="action-button" onClick={() => setIsTransactionModalOpen(true)}>Log Transaction</button>
           <div className="card-selector">
             <label>Select Card:</label>
             <select value={selectedCardId} onChange={(e) => setSelectedCardId(e.target.value)}>
@@ -123,23 +129,29 @@ useEffect(() => {
               ))}
             </select>
           </div>
+          <button className="action-button" onClick={() => setIsCardModalOpen(true)}>Add New Card</button>
+          <button className="action-button" onClick={() => setIsTransactionModalOpen(true)}>Log Transaction</button>
         </div>
       </div>
 
       {/* --- NEW OVERALL SUMMARY ROW --- */}
-    {overallSummary && (
+    {creditCardsSummary && (
       <div className="summary-row" style={{ borderBottom: '2px solid #3498db', paddingBottom: '1rem', marginBottom: '2rem' }}>
         <div className="summary-item">
+          <span>Total Paid</span>
+          <strong>{formatCurrency(totalPaid + totalPartial)}</strong> 
+        </div>
+        <div className="summary-item">
           <span>Total Available Credit</span>
-          <strong>{formatCurrency(overallSummary.totalAvailable)}</strong>
+          <strong>{formatCurrency(creditCardsSummary.totalAvailable)}</strong>
         </div>
         <div className="summary-item">
           <span>Total Owed</span>
-          <strong>{formatCurrency(overallSummary.totalOutstanding)}</strong>
+          <strong>{formatCurrency(creditCardsSummary.totalOutstanding)}</strong>
         </div>
         <div className="summary-item highlight">
           <span>Total Due This Month</span>
-          <strong>{formatCurrency(overallSummary.totalDueThisMonth)}</strong>
+          <strong>{formatCurrency(creditCardsSummary.totalDueThisMonth)}</strong>
         </div>
       </div>
     )}
@@ -155,6 +167,7 @@ useEffect(() => {
             <div className="summary-item"><span>Available</span><strong>{formatCurrency(summary.availableLimit)}</strong></div>
             <div className="summary-item"><span>Outstanding</span><strong>{formatCurrency(summary.outstandingBalance)}</strong></div>
             <div className="summary-item highlight"><span>Amount Due</span><strong>{formatCurrency(summary.amountDueThisMonth)}</strong></div>
+            <div className="summary-item highlight"><span>Min Amount Due</span><strong>{formatCurrency(summary.minimumPaymentDue)}</strong></div>
           </div>
         </>
       )}
@@ -165,24 +178,33 @@ useEffect(() => {
             <table className="styled-table">
               <thead>
                 <tr>
-                  <th>Pay in Full</th>
                   <th>Description</th>
                   <th>Amount Due</th>
                   <th>Type</th>
-                  <th>Partial Payment</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {dueTransactions.map(tx => (
                   <tr key={tx._id}>
-                    <td style={{ textAlign: 'center' }}>
-                      <input type="checkbox" className="payment-checkbox" onChange={() => handleFullPayment(tx._id)} />
-                    </td>
-                    <td>{tx.description}</td>
-                    <td className="total-value">{formatCurrency(tx.amountDue)}</td>
-                    <td>{tx.type}</td>
-                    <td>
-                      <button className="action-button-small" onClick={() => handlePartialPayment(tx)}>Pay Min/Partial</button>
+                    <td data-label="Description">{tx.description}</td>
+                    <td data-label="Amount Due" className="total-value">{formatCurrency(tx.amountDue)}</td>
+                    <td data-label="Type">{tx.type}</td>
+                    <td data-label="Action" className="actions-cell">
+                    {tx.status !== 'Paid' && (
+                      <>
+                        <FaCheckCircle
+                          className="action-icon pay-full"
+                          title="Pay in Full"
+                          onClick={() => handleFullPayment(tx._id)}
+                        />
+                        <FaRegMoneyBillAlt
+                          className="action-icon pay-partial"
+                          title="Make Partial Payment"
+                          onClick={() => handlePartialPayment(tx)}
+                        />
+                      </>
+                    )}
                     </td>
                   </tr>
                 ))}
@@ -196,6 +218,7 @@ useEffect(() => {
         <thead>
           <tr>
             <th>Date</th>
+            <th>Type</th>
             <th>Description</th>
             <th>Amount</th>
             <th>Paid Amount</th>
@@ -206,16 +229,17 @@ useEffect(() => {
         <tbody>
           {transactionHistory.map(tx => (
             <tr key={tx._id}>
-              <td>{new Date(tx.date).toLocaleDateString()}</td>
-              <td>{tx.description}</td>
-              <td className="total-value">{formatCurrency(tx.amount)}</td>
-              <td className="total-value">{formatCurrency(tx.paidAmount)}</td>
-              <td>
+              <td data-label="Date">{new Date(tx.date).toLocaleDateString()}</td>
+              <td data-label="Type">{tx.type}</td>
+              <td data-label="Description">{tx.description}</td>
+              <td data-label="Value" className="total-value">{formatCurrency(tx.amount)}</td>
+              <td data-label="Paid Amount" className="total-value">{formatCurrency(tx.paidAmount)}</td>
+              <td data-label="Status">
                 <span className={`status-badge status-${tx.status.toLowerCase()}`}>
                   {tx.status}
                 </span>
               </td>
-              <td className="actions-cell">
+              <td data-label="Action" className="actions-cell">
                 {/* Show payment icons only if the transaction is not fully paid */}
                 {tx.status !== 'Paid' && (
                   <>

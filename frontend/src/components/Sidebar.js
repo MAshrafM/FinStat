@@ -118,6 +118,18 @@ const Sidebar = () => {
             icon: "🏛️",
             title: "Bank Certificates",
             description: "Fixed investment"
+        },
+        {
+            path: "/currency",
+            icon: "💱",
+            title: "Foreign Currency",
+            description: "Currency Wallet",
+        },
+        {
+            path: "/credit-cards",
+            icon: "💳",
+            title: "Credit Cards",
+            description: "Manage credit cards"
         }
     ];
 

@@ -381,7 +381,7 @@ router.post('/payments/partial', auth, async (req, res) => {
 // =============================================
 // --- Summary and Due Routes (Keep these as they were) ---
 // =============================================
-router.get('/summary/:cardId', auth, async (req, res) => {
+/*router.get('/summary/:cardId', auth, async (req, res) => {
   try {
     const cardId = new mongoose.Types.ObjectId(req.params.cardId);
     const userId = new mongoose.Types.ObjectId(req.user.id);
@@ -447,6 +447,115 @@ router.get('/summary/:cardId', auth, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+*/
+
+router.get('/summary/:cardId', auth, async (req, res) => {
+  try {
+    const cardId = new mongoose.Types.ObjectId(req.params.cardId);
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+
+    // 1. Get the card details
+    const card = await CreditCard.findOne({ _id: cardId, user: userId });
+    if (!card) return res.status(404).json({ msg: 'Card not found' });
+
+    const now = new Date();
+    const billingDay = card.billingCycleDay;
+    const gracePeriodDays = card.gracePeriodDays || 25; // fallback default
+
+    // 2. Billing cycle start & end
+    let cycleStart = new Date(now.getFullYear(), now.getMonth(), billingDay);
+    let cycleEnd = new Date(now.getFullYear(), now.getMonth() + 1, billingDay);
+    if (now.getDate() < billingDay) {
+      cycleStart.setMonth(cycleStart.getMonth() - 1);
+      cycleEnd.setMonth(cycleEnd.getMonth() - 1);
+    }
+
+    // 3. Due date = cycleEnd + gracePeriodDays
+    const dueDate = new Date(cycleEnd);
+    dueDate.setDate(dueDate.getDate() + gracePeriodDays);
+
+    // 4. Outstanding balances
+    const purchaseBalanceResult = await CardTransaction.aggregate([
+      { $match: { card: card._id, user: userId, type: 'Purchase', status: { $in: ['Due', 'Partial'] } } },
+      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
+    ]);
+    const purchaseBalance = purchaseBalanceResult.length > 0 ? purchaseBalanceResult[0].total : 0;
+
+    const installmentBalanceResult = await CardTransaction.aggregate([
+      { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] } } },
+      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
+    ]);
+    const installmentBalance = installmentBalanceResult.length > 0 ? installmentBalanceResult[0].total : 0;
+
+    const outstandingBalance = purchaseBalance + installmentBalance;
+    const availableLimit = card.limit - outstandingBalance;
+
+    // 5. Purchases in current billing cycle
+    const purchaseDues = await CardTransaction.aggregate([
+      { 
+        $match: { 
+          card: card._id, 
+          user: userId, 
+          type: 'Purchase', 
+          date: { $gte: cycleStart, $lt: cycleEnd } 
+        } 
+      },
+      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
+    ]);
+    const totalPurchaseDue = purchaseDues.length > 0 ? purchaseDues[0].total : 0;
+
+    // 6. Installment dues (monthly principal only)
+    const installmentDues = await CardTransaction.aggregate([
+      { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] } } },
+      { $group: { _id: null, total: { $sum: "$installmentDetails.monthlyPrincipal" } } }
+    ]);
+    const totalInstallmentDue = installmentDues.length > 0 ? installmentDues[0].total : 0;
+
+    // 7. Interest calculation for unpaid balances before cycle
+    const previousUnpaid = await CardTransaction.aggregate([
+      { 
+        $match: { 
+          card: card._id, 
+          user: userId, 
+          type: 'Purchase', 
+          date: { $lt: cycleStart }, 
+          status: { $in: ['Due', 'Partial'] } 
+        } 
+      },
+      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
+    ]);
+    const unpaidBeforeCycle = previousUnpaid.length > 0 ? previousUnpaid[0].total : 0;
+    const interestOnUnpaid = unpaidBeforeCycle > 0 ? (unpaidBeforeCycle * (card.interestRate / 100)) : 0;
+
+    // 8. Amount due this month
+    const amountDueThisMonth = totalPurchaseDue + totalInstallmentDue + interestOnUnpaid;
+
+    // 9. Minimum payment logic
+    const minPaymentPercent = 0.05;
+    const minPaymentBase = Math.max(outstandingBalance * minPaymentPercent, card.minimumPaymentFixed || 0);
+    const minimumPaymentDue = minPaymentBase + totalInstallmentDue;
+
+    // 10. Response
+    res.json({
+      cardDetails: card,
+      cycleStart,
+      cycleEnd,
+      dueDate,
+      outstandingBalance,
+      availableLimit,
+      amountDueThisMonth,
+      totalInstallmentDue,
+      totalPurchaseDue,
+      interestOnUnpaid,
+      minimumPaymentDue
+    });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 // @route   GET api/credit-cards/overall-summary
 // @desc    Get a summary of all credit cards for the logged-in user

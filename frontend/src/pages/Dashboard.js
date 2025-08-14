@@ -24,6 +24,7 @@ const Dashboard = () => {
         summaryMetrics,
         bankAccountData,
         currencySummary,
+        creditCardsSummary,
     } = useData(); // Access any global data if needed
 
   return (
@@ -139,6 +140,14 @@ const Dashboard = () => {
                           <div className="dashboard-card-item">
                               <span className="description">Balance</span>
                               <span className="value">{formatCurrency(bankAccountData.bank)}</span>
+                          </div>
+                          <div className="dashboard-card-item">
+                              <span className="description">Credit Av. Limit</span>
+                              <span className="value">{formatCurrency(creditCardsSummary.totalAvailable)}</span>
+                          </div>
+                          <div className="dashboard-card-item">
+                              <span className="description">Credit Due</span>
+                              <span className="value">{formatCurrency(creditCardsSummary.totalOutstanding)}</span>
                           </div>
                       </div>
                   </div>
