@@ -187,7 +187,19 @@ const totalPartial = transactionHistory.reduce((sum, tx) => {
               <tbody>
                 {dueTransactions.map(tx => (
                   <tr key={tx._id}>
-                    <td data-label="Description">{tx.description}</td>
+                    <td data-label="Description">{tx.description}  
+                      {tx.type === 'Installment' && (() => {
+                        const transaction = transactionHistory.find(t => t._id === tx._id);
+                        if (!transaction) return null;
+                        const paidMonths = Math.round((transaction.paidAmount/transaction.amount)*transaction.installmentDetails.months);
+                        return (
+                          <>
+                            {" - "}
+                            {paidMonths} / {transaction.installmentDetails.months} months
+                          </>
+                        );
+                      })()}
+                    </td>
                     <td data-label="Amount Due" className="total-value">{formatCurrency(tx.amountDue)}</td>
                     <td data-label="Type">{tx.type}</td>
                     <td data-label="Action" className="actions-cell">
@@ -231,7 +243,13 @@ const totalPartial = transactionHistory.reduce((sum, tx) => {
             <tr key={tx._id}>
               <td data-label="Date">{new Date(tx.date).toLocaleDateString()}</td>
               <td data-label="Type">{tx.type}</td>
-              <td data-label="Description">{tx.description}</td>
+              <td data-label="Description">{tx.description}
+                {tx.type === 'Installment' && (
+                  <>
+                    - {tx.installmentDetails.months} months 
+                    </>
+                )}
+              </td>
               <td data-label="Value" className="total-value">{formatCurrency(tx.amount)}</td>
               <td data-label="Paid Amount" className="total-value">{formatCurrency(tx.paidAmount)}</td>
               <td data-label="Status">

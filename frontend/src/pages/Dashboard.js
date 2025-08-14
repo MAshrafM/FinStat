@@ -156,7 +156,7 @@ const Dashboard = () => {
                       <h3>Foreign Currency</h3>
                       {currencySummary && currencySummary.length > 0 && (
                     currencySummary.map((curr) => (
-                        <div className="dashboard-card-items">
+                        <div key={curr._id} className="dashboard-card-items">
                             <div className="dashboard-card-item">
                                 <span className="description">Currency</span>
                                 <span className="value">{curr._id}</span>
