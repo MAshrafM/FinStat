@@ -7,10 +7,17 @@ import { FaRegListAlt, FaRegCalendarAlt, FaChartArea,
          FaBookOpen, FaBuilding, FaBook,
     FaGem, FaBalanceScale, FaScroll, FaDollarSign, FaCreditCard
 } from 'react-icons/fa'; // Import new icons
+import { Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+
 import { useData } from '../context/DataContext';
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
 import { safePercentage, normDiv } from '../utils/helper'; // Import safe division and percentage functions }
 import './Dashboard.css'; // We will create this CSS file
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 const Dashboard = () => {
     const initYear = 2022; // Set your initial year here
@@ -26,6 +33,105 @@ const Dashboard = () => {
         currencySummary,
         creditCardsSummary,
     } = useData(); // Access any global data if needed
+
+    // Data for Pie Chart 1: Total Paid Amounts
+    const paidAmountsData = {
+        labels: ['Gold', 'Bank Certificates', 'MF Funds', 'Stock Trading', 'Bank Account', 'Foreign Currency'],
+        datasets: [
+            {
+                label: 'Total Paid Amounts',
+                data: [
+                    overallTotalPaid || 0,
+                    certificateSummary.totalActiveAmount || 0,
+                    overallTotals.totalOfAllMF || 0,
+                    summaryMetrics.topUps || 0,
+                    bankAccountData.bank || 0,
+                    currencySummary.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
+                ],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                ],
+                borderWidth: 1,
+            },
+        ],
+    };
+    // Data for Pie Chart 2: Current Value of Investments
+    const currentValuesData = {
+        labels: ['Gold', 'Bank Certificates', 'MF Funds', 'Stock Trading', 'Bank Account', 'Foreign Currency'],
+        datasets: [
+            {
+                label: 'Current Values',
+                data: [
+                    goldtotalNow || 0,
+                    certificateSummary.totalActiveAmount || 0,
+                    overallTotals.totalSellingValue || 0,
+                    (summaryMetrics.topUps + summaryMetrics.totalProfitNow) || 0,
+                    bankAccountData.bank || 0,
+                    currencySummary.reduce((sum, item) => sum + (item.currentPrice * item.totalAmount || 0), 0),
+                ],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                ],
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    // Chart options
+    const chartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        return `${context.label}: ${formatCurrency(context.raw)}`;
+                    },
+                },
+            },
+            datalabels: {
+                formatter: (value, context) => {
+                    const total = context.dataset.data.reduce((sum, val) => sum + (val || 0), 0);
+                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                    return percentage > 0 ? `${percentage}%` : '';
+                },
+                color: '#fff',
+                font: {
+                    weight: 'bold',
+                },
+                anchor: 'center',
+                align: 'center',
+            },
+        },
+    };
 
   return (
     <div className="page-container">
@@ -46,6 +152,22 @@ const Dashboard = () => {
                       }
                   </h2>
           </div>
+
+          <div className="dashboard-summary dashboard-charts">
+                <div className="chart-container">
+                    <h3>Total Paid Amounts</h3>
+                    <div style={{ height: '400px', display: 'flex', justifyContent: 'center'}}>
+                        <Pie data={paidAmountsData} options={chartOptions} />
+                    </div>
+                </div>
+                <div className="chart-container">
+                    <h3>Current Values</h3>
+                    <div style={{ height: '400px', display: 'flex', justifyContent: 'center'}}>
+                        <Pie data={currentValuesData} options={chartOptions} />
+                    </div>
+                </div>
+            </div>
+
           <div className="dashboard-summary">
           <div className="dashboard-grid">
               <div className="dashboard-card">
