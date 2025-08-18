@@ -171,6 +171,7 @@ export const DataProvider = ({ children }) => {
                 let totalSell = newTrades.filter(t => t && t.type === 'Sell').reduce((sum, t) => sum + (t.totalValue || 0), 0);
                 let totalDividends = newTrades.filter(t => t && t.type === 'Dividend').reduce((sum, t) => sum + (t.totalValue || 0), 0);
                 
+
                 const metrics = {};
                 metrics.topUps = newTrades.filter(t => t && t.type === 'TopUp').reduce((sum, t) => sum + (t.totalValue || 0), 0);
                 metrics.withdraws = newTrades.filter(t => t && t.type === 'Withdraw').reduce((sum, t) => sum + (t.totalValue || 0), 0);
