@@ -1,17 +1,23 @@
 // frontend/src/pages/Dashboard.js
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaRegListAlt, FaUserTie, 
-         FaMoneyBillWave, FaChartLine,
-         FaBuilding, FaGem, FaBalanceScale, FaScroll, FaDollarSign, FaCreditCard
-} from 'react-icons/fa'; // Import new icons
-<<<<<<< Updated upstream
+import { FaRegCalendarAlt, FaChartArea,
+         FaShieldAlt, FaFileInvoiceDollar,
+         FaChartPie, FaBookOpen, FaBook,
+     FaBalanceScale} from 'react-icons/fa'; // Import new icons
+import { Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+
 import { useData } from '../context/DataContext';
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
 import { safePercentage, normDiv } from '../utils/helper'; // Import safe division and percentage functions }
 import './Dashboard.css'; // We will create this CSS file
 
-const Dashboard = () => {
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
+
+const Summary = () => {
     const initYear = 2022; // Set your initial year here
     const currentYear = new Date().getFullYear();
     const investmentPeriod = currentYear - initYear; // Calculate the number of years since initYear
@@ -25,6 +31,105 @@ const Dashboard = () => {
         currencySummary,
         creditCardsSummary,
     } = useData(); // Access any global data if needed
+
+    // Data for Pie Chart 1: Total Paid Amounts
+    const paidAmountsData = {
+        labels: ['Gold', 'Bank Certificates', 'MF Funds', 'Stock Trading', 'Bank Account', 'Foreign Currency'],
+        datasets: [
+            {
+                label: 'Total Paid Amounts',
+                data: [
+                    overallTotalPaid || 0,
+                    certificateSummary.totalActiveAmount || 0,
+                    overallTotals.totalOfAllMF || 0,
+                    summaryMetrics.topUps || 0,
+                    bankAccountData.bank || 0,
+                    currencySummary.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
+                ],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                ],
+                borderWidth: 1,
+            },
+        ],
+    };
+    // Data for Pie Chart 2: Current Value of Investments
+    const currentValuesData = {
+        labels: ['Gold', 'Bank Certificates', 'MF Funds', 'Stock Trading', 'Bank Account', 'Foreign Currency'],
+        datasets: [
+            {
+                label: 'Current Values',
+                data: [
+                    goldtotalNow || 0,
+                    certificateSummary.totalActiveAmount || 0,
+                    overallTotals.totalSellingValue || 0,
+                    (summaryMetrics.topUps + summaryMetrics.totalProfitNow) || 0,
+                    bankAccountData.bank || 0,
+                    currencySummary.reduce((sum, item) => sum + (item.currentPrice * item.totalAmount || 0), 0),
+                ],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                ],
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    // Chart options
+    const chartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        return `${context.label}: ${formatCurrency(context.raw)}`;
+                    },
+                },
+            },
+            datalabels: {
+                formatter: (value, context) => {
+                    const total = context.dataset.data.reduce((sum, val) => sum + (val || 0), 0);
+                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                    return percentage > 0 ? `${percentage}%` : '';
+                },
+                color: '#fff',
+                font: {
+                    weight: 'bold',
+                },
+                anchor: 'center',
+                align: 'center',
+            },
+        },
+    };
 
   return (
     <div className="page-container">
@@ -45,6 +150,22 @@ const Dashboard = () => {
                       }
                   </h2>
           </div>
+
+          <div className="dashboard-summary dashboard-charts">
+                <div className="chart-container">
+                    <h3>Total Paid Amounts</h3>
+                    <div style={{ height: '400px', display: 'flex', justifyContent: 'center'}}>
+                        <Pie data={paidAmountsData} options={chartOptions} />
+                    </div>
+                </div>
+                <div className="chart-container">
+                    <h3>Current Values</h3>
+                    <div style={{ height: '400px', display: 'flex', justifyContent: 'center'}}>
+                        <Pie data={currentValuesData} options={chartOptions} />
+                    </div>
+                </div>
+            </div>
+
           <div className="dashboard-summary">
           <div className="dashboard-grid">
               <div className="dashboard-card">
@@ -155,7 +276,7 @@ const Dashboard = () => {
                       <h3>Foreign Currency</h3>
                       {currencySummary && currencySummary.length > 0 && (
                     currencySummary.map((curr) => (
-                        <div className="dashboard-card-items">
+                        <div key={curr._id} className="dashboard-card-items">
                             <div className="dashboard-card-item">
                                 <span className="description">Currency</span>
                                 <span className="value">{curr._id}</span>
@@ -193,71 +314,50 @@ const Dashboard = () => {
                   </div>
               </div>
           </div>
-=======
-import './Dashboard.css'; // We will create this CSS file
-
-const Dashboard = () => {
-      return (
-    <div className="page-container">
-      <h1>Welcome to Your Dashboard</h1>
-        <p>Select a feature to get started.</p>
-        <div className="dashboard-summary">
-        <Link to="/summary" className="dashboard-card">
-            <FaBalanceScale size={50} />
-            <h2>Profile Summary</h2>
-        </Link>
-        </div>
-
->>>>>>> Stashed changes
       <div className="dashboard-grid">
-        <Link to="/salary-profile" className="dashboard-card">
-          <FaUserTie size={50} />
-          <h2>Salary Profile</h2>
-          <p>Model and track historical salary information and projections.</p>
+        <Link to="/analysis/calendar" className="dashboard-card">
+          <FaRegCalendarAlt size={50} />
+          <h2>Calendar Year Analysis</h2>
+          <p>Analyze income from January to December of each year.</p>
         </Link>
-        <Link to="/paycheck-log" className="dashboard-card">
-          <FaRegListAlt size={50} />
-          <h2>Paycheck Log</h2>
-          <p>View, add, edit, and delete individual paycheck entries.</p>
+        <Link to="/analysis/fiscal" className="dashboard-card">
+          <FaChartArea size={50} />
+          <h2>Fiscal Year Analysis</h2>
+          <p>Analyze income based on a July to June fiscal cycle.</p>
         </Link>
-        <Link to="/expenditures" className="dashboard-card">
-          <FaMoneyBillWave size={50} />
-          <h2>Expenditure Log</h2>
-          <p>Track your bank and cash flow transactions.</p>
+        <Link to="/expenditure-analysis" className="dashboard-card">
+          <FaChartPie size={50} />
+          <h2>Expenditure Analysis</h2>
+          <p>Visualize your spending habits and fund flow.</p>
         </Link>
-        <Link to="/trades" className="dashboard-card">
-          <FaChartLine size={50} />
-          <h2>Stock Trading</h2>
-          <p>Log and track all your stock market trades.</p>
+        <Link to="/social-insurance" className="dashboard-card">
+          <FaShieldAlt size={50} />
+          <h2>Social Insurance</h2>
+          <p>Track yearly registered income and paycheck deductions.</p>
+        </Link>
+        <Link to="/taxes" className="dashboard-card">
+          <FaFileInvoiceDollar size={50} />
+          <h2>Taxes</h2>
+          <p>View tax brackets and track yearly tax deductions.</p>
+        </Link>
+               <Link to="/trade-summary" className="dashboard-card">
+                  <FaBookOpen size={50} />
+                  <h2>Trade Summary</h2>
+                  <p>View aggregated results of your trading positions.</p>
               </Link>
-              <Link to="/mutual-funds" className="dashboard-card">
-                  <FaBuilding size={50} />
-                  <h2>Mutual Funds</h2>
-                  <p>Log and track your mutual fund investments.</p>
+              <Link to="/mutual-funds/summary" className="dashboard-card">
+                  <FaBook size={50} />
+                  <h2>Mutual Fund Summary</h2>
+                  <p>View aggregated results of your fund investments.</p>
               </Link>
-              <Link to="/gold-wallet" className="dashboard-card">
-                  <FaGem size={50} />
-                  <h2>Gold Logs</h2>
-                  <p>Log and track your gold purchases and sales.</p>
+              <Link to="/gold-wallet/summary" className="dashboard-card">
+                  <FaBalanceScale size={50} />
+                  <h2>Gold Summary</h2>
+                  <p>View summary and performance of your gold assets.</p>
               </Link>
-              <Link to="/certificates" className="dashboard-card">
-                  <FaScroll size={50} />
-                  <h2>Bank Certificates</h2>
-                  <p>Track your fixed-income certificates of deposit.</p>
-              </Link>
-              <Link to="/currency" className="dashboard-card">
-                  <FaDollarSign size={50} />
-                  <h2>Foreign Currency</h2>
-                  <p>Track your Foreign Currency Wallet.</p>
-              </Link>
-              <Link to="/credit-cards" className="dashboard-card">
-                <FaCreditCard size={50} />
-                <h2>Credit Cards</h2>
-                <p>Manage credit card transactions and payments.</p>
-              </Link>
-      </div>
+        </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default Summary;

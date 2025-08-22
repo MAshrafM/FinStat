@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
+import Summary from './pages/DashboardSummary';
 // Paycheck Log
 import PaycheckLog from './pages/paycheck/PaycheckLog';
 import AddPaycheck from './pages/paycheck/AddPaycheck';
@@ -67,6 +68,7 @@ function App() {
               <Route path="*" element={<LandingPage />} />
                 <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/summary" element={<Summary />} />
                     <Route path="/paycheck-log" element={<PaycheckLog />} />
                     <Route path="/paycheck-log/new" element={<AddPaycheck />} />
                     <Route path="/paycheck-log/edit/:id" element={<EditPaycheck />} />
