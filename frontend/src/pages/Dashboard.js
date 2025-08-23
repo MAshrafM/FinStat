@@ -7,9 +7,6 @@ import { FaRegListAlt, FaUserTie,
 } from 'react-icons/fa'; // Import new icons
 import './Dashboard.css'; // We will create this CSS file
 
-// Register Chart.js components
-ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
-
 const Dashboard = () => {
       return (
     <div className="page-container">
