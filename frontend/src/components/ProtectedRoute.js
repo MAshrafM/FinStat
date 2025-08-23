@@ -10,7 +10,8 @@ import { DataProvider } from '../context/DataContext';
 const ProtectedRoute = () => {
     const token = localStorage.getItem('token');
     const location = useLocation();
-    const shouldShowDashboard = location.pathname === '/dashboard';
+    const logRoutes = ['/dashboard','/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/certificates'];
+    const needsDataProvider = !logRoutes.some(route => location.pathname.startsWith(route));
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const handleSidebarToggle = () => setSidebarOpen(open => !open);
 
@@ -19,18 +20,17 @@ const ProtectedRoute = () => {
     return token ? (
         <div className="App">
             <Navbar onSidebarToggle={handleSidebarToggle}/>
-            
+            <Sidebar className={sidebarOpen ? 'expanded' : 'collapsed'}/>
             <main className={`main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
-                {shouldShowDashboard ? (
-                    <Dashboard />
-                ) : (
-                    <DataProvider>
-                        <DataLoader>
-                            <Sidebar className={sidebarOpen ? 'expanded' : 'collapsed'}/>
-                            <Outlet />
-                        </DataLoader>
-                    </DataProvider>
-                )}
+                {needsDataProvider ? (
+                <DataProvider>
+                    <DataLoader>
+                        <Outlet />
+                    </DataLoader>
+                </DataProvider>
+            ) : (
+                <Outlet />
+            )}
             </main>
         </div>
     ) : <Navigate to="/" replace />;

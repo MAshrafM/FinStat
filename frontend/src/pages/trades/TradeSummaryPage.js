@@ -119,6 +119,7 @@ const TradeSummaryPage = () => {
                             <th>Stock Code</th>
                             <th>Realized P/L</th>
                             <th>Profit %</th>
+                            <th>Sell Price</th>
                             <th>Total Sell</th>
                             <th>Total Buy</th>
                             <th>Total Fees</th>
@@ -139,6 +140,7 @@ const TradeSummaryPage = () => {
                                     {formatCurrency(item.realizedPL)}
                                 </td>
                                 <td style={{ color: item.profitPercentage >= 0 ? '#27ae60' : '#c0392b' }}>{item.profitPercentage} %</td>
+                                <td style={{ color: item.sellingPrice > stMarketPrices[item._id.stockCode] ? '#27ae60' : '#c0392b'}}>{formatCurrency(item.sellingPrice || 0)}</td>
                                 <td> {formatCurrency(item.totalBuyValue)}</td>
                                 <td> {formatCurrency(item.totalSellValue)}</td>
                                 <td>{formatCurrency(item.totalFees)}</td>

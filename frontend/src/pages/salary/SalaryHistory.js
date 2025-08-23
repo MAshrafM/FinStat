@@ -9,7 +9,7 @@ import '../../components/Table.css'; // Reuse the nice table styles
 
 const SalaryHistory = () => {
   const [profile, setProfile] = useState(null);
-  const { isMobile } = useData(); // Get the mobile state from context
+  const { isMobile } = window.innerWidth <= 768; // Get the mobile state from context
   useEffect(() => {
     loadProfile();
   }, []);

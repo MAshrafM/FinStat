@@ -23,8 +23,7 @@ router.put('/', auth, async (req, res) => {
   try {
     const { name, title, position, year } = req.body;
 
-    let profile = await SalaryProfile.findOne();
-
+    let profile = await SalaryProfile.findOne({ user: req.user.id });
     if (!profile) {
       return res.status(404).json({ msg: 'Profile not found. Cannot update.' });
     }
@@ -34,7 +33,6 @@ router.put('/', auth, async (req, res) => {
     profile.title = title || profile.title;
     profile.position = position || profile.position;
     profile.year = year || profile.year;
-
     const savedProfile = await profile.save();
     res.json(savedProfile);
   } catch (err) {
