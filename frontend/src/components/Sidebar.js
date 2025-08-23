@@ -4,7 +4,7 @@ import { useData } from '../context/DataContext';
 import './Sidebar.css'; // Assuming you have a CSS file for styling
 
 const Sidebar = () => {
-    const { isMobile } = useData();
+    const { isMobile } = useData() || false;
     const [isExpanded, setIsExpanded] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const isCurrentlyExpanded = isMobile ? mobileOpen : isExpanded;

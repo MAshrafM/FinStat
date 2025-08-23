@@ -7,7 +7,6 @@ const SalaryDetailSchema = new mongoose.Schema({
   user: {
     type: Schema.Types.ObjectId,
     ref: 'User', // This creates a reference to the User model
-    required: true,
   },
   effectiveDate: {
     type: Date,
@@ -31,7 +30,6 @@ const SalaryProfileSchema = new mongoose.Schema({
   user: {
     type: Schema.Types.ObjectId,
     ref: 'User', // This creates a reference to the User model
-    required: true,
   },
   name: {
     type: String,

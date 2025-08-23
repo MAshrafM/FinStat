@@ -119,6 +119,7 @@ const TradeSummaryPage = () => {
                             <th>Stock Code</th>
                             <th>Realized P/L</th>
                             <th>Profit %</th>
+                            <th>Sell Price</th>
                             <th>Total Sell</th>
                             <th>Total Buy</th>
                             <th>Total Fees</th>
@@ -138,6 +139,7 @@ const TradeSummaryPage = () => {
                                 <td data-label="Realized P/L" className="total-value" style={{ color: item.realizedPL >= 0 ? '#27ae60' : '#c0392b' }}>
                                     {formatCurrency(item.realizedPL)}
                                 </td>
+<<<<<<< HEAD
                                 <td data-label="Profit" style={{ color: item.profitPercentage >= 0 ? '#27ae60' : '#c0392b' }}>{item.profitPercentage} %</td>
                                 <td data-label="Total Buy"> {formatCurrency(item.totalBuyValue)}</td>
                                 <td data-label="Total Sell"> {formatCurrency(item.totalSellValue)}</td>
@@ -145,6 +147,16 @@ const TradeSummaryPage = () => {
                                 <td data-label="Count">{item.tradeCount}</td>
                                 <td data-label="Period">{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</td>
                                 <td data-label="Days">
+=======
+                                <td style={{ color: item.profitPercentage >= 0 ? '#27ae60' : '#c0392b' }}>{item.profitPercentage} %</td>
+                                <td style={{ color: item.sellingPrice > stMarketPrices[item._id.stockCode] ? '#27ae60' : '#c0392b'}}>{formatCurrency(item.sellingPrice || 0)}</td>
+                                <td> {formatCurrency(item.totalBuyValue)}</td>
+                                <td> {formatCurrency(item.totalSellValue)}</td>
+                                <td>{formatCurrency(item.totalFees)}</td>
+                                <td>{item.tradeCount}</td>
+                                <td>{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</td>
+                                <td>
+>>>>>>> add-features
                                     <span style={{ fontSize: '0.9em', color: '#888' }}>
                                         {daysBetween(item.firstTradeDate, item.lastTradeDate)} days
                                     </span>

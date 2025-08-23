@@ -240,6 +240,12 @@ export const DataProvider = ({ children }) => {
             } else {
                 if (item._id.stockCode) {
                     item.profitPercentage = safeDivision(item.realizedPL, item.totalBuyValue); // profitPercentage is the percentage profit made on the trade
+                    if(tradesData){
+                        let lastSell = tradesData.filter(t => t.stockCode === item._id.stockCode && t.iteration === item._id.iteration && t.broker === item._id.broker && t.type === "Sell");
+                        if (lastSell && lastSell.length > 0) {
+                            item.sellingPrice = lastSell.pop().price || 0;
+                        }
+                    }
                     closedPositions.push(item);
                 }
             }

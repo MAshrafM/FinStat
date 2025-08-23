@@ -9,7 +9,7 @@ import SalaryForm from '../../components/SalaryForm'; // We'll reuse this
 import './SalaryProfile.css';
 
 const SalaryProfilePage = () => {
-  const { isMobile } = useData();
+  const { isMobile } =  window.innerWidth <= 768;
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
