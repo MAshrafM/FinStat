@@ -1,13 +1,18 @@
-﻿import React, { useState} from 'react';
+﻿import React, { useEffect, useState} from 'react';
 import { Link } from 'react-router-dom';
-import { useData } from '../context/DataContext';
 import './Sidebar.css'; // Assuming you have a CSS file for styling
 
 const Sidebar = () => {
-    const { isMobile } = useData() || false;
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isExpanded, setIsExpanded] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const isCurrentlyExpanded = isMobile ? mobileOpen : isExpanded;
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+        }, []);
 
     const handleMouseEnter = () => {
         if (!isMobile) {
@@ -20,6 +25,12 @@ const Sidebar = () => {
             setIsExpanded(false);
         }
     };
+
+    const handleSidebarToggle = () =>{
+        if (isMobile){
+            setMobileOpen(!mobileOpen);
+        }
+    }
 
 
     const menuItems = [
@@ -156,7 +167,7 @@ const Sidebar = () => {
         </style>
         <button 
             className="mobile-toggle"
-            onClick={() => setMobileOpen(!mobileOpen)}
+            onClick={() => handleSidebarToggle()}
         >
             ☰
         </button>
