@@ -20,7 +20,7 @@ const ProtectedRoute = () => {
     return token ? (
         <div className="App">
             <Navbar onSidebarToggle={handleSidebarToggle}/>
-            <Sidebar className={sidebarOpen ? 'expanded' : 'collapsed'}/>
+            <Sidebar/>
             <main className={`main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
                 {needsDataProvider ? (
                 <DataProvider>
