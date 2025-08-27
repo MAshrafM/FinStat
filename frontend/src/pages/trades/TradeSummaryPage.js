@@ -3,6 +3,7 @@ import React, {useState, useMemo} from 'react';
 //import { getAllTrades, getTradeSummary, getMarketData } from '../../services/tradeService';
 import { useData } from '../../context/DataContext';
 import { formatDate, formatCurrency } from '../../utils/formatters';
+import { sortData, getNextSortConfig } from '../../utils/helper';
 import './Trades.css'; // Reuse the same CSS file
 import '../../components/SummaryRow.css'; // Reuse summary row styles'
 import '../../components/Table.css'; // Reuse table styles
@@ -24,9 +25,7 @@ const TradeSummaryPage = () => {
         direction: 'asc'
     });
 
-  // Memoized sorted data - moved to top level before any other functions
-  const sortedEndPosData = useMemo(() => {
-    const getSortValue = (item, key) => {
+    const getCloseSortValue = (item, key) => {
         switch (key) {
         case 'stockCode':
             return item._id.stockCode;
@@ -53,29 +52,7 @@ const TradeSummaryPage = () => {
         }
     };
 
-    if (!closeSortConfig.key) {
-      return endPosData;
-    }
-
-    const sortableData = [...endPosData];
-    
-    return sortableData.sort((a, b) => {
-      const aValue = getSortValue(a, closeSortConfig.key);
-      const bValue = getSortValue(b, closeSortConfig.key);
-
-      if (aValue < bValue) {
-        return closeSortConfig.direction === 'asc' ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return closeSortConfig.direction === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  }, [endPosData, closeSortConfig, daysBetween]);
-  
-  // Memoized sorted data for Open Positions
-  const sortedOpenPosData = useMemo(() => {
-    const getSortValue = (item, key) => {
+    const getOpenSortValue = (item, key) => {
       switch (key) {
         case 'stockCode':
           return item._id.stockCode;
@@ -110,43 +87,22 @@ const TradeSummaryPage = () => {
       }
     };
 
-    if (!openSortConfig.key) {
-      return openPosData;
-    }
 
-    const sortableData = [...openPosData];
-    
-    return sortableData.sort((a, b) => {
-      const aValue = getSortValue(a, openSortConfig.key);
-      const bValue = getSortValue(b, openSortConfig.key);
-
-      if (aValue < bValue) {
-        return openSortConfig.direction === 'asc' ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return openSortConfig.direction === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  }, [openPosData, openSortConfig, stMarketPrices]);
+  // Memoized sorted data - moved to top level before any other functions
+  const sortedEndPosData = useMemo(
+    () => sortData(endPosData, closeSortConfig, getCloseSortValue),
+    [endPosData, closeSortConfig]
+  );
+  
+  // Memoized sorted data for Open Positions
+  const sortedOpenPosData = useMemo(
+    () => sortData(openPosData, openSortConfig, getOpenSortValue),
+    [openPosData, openSortConfig, stMarketPrices]
+  );
 
   // Function to handle sorting for Close Positions
-  const handleCloseSort = (key) => {
-    let direction = 'asc';
-    if (closeSortConfig.key === key && closeSortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setCloseSortConfig({ key, direction });
-  };
-
-  // Function to handle sorting for Open Positions
-  const handleOpenSort = (key) => {
-    let direction = 'asc';
-    if (openSortConfig.key === key && openSortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setOpenSortConfig({ key, direction });
-  };
+  const handleCloseSort = (key) => setCloseSortConfig(getNextSortConfig(closeSortConfig, key));
+  const handleOpenSort = (key) => setOpenSortConfig(getNextSortConfig(openSortConfig, key));
 
 
   // Function to render sort indicator
@@ -233,7 +189,7 @@ const TradeSummaryPage = () => {
                                 style={{ cursor: 'pointer', userSelect: 'none' }}
                                 title="Click to sort by Deals"
                             >
-                                Deals {getOpenSortIndicator('deals')}
+                                All Deals {getOpenSortIndicator('deals')}
                             </th>
                             <th 
                                 onClick={() => handleOpenSort('shares')} 
@@ -275,21 +231,21 @@ const TradeSummaryPage = () => {
                                 style={{ cursor: 'pointer', userSelect: 'none' }}
                                 title="Click to sort by Curr Price"
                             >
-                                Curr Price{getOpenSortIndicator('currPrice')}
+                                Price{getOpenSortIndicator('currPrice')}
                             </th>
                             <th 
                                 onClick={() => handleOpenSort('currValue')} 
                                 style={{ cursor: 'pointer', userSelect: 'none' }}
                                 title="Click to sort by Curr Value"
                             >
-                                Curr Value{getOpenSortIndicator('currValue')}
+                                Tot. Value{getOpenSortIndicator('currValue')}
                             </th>
                             <th 
                                 onClick={() => handleOpenSort('currChange')} 
                                 style={{ cursor: 'pointer', userSelect: 'none' }}
                                 title="Click to sort by Curr Change"
                             >
-                                Curr Change{getOpenSortIndicator('currChange')}
+                                Change{getOpenSortIndicator('currChange')}
                             </th>
                             <th 
                                 onClick={() => handleOpenSort('fees')} 

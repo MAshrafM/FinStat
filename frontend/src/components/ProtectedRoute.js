@@ -10,7 +10,7 @@ import { DataProvider } from '../context/DataContext';
 const ProtectedRoute = () => {
     const token = localStorage.getItem('token');
     const location = useLocation();
-    const logRoutes = ['/dashboard','/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/certificates'];
+    const logRoutes = ['/dashboard','/salary-profile', '/paycheck-log', '/expenditures', '/trades'];
     const needsDataProvider = !logRoutes.some(route => location.pathname.startsWith(route));
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const handleSidebarToggle = () => setSidebarOpen(open => !open);
