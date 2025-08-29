@@ -11,7 +11,7 @@ const ProtectedRoute = () => {
     const token = localStorage.getItem('token');
     const location = useLocation();
     const logRoutes = ['/dashboard','/salary-profile', '/paycheck-log', '/expenditures', '/trades'];
-    const needsDataProvider = !logRoutes.some(route => location.pathname.startsWith(route));
+    const needsDataProvider = !logRoutes.includes(location.pathname);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const handleSidebarToggle = () => setSidebarOpen(open => !open);
 

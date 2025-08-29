@@ -34,7 +34,7 @@ router.post('/', auth, async (req, res) => {
 // @desc    Get a single certificate by ID
 router.get('/:id', auth, async (req, res) => {
     try {
-        const certificate = await Certificate.findById(req.params.id);
+        const certificate = await Certificate.findOne({_id: req.params.id, user: req.user.id});
         if (!certificate) return res.status(404).json({ msg: 'Certificate not found' });
         res.json(certificate);
     } catch (err) {
