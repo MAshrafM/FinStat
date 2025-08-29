@@ -118,7 +118,7 @@ router.delete('/history/:historyId', auth, async (req, res) => {
   try {
     const { historyId } = req.params;
 
-    const profile = await SalaryProfile.findOne(req.user.id);
+    const profile = await SalaryProfile.findOne({ user: req.user.id });
     if (!profile) {
       return res.status(404).json({ msg: 'Profile not found' });
     }

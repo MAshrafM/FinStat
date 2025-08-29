@@ -151,7 +151,7 @@ router.post('/', auth, async (req, res) => {
 // @desc    Get a single trade by ID
 router.get('/:id', auth, async (req, res) => {
   try {
-    const trade = await Trade.findById({...req.params.id, user: req.user.id});
+    const trade = await Trade.findOne({_id: req.params.id, user: req.user.id});
     if (!trade) return res.status(404).json({ msg: 'Trade not found' });
     res.json(trade);
   } catch (err) {

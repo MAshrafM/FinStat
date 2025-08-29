@@ -52,3 +52,32 @@ td > p {
     margin: 0;
     padding: 1px;
 }
+
+.styled-table th {
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.styled-table th:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.styled-table th[style*="cursor: pointer"]:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.styled-table th[style*="cursor: pointer"]:active {
+  background-color: rgba(52, 152, 219, 0.2);
+}
+
+/* Optional: Add a subtle border effect for active sorted column */
+.styled-table th.active-sort {
+  border-bottom: 3px solid #3498db;
+}
+
+/* Responsive design for sort indicators */
+@media (max-width: 768px) {
+  .styled-table th {
+    font-size: 0.9em;
+  }
+}

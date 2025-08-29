@@ -70,7 +70,7 @@ const CurrencyLogPage = () => {
                                     <td data-label="Price">{formatCurrency(curr.price)}</td>
                                     <td data-label="Date">{formatDate(curr.date)}</td>
                                     <td className="action-icons" data-label="Actions">
-                                        <Link className="action-icon edit-icon" to={`/certificates/edit/${curr._id}`}><FaEdit /></Link>
+                                        <Link className="action-icon edit-icon" to={`/currency/edit/${curr._id}`}><FaEdit /></Link>
                                         <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(curr._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
                                     </td>
                                 </tr>

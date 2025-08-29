@@ -346,22 +346,6 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                     {isEdit ? 'Update' : 'Create'} Transaction
                 </button>
             </form>
-
-            {/* Debug/Info Panel */}
-            {process.env.NODE_ENV === 'development' && (
-                <div style={{
-                    marginTop: '2rem',
-                    padding: '1rem',
-                    backgroundColor: '#f3f4f6',
-                    borderRadius: '8px',
-                    fontSize: '0.8rem'
-                }}>
-                    <h4>Debug Info:</h4>
-                    <p>Code Found: {codeFound ? 'Yes' : 'No'}</p>
-                    <p>Total Units for Code: {totalUnitsForCode}</p>
-                    <p>Is Coupon: {isCoupon ? 'Yes' : 'No'}</p>
-                </div>
-            )}
         </div>
     );
 };
