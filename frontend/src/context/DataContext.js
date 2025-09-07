@@ -2,7 +2,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
 // Import all the service functions we'll need
-import { getGoldSummary, getGoldPrice } from '../services/goldService';
 import { getCertificates } from '../services/certificateService';
 import { getMutualFundSummary, getLastPrice } from '../services/mutualFundService';
 import { getAllTrades, getTradeSummary, getMarketData } from '../services/tradeService';
@@ -31,11 +30,6 @@ const currencyMap ={
 // 3. Create the Provider Component
 export const DataProvider = ({ children }) => {
     // State for all our global data
-    // Gold
-    const [goldSummary, setGoldSummary] = useState([]);
-    const [marketPrices, setMarketPrices] = useState({});
-    const [overallTotalPaid, setOverallTotalPaid] = useState(0);
-    const [goldtotalNow, setGoldTotalNow] = useState(0);
     // Certificates
     const [certificates, setCertificates] = useState([]);
     const [certificateSummary, setCertificateSummary] = useState({});
@@ -260,8 +254,6 @@ export const DataProvider = ({ children }) => {
                 setLoadingProgress(0);
                 // Use Promise.all to fetch everything concurrently for performance
                 const [
-                    goldSummaryData,
-                    marketPricesData,
                     certificatesData,
                     mfSummaryData,
                     stSummaryData,
@@ -273,8 +265,6 @@ export const DataProvider = ({ children }) => {
                     currencyPrice,
                     creditCardsSummary,
                 ] = await Promise.all([
-                    getGoldSummary(),
-                    getGoldPrice(),
                     getCertificates(),
                     getMutualFundSummary(),
                     getTradeSummary(),
@@ -289,8 +279,6 @@ export const DataProvider = ({ children }) => {
                 ]);
                 setLoadingProgress(30); // Update loading progress
 
-                setGoldSummary(goldSummaryData);
-                setMarketPrices(marketPricesData);
                 setCertificates(certificatesData);
                 setMfSummaryData(mfSummaryData);
                 setStSummaryData(stSummaryData);
@@ -300,20 +288,6 @@ export const DataProvider = ({ children }) => {
                 setCurrencyPrice(currencyPrice); // Set currency price in state
                 setCreditCardsSummary(creditCardsSummary); // Set credit card summary in state
                 setLoadingProgress(50); // Update loading progress
-
-                // Calculate overall total paid and current value for gold
-                let totalP = goldSummaryData.reduce((sum, item) => sum + item.totalPaid, 0);
-                setOverallTotalPaid(totalP);
-
-                const totalNow = goldSummaryData.reduce((previous, item) => {
-                    const karat = item._id;
-                    const currentPricePerGram = marketPricesData[karat] || 0;
-                    const currentValue = item.totalWeight * currentPricePerGram;
-                    return previous + currentValue;
-                }, 0);
-                setGoldTotalNow(totalNow);
-
-                setLoadingProgress(60); // Update loading progress
 
                 // Certificate Summary Calculation
                 const certificateSummary = certificatesData.reduce((previous, cert) => {
@@ -464,10 +438,6 @@ if (lastPriceData && lastPriceData.length > 0 && mfSummaryData && mfSummaryData.
     }, []);
     // The value that will be available to all consuming components
     const value = {
-        goldSummary,
-        marketPrices,
-        overallTotalPaid,
-        goldtotalNow,
         certificates,
         certificateSummary,
         mfSummaryData,

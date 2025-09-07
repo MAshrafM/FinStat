@@ -6,12 +6,15 @@ import Sidebar from './Sidebar';
 import DataLoader from './DataLoader';
 import Dashboard from '../pages/Dashboard';
 import { DataProvider } from '../context/DataContext';
+import { GoldProvider } from '../context/GoldContext';
 
 const ProtectedRoute = () => {
     const token = localStorage.getItem('token');
     const location = useLocation();
     const logRoutes = ['/dashboard','/salary-profile', '/paycheck-log', '/expenditures', '/trades'];
-    const needsDataProvider = !logRoutes.includes(location.pathname);
+    const logGoldRoutes = '/gold-wallet';
+    const needsDataProvider = !logRoutes.includes(location.pathname) && !location.pathname.startsWith(logGoldRoutes);
+    const needGoldData = location.pathname === '/gold-wallet/summary';
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const handleSidebarToggle = () => setSidebarOpen(open => !open);
 
@@ -24,11 +27,18 @@ const ProtectedRoute = () => {
             <main className={`main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
                 {needsDataProvider ? (
                 <DataProvider>
-                    <DataLoader>
-                        <Outlet />
-                    </DataLoader>
+                    <GoldProvider>
+                        <DataLoader>
+                            <Outlet />
+                        </DataLoader>
+                    </GoldProvider>
                 </DataProvider>
-            ) : (
+            ) : needGoldData ? (
+                <GoldProvider>
+                    <Outlet />
+                </GoldProvider>
+            ):
+            (
                 <Outlet />
             )}
             </main>
