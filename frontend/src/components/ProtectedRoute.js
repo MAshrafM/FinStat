@@ -8,6 +8,7 @@ import Dashboard from '../pages/Dashboard';
 import { DataProvider } from '../context/DataContext';
 import { GoldProvider } from '../context/GoldContext';
 import { MFProvider } from '../context/MFContext';
+import { CertProvider } from '../context/CertContext';
 
 const ProtectedRoute = () => {
     const token = localStorage.getItem('token');
@@ -34,9 +35,11 @@ const ProtectedRoute = () => {
                 <DataProvider>
                     <GoldProvider>
                         <MFProvider>
-                            <DataLoader>
-                                <Outlet />
-                            </DataLoader>
+                            <CertProvider>
+                                <DataLoader>
+                                    <Outlet />
+                                </DataLoader>
+                            </CertProvider>
                         </MFProvider>
                     </GoldProvider>
                 </DataProvider>
