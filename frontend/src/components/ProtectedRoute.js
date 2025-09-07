@@ -9,6 +9,7 @@ import { DataProvider } from '../context/DataContext';
 import { GoldProvider } from '../context/GoldContext';
 import { MFProvider } from '../context/MFContext';
 import { CertProvider } from '../context/CertContext';
+import { CurrProvider } from '../context/CurrContext';
 
 const ProtectedRoute = () => {
     const token = localStorage.getItem('token');
@@ -16,11 +17,17 @@ const ProtectedRoute = () => {
     const logRoutes = ['/dashboard','/salary-profile', '/paycheck-log', '/expenditures', '/trades'];
     const logGoldRoutes = '/gold-wallet';
     const logMFRoutes = '/mutual-funds';
+    const logCertRoutes = '/certificates';
+    const logCurrRoutes = '/currency';
     const needsDataProvider = !logRoutes.includes(location.pathname) && 
                                 !location.pathname.startsWith(logGoldRoutes) && 
-                                    !location.pathname.startsWith(logMFRoutes);
+                                    !location.pathname.startsWith(logMFRoutes) &&
+                                        !location.pathname.startsWith(logCertRoutes) &&
+                                            !location.pathname.startsWith(logCurrRoutes);
     const needGoldData = location.pathname === '/gold-wallet/summary';
     const needMFData = location.pathname === '/mutual-funds/summary';
+    const needCertData = location.pathname === logCertRoutes;
+    const needCurrData = location.pathname === logCurrRoutes;
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const handleSidebarToggle = () => setSidebarOpen(open => !open);
 
@@ -36,9 +43,11 @@ const ProtectedRoute = () => {
                     <GoldProvider>
                         <MFProvider>
                             <CertProvider>
-                                <DataLoader>
-                                    <Outlet />
-                                </DataLoader>
+                                <CurrProvider>
+                                    <DataLoader>
+                                        <Outlet />
+                                    </DataLoader>
+                                </CurrProvider>
                             </CertProvider>
                         </MFProvider>
                     </GoldProvider>
@@ -51,6 +60,14 @@ const ProtectedRoute = () => {
                 <MFProvider>
                     <Outlet />
                 </MFProvider>
+            ) : needCertData ? (
+                <CertProvider>
+                    <Outlet />
+                </CertProvider>
+            ) : needCurrData ? (
+                <CurrProvider>
+                    <Outlet />
+                </CurrProvider>
             ) :
             (
                 <Outlet />

@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { deleteCurrency } from '../../services/currencyService';
 import { formatDate, formatCurrency } from '../../utils/formatters';
-import { useData } from '../../context/DataContext';
+import { useCurrData } from '../../context/CurrContext';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import '../trades/Trades.css'; // Reuse styles
 import '../../components/SummaryRow.css'; // Reuse styles
@@ -11,7 +11,7 @@ import '../../components/SummaryRow.css'; // Reuse styles
 
 const CurrencyLogPage = () => {
     // Use the global data context
-    const { currency, currencySummary } = useData(); // Access any global data if needed
+    const { currency, currencySummary, isLoading } = useCurrData(); // Access any global data if needed
 
 
     const handleDelete = async (id) => {
@@ -20,13 +20,15 @@ const CurrencyLogPage = () => {
         }
     };
 
+    if (isLoading) {
+        return <p className="page-container">Loading Foreign Currency...</p>;
+    }
+
     return (
         <div className="page-container">
             <div className="page-header">
                 <h1>Foreign Cuurency</h1>
-            </div>
-
-           
+            </div>         
                 {currencySummary && currencySummary.length > 0 && (
                     currencySummary.map((curr) => (
                     <div className="summary-row" key={curr._id}>

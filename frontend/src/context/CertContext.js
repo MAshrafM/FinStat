@@ -2,7 +2,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 // Service
 import { getCertificates } from '../services/certificateService';
-import Summary from '../pages/DashboardSummary';
 // 1. Create the Context
 const CertContext = createContext();
 // 2. Create a custom hook for easy consumption

@@ -2,11 +2,9 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
 // Import all the service functions we'll need
-import { getCertificates } from '../services/certificateService';
 import { getAllTrades, getTradeSummary, getMarketData } from '../services/tradeService';
 import { getLatestExpenditure } from '../services/expenditureService';
 import { safeDivision, safePercentage } from '../utils/helper'; // Import any helper functions you need 
-import { getCurrency, getCurrencySummary, getCurrencyPrice } from '../services/currencyService'; // Import currency service functions
 import { getOverallSummary } from '../services/creditCardService'; // Import credit card service functions
 // ... import other services as needed (mutual funds, certificates, etc.)
 
@@ -18,20 +16,9 @@ export const useData = () => {
     return useContext(DataContext);
 };
 
-const currencyMap ={
-    'Dollar': 'USD',
-    'Euro': 'EUR',
-    'Pound': 'GBP',
-    'Yen': 'JPY',
-    'Riyal': 'SAR',
-}
-
 // 3. Create the Provider Component
 export const DataProvider = ({ children }) => {
     // State for all our global data
-    // Certificates
-    const [certificates, setCertificates] = useState([]);
-    const [certificateSummary, setCertificateSummary] = useState({});
     // Loading and error states
     const [isLoading, setIsLoading] = useState(true);
     const [loadingProgress, setLoadingProgress] = useState(0);
@@ -43,11 +30,6 @@ export const DataProvider = ({ children }) => {
     const [stMarketPrices, setStMarketPrices] = useState({}); // Store market prices for stocks
     const [summaryMetrics, setSummaryMetrics] = useState({}); // Summary metrics if needed
     const [tradesData, setTradesData] = useState([]); // Store trades data in state
-    // Currency
-    const [currency, setCurrency] = useState([]); // Store currency data in state
-    const [currencySummary, setCurrencySummary] = useState({}); // Store currency summary if needed
-    const [currencyPrice, setCurrencyPrice] = useState({}); // Store currency price if needed
-
     // Bank Account Data
     const [bankAccountData, setBankAccountData] = useState({}); // Bank account data if needed
     // Credit Cards
@@ -57,15 +39,6 @@ export const DataProvider = ({ children }) => {
     // Margin profit percentage for stocks
     const marginProfit = 0.2; // Margin profit percentage for calculations
 
-    // Effect to fetch all data when the provider mounts
-    const calculateProgress = (startDate, period) => {
-        const start = new Date(startDate);
-        const now = new Date();
-        const maturity = new Date(start);
-        maturity.setMonth(maturity.getMonth() + period);
-        const isActive = now >= start && now <= maturity;
-        return { isActive };
-    };
 
     // Function to calculate summary metrics
     const calculateSummaryMetrics = (trades, openPositions, closedPositions) => {
@@ -177,54 +150,28 @@ export const DataProvider = ({ children }) => {
                 setLoadingProgress(0);
                 // Use Promise.all to fetch everything concurrently for performance
                 const [
-                    certificatesData,
                     stSummaryData,
                     stMarketData,
                     trades,
                     bankAccountData,
-                    currency,
-                    currencySummary,
-                    currencyPrice,
                     creditCardsSummary,
                 ] = await Promise.all([
-                    getCertificates(),
                     getTradeSummary(),
                     getMarketData(),
                     getAllTrades(),
                     getLatestExpenditure(),
-                    getCurrency(), // Fetch currency data 
-                    getCurrencySummary(), // Fetch currency summary
-                    getCurrencyPrice(), // Fetch currency price
                     getOverallSummary(), // Fetch credit card summary
                     // ... add other fetch calls here
                 ]);
                 setLoadingProgress(30); // Update loading progress
 
-                setCertificates(certificatesData);
                 setStSummaryData(stSummaryData);
                 setBankAccountData(bankAccountData);
                 setTradesData(trades);
-                setCurrency(currency); // Set currency data in state
-                setCurrencyPrice(currencyPrice); // Set currency price in state
                 setCreditCardsSummary(creditCardsSummary); // Set credit card summary in state
                 setLoadingProgress(50); // Update loading progress
 
-                // Certificate Summary Calculation
-                const certificateSummary = certificatesData.reduce((previous, cert) => {
-                    const { isActive } = calculateProgress(cert.startDate, cert.period);
-                    const years = cert.period / 12;
-                    const totalReturn = cert.amount * (1 + (cert.interest / 100) * years);
-
-                    if (isActive) {
-                        return {
-                            totalActiveAmount: previous.totalActiveAmount + cert.amount,
-                            totalExpectedReturns: previous.totalExpectedReturns + totalReturn
-                        };
-                    }
-                    return previous; // Return previous state if certificate is not active
-                }, { totalActiveAmount: 0, totalExpectedReturns: 0 }); // Initial accumulator value
-                setCertificateSummary(certificateSummary);
-
+                
                 setLoadingProgress(70); // Update loading progress
                 // Stocks
                 let marketMap = {};
@@ -245,22 +192,7 @@ export const DataProvider = ({ children }) => {
                     const metrics = calculateSummaryMetrics(trades, openPositions, closedPositions);
                     setSummaryMetrics(metrics);
                 }
-
-                if(currencySummary && currencyPrice && currencyPrice.length > 0) {
-                    currencySummary.map((curr) => {
-                        let currencyCode = currencyMap[curr._id]; // Fallback to name if not found
-                        let price = currencyPrice.find((p) => p.currencyID === currencyCode);
-                        if (price) {
-                            curr.currentPrice = price.sellRate;
-                        }
-            
-                    })
-                }
-
-                setCurrencySummary(currencySummary); // Set currency summary in state
-
-
-                
+              
                 setLoadingProgress(100); // Update loading progress
             } catch (err) {
                 console.error("Failed to load global data:", err);
@@ -296,8 +228,6 @@ export const DataProvider = ({ children }) => {
     }, []);
     // The value that will be available to all consuming components
     const value = {
-        certificates,
-        certificateSummary,
         stSummaryData,
         openPosData,
         endPosData,
@@ -305,9 +235,6 @@ export const DataProvider = ({ children }) => {
         summaryMetrics,
         bankAccountData,
         tradesData,
-        currency,
-        currencySummary,
-        currencyPrice,
         creditCardsSummary,
         isLoading,
         isMobile,

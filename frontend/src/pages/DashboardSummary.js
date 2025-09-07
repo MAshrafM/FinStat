@@ -13,6 +13,7 @@ import { useData } from '../context/DataContext';
 import { useGoldData } from '../context/GoldContext';
 import { useMFData } from '../context/MFContext';
 import { useCertData } from '../context/CertContext';
+import { useCurrData } from '../context/CurrContext';
 
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
 import { safePercentage, normDiv } from '../utils/helper'; // Import safe division and percentage functions }
@@ -28,12 +29,12 @@ const Summary = () => {
     const {
         summaryMetrics,
         bankAccountData,
-        currencySummary,
         creditCardsSummary,
     } = useData(); // Access any global data if needed
     const {overallTotalPaid, goldtotalNow} = useGoldData();
     const {overallTotals} = useMFData();
     const {certificateSummary} = useCertData();
+    const {currencySummary} = useCurrData();
 
     // Data for Pie Chart 1: Total Paid Amounts
     const paidAmountsData = {
