@@ -4,12 +4,13 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import DataLoader from './DataLoader';
-import Dashboard from '../pages/Dashboard';
+// Data Context
 import { DataProvider } from '../context/DataContext';
 import { GoldProvider } from '../context/GoldContext';
 import { MFProvider } from '../context/MFContext';
 import { CertProvider } from '../context/CertContext';
 import { CurrProvider } from '../context/CurrContext';
+import { BankProvider } from '../context/BankContext';
 
 const ProtectedRoute = () => {
     const token = localStorage.getItem('token');
@@ -44,9 +45,11 @@ const ProtectedRoute = () => {
                         <MFProvider>
                             <CertProvider>
                                 <CurrProvider>
-                                    <DataLoader>
-                                        <Outlet />
-                                    </DataLoader>
+                                    <BankProvider>
+                                        <DataLoader>
+                                            <Outlet />
+                                        </DataLoader>
+                                    </BankProvider>
                                 </CurrProvider>
                             </CertProvider>
                         </MFProvider>

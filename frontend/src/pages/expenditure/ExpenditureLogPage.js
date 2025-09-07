@@ -17,7 +17,7 @@ const transactionTypeMap = {
 const ExpenditureLogPage = () => {
   const [expenditures, setExpenditures] = useState([]);
   const [processedExpenditures, setProcessedExpenditures] = useState([]);
-    const [selectedType, setSelectedType] = useState('all'); 
+  const [selectedType, setSelectedType] = useState('all'); 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 

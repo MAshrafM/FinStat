@@ -3,7 +3,6 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 
 // Import all the service functions we'll need
 import { getAllTrades, getTradeSummary, getMarketData } from '../services/tradeService';
-import { getLatestExpenditure } from '../services/expenditureService';
 import { safeDivision, safePercentage } from '../utils/helper'; // Import any helper functions you need 
 import { getOverallSummary } from '../services/creditCardService'; // Import credit card service functions
 // ... import other services as needed (mutual funds, certificates, etc.)
@@ -30,8 +29,6 @@ export const DataProvider = ({ children }) => {
     const [stMarketPrices, setStMarketPrices] = useState({}); // Store market prices for stocks
     const [summaryMetrics, setSummaryMetrics] = useState({}); // Summary metrics if needed
     const [tradesData, setTradesData] = useState([]); // Store trades data in state
-    // Bank Account Data
-    const [bankAccountData, setBankAccountData] = useState({}); // Bank account data if needed
     // Credit Cards
     const [creditCardsSummary, setCreditCardsSummary] = useState([]); // Store credit card data in state
     // Responsive 
@@ -153,20 +150,17 @@ export const DataProvider = ({ children }) => {
                     stSummaryData,
                     stMarketData,
                     trades,
-                    bankAccountData,
                     creditCardsSummary,
                 ] = await Promise.all([
                     getTradeSummary(),
                     getMarketData(),
                     getAllTrades(),
-                    getLatestExpenditure(),
                     getOverallSummary(), // Fetch credit card summary
                     // ... add other fetch calls here
                 ]);
                 setLoadingProgress(30); // Update loading progress
 
                 setStSummaryData(stSummaryData);
-                setBankAccountData(bankAccountData);
                 setTradesData(trades);
                 setCreditCardsSummary(creditCardsSummary); // Set credit card summary in state
                 setLoadingProgress(50); // Update loading progress
@@ -233,7 +227,6 @@ export const DataProvider = ({ children }) => {
         endPosData,
         stMarketPrices,
         summaryMetrics,
-        bankAccountData,
         tradesData,
         creditCardsSummary,
         isLoading,

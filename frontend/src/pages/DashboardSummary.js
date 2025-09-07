@@ -14,6 +14,7 @@ import { useGoldData } from '../context/GoldContext';
 import { useMFData } from '../context/MFContext';
 import { useCertData } from '../context/CertContext';
 import { useCurrData } from '../context/CurrContext';
+import { useBankData } from '../context/BankContext';
 
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
 import { safePercentage, normDiv } from '../utils/helper'; // Import safe division and percentage functions }
@@ -28,13 +29,13 @@ const Summary = () => {
     const investmentPeriod = currentYear - initYear; // Calculate the number of years since initYear
     const {
         summaryMetrics,
-        bankAccountData,
         creditCardsSummary,
     } = useData(); // Access any global data if needed
     const {overallTotalPaid, goldtotalNow} = useGoldData();
     const {overallTotals} = useMFData();
     const {certificateSummary} = useCertData();
     const {currencySummary} = useCurrData();
+    const {bankAccountData} = useBankData();
 
     // Data for Pie Chart 1: Total Paid Amounts
     const paidAmountsData = {
