@@ -3,7 +3,6 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 
 // Import all the service functions we'll need
 import { getCertificates } from '../services/certificateService';
-import { getMutualFundSummary, getLastPrice } from '../services/mutualFundService';
 import { getAllTrades, getTradeSummary, getMarketData } from '../services/tradeService';
 import { getLatestExpenditure } from '../services/expenditureService';
 import { safeDivision, safePercentage } from '../utils/helper'; // Import any helper functions you need 
@@ -37,10 +36,6 @@ export const DataProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [loadingProgress, setLoadingProgress] = useState(0);
     const [error, setError] = useState(null);
-    // Mutual Funds
-    const [mfSummaryData, setMfSummaryData] = useState([]);
-    const [overallTotals, setOverallTotals] = useState({});
-    const [lastPriceData, setLastPriceData] = useState(null);
     // Stocks
     const [stSummaryData, setStSummaryData] = useState([]);
     const [openPosData, setOpenPosData] = useState([]);
@@ -70,44 +65,6 @@ export const DataProvider = ({ children }) => {
         maturity.setMonth(maturity.getMonth() + period);
         const isActive = now >= start && now <= maturity;
         return { isActive };
-    };
-
-    const loadLastPrice = async (fundName) => {
-        if (!fundName || fundName.length === 0) {
-            return [];
-        }
-        try {
-            const lastprices = await Promise.all(fundName.map( async (name) => {
-                if (!name) {
-                    console.warn("Empty fund name provided, skipping...");
-                    return { name: name || 'unknown' , lastPrice: 0 }; // Default to 0 if no name provided
-                }
-
-                try {
-                    const data = await getLastPrice(name);
-                    if (!data || !data.rows || !Array.isArray(data.rows)) {
-                        console.warn(`No data found for fund: ${name}`);
-                        return { name, lastPrice: 0 }; // Default to 0 if no data found
-                    }
-
-                    let fName = data.rows.find(f => f.name === name);
-                    if (!fName) {
-                        console.warn(`No data found for fund: ${name}`);
-                        return { name, lastPrice: 0 }; // Default to 0 if no data found
-                    }
-                    return { name, lastPrice: fName.price || 0 }; // Default to 0 if no price found
-                } catch (error) {
-                    console.error(`Error fetching last price for ${name}:`, error);
-                    return { name, lastPrice: 0 }; // Default to 0 if error occurs
-                }
-            }));
-            setLastPriceData(lastprices);
-            return lastprices;
-        } catch (error) {
-            console.error("Error loading last prices:", error);
-            setLastPriceData([]);
-            return [];
-        }
     };
 
     // Function to calculate summary metrics
@@ -183,40 +140,6 @@ export const DataProvider = ({ children }) => {
         }
     };
 
-    // Function to refresh last prices (can be called from components)
-    const refreshLastPrices = async () => {
-        if (mfSummaryData && Array.isArray(mfSummaryData)) {
-            const fundNames = mfSummaryData
-                .filter(item => item && item._id && item._id.name)
-                .map(item => item._id.name);
-            
-            const newPrices = await loadLastPrice(fundNames);
-            
-            // Recalculate totals with new prices
-            if (newPrices && newPrices.length > 0) {
-                const totalOfAllMF = mfSummaryData.reduce((sum, item) => sum + (item.totalValue || 0), 0);
-                const totalOfAllCoupons = mfSummaryData.reduce((sum, item) => sum + (item.totalCouponValue || 0), 0);
-                const newTotal = totalOfAllMF - totalOfAllCoupons;
-                
-                const totalSellingValue = mfSummaryData.reduce((sum, item) => {
-                    const priceData = newPrices.find(f => f && f.name === item._id.name);
-                    const lastPrice = (priceData && priceData.lastPrice) ? priceData.lastPrice : 0;
-                    const currentUnits = item.currentUnits || 0;
-                    return sum + (lastPrice * currentUnits);
-                }, 0);
-                
-                const totalProfit = safePercentage(totalSellingValue, newTotal);
-                setOverallTotals(prev => ({
-                    ...prev,
-                    totalSellingValue,
-                    totalProfit
-                }));
-                
-            }
-        }
-    };
-
-
     const loadSummaryData = (data, market) => {
         const openPositions = [];
         const closedPositions = [];
@@ -255,7 +178,6 @@ export const DataProvider = ({ children }) => {
                 // Use Promise.all to fetch everything concurrently for performance
                 const [
                     certificatesData,
-                    mfSummaryData,
                     stSummaryData,
                     stMarketData,
                     trades,
@@ -266,7 +188,6 @@ export const DataProvider = ({ children }) => {
                     creditCardsSummary,
                 ] = await Promise.all([
                     getCertificates(),
-                    getMutualFundSummary(),
                     getTradeSummary(),
                     getMarketData(),
                     getAllTrades(),
@@ -280,7 +201,6 @@ export const DataProvider = ({ children }) => {
                 setLoadingProgress(30); // Update loading progress
 
                 setCertificates(certificatesData);
-                setMfSummaryData(mfSummaryData);
                 setStSummaryData(stSummaryData);
                 setBankAccountData(bankAccountData);
                 setTradesData(trades);
@@ -306,41 +226,6 @@ export const DataProvider = ({ children }) => {
                 setCertificateSummary(certificateSummary);
 
                 setLoadingProgress(70); // Update loading progress
-
-                let fundNames = [];
-                if (mfSummaryData && Array.isArray(mfSummaryData)) {
-                    fundNames = mfSummaryData
-                        .filter(item => item && item._id && item._id.name)
-                        .map(item => item._id.name);
-                }
-                const lastPrices = await loadLastPrice(fundNames);
-
-                setLoadingProgress(80); // Update loading progress
-
-                // Mutual Fund Summary Calculation
-                const totalOfAllMF = mfSummaryData.reduce((sum, item) => sum + item.totalValue, 0);
-                const totalOfAllCoupons = mfSummaryData.reduce((sum, item) => sum + item.totalCouponValue, 0);
-                const newTotal = totalOfAllMF - totalOfAllCoupons;
-                // Calculate the current Selling value
-                const totalSellingValue = mfSummaryData.reduce((sum, item) => {
-                    if(!Array.isArray(lastPriceData) || lastPrices.length === 0) {
-                        return sum;
-                    }
-                    const priceData = lastPriceData.find(f => f.name === item._id.name);
-                    const lastPrice = priceData ? priceData.lastPrice : 0;
-                    return sum + (item.currentUnits * lastPrice);
-                }, 0);
-                const totalProfit = safePercentage(totalSellingValue, newTotal);
-                
-                setOverallTotals({
-                    totalOfAllMF,
-                    totalOfAllCoupons,
-                    newTotal,
-                    totalSellingValue,
-                    totalProfit
-                });
-
-                setLoadingProgress(90); // Update loading progress
                 // Stocks
                 let marketMap = {};
                 if (stMarketData && stMarketData.prices) {
@@ -401,33 +286,6 @@ export const DataProvider = ({ children }) => {
         }
     }, [stMarketPrices, stSummaryData, tradesData]); // Runs when market prices or summary data changes
 
-    // Effect to calculate overall totals for mutual funds
-    useEffect(() => {
-if (lastPriceData && lastPriceData.length > 0 && mfSummaryData && mfSummaryData.length > 0) {
-            
-            const totalOfAllMF = mfSummaryData.reduce((sum, item) => sum + (item.totalValue || 0), 0);
-            const totalOfAllCoupons = mfSummaryData.reduce((sum, item) => sum + (item.totalCouponValue || 0), 0);
-            const newTotal = totalOfAllMF - totalOfAllCoupons;
-            
-            const totalSellingValue = mfSummaryData.reduce((sum, item) => {
-                const priceData = lastPriceData.find(f => f && f.name === item._id.name);
-                const lastPrice = (priceData && priceData.lastPrice) ? priceData.lastPrice : 0;
-                const currentUnits = item.currentUnits || 0;
-                              
-                return sum + (lastPrice * currentUnits);
-            }, 0);
-            
-            const totalProfit = safePercentage(totalSellingValue, newTotal);
-            
-            setOverallTotals(prev => ({
-                ...prev,
-                totalSellingValue,
-                totalProfit
-            }));
-            
-        }
-    }, [lastPriceData, mfSummaryData]); // Empty dependency array means this runs once
-    
     useEffect(() => {
         const handleResize = () => {
             setIsMobile(window.innerWidth <= 768);
@@ -440,9 +298,6 @@ if (lastPriceData && lastPriceData.length > 0 && mfSummaryData && mfSummaryData.
     const value = {
         certificates,
         certificateSummary,
-        mfSummaryData,
-        overallTotals,
-        lastPriceData,
         stSummaryData,
         openPosData,
         endPosData,
@@ -458,7 +313,6 @@ if (lastPriceData && lastPriceData.length > 0 && mfSummaryData && mfSummaryData.
         isMobile,
         error,
         loadingProgress, // Added progress for more detailed loading feedback
-        refreshLastPrices, // Add refresh function to context
         refreshStockData, // Add stock refresh function to context
     };
 

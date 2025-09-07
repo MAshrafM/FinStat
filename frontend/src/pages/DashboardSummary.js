@@ -11,6 +11,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 import { useData } from '../context/DataContext';
 import { useGoldData } from '../context/GoldContext';
+import { useMFData } from '../context/MFContext';
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
 import { safePercentage, normDiv } from '../utils/helper'; // Import safe division and percentage functions }
 import './Dashboard.css'; // We will create this CSS file
@@ -24,13 +25,13 @@ const Summary = () => {
     const investmentPeriod = currentYear - initYear; // Calculate the number of years since initYear
     const {
         certificateSummary,
-        overallTotals,
         summaryMetrics,
         bankAccountData,
         currencySummary,
         creditCardsSummary,
     } = useData(); // Access any global data if needed
     const {overallTotalPaid, goldtotalNow} = useGoldData();
+    const {overallTotals} = useMFData();
 
     // Data for Pie Chart 1: Total Paid Amounts
     const paidAmountsData = {

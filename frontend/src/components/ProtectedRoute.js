@@ -7,14 +7,19 @@ import DataLoader from './DataLoader';
 import Dashboard from '../pages/Dashboard';
 import { DataProvider } from '../context/DataContext';
 import { GoldProvider } from '../context/GoldContext';
+import { MFProvider } from '../context/MFContext';
 
 const ProtectedRoute = () => {
     const token = localStorage.getItem('token');
     const location = useLocation();
     const logRoutes = ['/dashboard','/salary-profile', '/paycheck-log', '/expenditures', '/trades'];
     const logGoldRoutes = '/gold-wallet';
-    const needsDataProvider = !logRoutes.includes(location.pathname) && !location.pathname.startsWith(logGoldRoutes);
+    const logMFRoutes = '/mutual-funds';
+    const needsDataProvider = !logRoutes.includes(location.pathname) && 
+                                !location.pathname.startsWith(logGoldRoutes) && 
+                                    !location.pathname.startsWith(logMFRoutes);
     const needGoldData = location.pathname === '/gold-wallet/summary';
+    const needMFData = location.pathname === '/mutual-funds/summary';
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const handleSidebarToggle = () => setSidebarOpen(open => !open);
 
@@ -28,16 +33,22 @@ const ProtectedRoute = () => {
                 {needsDataProvider ? (
                 <DataProvider>
                     <GoldProvider>
-                        <DataLoader>
-                            <Outlet />
-                        </DataLoader>
+                        <MFProvider>
+                            <DataLoader>
+                                <Outlet />
+                            </DataLoader>
+                        </MFProvider>
                     </GoldProvider>
                 </DataProvider>
             ) : needGoldData ? (
                 <GoldProvider>
                     <Outlet />
                 </GoldProvider>
-            ):
+            ): needMFData ? (
+                <MFProvider>
+                    <Outlet />
+                </MFProvider>
+            ) :
             (
                 <Outlet />
             )}
