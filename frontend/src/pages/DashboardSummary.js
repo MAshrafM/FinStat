@@ -10,6 +10,13 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 import { useData } from '../context/DataContext';
+import { useGoldData } from '../context/GoldContext';
+import { useMFData } from '../context/MFContext';
+import { useCertData } from '../context/CertContext';
+import { useCurrData } from '../context/CurrContext';
+import { useBankData } from '../context/BankContext';
+import { useCreditData } from '../context/CreditContext';
+
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
 import { safePercentage, normDiv } from '../utils/helper'; // Import safe division and percentage functions }
 import './Dashboard.css'; // We will create this CSS file
@@ -22,15 +29,14 @@ const Summary = () => {
     const currentYear = new Date().getFullYear();
     const investmentPeriod = currentYear - initYear; // Calculate the number of years since initYear
     const {
-        overallTotalPaid,
-        goldtotalNow,
-        certificateSummary,
-        overallTotals,
         summaryMetrics,
-        bankAccountData,
-        currencySummary,
-        creditCardsSummary,
     } = useData(); // Access any global data if needed
+    const {overallTotalPaid, goldtotalNow} = useGoldData();
+    const {overallTotals} = useMFData();
+    const {certificateSummary} = useCertData();
+    const {currencySummary} = useCurrData();
+    const {bankAccountData} = useBankData();
+    const {creditCardsSummary} = useCreditData();
 
     // Data for Pie Chart 1: Total Paid Amounts
     const paidAmountsData = {

@@ -3,11 +3,15 @@ import React from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import '../trades/Trades.css'; // Reuse styles
 import '../../components/SummaryRow.css'; // Reuse styles
-import { useData } from '../../context/DataContext';
+import { useGoldData } from '../../context/GoldContext';
 
 const GoldSummaryPage = () => {
-    // Use the global data context if needed
-    const { goldSummary, marketPrices,  overallTotalPaid, goldtotalNow, isLoading, } = useData(); // Access any global data if needed
+    // Use the Gold data context if needed
+    const { goldSummary, 
+            marketPrices,  
+            overallTotalPaid, 
+            goldtotalNow, 
+            isLoading, } = useGoldData(); // Access any global data if needed
    
     if (isLoading) {
         return <p className="page-container">Loading gold summary and market prices...</p>;

@@ -4,14 +4,33 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import DataLoader from './DataLoader';
-import Dashboard from '../pages/Dashboard';
+// Data Context
 import { DataProvider } from '../context/DataContext';
+import { GoldProvider } from '../context/GoldContext';
+import { MFProvider } from '../context/MFContext';
+import { CertProvider } from '../context/CertContext';
+import { CurrProvider } from '../context/CurrContext';
+import { BankProvider } from '../context/BankContext';
+import { CreditProvider } from '../context/CreditContext';
 
 const ProtectedRoute = () => {
     const token = localStorage.getItem('token');
     const location = useLocation();
-    const logRoutes = ['/dashboard','/salary-profile', '/paycheck-log', '/expenditures', '/trades'];
-    const needsDataProvider = !logRoutes.includes(location.pathname);
+    const logRoutes = ['/dashboard','/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/social-insurance'
+    ];
+    const logGoldRoutes = '/gold-wallet';
+    const logMFRoutes = '/mutual-funds';
+    const logCertRoutes = '/certificates';
+    const logCurrRoutes = '/currency';
+    const needsDataProvider = !logRoutes.includes(location.pathname) && 
+                                !location.pathname.startsWith(logGoldRoutes) && 
+                                    !location.pathname.startsWith(logMFRoutes) &&
+                                        !location.pathname.startsWith(logCertRoutes) &&
+                                            !location.pathname.startsWith(logCurrRoutes);
+    const needGoldData = location.pathname === '/gold-wallet/summary';
+    const needMFData = location.pathname === '/mutual-funds/summary';
+    const needCertData = location.pathname === logCertRoutes;
+    const needCurrData = location.pathname === logCurrRoutes;
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const handleSidebarToggle = () => setSidebarOpen(open => !open);
 
@@ -24,11 +43,40 @@ const ProtectedRoute = () => {
             <main className={`main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
                 {needsDataProvider ? (
                 <DataProvider>
-                    <DataLoader>
-                        <Outlet />
-                    </DataLoader>
+                    <GoldProvider>
+                        <MFProvider>
+                            <CertProvider>
+                                <CurrProvider>
+                                    <BankProvider>
+                                        <CreditProvider>
+                                            <DataLoader>
+                                                <Outlet />
+                                            </DataLoader>
+                                        </CreditProvider>
+                                    </BankProvider>
+                                </CurrProvider>
+                            </CertProvider>
+                        </MFProvider>
+                    </GoldProvider>
                 </DataProvider>
-            ) : (
+            ) : needGoldData ? (
+                <GoldProvider>
+                    <Outlet />
+                </GoldProvider>
+            ): needMFData ? (
+                <MFProvider>
+                    <Outlet />
+                </MFProvider>
+            ) : needCertData ? (
+                <CertProvider>
+                    <Outlet />
+                </CertProvider>
+            ) : needCurrData ? (
+                <CurrProvider>
+                    <Outlet />
+                </CurrProvider>
+            ) :
+            (
                 <Outlet />
             )}
             </main>

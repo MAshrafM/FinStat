@@ -1,15 +1,15 @@
-﻿// frontend/src/pages/certificates/CertificateLogPage.js
+// frontend/src/pages/certificates/CertificateLogPage.js
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { deleteCertificate } from '../../services/certificateService';
 import { formatDate, formatCurrency } from '../../utils/formatters';
-import { useData } from '../../context/DataContext';
+import { useCertData } from '../../context/CertContext';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import '../trades/Trades.css'; // Reuse styles
 
 const CertificateLogPage = () => {
     // Use the global data context
-    const { certificates } = useData(); // Access any global data if needed
+    const { certificates, certificateSummary, calculateProgress, isLoading } = useCertData(); // Access any global data if needed
     //console.log(certificates);
 
     const handleDelete = async (id) => {
@@ -17,58 +17,6 @@ const CertificateLogPage = () => {
             await deleteCertificate(id);
         }
     };
-
-    const calculateProgress = (startDate, period) => {
-        const start = new Date(startDate);
-        const now = new Date();
-        const maturity = new Date(start);
-        maturity.setMonth(maturity.getMonth() + period);
-
-        const totalDuration = maturity.getTime() - start.getTime();
-        const elapsed = now.getTime() - start.getTime();
-
-        const progress = Math.max(0, Math.min(100, (elapsed / totalDuration) * 100));
-        const isExpired = now > maturity;
-        const isActive = now >= start && now <= maturity;
-        const daysRemaining = Math.ceil((maturity - now) / (1000 * 60 * 60 * 24));
-
-        return { progress, isExpired, isActive, daysRemaining };
-    };
-
-    const calculateSummary = () => {
-        let activeCertificates = 0;
-        let totalActiveAmount = 0;
-        let expiredCertificates = 0;
-        let futureCertificates = 0;
-        let totalExpectedReturns = 0;
-
-        certificates.forEach(cert => {
-            const { isExpired, isActive } = calculateProgress(cert.startDate, cert.period);
-            const years = cert.period / 12;
-            const totalReturn = cert.amount * (1 + (cert.interest / 100) * years);
-
-            if (isActive) {
-                activeCertificates++;
-                totalActiveAmount += cert.amount;
-                totalExpectedReturns += totalReturn;
-            } else if (isExpired) {
-                expiredCertificates++;
-            } else {
-                futureCertificates++;
-            }
-        });
-
-        return {
-            activeCertificates,
-            totalActiveAmount,
-            expiredCertificates,
-            futureCertificates,
-            totalExpectedReturns,
-            totalCertificates: certificates.length
-        };
-    };
-
-    const summary = calculateSummary();
 
     const ProgressBar = ({ progress, isExpired, daysRemaining, isActive }) => {
         let progressColor = '#4CAF50'; // Green for healthy
@@ -132,6 +80,9 @@ const CertificateLogPage = () => {
         );
     };
 
+    if (isLoading) {
+        return <p className="page-container">Loading Certificates...</p>;
+    }
 
     return (
         <div className="page-container">
@@ -161,10 +112,10 @@ const CertificateLogPage = () => {
                     }}>
                         <div style={{ fontSize: '14px', opacity: '0.9' }}>Active Certificates</div>
                         <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '5px 0' }}>
-                            {summary.activeCertificates}
+                            {certificateSummary.activeCertificates}
                         </div>
                         <div style={{ fontSize: '12px', opacity: '0.8' }}>
-                            out of {summary.totalCertificates} total
+                            out of {certificateSummary.totalCertificates} total
                         </div>
                     </div>
 
@@ -176,7 +127,7 @@ const CertificateLogPage = () => {
                     }}>
                         <div style={{ fontSize: '14px', opacity: '0.9' }}>Active Investment</div>
                         <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '5px 0' }}>
-                            {formatCurrency(summary.totalActiveAmount)}
+                            {formatCurrency(certificateSummary.totalActiveAmount)}
                         </div>
                         <div style={{ fontSize: '12px', opacity: '0.8' }}>
                             currently invested
@@ -191,7 +142,7 @@ const CertificateLogPage = () => {
                     }}>
                         <div style={{ fontSize: '14px', opacity: '0.9' }}>Expected Returns</div>
                         <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '5px 0' }}>
-                            {formatCurrency(summary.totalExpectedReturns)}
+                            {formatCurrency(certificateSummary.totalExpectedReturns)}
                         </div>
                         <div style={{ fontSize: '12px', opacity: '0.8' }}>
                             from active certificates
@@ -206,9 +157,9 @@ const CertificateLogPage = () => {
                     }}>
                         <div style={{ fontSize: '14px', opacity: '0.9' }}>Portfolio Status</div>
                         <div style={{ fontSize: '14px', margin: '5px 0' }}>
-                            <div style={{ color: '#4CAF50' }}>✓ {summary.activeCertificates} Active</div>
-                            <div style={{ color: '#ff9800' }}>⏳ {summary.futureCertificates} Future</div>
-                            <div style={{ color: '#f44336' }}>✗ {summary.expiredCertificates} Expired</div>
+                            <div style={{ color: '#4CAF50' }}>✓ {certificateSummary.activeCertificates} Active</div>
+                            <div style={{ color: '#ff9800' }}>⏳ {certificateSummary.futureCertificates} Future</div>
+                            <div style={{ color: '#f44336' }}>✗ {certificateSummary.expiredCertificates} Expired</div>
                         </div>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 // frontend/src/pages/trades/TradeSummaryPage.js
-import React, {useState, useMemo} from 'react';
+import React, {useState, useMemo, useCallback} from 'react';
 //import { getAllTrades, getTradeSummary, getMarketData } from '../../services/tradeService';
 import { useData } from '../../context/DataContext';
 import { formatDate, formatCurrency } from '../../utils/formatters';
@@ -25,7 +25,14 @@ const TradeSummaryPage = () => {
         direction: 'asc'
     });
 
-    const getCloseSortValue = (item, key) => {
+    const daysBetween = useCallback((date1, date2) => {
+        if (!date1 || !date2) return '';
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        return Math.max(0, Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24)));
+    }, []);
+
+    const getCloseSortValue = useCallback((item, key) => {
         switch (key) {
         case 'stockCode':
             return item._id.stockCode;
@@ -50,9 +57,9 @@ const TradeSummaryPage = () => {
         default:
             return '';
         }
-    };
+    }, [daysBetween]);
 
-    const getOpenSortValue = (item, key) => {
+    const getOpenSortValue = useCallback((item, key) => {
       switch (key) {
         case 'stockCode':
           return item._id.stockCode;
@@ -85,19 +92,19 @@ const TradeSummaryPage = () => {
         default:
           return '';
       }
-    };
+    }, [stMarketPrices]);
 
 
   // Memoized sorted data - moved to top level before any other functions
   const sortedEndPosData = useMemo(
     () => sortData(endPosData, closeSortConfig, getCloseSortValue),
-    [endPosData, closeSortConfig]
+    [endPosData, closeSortConfig, getCloseSortValue]
   );
   
   // Memoized sorted data for Open Positions
   const sortedOpenPosData = useMemo(
     () => sortData(openPosData, openSortConfig, getOpenSortValue),
-    [openPosData, openSortConfig, stMarketPrices]
+    [openPosData, openSortConfig, getOpenSortValue]
   );
 
   // Function to handle sorting for Close Positions
@@ -120,12 +127,7 @@ const TradeSummaryPage = () => {
     return openSortConfig.direction === 'asc' ? ' ↑' : ' ↓';
   };
     
-    function daysBetween(date1, date2) {
-        if (!date1 || !date2) return '';
-        const d1 = new Date(date1);
-        const d2 = new Date(date2);
-        return Math.max(0, Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24)));
-    };
+    
 
     if (isLoading) {
         return <p className="page-container">Loading summary data...</p>;

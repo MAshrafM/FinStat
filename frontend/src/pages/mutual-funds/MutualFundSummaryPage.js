@@ -1,12 +1,12 @@
 // frontend/src/pages/mutual-funds/MutualFundSummaryPage.js
 import React from 'react';
-import { useData } from '../../context/DataContext';
+import { useMFData } from '../../context/MFContext';
 import { formatCurrency } from '../../utils/formatters';
 import '../trades/Trades.css'; // Reuse styles
 import '../../components/SummaryRow.css'; // Reuse styles
 
 const MutualFundSummaryPage = () => {
-    const { mfSummaryData, overallTotals, lastPriceData, isLoading } = useData();
+    const { mfSummaryData, overallTotals, lastPriceData, isLoading } = useMFData();
     
     if (isLoading) {
         return <p className="page-container">Loading summary data...</p>;

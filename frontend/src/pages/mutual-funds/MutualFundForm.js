@@ -1,5 +1,5 @@
-﻿// frontend/src/pages/mutual-funds/MutualFundForm.js
-import React, { useState, useEffect } from 'react';
+// frontend/src/pages/mutual-funds/MutualFundForm.js
+import React, { useState, useEffect, useCallback } from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import { getMutualFundByCode, getAllMutualFundTrades } from '../../services/mutualFundService'; // Add these service functions
 
@@ -19,6 +19,44 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const [codeFound, setCodeFound] = useState(false);
     const [unitsCalculating, setUnitsCalculating] = useState(false);
     const [totalUnitsForCode, setTotalUnitsForCode] = useState(0);
+
+    
+    const calculateTotalUnits = useCallback(async (code) => {
+        if (!code) return;
+        
+        setUnitsCalculating(true);
+        try {
+            // Get all transactions for this fund code
+            const allTransactions = await getAllMutualFundTrades();
+            const codeTransactions = allTransactions.filter(t => t.code === code);
+            
+            // Calculate net units (Buy adds, Sell subtracts)
+            const totalUnits = codeTransactions.reduce((sum, transaction) => {
+                const units = parseFloat(transaction.units) || 0;
+                if (transaction.type === 'Buy') {
+                    return sum + units;
+                } else if (transaction.type === 'Sell') {
+                    return sum - units;
+                }
+                return sum; // Coupons don't affect unit count
+            }, 0);
+            
+            setTotalUnitsForCode(totalUnits);
+            
+            // Auto-fill units for coupon transaction
+            if (formData.type === 'Coupon') {
+                setFormData(prev => ({
+                    ...prev,
+                    units: totalUnits.toString()
+                }));
+            }
+        } catch (error) {
+            console.error('Error calculating total units:', error);
+            setTotalUnitsForCode(0);
+        }
+        setUnitsCalculating(false);
+    }, [formData.type]);
+
 
     useEffect(() => {
         if (isEdit && initialData) {
@@ -52,7 +90,7 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         if (['Buy', 'Sell'].includes(type)) {
             setFormData(prev => ({ ...prev, totalValue: total }));
         }
-    }, [formData.type, formData.units, formData.price, formData.fees]);
+    }, [formData]);
 
     // Effect to lookup fund details when code changes
     useEffect(() => {
@@ -93,7 +131,7 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         // Debounce the lookup to avoid too many API calls
         const timeoutId = setTimeout(lookupFundByCode, 300);
         return () => clearTimeout(timeoutId);
-    }, [formData.code]);
+    }, [formData.code, formData.type, calculateTotalUnits]);
 
     // Effect to calculate units when transaction type changes to Coupon
     useEffect(() => {
@@ -102,43 +140,7 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         } else if (formData.type !== 'Coupon') {
             setTotalUnitsForCode(0);
         }
-    }, [formData.type, formData.code, codeFound]);
-
-    const calculateTotalUnits = async (code) => {
-        if (!code) return;
-        
-        setUnitsCalculating(true);
-        try {
-            // Get all transactions for this fund code
-            const allTransactions = await getAllMutualFundTrades();
-            const codeTransactions = allTransactions.filter(t => t.code === code);
-            
-            // Calculate net units (Buy adds, Sell subtracts)
-            const totalUnits = codeTransactions.reduce((sum, transaction) => {
-                const units = parseFloat(transaction.units) || 0;
-                if (transaction.type === 'Buy') {
-                    return sum + units;
-                } else if (transaction.type === 'Sell') {
-                    return sum - units;
-                }
-                return sum; // Coupons don't affect unit count
-            }, 0);
-            
-            setTotalUnitsForCode(totalUnits);
-            
-            // Auto-fill units for coupon transaction
-            if (formData.type === 'Coupon') {
-                setFormData(prev => ({
-                    ...prev,
-                    units: totalUnits.toString()
-                }));
-            }
-        } catch (error) {
-            console.error('Error calculating total units:', error);
-            setTotalUnitsForCode(0);
-        }
-        setUnitsCalculating(false);
-    };
+    }, [formData.type, formData.code, codeFound, calculateTotalUnits]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
