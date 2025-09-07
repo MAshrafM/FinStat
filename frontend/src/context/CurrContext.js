@@ -40,13 +40,12 @@ export const CurrProvider = ({ children }) => {
                 setCurrencyPrice(currencyPrice); // Set currency price in state
 
                 if(currencySummary && currencyPrice && currencyPrice.length > 0) {
-                    currencySummary.map((curr) => {
+                    currencySummary.forEach((curr) => {
                         let currencyCode = currencyMap[curr._id]; // Fallback to name if not found
                         let price = currencyPrice.find((p) => p.currencyID === currencyCode);
                         if (price) {
                             curr.currentPrice = price.sellRate;
                         }
-            
                     })
                 }
 

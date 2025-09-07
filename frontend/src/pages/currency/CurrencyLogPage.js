@@ -1,4 +1,4 @@
-﻿// frontend/src/pages/certificates/CertificateLogPage.js
+// frontend/src/pages/certificates/CertificateLogPage.js
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { deleteCurrency } from '../../services/currencyService';

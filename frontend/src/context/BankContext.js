@@ -37,7 +37,7 @@ export const BankProvider = ({ children }) => {
         fetchBankData();
     }, []);
 
-    const value = {bankAccountData, isLoading};
+    const value = {bankAccountData, isLoading, error};
 
     return (
         <BankContext.Provider value={value}>

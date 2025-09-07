@@ -11,11 +11,13 @@ import { MFProvider } from '../context/MFContext';
 import { CertProvider } from '../context/CertContext';
 import { CurrProvider } from '../context/CurrContext';
 import { BankProvider } from '../context/BankContext';
+import { CreditProvider } from '../context/CreditContext';
 
 const ProtectedRoute = () => {
     const token = localStorage.getItem('token');
     const location = useLocation();
-    const logRoutes = ['/dashboard','/salary-profile', '/paycheck-log', '/expenditures', '/trades'];
+    const logRoutes = ['/dashboard','/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/social-insurance'
+    ];
     const logGoldRoutes = '/gold-wallet';
     const logMFRoutes = '/mutual-funds';
     const logCertRoutes = '/certificates';
@@ -46,9 +48,11 @@ const ProtectedRoute = () => {
                             <CertProvider>
                                 <CurrProvider>
                                     <BankProvider>
-                                        <DataLoader>
-                                            <Outlet />
-                                        </DataLoader>
+                                        <CreditProvider>
+                                            <DataLoader>
+                                                <Outlet />
+                                            </DataLoader>
+                                        </CreditProvider>
                                     </BankProvider>
                                 </CurrProvider>
                             </CertProvider>

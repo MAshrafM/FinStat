@@ -1,5 +1,5 @@
 // frontend/src/context/MFContext.js
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 // Service
 import { getMutualFundSummary, getLastPrice } from '../services/mutualFundService';
 // Helpers
@@ -20,7 +20,7 @@ export const MFProvider = ({ children }) => {
     const [error, setError] = useState(null);
 
     // Recent Prices
-    const loadLastPrice = async (fundName) => {
+    const loadLastPrice = useCallback(async (fundName) => {
         if (!fundName || fundName.length === 0) {
             return [];
         }
@@ -56,10 +56,41 @@ export const MFProvider = ({ children }) => {
             setLastPriceData([]);
             return [];
         }
-    };
+    }, []);
+
+    // Calculate totals to avoid code duplication
+    const calculateTotals = useCallback(
+        (summaryData, prices) => {
+            if (!summaryData || !Array.isArray(summaryData) || !prices || !Array.isArray(prices)) {
+                return { totalOfAllMF: 0, totalOfAllCoupons: 0, newTotal: 0, totalSellingValue: 0, totalProfit: 0 };
+            }
+
+            const totalOfAllMF = summaryData.reduce((sum, item) => sum + (item.totalValue || 0), 0);
+            const totalOfAllCoupons = summaryData.reduce((sum, item) => sum + (item.totalCouponValue || 0), 0);
+            const newTotal = totalOfAllMF - totalOfAllCoupons;
+
+            const totalSellingValue = summaryData.reduce((sum, item) => {
+                const priceData = prices.find((f) => f && f.name === item._id.name);
+                const lastPrice = priceData && priceData.lastPrice ? priceData.lastPrice : 0;
+                const currentUnits = item.currentUnits || 0;
+                return sum + lastPrice * currentUnits;
+            }, 0);
+
+            const totalProfit = safePercentage(totalSellingValue, newTotal);
+
+            return {
+                totalOfAllMF,
+                totalOfAllCoupons,
+                newTotal,
+                totalSellingValue,
+                totalProfit,
+            };
+        },
+        []
+    );
 
     // Referesh Last Prices
-    const refreshLastPrices = async () => {
+    const refreshLastPrices = useCallback(async () => {
         if (mfSummaryData && Array.isArray(mfSummaryData)) {
             const fundNames = mfSummaryData
                 .filter(item => item && item._id && item._id.name)
@@ -69,27 +100,15 @@ export const MFProvider = ({ children }) => {
             
             // Recalculate totals with new prices
             if (newPrices && newPrices.length > 0) {
-                const totalOfAllMF = mfSummaryData.reduce((sum, item) => sum + (item.totalValue || 0), 0);
-                const totalOfAllCoupons = mfSummaryData.reduce((sum, item) => sum + (item.totalCouponValue || 0), 0);
-                const newTotal = totalOfAllMF - totalOfAllCoupons;
-                
-                const totalSellingValue = mfSummaryData.reduce((sum, item) => {
-                    const priceData = newPrices.find(f => f && f.name === item._id.name);
-                    const lastPrice = (priceData && priceData.lastPrice) ? priceData.lastPrice : 0;
-                    const currentUnits = item.currentUnits || 0;
-                    return sum + (lastPrice * currentUnits);
-                }, 0);
-                
-                const totalProfit = safePercentage(totalSellingValue, newTotal);
-                setOverallTotals(prev => ({
+                const totals = calculateTotals(mfSummaryData, newPrices);
+                setOverallTotals((prev) => ({
                     ...prev,
-                    totalSellingValue,
-                    totalProfit
+                    totalSellingValue: totals.totalSellingValue,
+                    totalProfit: totals.totalProfit,
                 }));
-                
             }
         }
-    };
+    }, [mfSummaryData, loadLastPrice, calculateTotals]);
 
     useEffect(() => {
         const fetchMFData = async () => {
@@ -107,26 +126,8 @@ export const MFProvider = ({ children }) => {
                 const lastPrices = await loadLastPrice(fundNames);
 
                 // Mutual Fund Summary Calculation
-                const totalOfAllMF = mfSummaryData.reduce((sum, item) => sum + item.totalValue, 0);
-                const totalOfAllCoupons = mfSummaryData.reduce((sum, item) => sum + item.totalCouponValue, 0);
-                const newTotal = totalOfAllMF - totalOfAllCoupons;
-                // Calculate the current Selling value
-                const totalSellingValue = mfSummaryData.reduce((sum, item) => {
-                    if(!Array.isArray(lastPriceData) || lastPrices.length === 0) {
-                        return sum;
-                    }
-                    const priceData = lastPriceData.find(f => f.name === item._id.name);
-                    const lastPrice = priceData ? priceData.lastPrice : 0;
-                    return sum + (item.currentUnits * lastPrice);
-                }, 0);
-                const totalProfit = safePercentage(totalSellingValue, newTotal);
-                setOverallTotals({
-                    totalOfAllMF,
-                    totalOfAllCoupons,
-                    newTotal,
-                    totalSellingValue,
-                    totalProfit
-                });
+                const totals = calculateTotals(mfSummaryData, lastPrices);
+                setOverallTotals(totals);
             } catch (err) {
                 console.error("Failed to load MF data:", err);
                 setError(err);
@@ -139,33 +140,18 @@ export const MFProvider = ({ children }) => {
         };
 
         fetchMFData();
-    }, []);
+    }, [loadLastPrice, calculateTotals]);
 
     useEffect(() => {
-         if (lastPriceData && lastPriceData.length > 0 && mfSummaryData && mfSummaryData.length > 0) {
-                
-            const totalOfAllMF = mfSummaryData.reduce((sum, item) => sum + (item.totalValue || 0), 0);
-            const totalOfAllCoupons = mfSummaryData.reduce((sum, item) => sum + (item.totalCouponValue || 0), 0);
-            const newTotal = totalOfAllMF - totalOfAllCoupons;
-            
-            const totalSellingValue = mfSummaryData.reduce((sum, item) => {
-                const priceData = lastPriceData.find(f => f && f.name === item._id.name);
-                const lastPrice = (priceData && priceData.lastPrice) ? priceData.lastPrice : 0;
-                const currentUnits = item.currentUnits || 0;
-                                
-                return sum + (lastPrice * currentUnits);
-            }, 0);
-            
-            const totalProfit = safePercentage(totalSellingValue, newTotal);
-            
-            setOverallTotals(prev => ({
+         if (lastPriceData && lastPriceData.length > 0 && mfSummaryData && mfSummaryData.length > 0) {   
+            const totals = calculateTotals(mfSummaryData, lastPriceData);
+            setOverallTotals((prev) => ({
                 ...prev,
-                totalSellingValue,
-                totalProfit
+                totalSellingValue: totals.totalSellingValue,
+                totalProfit: totals.totalProfit,
             }));
-            
         }
-    }, [lastPriceData, mfSummaryData]); // Empty dependency array means this runs once
+    }, [lastPriceData, mfSummaryData, calculateTotals]); // Empty dependency array means this runs once
 
     const value = {
         mfSummaryData,

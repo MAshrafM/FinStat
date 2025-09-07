@@ -35,41 +35,43 @@ export const CertProvider = ({ children }) => {
         return { progress, isExpired, isActive, daysRemaining };
     };
 
-    // Certificate Summary Calculation
-    const calculateSummary = (certificates) => {
-        let activeCertificates = 0;
-        let totalActiveAmount = 0;
-        let expiredCertificates = 0;
-        let futureCertificates = 0;
-        let totalExpectedReturns = 0;
-
-        certificates.forEach(cert => {
-            const { isExpired, isActive } = calculateProgress(cert.startDate, cert.period);
-            const years = cert.period / 12;
-            const totalReturn = cert.amount * (1 + (cert.interest / 100) * years);
-
-            if (isActive) {
-                activeCertificates++;
-                totalActiveAmount += cert.amount;
-                totalExpectedReturns += totalReturn;
-            } else if (isExpired) {
-                expiredCertificates++;
-            } else {
-                futureCertificates++;
-            }
-        });
-
-        return {
-            activeCertificates,
-            totalActiveAmount,
-            expiredCertificates,
-            futureCertificates,
-            totalExpectedReturns,
-            totalCertificates: certificates.length
-        };
-    };
+   
 
     useEffect(() => {
+
+         // Certificate Summary Calculation
+        const calculateSummary = (certificates) => {
+            let activeCertificates = 0;
+            let totalActiveAmount = 0;
+            let expiredCertificates = 0;
+            let futureCertificates = 0;
+            let totalExpectedReturns = 0;
+
+            certificates.forEach(cert => {
+                const { isExpired, isActive } = calculateProgress(cert.startDate, cert.period);
+                const years = cert.period / 12;
+                const totalReturn = cert.amount * (1 + (cert.interest / 100) * years);
+
+                if (isActive) {
+                    activeCertificates++;
+                    totalActiveAmount += cert.amount;
+                    totalExpectedReturns += totalReturn;
+                } else if (isExpired) {
+                    expiredCertificates++;
+                } else {
+                    futureCertificates++;
+                }
+            });
+
+            return {
+                activeCertificates,
+                totalActiveAmount,
+                expiredCertificates,
+                futureCertificates,
+                totalExpectedReturns,
+                totalCertificates: certificates.length
+            };
+        };
         const fetchCertData = async () => {
             try {
                 setIsLoading(true);
