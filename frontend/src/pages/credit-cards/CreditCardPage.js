@@ -172,11 +172,11 @@ const handleDelete = async (transactionId) => {
         setTransactionHistory([]);
       }
   });
-}, [selectedCardId, cards]);
+}, []);
 
 useEffect(() => {
   loadCards();
-}, []);
+}, [loadCards]);
 
 // Refresh function that handles both single card and all cards view
   const refreshData = useCallback(() => {
@@ -189,9 +189,6 @@ useEffect(() => {
 
 const totalPaid = transactionHistory.reduce((sum, tx) => {
   return sum + (tx.status === 'Paid' ? tx.amount : 0);
-}, 0);
-const totalDue = transactionHistory.reduce((sum, tx) => {
-  return sum + (tx.status === 'Due' ? tx.amount : 0);
 }, 0);
 const totalPartial = transactionHistory.reduce((sum, tx) => {
   return sum + (tx.status === 'Partial' ? tx.paidAmount : 0);

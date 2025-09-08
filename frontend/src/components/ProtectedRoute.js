@@ -3,7 +3,6 @@ import React, {useState, useMemo} from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
-import DataLoader from './DataLoader';
 // Lazy import contexts to reduce initial bundle size
 const DataProvider = React.lazy(() => import('../context/DataContext').then(m => ({ default: m.DataProvider })));
 const GoldProvider = React.lazy(() => import('../context/GoldContext').then(m => ({ default: m.GoldProvider })));
