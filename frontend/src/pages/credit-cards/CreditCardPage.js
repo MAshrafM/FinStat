@@ -1,6 +1,6 @@
 // frontend/src/pages/credit-cards/CreditCardPage.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { useData } from '../../context/DataContext';
+import { useCreditData } from '../../context/CreditContext';
 import { FaCheckCircle, FaRegMoneyBillAlt, FaEdit, FaTrash } from 'react-icons/fa';
 import { getCards, getCardSummary, getDueTransactions, makeFullPayment,
          getTransactions, deleteTransaction } from '../../services/creditCardService';
@@ -13,7 +13,7 @@ import '../trades/Trades.css'; // Reuse styles
 import './CreditCardPage.css'; // Custom styles for this page
 
 const CreditCardPage = () => {
-  const { creditCardsSummary } = useData();
+  const { creditCardsSummary } = useCreditData();
   const [cards, setCards] = useState([]);
   const [selectedCardId, setSelectedCardId] =  useState('all');
   const [summary, setSummary] = useState(null);

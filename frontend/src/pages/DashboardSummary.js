@@ -50,7 +50,7 @@ const Summary = () => {
                     overallTotals.totalOfAllMF || 0,
                     summaryMetrics.topUps || 0,
                     bankAccountData.bank || 0,
-                    currencySummary.reduce((sum, item) => sum + (item.totalPrice || 0), 0),
+                    currencySummary.reduce((sum, item) => sum + (item.totalPrice || 0), 0) || 0,
                 ],
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.6)',
@@ -84,7 +84,7 @@ const Summary = () => {
                     overallTotals.totalSellingValue || 0,
                     (summaryMetrics.topUps + summaryMetrics.totalProfitNow) || 0,
                     bankAccountData.bank || 0,
-                    currencySummary.reduce((sum, item) => sum + (item.currentPrice * item.totalAmount || 0), 0),
+                    currencySummary.reduce((sum, item) => sum + (item.currentPrice * item.totalAmount || 0), 0) || 0,
                 ],
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.6)',
@@ -150,7 +150,7 @@ const Summary = () => {
                               certificateSummary.totalActiveAmount +
                               overallTotals.totalSellingValue +
                               summaryMetrics.topUps + summaryMetrics.totalProfitNow +
-                              bankAccountData.bank + currencySummary.reduce((sum,item) => sum + (item.currentPrice * item.totalAmount), 0)
+                              bankAccountData.bank + currencySummary.reduce((sum,item) => sum + (item.currentPrice * item.totalAmount), 0) || 0
                               
                           )
                       }

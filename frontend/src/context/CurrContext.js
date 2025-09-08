@@ -20,7 +20,7 @@ const currencyMap ={
 export const CurrProvider = ({ children }) => {
     // Currency
     const [currency, setCurrency] = useState([]); // Store currency data in state
-    const [currencySummary, setCurrencySummary] = useState({}); // Store currency summary if needed
+    const [currencySummary, setCurrencySummary] = useState([]); // Store currency summary if needed
     const [currencyPrice, setCurrencyPrice] = useState({}); // Store currency price if needed
     // Loading and error states
     const [isLoading, setIsLoading] = useState(true);

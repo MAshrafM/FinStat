@@ -9,7 +9,7 @@ import '../trades/Trades.css'; // Reuse styles
 
 const CertificateLogPage = () => {
     // Use the global data context
-    const { certificates, certificateSummary, calculateProgress, isLoading } = useCertData(); // Access any global data if needed
+    const { certificates, certificateSummary, isLoading, calculateProgress } = useCertData(); // Access any global data if needed
     //console.log(certificates);
 
     const handleDelete = async (id) => {
