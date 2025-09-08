@@ -1,6 +1,6 @@
 // frontend/src/pages/credit-cards/CreditCardPage.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { useData } from '../../context/DataContext';
+import { useCreditData } from '../../context/CreditContext';
 import { FaCheckCircle, FaRegMoneyBillAlt, FaEdit, FaTrash } from 'react-icons/fa';
 import { getCards, getCardSummary, getDueTransactions, makeFullPayment,
          getTransactions, deleteTransaction } from '../../services/creditCardService';
@@ -13,7 +13,7 @@ import '../trades/Trades.css'; // Reuse styles
 import './CreditCardPage.css'; // Custom styles for this page
 
 const CreditCardPage = () => {
-  const { creditCardsSummary } = useData();
+  const { creditCardsSummary } = useCreditData();
   const [cards, setCards] = useState([]);
   const [selectedCardId, setSelectedCardId] =  useState('all');
   const [summary, setSummary] = useState(null);
@@ -172,11 +172,11 @@ const handleDelete = async (transactionId) => {
         setTransactionHistory([]);
       }
   });
-}, [selectedCardId, cards]);
+}, []);
 
 useEffect(() => {
   loadCards();
-}, []);
+}, [loadCards]);
 
 // Refresh function that handles both single card and all cards view
   const refreshData = useCallback(() => {
@@ -189,9 +189,6 @@ useEffect(() => {
 
 const totalPaid = transactionHistory.reduce((sum, tx) => {
   return sum + (tx.status === 'Paid' ? tx.amount : 0);
-}, 0);
-const totalDue = transactionHistory.reduce((sum, tx) => {
-  return sum + (tx.status === 'Due' ? tx.amount : 0);
 }, 0);
 const totalPartial = transactionHistory.reduce((sum, tx) => {
   return sum + (tx.status === 'Partial' ? tx.paidAmount : 0);
