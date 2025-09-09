@@ -31,7 +31,6 @@ export const updateBrackets = (brackets) => {
   return fetch(API_URL, {
     method: 'PUT',
     headers: getAuthHeaders(),
-    headers: getAuthHeaders(),
     body: JSON.stringify({ brackets }), // The API expects an object with a 'brackets' key
   }).then(res => {
     if (!res.ok) throw new Error('Failed to update tax brackets.');

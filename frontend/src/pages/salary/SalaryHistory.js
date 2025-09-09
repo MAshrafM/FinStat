@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { getProfile, deleteHistoryRecord  } from '../../services/salaryService';
 import { formatCurrency } from '../../utils/formatters';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
-import { useData } from '../../context/DataContext';
 import '../../components/Table.css'; // Reuse the nice table styles
 
 const SalaryHistory = () => {

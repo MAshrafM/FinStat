@@ -1,4 +1,4 @@
-﻿// frontend/src/pages/expenditure/ExpenditureAnalysisPage.js
+// frontend/src/pages/expenditure/ExpenditureAnalysisPage.js
 import React, { useState, useEffect } from 'react';
 import { getAllExpendituresForAnalysis } from '../../services/expenditureService';
 import { getPaychecks } from '../../services/paycheckService';

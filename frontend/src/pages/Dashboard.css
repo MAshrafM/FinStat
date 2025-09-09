@@ -201,6 +201,12 @@
     padding: 1rem;
   }
 
+  .chart-container {
+      margin: 0 auto;
+      height: auto !important;
+      width: 95% !important;
+  }
+
   .spinner {
     width: 40px;
     height: 40px;

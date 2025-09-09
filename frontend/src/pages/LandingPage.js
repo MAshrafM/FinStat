@@ -23,9 +23,11 @@ const LandingPage = () => {
         setError('');
         login(username, password).then(token => {
             localStorage.setItem('token', token); // Store the token in local storage
+            setIsLoading(false);
             navigate('/dashboard'); // Redirect to dashboard on successful login
         }).catch(err => {
             setError(err.message); // Set error message if login fails
+            setIsLoading(true);
         })
     };
     const features = [

@@ -99,7 +99,6 @@ export const DataProvider = ({ children }) => {
 
     useEffect(() => {
         const fetchAllData = async () => {
-            console.log('fetchAllData started');
             try {
                 setIsLoading(true);
                 setError(null);

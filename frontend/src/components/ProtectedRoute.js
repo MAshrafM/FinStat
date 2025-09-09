@@ -15,6 +15,7 @@ const CreditProvider = React.lazy(() => import('../context/CreditContext').then(
 const ROUTE_CONFIG = {
   basicRoutes: ['/dashboard', '/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/social-insurance'],
   contextRoutes: {
+    data: ['/trades/new', '/trades/edit', '/trade-summary'],
     gold: ['/gold-wallet/summary'],
     mf: ['/mutual-funds/summary'],
     cert: ['/certificates'],

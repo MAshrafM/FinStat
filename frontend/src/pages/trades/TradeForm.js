@@ -1,5 +1,5 @@
-﻿// frontend/src/pages/trades/TradeForm.js
-import React, { useState, useEffect } from 'react';
+// frontend/src/pages/trades/TradeForm.js
+import React, { useState, useEffect, useMemo } from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import { useData } from '../../context/DataContext';
 
@@ -47,28 +47,19 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     }, [initialData, isEdit]);
 
     // Effect to auto-calculate totalValue
-    useEffect(() => {
+    const totalValue = useMemo(() => {
         const { type, shares, price, fees } = formData;
         const numShares = parseFloat(shares) || 0;
         const numPrice = parseFloat(price) || 0;
         const numFees = parseFloat(fees) || 0;
-        let total = 0;
-
-        if (type === 'Buy') {
-            total = (numShares * numPrice) + numFees;
-        } else if (type === 'Sell') {
-            total = (numShares * numPrice) - numFees;
-        } else if (['TopUp', 'Dividend', 'Withdraw'].includes(type)) {
-            // For cash transactions, totalValue is entered directly
-            // We'll handle this by renaming the field in the UI
-        }
-
-        // Only auto-calculate for Buy/Sell
+        
         if (['Buy', 'Sell'].includes(type)) {
-            setFormData(prev => ({ ...prev, totalValue: total }));
+            return type === 'Buy' 
+                ? (numShares * numPrice) + numFees
+                : (numShares * numPrice) - numFees;
         }
-
-    }, [formData.type, formData.shares, formData.price, formData.fees]);
+        return formData.totalValue; // For cash transactions
+    }, [formData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -100,7 +91,7 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             }
         }
 
-        onFormSubmit(formData);
+        onFormSubmit({...formData, totalValue });
     };
 
     const isStockTrade = ['Buy', 'Sell', 'Dividend'].includes(formData.type);
@@ -227,7 +218,11 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
             <div className="form-group">
                 <label>Total Value</label>
-                <input type="text" value={formatCurrency(formData.totalValue)} readOnly disabled className="total-display" />
+                <input type="text" 
+                    value={formatCurrency(formData.totalValue)} 
+                    readOnly 
+                    disabled 
+                    className="total-display" />
             </div>
 
             <button type="submit" className="action-button">{isEdit ? 'Update' : 'Create'} Trade</button>

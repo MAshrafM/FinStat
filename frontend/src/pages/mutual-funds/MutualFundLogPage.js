@@ -1,4 +1,4 @@
-﻿// frontend/src/pages/mutual-funds/MutualFundLogPage.js
+// frontend/src/pages/mutual-funds/MutualFundLogPage.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getMutualFundTrades, deleteTrade } from '../../services/mutualFundService';

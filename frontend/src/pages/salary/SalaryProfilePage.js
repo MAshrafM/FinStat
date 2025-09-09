@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { getProfile, saveProfile } from '../../services/salaryService';
 import { formatCurrency } from '../../utils/formatters';
 import { FaHistory, FaEdit, FaUserEdit } from 'react-icons/fa';
-import { useData } from '../../context/DataContext';
 import SalaryForm from '../../components/SalaryForm'; // We'll reuse this
 import './SalaryProfile.css';
 

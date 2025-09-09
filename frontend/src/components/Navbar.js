@@ -1,7 +1,7 @@
 // frontend/src/components/Navbar.js
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaPlus, FaBars } from 'react-icons/fa'; // Import the plus icon
+import { FaPlus } from 'react-icons/fa'; // Import the plus icon
 import './Navbar.css';
 
 const addLogRoutes = [

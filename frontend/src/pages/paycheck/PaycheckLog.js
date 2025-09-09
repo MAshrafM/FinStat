@@ -1,4 +1,4 @@
-﻿// frontend/src/pages/PaycheckLog.js
+// frontend/src/pages/PaycheckLog.js
 import React, { useState, useEffect, useCallback } from 'react';
 import PaycheckTable from './PaycheckTable';
 import { getPaychecksLog, deletePaycheck, getPaychecks } from '../../services/paycheckService';
