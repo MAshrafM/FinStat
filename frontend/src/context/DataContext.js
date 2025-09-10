@@ -53,13 +53,13 @@ export const DataProvider = ({ children }) => {
         const closedPositions = [];
         for (const item of data || []) {
             if (item?.currentShares > 0 && item?._id?.iteration >= 0) {
-                const avgPrice = Math.abs(safeDivision(item.realizedPL, item.currentShares));
+                const avgPrice = Math.abs(safeDivision(item.realizedPL, item.currentShares))/100;
                 const updatedItem = {
                     ...item,
                     avgPrice,
-                    avgBuy: Math.abs(safeDivision(item.totDeals, item.currentShares)),
+                    avgBuy: Math.abs(safeDivision(item.totDeals, item.currentShares))/100,
                     targetPrice: avgPrice * (1 + marginProfit),
-                    targetSell: Math.abs(safeDivision(item.totDeals, item.currentShares)) * (1 + marginProfit),
+                    targetSell: (Math.abs(safeDivision(item.totDeals, item.currentShares))/100) * (1 + marginProfit),
                     totalValueNow: (market[item._id.stockCode] || 0) * item.currentShares,
                     changeNow: safePercentage(
                         (market[item._id.stockCode] || 0) * item.currentShares,
