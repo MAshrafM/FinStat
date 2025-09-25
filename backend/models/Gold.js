@@ -35,6 +35,16 @@ const GoldSchema = new mongoose.Schema({
     seller: {
         type: String,
     },
+    status: {
+        type: String,
+        enum: ['hold', 'sold']
+    },
+    sellingPrice: { 
+        type: Number,
+    },
+    sellingDate: {
+        type: Date,
+    },
 }, {
     timestamps: true,
 });

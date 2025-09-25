@@ -29,11 +29,16 @@ export const GoldProvider = ({ children }) => {
                 const [goldSummaryData,marketPricesData] = await Promise.all([getGoldSummary(), getGoldPrice()]);
                 setGoldSummary(goldSummaryData);
                 setMarketPrices(marketPricesData);
-                let totalP = goldSummaryData.reduce((sum, item) => sum + item.totalPaid, 0);
+
+                // Filter for 'hold' items to calculate totals for current holdings
+                const holdItems = goldSummaryData.filter(item => item.status === 'hold' || !item.status);
+
+                let totalP = holdItems.reduce((sum, item) => sum + item.totalPaid, 0);
                 setOverallTotalPaid(totalP);
 
-                const totalNow = goldSummaryData.reduce((previous, item) => {
-                    const karat = item._id;
+                const totalNow = holdItems.reduce((previous, item) => {
+                    // The karat is now a direct property on the item
+                    const karat = item.karat;
                     const currentPricePerGram = marketPricesData[karat] || 0;
                     const currentValue = item.totalWeight * currentPricePerGram;
                     return previous + currentValue;

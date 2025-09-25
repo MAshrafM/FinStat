@@ -81,3 +81,20 @@ td > p {
     font-size: 0.9em;
   }
 }
+
+/* Status Icons for Gold Log */
+.status-icon {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.status-icon.hold {
+  background-color: #f39c12; /* Orange */
+}
+
+.status-icon.sold {
+  background-color: #27ae60; /* Green */
+}

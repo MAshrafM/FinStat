@@ -13,10 +13,24 @@ router.get('/', auth, async (req, res) => {
     const page = Number.isInteger(Number(req.query.page)) && Number(req.query.page) > 0 ? Number(req.query.page) : 1;
     const limit = 25;
     const skip = (page - 1) * limit;
-
+    const { status, sortBy, sortOrder } = req.query;
+    
     try {
-        const logs = await Gold.find({ user: req.user.id }).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
-        const total = await Gold.countDocuments({ user: req.user.id });
+        const query = { user: req.user.id };
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+
+        const sortOptions = {};
+        if (sortBy) {
+            sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+        } else {
+            sortOptions.date = -1; // Default sort
+            sortOptions.createdAt = -1;
+        }
+
+        const logs = await Gold.find(query).sort(sortOptions).skip(skip).limit(limit);
+        const total = await Gold.countDocuments(query);
         res.json({
             data: logs,
             totalPages: Math.ceil(total / limit),
@@ -43,19 +57,49 @@ router.get('/all', auth, async (req, res) => {
 router.get('/summary', auth, async (req, res) => {
     try {
         const summary = await Gold.aggregate([
-            // Stage 1: Group documents by the karat
+            // Stage 1: Group documents by status and karat
             {
                 $group: {
-                    _id: "$karat", // The field to group by. The result will be in the _id field.
-                    totalWeight: { $sum: "$weight" }, // Sum up the weight for each karat group
-                    totalPaid: { $sum: "$paid" },     // Sum up the total amount paid for each group
-                    itemCount: { $sum: 1 }            // Count the number of items in each group
+                    _id: {
+                        status: "$status",
+                        karat: "$karat"
+                    },
+                    totalWeight: { $sum: "$weight" },
+                    totalPaid: { $sum: "$paid" },
+                    totalSellingPrice: {
+                        $sum: {
+                            // Only calculate for 'sold' items to avoid errors with 'hold' items
+                            $cond: [
+                                { $eq: ["$status", "sold"] },
+                                { $multiply: [{ $ifNull: ["$sellingPrice", 0] }, "$weight"] }, // sellingPrice * weight
+                                0
+                            ]
+                        }
+                    },
+                    itemCount: { $sum: 1 },
+                    // Calculate the total holding period in days for sold items
+                    totalHoldingDays: {
+                        $sum: {
+                            $cond: [
+                                { $eq: ["$status", "sold"] },
+                                { $divide: [{ $subtract: ["$sellingDate", "$date"] }, 1000 * 60 * 60 * 24] },
+                                0
+                            ]
+                        }
+                    }
                 }
             },
-            // Stage 2: Sort the results by karat in descending order (e.g., 24K, 22K, ...)
+            // Stage 2: Project the fields to a more friendly format
             {
-                $sort: {
-                    _id: -1
+                $project: {
+                    _id: 0, // Exclude the default _id
+                    status: "$_id.status",
+                    karat: "$_id.karat",
+                    totalWeight: 1,
+                    totalPaid: 1,
+                    totalSellingPrice: 1,
+                    itemCount: 1,
+                    avgHoldingDays: { $cond: [{ $gt: ["$itemCount", 0] }, { $divide: ["$totalHoldingDays", "$itemCount"] }, 0] }
                 }
             }
         ]);
