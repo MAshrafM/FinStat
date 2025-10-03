@@ -70,7 +70,7 @@ const Summary = () => {
         
         const mfAmount = safeNumber(safeObject(overallTotals).totalOfAllMF);
         const mfValue = safeNumber(safeObject(overallTotals).totalSellingValue);
-        const mfProfit = safeNumber(safeObject(overallTotals).totalProfit);
+        const mfProfit = safeObject(overallTotals).totalProfit;
         
         const stockAmount = safeNumber(safeObject(summaryMetrics).topUps);
         const stockProfit = safeNumber(safeObject(summaryMetrics).totalProfitNow);
@@ -81,8 +81,10 @@ const Summary = () => {
         const creditOutstanding = safeNumber(safeObject(creditCardsSummary).totalOutstanding);
 
         // Real estate (hardcoded values)
-        const realEstatePaid = 334125;
-        const realEstateValue = 800000;
+        const realEstatePaid1 = 334125;
+        const realEstateValue1 = 800000;
+        const realEstatePaid2 = 720000;
+        const realEstateValue2 = 720000;
 
         // Total calculations
         const totalPaid = goldPaid + certAmount + mfAmount + stockAmount + bankBalance + currencyTotalPrice;
@@ -101,7 +103,8 @@ const Summary = () => {
             stockAmount, stockCurrent, stockCAGR,
             bankBalance, creditAvailable, creditOutstanding,
             currencyTotalPrice, currencyCurrentValue,
-            realEstatePaid, realEstateValue,
+            realEstatePaid1, realEstateValue1,
+            realEstatePaid2, realEstateValue2,
             totalPaid, totalCurrent
         };
     }, [
@@ -431,13 +434,29 @@ const Summary = () => {
                   <div className="dashboard-card">
                       <h3>Realstate</h3>
                       <div className="dashboard-card-items">
-                          <div className="dashboard-card-item">
-                              <span className="description">Paid</span>
-                              <span className="value">{formatCurrency(displayData.calculations.realEstatePaid)}</span>
+                        <div className="dashboard-card-item">
+                              <span className="description">Home1</span>
+                              <span className="value">65m2</span>
                           </div>
                           <div className="dashboard-card-item">
-                              <span className="description">Estimated Sell</span>
-                              <span className="value">{formatCurrency(displayData.calculations.realEstateValue)}</span>
+                              <span className="description">Paid</span>
+                              <span className="value">{formatCurrency(displayData.calculations.realEstatePaid1)}</span>
+                          </div>
+                          <div className="dashboard-card-item">
+                              <span className="description">Est. Sell</span>
+                              <span className="value">{formatCurrency(displayData.calculations.realEstateValue1)}</span>
+                          </div>
+                          <div className="dashboard-card-item">
+                              <span className="description">Home2</span>
+                              <span className="value">55m2</span>
+                          </div>
+                          <div className="dashboard-card-item">
+                              <span className="description">Paid</span>
+                              <span className="value">{formatCurrency(displayData.calculations.realEstatePaid2)}</span>
+                          </div>
+                          <div className="dashboard-card-item">
+                              <span className="description">Est. Sell</span>
+                              <span className="value">{formatCurrency(displayData.calculations.realEstateValue2)}</span>
                           </div>
                       </div>
                   </div>
