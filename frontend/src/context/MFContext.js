@@ -126,8 +126,8 @@ export const MFProvider = ({ children }) => {
                 const lastPrices = await loadLastPrice(fundNames);
 
                 // Mutual Fund Summary Calculation
-                //const totals = calculateTotals(mfSummaryData, lastPrices);
-                //setOverallTotals(totals);
+                const totals = calculateTotals(mfSummaryData, lastPrices);
+                setOverallTotals(totals);
             } catch (err) {
                 console.error("Failed to load MF data:", err);
                 setError(err);

@@ -137,7 +137,30 @@ router.get('/price', auth, async (req, res) => {
         res.json( pricePerGram );
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        try {
+            const fallResponse = await axios.get('https://dahabzaman.eg/en/GoldPrice/GetcurrentPriceList', { 
+                headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Referer': 'https://dahabzaman.eg',
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-origin'
+                }
+            });
+            const fallData = fallResponse.data;
+            const fallPricePerGram = {
+                '24': fallData["1"].SellPrice,
+                '21': fallData["2"].SellPrice,
+                '18': fallData["3"].SellPrice,
+            }
+            res.json( fallPricePerGram );
+        } catch (innerErr) {
+            res.status(500).send('Server Error Gold Price not reachable');
+        }
     }
 });
 
