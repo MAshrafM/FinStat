@@ -46,20 +46,21 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         }
     }, [initialData, isEdit]);
 
-    // Effect to auto-calculate totalValue
-    const totalValue = useMemo(() => {
+    // Effect to auto-calculate totalValue for Buy/Sell trades
+    useEffect(() => {
         const { type, shares, price, fees } = formData;
-        const numShares = parseFloat(shares) || 0;
-        const numPrice = parseFloat(price) || 0;
-        const numFees = parseFloat(fees) || 0;
-        
         if (['Buy', 'Sell'].includes(type)) {
-            return type === 'Buy' 
+            const numShares = parseFloat(shares) || 0;
+            const numPrice = parseFloat(price) || 0;
+            const numFees = parseFloat(fees) || 0;
+
+            const newTotalValue = type === 'Buy'
                 ? (numShares * numPrice) + numFees
                 : (numShares * numPrice) - numFees;
+
+            setFormData(prev => ({ ...prev, totalValue: newTotalValue }));
         }
-        return formData.totalValue; // For cash transactions
-    }, [formData]);
+    }, [formData.type, formData.shares, formData.price, formData.fees]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -91,7 +92,7 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             }
         }
 
-        onFormSubmit({...formData, totalValue });
+        onFormSubmit(formData);
     };
 
     const isStockTrade = ['Buy', 'Sell', 'Dividend'].includes(formData.type);

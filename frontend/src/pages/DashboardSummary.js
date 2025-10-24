@@ -278,13 +278,13 @@ const Summary = () => {
           </div>
 
           <div className="dashboard-summary dashboard-charts">
-                <div className="chart-container">
+                <div className="sum-chart-container">
                     <h3>Total Paid Amounts</h3>
                     <div style={{ height: '400px', display: 'flex', justifyContent: 'center'}}>
                         <Pie data={displayData.chartData.paidAmountsData} options={chartOptions} />
                     </div>
                 </div>
-                <div className="chart-container">
+                <div className="sum-chart-container">
                     <h3>Current Values</h3>
                     <div style={{ height: '400px', display: 'flex', justifyContent: 'center'}}>
                         <Pie data={displayData.chartData.currentValuesData} options={chartOptions} />
