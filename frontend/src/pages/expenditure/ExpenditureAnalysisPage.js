@@ -228,6 +228,14 @@ const ExpenditureAnalysisPage = () => {
         ],
     };
 
+   const barChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      title: { display: true, text: `Overall Expenditure` },
+    },
+  };
+
     return (
         <div className="page-container">
             <div className="page-header">
@@ -395,7 +403,11 @@ const ExpenditureAnalysisPage = () => {
 
             <div className="tax-card" style={{ marginTop: '2rem' }}>
                 <h3>Monthly Breakdown for {selectedYear}</h3>
-                <Bar data={barChartData} />
+                <div className="ex-chart-wrapper">
+                    <div className="ex-chart-container">
+                        <Bar options={barChartOptions} data={barChartData}  />
+                    </div>
+                </div>
             </div>
         </div>
     );

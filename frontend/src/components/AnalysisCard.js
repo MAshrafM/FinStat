@@ -89,8 +89,10 @@ const AnalysisCard = ({ title, paychecks, monthLabels }) => {
           <p>{formatCurrency(average)}</p>
         </div>
       </div>
-      <div className="chart-container">
-        <Bar options={chartOptions} data={chartData} />
+      <div className="chart-wrapper">
+        <div className="chart-container">
+          <Bar options={chartOptions} data={chartData} />
+        </div>
       </div>
     </div>
   );
