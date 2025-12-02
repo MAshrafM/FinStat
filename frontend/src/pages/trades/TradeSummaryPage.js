@@ -71,8 +71,6 @@ const TradeSummaryPage = () => {
           return item.currentShares;
         case 'avgPrice':
           return Math.abs(item.avgPrice);
-        case 'avgSell':
-          return Math.abs(item.avgBuy);
         case 'target':
           return Math.abs(item.targetPrice);
         case 'sell0':
@@ -184,7 +182,7 @@ const TradeSummaryPage = () => {
                                 style={{ cursor: 'pointer', userSelect: 'none' }}
                                 title="Click to sort by Realized P/L"
                             >
-                                Realized P/L{getOpenSortIndicator('realizedPL')}
+                                UnReal P/L{getOpenSortIndicator('realizedPL')}
                             </th>
                             <th 
                                 onClick={() => handleOpenSort('deals')} 
@@ -208,18 +206,14 @@ const TradeSummaryPage = () => {
                                 Avg Price{getOpenSortIndicator('avgPrice')}
                             </th>
                             <th 
-                                onClick={() => handleOpenSort('avgSell')} 
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
-                                title="Click to sort by Avg Sell"
-                            >
-                                Avg Sell{getOpenSortIndicator('avgSell')}
-                            </th>
-                            <th 
                                 onClick={() => handleOpenSort('target')} 
                                 style={{ cursor: 'pointer', userSelect: 'none' }}
                                 title="Click to sort by Target"
                             >
-                                Target{getOpenSortIndicator('target')}
+                                Net BE{getOpenSortIndicator('target')}
+                            </th>
+                            <th>
+                                BE Price
                             </th>
                             <th 
                                 onClick={() => handleOpenSort('sell0')} 
@@ -280,18 +274,19 @@ const TradeSummaryPage = () => {
                                     <p>{item._id.iteration || '0'}</p>
                                     <p className="broker">{item._id.broker}</p>
                                 </td>
-                                <td data-label="Realized P/L" className="total-value" style={{ color: Math.abs(item.realizedPL) <= item.totalValueNow ? '#27ae60' : '#c0392b' }}>
-                                    {formatCurrency(Math.abs(item.realizedPL))}
+                                <td data-label="UnRealized P/L" className="total-value" style={{ color: item.unrealizedPL >= 0 ? '#27ae60' : '#c0392b' }}>
+                                    {formatCurrency(item.unrealizedPL)}
                                 </td>
-                                <td data-label="Deals" style={{ color: Math.abs(item.totDeals) <= item.totalValueNow ? '#27ae60' : '#c0392b' }}>{formatCurrency(Math.abs(item.totDeals))}</td>
+                                <td data-label="Deals" style={{ color: item.totDeals <= item.totalValueNow ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totDeals)}</td>
             
                                 <td data-label="Shares" style={{ fontWeight: 'bold' }}>{item.currentShares}</td>
-                                <td data-label="Avg Price">{formatCurrency(Math.abs(item.avgPrice))}</td>
-                                <td data-label="Avg Buy">{formatCurrency(Math.abs(item.avgBuy))}</td>
-                                <td data-label="Target Price">{formatCurrency(Math.abs(item.targetPrice))}</td>
-                                <td data-label="Target Sell">{formatCurrency(Math.abs(item.targetSell))}</td>
-                                <td data-label="Price" style={{ color: Math.abs(item.avgPrice) > stMarketPrices[item._id.stockCode] ? '#c0392b' : '#27ae60' }}>${stMarketPrices[item._id.stockCode]}</td>
-                                <td data-label="Total Now" className="total-value" style={{ color: item.totalValueNow >= Math.abs(item.totDeals) ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totalValueNow)}</td>
+                                <td data-label="Avg Price">{formatCurrency(item.avgPrice)}</td>
+                                <td data-label="Target Price">{formatCurrency(item.netBreakEven)}</td>
+                                <td data-label="Break Even Price">{formatCurrency(item.breakEvenPrice)}</td>
+                                <td data-label="Target Sell">{formatCurrency(item.breakEvenTarget)}</td>
+                                
+                                <td data-label="Price" style={{ color: item.netBreakEven > stMarketPrices[item._id.stockCode] ? '#c0392b' : '#27ae60' }}>${stMarketPrices[item._id.stockCode]}</td>
+                                <td data-label="Total Now" className="total-value" style={{ color: item.totalValueNow >= item.totDeals ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totalValueNow)}</td>
                                 <td data-label="Change" className="total-value" style={{ color: item.changeNow > 0 ? '#27ae60' : '#c0392b' }} >{item.changeNow}%</td>
                                 <td data-label="Fees">{formatCurrency(item.totalFees)}</td>
                                 <td data-label="Count">{item.tradeCount}</td>

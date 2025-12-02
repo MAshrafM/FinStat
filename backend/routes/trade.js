@@ -49,6 +49,7 @@ router.get('/all', auth, async (req, res) => {
 // @route   GET api/trades/summary
 // @desc    Get a summary of trades grouped by broker, stock, and iteration
 // @access  Public
+/*
 router.get('/summary', auth, async (req, res) => {
     try {
         const summary = await Trade.aggregate([
@@ -116,6 +117,144 @@ router.get('/summary', auth, async (req, res) => {
                 $sort: {
                     "_id.stockCode": 1, // Sort by stock code
                     "lastTradeDate": -1 // Then by the most recent activity
+                }
+            }
+        ]);
+        res.json(summary);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+*/
+router.get('/summary', auth, async (req, res) => {
+    try {
+        const summary = await Trade.aggregate([
+            // --- Stage 1: Grouping (No Changes) ---
+            {
+                $group: {
+                    _id: {
+                        broker: "$broker",
+                        stockCode: "$stockCode",
+                        iteration: "$iteration"
+                    },
+                    totalBuyValue: {
+                        $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$totalValue", 0] }
+                    },
+                    totalSellValue: {
+                        $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$totalValue", 0] }
+                    },
+                    totalDividendValue: {
+                        $sum: { $cond: [{ $eq: ["$type", "Dividend"] }, "$totalValue", 0] }
+                    },
+                    totalSharesBought: {
+                        $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$shares", 0] }
+                    },
+                    totalSharesSold: {
+                        $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$shares", 0] }
+                    },
+                    totalSharesDividend: {
+                        $sum: { $cond: [{ $eq: ["$type", "Dividend"] }, "$shares", 0] }
+                    },
+                    totalFees: { $sum: "$fees" },
+                    tradeCount: { $sum: 1 },
+                    firstTradeDate: { $min: "$date" },
+                    lastTradeDate: { $max: "$date" }
+                }
+            },
+
+            // --- Stage 2: Calculate Averages & Current Holdings ---
+            {
+                $addFields: {
+                    // Calculate how many shares you currently hold
+                    currentShares: {
+                        $subtract: [
+                            { $add: ["$totalSharesBought", "$totalSharesDividend"] },
+                            "$totalSharesSold"
+                        ]
+                    },
+                    // Calculate the Average Price you paid per share
+                    averageBuyPrice: {
+                        $cond: [
+                            { $eq: ["$totalSharesBought", 0] },
+                            0,
+                            { $divide: ["$totalBuyValue", "$totalSharesBought"] }
+                        ]
+                    },
+                    // Formula: (BuyValue - DividendValue) / (SharesBought + SharesDividend)
+                    adjustedAvgPrice: {
+                        $cond: [
+                            { $eq: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, 0] },
+                            0,
+                            { 
+                                $divide: [
+                                    { $subtract: ["$totalBuyValue", "$totalDividendValue"] }, 
+                                    { $add: ["$totalSharesBought", "$totalSharesDividend"] }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+
+            // --- Stage 3: Calculate Cost of Goods Sold (COGS) ---
+            {
+                $addFields: {
+                    // This is the specific cost of the shares you have actually sold
+                    costOfSoldShares: {
+                        $multiply: ["$totalSharesSold", "$averageBuyPrice"]
+                    },
+                    netBreakEvenPrice: {
+                        $cond: [
+                            // Avoid division by zero if you have sold everything
+                            { $lte: ["$currentShares", 0] }, 
+                            0, 
+                            { 
+                                $divide: [
+                                    { 
+                                        $subtract: [ 
+                                            "$totalBuyValue", 
+                                            { $add: ["$totalSellValue", "$totalDividendValue"] } // Total Cash Returned
+                                        ] 
+                                    }, 
+                                    "$currentShares"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+
+            // --- Stage 4: Final P/L Calculation ---
+            {
+                $addFields: {
+                    // Realized P/L = (Sell Value - Cost of those specific shares) + Dividends
+                    realizedPL: {
+                        $add: [
+                            { $subtract: ["$totalSellValue", "$costOfSoldShares"] },
+                            "$totalDividendValue"
+                        ]
+                    },
+                    // Net Cash Flow (Total money in vs Total money out)
+                    // I renamed 'totDeals' to 'netCashFlow' for clarity, but you can change it back.
+                    totDeals: {
+                        $subtract: [
+                            "$totalBuyValue",
+                            { $add: ["$totalSellValue", "$totalDividendValue"] }
+                        ]
+                    },
+                    // Optional: Shows how much money is still tied up in the remaining shares
+                    investedAmountRemaining: {
+                        $multiply: ["$currentShares", "$averageBuyPrice"]
+                    }
+                }
+            },
+
+            // --- Stage 5: Sorting ---
+            {
+                $sort: {
+                    "_id.stockCode": 1,
+                    "lastTradeDate": -1
                 }
             }
         ]);

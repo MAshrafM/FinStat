@@ -7,6 +7,11 @@ export const safePercentage = (numerator, denominator) => {
     return (((numerator / denominator) - 1) * 100).toFixed(2);
 };
 
+export const safePercet = (numerator, denominator) => {
+    if (!denominator || denominator === 0) return '0.00';
+    return (((numerator / denominator) - 1)).toFixed(2);
+};
+
 export const safeDivision = (numerator, denominator) => {
     if (!denominator || denominator === 0) return '0.00';
     return ((numerator / denominator) * 100).toFixed(2);
