@@ -78,7 +78,7 @@ const TradeLogPage = () => {
           placeholder="Search Stock Code..."
           value={searchTerm}
           onChange={handleSearchChange}
-          style={{ marginLeft: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+          className="search-input"
         />
       </div>
 
