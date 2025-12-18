@@ -3,11 +3,11 @@ import { BASE_API_URL } from '../config/api';
 const API_URL = `${BASE_API_URL}/trades`;
 
 const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-        'Content-Type': 'application/json',
-        'x-auth-token': token || '', // Include the token in the 'x-auth-token' header
-    };
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    'x-auth-token': token || '', // Include the token in the 'x-auth-token' header
+  };
 };
 /**
  * Fetches a paginated list of trades, with an optional broker filter.
@@ -15,12 +15,15 @@ const getAuthHeaders = () => {
  * @param {string|null} broker - The broker to filter by ('Thndr', 'EFG', or null for all ).
  * @returns {Promise<Object>} A promise that resolves to the paginated data object.
  */
-export const getTrades = (page = 1, broker = null) => {
+export const getTrades = (page = 1, broker = null, search = '') => {
   let url = `${API_URL}?page=${page}`;
   if (broker) {
     url += `&broker=${broker}`;
   }
-    return fetch(url, { headers: getAuthHeaders() }).then(res => res.json());
+  if (search) {
+    url += `&search=${encodeURIComponent(search)}`;
+  }
+  return fetch(url, { headers: getAuthHeaders() }).then(res => res.json());
 };
 
 /**
@@ -28,7 +31,7 @@ export const getTrades = (page = 1, broker = null) => {
  * @returns {Promise<Array>} A promise that resolves to an array of all trade objects.
  */
 export const getAllTrades = () => {
-    return fetch(`${API_URL}/all`, { headers: getAuthHeaders() }).then(res => res.json());
+  return fetch(`${API_URL}/all`, { headers: getAuthHeaders() }).then(res => res.json());
 };
 // Note: We need to add the /all route to the backend for this to work.
 /** 
@@ -36,11 +39,11 @@ export const getAllTrades = () => {
  * @returns { Promise < Array >} A promise that resolves to the summary data array.
  */
 export const getTradeSummary = () => {
-    return fetch(`${API_URL}/summary`, { headers: getAuthHeaders() }).then(res => res.json());
+  return fetch(`${API_URL}/summary`, { headers: getAuthHeaders() }).then(res => res.json());
 };
 
 export const getMarketData = () => {
-    return fetch(`${API_URL}/market-prices`, { headers: getAuthHeaders() }).then(res => res.json());
+  return fetch(`${API_URL}/market-prices`, { headers: getAuthHeaders() }).then(res => res.json());
 };
 /**
  * Fetches a single trade by its ID.
@@ -48,7 +51,7 @@ export const getMarketData = () => {
  * @returns {Promise<Object>} A promise that resolves to the trade object.
  */
 export const getTradeById = (id) => {
-    return fetch(`${API_URL}/${id}`, { headers: getAuthHeaders() }).then(res => res.json());
+  return fetch(`${API_URL}/${id}`, { headers: getAuthHeaders() }).then(res => res.json());
 };
 
 /**
@@ -59,7 +62,7 @@ export const getTradeById = (id) => {
 export const createTrade = (tradeData) => {
   return fetch(API_URL, {
     method: 'POST',
-      headers:  getAuthHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(tradeData),
   }).then(res => {
     if (!res.ok) throw new Error('Network response was not ok');
@@ -90,7 +93,8 @@ export const updateTrade = (id, tradeData) => {
  * @returns {Promise<Object>} A promise that resolves to a success message.
  */
 export const deleteTrade = (id) => {
-    return fetch(`${API_URL}/${id}`, {headers: getAuthHeaders(), method: 'DELETE',
+  return fetch(`${API_URL}/${id}`, {
+    headers: getAuthHeaders(), method: 'DELETE',
   }).then(res => {
     if (!res.ok) throw new Error('Network response was not ok');
     return res.json();

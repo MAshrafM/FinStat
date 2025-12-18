@@ -12,9 +12,10 @@ const TradeLogPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [brokerFilter, setBrokerFilter] = useState(null); // null, 'Thndr', 'EFG'
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const loadTrades = (page, broker) => {
-    getTrades(page, broker)
+  const loadTrades = (page, broker, search) => {
+    getTrades(page, broker, search)
       .then(data => {
         setTrades(data.data || []);
         setTotalPages(data.totalPages || 1);
@@ -23,37 +24,42 @@ const TradeLogPage = () => {
       .catch(err => console.error("Failed to load trades:", err));
   };
 
-    useEffect(() => {
-        const page = Number(currentPage);
-        if (!Number.isFinite(page) || page < 1) {
-            setCurrentPage(1);
-            return
-        }
-    loadTrades(currentPage, brokerFilter);
-  }, [currentPage, brokerFilter]);
+  useEffect(() => {
+    const page = Number(currentPage);
+    if (!Number.isFinite(page) || page < 1) {
+      setCurrentPage(1);
+      return
+    }
+    loadTrades(currentPage, brokerFilter, searchTerm);
+  }, [currentPage, brokerFilter, searchTerm]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this trade?')) {
       try {
         await deleteTrade(id);
-        loadTrades(currentPage, brokerFilter); // Refresh the list
+        loadTrades(currentPage, brokerFilter, searchTerm); // Refresh the list
       } catch (err) {
         console.error("Failed to delete trade:", err);
         alert('Failed to delete trade.');
       }
     }
-    };
+  };
 
-    const handlePageChange = (page) => {
-        const num = Number(page);
-        if (Number.isFinite(num) && num > 0) {
-            setCurrentPage(num);
-        }
-    };
+  const handlePageChange = (page) => {
+    const num = Number(page);
+    if (Number.isFinite(num) && num > 0) {
+      setCurrentPage(num);
+    }
+  };
 
   const handleFilterClick = (broker) => {
     setBrokerFilter(broker);
     setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
   };
 
   return (
@@ -66,7 +72,14 @@ const TradeLogPage = () => {
         <button onClick={() => handleFilterClick(null)} className={!brokerFilter ? 'active' : ''}>All Brokers</button>
         <button onClick={() => handleFilterClick('Thndr')} className={brokerFilter === 'Thndr' ? 'active' : ''}>Thndr</button>
         <button onClick={() => handleFilterClick('EFG')} className={brokerFilter === 'EFG' ? 'active' : ''}>EFG</button>
-              <button onClick={() => handleFilterClick('TopUp')}>Top Ups</button>
+        <button onClick={() => handleFilterClick('TopUp')}>Top Ups</button>
+        <input
+          type="text"
+          placeholder="Search Stock Code..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+          style={{ marginLeft: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+        />
       </div>
 
       <div className="table-container">
@@ -94,8 +107,8 @@ const TradeLogPage = () => {
                 <td data-label="Fees">{formatCurrency(trade.fees)}</td>
                 <td data-label="Value" className="total-value">{formatCurrency(trade.totalValue)}</td>
                 <td data-label="Actions" className="action-icons">
-                        <Link to={`/trades/edit/${trade._id}`}><FaEdit className="action-icon edit-icon" /></Link>
-                        <FaTrash className="action-icon delete-icon"  onClick={() => handleDelete(trade._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
+                  <Link to={`/trades/edit/${trade._id}`}><FaEdit className="action-icon edit-icon" /></Link>
+                  <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(trade._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
                 </td>
               </tr>
             ))}

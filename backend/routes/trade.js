@@ -8,42 +8,46 @@ const auth = require('../middleware/auth');
 // @route   GET api/trades
 // @desc    Get all trades (with pagination)
 router.get('/', auth, async (req, res) => {
-  const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 25;
-  const skip = (page - 1) * limit;
-  const broker = req.query.broker; // Get the broker from the query string
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 25;
+    const skip = (page - 1) * limit;
+    const broker = req.query.broker; // Get the broker from the query string
 
-  // 1. Build a dynamic query object
-  const query = {};
-  query.user = req.user.id;
+    // 1. Build a dynamic query object
+    const query = {};
+    query.user = req.user.id;
     if (broker && broker != 'TopUp') {
         query.broker = broker; // If a broker is provided, add it to the query
     } else if (broker === 'TopUp') {
-        query.type =  'TopUp'; // If 'TopUp' is specified, filter by type
+        query.type = 'TopUp'; // If 'TopUp' is specified, filter by type
     }
-    
+
+    if (req.query.search) {
+        query.stockCode = { $regex: req.query.search, $options: 'i' };
+    }
+
     try {
-    const trades = await Trade.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
-    const total = await Trade.countDocuments(query);
-    res.json({
-      data: trades,
-      totalPages: Math.ceil(total / limit),
-      page,
-    });
-  } catch (err) {
-    res.status(500).send('Server Error');
-  }
+        const trades = await Trade.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
+        const total = await Trade.countDocuments(query);
+        res.json({
+            data: trades,
+            totalPages: Math.ceil(total / limit),
+            page,
+        });
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
 });
 
 // @route   GET api/trades
 // @desc    Get all trades (with pagination)
 router.get('/all', auth, async (req, res) => {
-  try {
-    const trades = await Trade.find({ user: req.user.id }).sort({createdAt:-1});
-    res.json(trades);
-  } catch (err) {
-    res.status(500).send('Server Error');
-  }
+    try {
+        const trades = await Trade.find({ user: req.user.id }).sort({ createdAt: -1 });
+        res.json(trades);
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
 });
 
 // @route   GET api/trades/summary
@@ -186,9 +190,9 @@ router.get('/summary', auth, async (req, res) => {
                         $cond: [
                             { $eq: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, 0] },
                             0,
-                            { 
+                            {
                                 $divide: [
-                                    { $subtract: ["$totalBuyValue", "$totalDividendValue"] }, 
+                                    { $subtract: ["$totalBuyValue", "$totalDividendValue"] },
                                     { $add: ["$totalSharesBought", "$totalSharesDividend"] }
                                 ]
                             }
@@ -207,16 +211,16 @@ router.get('/summary', auth, async (req, res) => {
                     netBreakEvenPrice: {
                         $cond: [
                             // Avoid division by zero if you have sold everything
-                            { $lte: ["$currentShares", 0] }, 
-                            0, 
-                            { 
+                            { $lte: ["$currentShares", 0] },
+                            0,
+                            {
                                 $divide: [
-                                    { 
-                                        $subtract: [ 
-                                            "$totalBuyValue", 
+                                    {
+                                        $subtract: [
+                                            "$totalBuyValue",
                                             { $add: ["$totalSellValue", "$totalDividendValue"] } // Total Cash Returned
-                                        ] 
-                                    }, 
+                                        ]
+                                    },
                                     "$currentShares"
                                 ]
                             }
@@ -277,53 +281,53 @@ router.get('/market-prices', auth, async (req, res) => {
 // @route   POST api/trades
 // @desc    Create a new trade
 router.post('/', auth, async (req, res) => {
-  try {
-    const newTrade = new Trade({...req.body, user: req.user.id});
-    await newTrade.save();
-    res.json(newTrade);
-  } catch (err) {
-    res.status(400).json({ msg: err.message });
-  }
+    try {
+        const newTrade = new Trade({ ...req.body, user: req.user.id });
+        await newTrade.save();
+        res.json(newTrade);
+    } catch (err) {
+        res.status(400).json({ msg: err.message });
+    }
 });
 
 // @route   GET api/trades/:id
 // @desc    Get a single trade by ID
 router.get('/:id', auth, async (req, res) => {
-  try {
-    const trade = await Trade.findOne({_id: req.params.id, user: req.user.id});
-    if (!trade) return res.status(404).json({ msg: 'Trade not found' });
-    res.json(trade);
-  } catch (err) {
-    res.status(500).send('Server Error');
-  }
+    try {
+        const trade = await Trade.findOne({ _id: req.params.id, user: req.user.id });
+        if (!trade) return res.status(404).json({ msg: 'Trade not found' });
+        res.json(trade);
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
 });
 
 // @route   PUT api/trades/:id
 // @desc    Update a trade
 router.put('/:id', auth, async (req, res) => {
-  try {
-    let trade = await Trade.findById(req.params.id);
-    if (!trade) return res.status(404).json({ msg: 'Trade not found' });
-    if(trade.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
-    trade = await Trade.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(trade);
-  } catch (err) {
-    res.status(400).json({ msg: err.message });
-  }
+    try {
+        let trade = await Trade.findById(req.params.id);
+        if (!trade) return res.status(404).json({ msg: 'Trade not found' });
+        if (trade.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
+        trade = await Trade.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(trade);
+    } catch (err) {
+        res.status(400).json({ msg: err.message });
+    }
 });
 
 // @route   DELETE api/trades/:id
 // @desc    Delete a trade
 router.delete('/:id', auth, async (req, res) => {
-  try {
-    let trade = await Trade.findById(req.params.id);
-    if (!trade) return res.status(404).json({ msg: 'Trade not found' });
-    if(trade.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
-    trade = await Trade.findByIdAndDelete(req.params.id);
-    res.json({ msg: 'Trade deleted successfully' });
-  } catch (err) {
-    res.status(500).send('Server Error');
-  }
+    try {
+        let trade = await Trade.findById(req.params.id);
+        if (!trade) return res.status(404).json({ msg: 'Trade not found' });
+        if (trade.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
+        trade = await Trade.findByIdAndDelete(req.params.id);
+        res.json({ msg: 'Trade deleted successfully' });
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
 });
 
 
