@@ -16,4 +16,6 @@ backend/migration
 backend/*.csv
 backend/seeder*
 backend/migration
+backend/backup_db.js
+backend/db_backup_*.xlsx
 .vercel
