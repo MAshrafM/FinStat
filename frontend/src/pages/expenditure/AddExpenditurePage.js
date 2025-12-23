@@ -6,14 +6,14 @@ import ExpenditureForm from './ExpenditureForm';
 
 const AddExpenditurePage = () => {
   const navigate = useNavigate();
-  const [lastRecord, setLastRecord] = useState({ bank: 0, cash: 0 });
+  const [lastRecord, setLastRecord] = useState({ bank: 0, cash: 0, prepaid: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     getLatestExpenditure()
       .then(data => {
         if (data) {
-          setLastRecord({ bank: data.bank, cash: data.cash });
+          setLastRecord({ bank: data.bank, cash: data.cash, prepaid: data.prepaid || 0 });
         }
         setIsLoading(false);
       })
@@ -41,12 +41,12 @@ const AddExpenditurePage = () => {
 
   return (
     <div className="page-container">
-      <ExpenditureForm 
+      <ExpenditureForm
         onSubmit={handleSubmit}
         mode="create"
         lastRecord={lastRecord}
       />
-      <Link to="/expenditures" className="cancel-button" style={{textDecoration: 'none'}}>
+      <Link to="/expenditures" className="cancel-button" style={{ textDecoration: 'none' }}>
         Cancel
       </Link>
     </div>

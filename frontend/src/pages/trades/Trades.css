@@ -13,6 +13,7 @@
   border-radius: 5px;
   border: 1px solid #ddd;
   min-width: 200px;
+  box-sizing: border-box;
 }
 
 @media (max-width: 600px) {
@@ -21,7 +22,7 @@
     align-items: stretch;
     gap: 0.75rem;
   }
-  
+
   .filter-controls button,
   .filter-controls .search-input {
     width: 100%;
@@ -36,6 +37,7 @@
   cursor: pointer;
   border-radius: 5px;
   transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 .filter-controls button:hover {
@@ -49,13 +51,32 @@
   border-color: #007bff;
 }
 
-.trade-type-buy { color: #27ae60; font-weight: bold; }
-.trade-type-sell { color: #c0392b; font-weight: bold; }
-.trade-type-dividend { color: #2980b9; font-weight: bold; }
-.trade-type-topup { color: #16a085; }
-.trade-type-withdraw { color: #f39c12; }
+.trade-type-buy {
+  color: #27ae60;
+  font-weight: bold;
+}
 
-.total-value { font-weight: bold; }
+.trade-type-sell {
+  color: #c0392b;
+  font-weight: bold;
+}
+
+.trade-type-dividend {
+  color: #2980b9;
+  font-weight: bold;
+}
+
+.trade-type-topup {
+  color: #16a085;
+}
+
+.trade-type-withdraw {
+  color: #f39c12;
+}
+
+.total-value {
+  font-weight: bold;
+}
 
 .standard-form {
   max-width: 600px;
@@ -63,7 +84,7 @@
   padding: 2rem;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .total-display {
@@ -71,9 +92,10 @@
   font-weight: bold;
   text-align: right;
 }
-td > p {
-    margin: 0;
-    padding: 1px;
+
+td>p {
+  margin: 0;
+  padding: 1px;
 }
 
 .styled-table th {
@@ -115,9 +137,11 @@ td > p {
 }
 
 .status-icon.hold {
-  background-color: #f39c12; /* Orange */
+  background-color: #f39c12;
+  /* Orange */
 }
 
 .status-icon.sold {
-  background-color: #27ae60; /* Green */
+  background-color: #27ae60;
+  /* Green */
 }

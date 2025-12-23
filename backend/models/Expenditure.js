@@ -22,7 +22,12 @@ const ExpenditureSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
-  transactionValue:{
+  prepaid: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  transactionValue: {
     type: Number,
     required: true,
     default: 0,
@@ -35,6 +40,10 @@ const ExpenditureSchema = new mongoose.Schema({
   description: {
     type: String,
     trim: true,
+  },
+  paymentMethod: {
+    type: String, // 'Bank', 'Cash', 'Prepaid', etc.
+    default: 'Bank',
   },
 }, {
   timestamps: true, // Adds createdAt and updatedAt fields
