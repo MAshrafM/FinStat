@@ -104,8 +104,6 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
       prepaid: newPrepaid,
       transactionValue: value,
       transactionType,
-      transactionValue: value,
-      transactionType,
       paymentMethod: getPaymentMethod(),
       description,
     };

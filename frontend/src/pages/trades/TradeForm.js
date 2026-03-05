@@ -1,5 +1,5 @@
 // frontend/src/pages/trades/TradeForm.js
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import { useData } from '../../context/DataContext';
 
@@ -82,13 +82,12 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
     // Effect to auto-calculate totalValue for Buy/Sell trades
     useEffect(() => {
-        const { type, shares, price, fees } = formData;
-        if (['Buy', 'Sell'].includes(type)) {
-            const numShares = parseFloat(shares) || 0;
-            const numPrice = parseFloat(price) || 0;
-            const numFees = parseFloat(fees) || 0;
+        if (['Buy', 'Sell'].includes(formData.type)) {
+            const numShares = parseFloat(formData.shares) || 0;
+            const numPrice = parseFloat(formData.price) || 0;
+            const numFees = parseFloat(formData.fees) || 0;
 
-            const newTotalValue = type === 'Buy'
+            const newTotalValue = formData.type === 'Buy'
                 ? (numShares * numPrice) + numFees
                 : (numShares * numPrice) - numFees;
 
@@ -253,10 +252,10 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
             <div className="form-group">
                 <label>Total Value</label>
-                <input type="text" 
-                    value={formatCurrency(formData.totalValue)} 
-                    readOnly 
-                    disabled 
+                <input type="text"
+                    value={formatCurrency(formData.totalValue)}
+                    readOnly
+                    disabled
                     className="total-display" />
             </div>
 
