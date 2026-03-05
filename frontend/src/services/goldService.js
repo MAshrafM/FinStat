@@ -21,7 +21,11 @@ export const getGoldLogs = async (page = 1, status = 'all', sortBy = 'date', sor
     if (!res.ok) throw new Error('Network response was not ok');
     return res.json();
 };
-export const getAllGoldLogs = () => fetch(`${API_URL}/all`, { headers: getAuthHeaders() }).then(res => res.json());    
+export const getAllGoldLogs = async (page = 1) => {
+    const res = await fetch(`${API_URL}?page=${page}`, { headers: getAuthHeaders() });
+    const data = await res.json();
+    return data;
+};
 export const getGoldSummary = () => fetch(`${API_URL}/summary`, { headers: getAuthHeaders() }).then(res => res.json());
 export const getGoldPrice = () => fetch(`${API_URL}/price`, { headers: getAuthHeaders() }).then(res => res.json());
 

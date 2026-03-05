@@ -4,15 +4,15 @@ const Schema = mongoose.Schema;
 
 const GoldSchema = new mongoose.Schema({
     user: {
-    type: Schema.Types.ObjectId,
-    ref: 'User', // This creates a reference to the User model
-    required: true,
-  },
+        type: Schema.Types.ObjectId,
+        ref: 'User', // This creates a reference to the User model
+        required: true,
+    },
     date: {
         type: Date,
         required: true,
     },
-    item: { 
+    item: {
         type: String,
         required: true,
     },
@@ -20,15 +20,15 @@ const GoldSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    weight: { 
+    weight: {
         type: Number,
         required: true,
     },
-    price: { 
+    price: {
         type: Number,
         required: true,
     },
-    paid: { 
+    paid: {
         type: Number,
         required: true,
     },
@@ -39,7 +39,7 @@ const GoldSchema = new mongoose.Schema({
         type: String,
         enum: ['hold', 'sold']
     },
-    sellingPrice: { 
+    sellingPrice: {
         type: Number,
     },
     sellingDate: {
@@ -48,5 +48,8 @@ const GoldSchema = new mongoose.Schema({
 }, {
     timestamps: true,
 });
+
+GoldSchema.index({ user: 1, date: -1 });
+GoldSchema.index({ user: 1, status: 1 });
 
 module.exports = mongoose.model('Gold', GoldSchema);

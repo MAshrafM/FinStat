@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const MutualFundTrade = require('../models/MutualFundTrade');
 const axios = require('axios');
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 
 // @route   GET api/mutual-funds
@@ -19,7 +20,7 @@ router.get('/', auth, async (req, res) => {
     if (type && type !== 'all') {
         query.type = type; // Filter by type if provided
         query.user = req.user.id;
-        }
+    }
 
     try {
         const trades = await MutualFundTrade.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
@@ -39,9 +40,9 @@ router.get('/code/:code', auth, async (req, res) => {
         const trade = await MutualFundTrade.find({ code: req.params.code, user: req.user.id });
         if (!trade || trade.length === 0) return res.status(404).json({ msg: 'Trade not found' });
         res.json(trade);
-        } catch (err) {
-            res.status(500).send('Server Error');
-        }
+    } catch (err) {
+        res.status(500).send('Server Error');
+    }
 });
 
 router.get('/all', auth, async (req, res) => {
@@ -70,7 +71,7 @@ router.get('/last-price', auth, async (req, res) => {
 // @desc    Create a new trade
 router.post('/', auth, async (req, res) => {
     try {
-        const newTrade = new MutualFundTrade({...req.body, user: req.user.id});
+        const newTrade = new MutualFundTrade({ ...req.body, user: req.user.id });
         await newTrade.save();
         res.json(newTrade);
     } catch (err) {
@@ -84,6 +85,9 @@ router.post('/', auth, async (req, res) => {
 router.get('/summary', auth, async (req, res) => {
     try {
         const summary = await MutualFundTrade.aggregate([
+            {
+                $match: { user: new mongoose.Types.ObjectId(req.user.id) }
+            },
             // Stage 1: Group documents by the fund code
             {
                 $group: {
@@ -165,7 +169,7 @@ router.put('/:id', auth, async (req, res) => {
     try {
         let trade = await MutualFundTrade.findById(req.params.id);
         if (!trade) return res.status(404).json({ msg: 'Trade not found' });
-        if(trade.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        if (trade.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
         trade = await MutualFundTrade.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(trade);
     } catch (err) {
@@ -179,7 +183,7 @@ router.delete('/:id', auth, async (req, res) => {
     try {
         let trade = await MutualFundTrade.findById(req.params.id);
         if (!trade) return res.status(404).json({ msg: 'Trade not found' });
-        if(trade.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        if (trade.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
         trade = await MutualFundTrade.findByIdAndDelete(req.params.id);
         res.json({ msg: 'Trade deleted successfully' });
     } catch (err) {

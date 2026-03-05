@@ -4,6 +4,7 @@ const router = express.Router();
 const Certificate = require('../models/Currency');
 const auth = require('../middleware/auth');
 const Currency = require('../models/Currency');
+const mongoose = require('mongoose');
 const axios = require('axios'); // Import axios for making HTTP requests
 
 // Standard CRUD routes, very similar to our other features
@@ -24,7 +25,7 @@ router.get('/', auth, async (req, res) => {
 // @desc    Create a new currency
 router.post('/', auth, async (req, res) => {
     try {
-        const newCurrency = new Currency({...req.body, user: req.user.id});
+        const newCurrency = new Currency({ ...req.body, user: req.user.id });
         await newCurrency.save();
         res.json(newCurrency);
     } catch (err) {
@@ -35,6 +36,9 @@ router.post('/', auth, async (req, res) => {
 router.get('/summary', auth, async (req, res) => {
     try {
         const summary = await Currency.aggregate([
+            {
+                $match: { user: new mongoose.Types.ObjectId(req.user.id) }
+            },
             // Stage 1: Group documents by the karat
             {
                 $group: {
@@ -68,8 +72,8 @@ router.get('/price', auth, async (req, res) => {
         });
 
         const data = response.data.rates;
-        
-        res.json( data );
+
+        res.json(data);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -94,7 +98,7 @@ router.put('/:id', auth, async (req, res) => {
     try {
         let currency = await Currency.findById(req.params.id);
         if (!currency) return res.status(404).json({ msg: 'Currency not found' });
-        if(currency.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        if (currency.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
         currency = await Currency.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(currency);
     } catch (err) {
@@ -108,7 +112,7 @@ router.delete('/:id', auth, async (req, res) => {
     try {
         let currency = await Currency.findById(req.params.id);
         if (!currency) return res.status(404).json({ msg: 'Currency not found' });
-        if(currency.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        if (currency.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
         currency = await Currency.findByIdAndDelete(req.params.id);
         res.json({ msg: 'Currency deleted successfully' });
     } catch (err) {

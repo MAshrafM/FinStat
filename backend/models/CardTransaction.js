@@ -25,4 +25,7 @@ const CardTransactionSchema = new Schema({
   },
 }, { timestamps: true });
 
+CardTransactionSchema.index({ user: 1, card: 1, date: -1 });
+CardTransactionSchema.index({ user: 1, card: 1, type: 1, status: 1 });
+
 module.exports = mongoose.model('CardTransaction', CardTransactionSchema);

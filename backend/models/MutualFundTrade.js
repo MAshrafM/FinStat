@@ -4,10 +4,10 @@ const Schema = mongoose.Schema;
 
 const MutualFundTradeSchema = new mongoose.Schema({
     user: {
-    type: Schema.Types.ObjectId,
-    ref: 'User', // This creates a reference to the User model
-    required: true,
-  },
+        type: Schema.Types.ObjectId,
+        ref: 'User', // This creates a reference to the User model
+        required: true,
+    },
     date: {
         type: Date,
         required: true,
@@ -45,5 +45,8 @@ const MutualFundTradeSchema = new mongoose.Schema({
 }, {
     timestamps: true,
 });
+
+MutualFundTradeSchema.index({ user: 1, date: -1 });
+MutualFundTradeSchema.index({ user: 1, code: 1 });
 
 module.exports = mongoose.model('MutualFundTrade', MutualFundTradeSchema);

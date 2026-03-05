@@ -4,10 +4,10 @@ const Schema = mongoose.Schema;
 
 const CurrencySchema = new mongoose.Schema({
     user: {
-    type: Schema.Types.ObjectId,
-    ref: 'User', // This creates a reference to the User model
-    required: true,
-  },
+        type: Schema.Types.ObjectId,
+        ref: 'User', // This creates a reference to the User model
+        required: true,
+    },
     name: {
         type: String,
         required: true,
@@ -28,5 +28,7 @@ const CurrencySchema = new mongoose.Schema({
 }, {
     timestamps: true,
 });
+
+CurrencySchema.index({ user: 1, date: -1 });
 
 module.exports = mongoose.model('Currency', CurrencySchema);

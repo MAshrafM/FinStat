@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const Gold = require('../models/Gold');
 const axios = require('axios');
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 
 // Standard CRUD routes, very similar to our other features
@@ -14,7 +15,7 @@ router.get('/', auth, async (req, res) => {
     const limit = 25;
     const skip = (page - 1) * limit;
     const { status, sortBy, sortOrder } = req.query;
-    
+
     try {
         const query = { user: req.user.id };
         if (status && status !== 'all') {
@@ -57,6 +58,9 @@ router.get('/all', auth, async (req, res) => {
 router.get('/summary', auth, async (req, res) => {
     try {
         const summary = await Gold.aggregate([
+            {
+                $match: { user: new mongoose.Types.ObjectId(req.user.id) }
+            },
             // Stage 1: Group documents by status and karat
             {
                 $group: {
@@ -134,21 +138,21 @@ router.get('/price', auth, async (req, res) => {
             '21': data.Sell,
             '18': data.LocalSellPrice18,
         }
-        res.json( pricePerGram );
+        res.json(pricePerGram);
     } catch (err) {
         console.error(err.message);
         try {
-            const fallResponse = await axios.get('https://dahabzaman.eg/en/GoldPrice/GetcurrentPriceList', { 
+            const fallResponse = await axios.get('https://dahabzaman.eg/en/GoldPrice/GetcurrentPriceList', {
                 headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Referer': 'https://dahabzaman.eg',
-                'Accept': 'application/json, text/plain, */*',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Sec-Fetch-Dest': 'empty',
-                'Sec-Fetch-Mode': 'cors',
-                'Sec-Fetch-Site': 'same-origin'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Referer': 'https://dahabzaman.eg',
+                    'Accept': 'application/json, text/plain, */*',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Connection': 'keep-alive',
+                    'Sec-Fetch-Dest': 'empty',
+                    'Sec-Fetch-Mode': 'cors',
+                    'Sec-Fetch-Site': 'same-origin'
                 }
             });
             const fallData = fallResponse.data;
@@ -157,7 +161,7 @@ router.get('/price', auth, async (req, res) => {
                 '21': fallData["2"].SellPrice,
                 '18': fallData["3"].SellPrice,
             }
-            res.json( fallPricePerGram );
+            res.json(fallPricePerGram);
         } catch (innerErr) {
             res.status(500).send('Server Error Gold Price not reachable');
         }
@@ -168,7 +172,7 @@ router.get('/price', auth, async (req, res) => {
 // @desc    Create a new gold log
 router.post('/', auth, async (req, res) => {
     try {
-        const newLog = new Gold({...req.body, user: req.user.id});
+        const newLog = new Gold({ ...req.body, user: req.user.id });
         await newLog.save();
         res.json(newLog);
     } catch (err) {
@@ -194,7 +198,7 @@ router.put('/:id', auth, async (req, res) => {
     try {
         let log = await Gold.findById(req.params.id);
         if (!log) return res.status(404).json({ msg: 'Gold not found' });
-        if(log.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        if (log.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
         log = await Gold.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(log);
     } catch (err) {
@@ -208,7 +212,7 @@ router.delete('/:id', auth, async (req, res) => {
     try {
         let log = await Gold.findById(req.params.id);
         if (!log) return res.status(404).json({ msg: 'Gold not found' });
-        if(log.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+        if (log.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
         log = await Gold.findByIdAndDelete(req.params.id);
         res.json({ msg: 'Log deleted successfully' });
     } catch (err) {

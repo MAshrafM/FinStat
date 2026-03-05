@@ -24,14 +24,16 @@ export const getMutualFundByCode = (code) => {
 
     return fetch(`${API_URL}/code/${code}`, { headers: getAuthHeaders() }).then(res => res.json());
 
-    };
+};
 
 /**
  * Get all Mutual funds trades without pagination.
  * @returns
  */
-export const getAllMutualFundTrades = () => {
-    return fetch(`${API_URL}/all`, { headers: getAuthHeaders() }).then(res => res.json());
+export const getAllMutualFundTrades = async (page = 1) => {
+    const res = await fetch(`${API_URL}?page=${page}`, { headers: getAuthHeaders() });
+    const data = await res.json();
+    return data;
 };
 
 /**
@@ -98,7 +100,8 @@ export const updateTrade = (id, tradeData) => {
  * @returns {Promise<Object>} A promise that resolves to a success message.
  */
 export const deleteTrade = (id) => {
-    return fetch(`${API_URL}/${id}`, { headers: getAuthHeaders(),
+    return fetch(`${API_URL}/${id}`, {
+        headers: getAuthHeaders(),
         method: 'DELETE',
     }).then(res => {
         if (!res.ok) throw new Error('Network response was not ok');
