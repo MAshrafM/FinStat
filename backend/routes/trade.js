@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const Trade = require('../models/Trade');
 const axios = require('axios');
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 
 // @route   GET api/trades
@@ -134,6 +135,10 @@ router.get('/summary', auth, async (req, res) => {
 router.get('/summary', auth, async (req, res) => {
     try {
         const summary = await Trade.aggregate([
+            // --- Stage 0: Match user ---
+            {
+                $match: { user: new mongoose.Types.ObjectId(req.user.id) }
+            },
             // --- Stage 1: Grouping (No Changes) ---
             {
                 $group: {

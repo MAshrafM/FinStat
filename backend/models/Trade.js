@@ -20,7 +20,7 @@ const TradeSchema = new mongoose.Schema({
   stockCode: {
     type: String,
     // Not required for cash transactions like TopUp/Withdraw
-    required: function() { return ['Buy', 'Sell', 'Dividend'].includes(this.type); }
+    required: function () { return ['Buy', 'Sell', 'Dividend'].includes(this.type); }
   },
   type: {
     type: String,
@@ -50,5 +50,8 @@ const TradeSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+TradeSchema.index({ user: 1, date: -1 });
+TradeSchema.index({ user: 1, broker: 1, stockCode: 1 });
 
 module.exports = mongoose.model('Trade', TradeSchema);
