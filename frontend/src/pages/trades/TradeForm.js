@@ -4,7 +4,7 @@ import { formatCurrency } from '../../utils/formatters';
 import { useData } from '../../context/DataContext';
 
 const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
-    const { openPosData } = useData();
+    const { openPosData, tradesData } = useData();
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         broker: 'Thndr',
@@ -45,6 +45,40 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             });
         }
     }, [initialData, isEdit]);
+
+    // Effect to auto-calculate iteration for new Buy trades
+    useEffect(() => {
+        if (isEdit) return; // Only auto-fill for new trades
+
+        if (formData.type === 'Buy' && formData.stockCode) {
+            // Check if we currently hold this stock
+            const existingPosition = openPosData?.find(position =>
+                position._id.stockCode === formData.stockCode &&
+                position._id.broker === formData.broker &&
+                parseFloat(position.currentShares || 0) > 0
+            );
+
+            if (existingPosition) {
+                // We currently own it, buy in the same iteration
+                setFormData(prev => ({ ...prev, iteration: existingPosition._id.iteration }));
+            } else {
+                // We don't own it, check past trades
+                const pastTrades = tradesData?.filter(t =>
+                    t.stockCode === formData.stockCode &&
+                    t.broker === formData.broker
+                );
+
+                if (pastTrades && pastTrades.length > 0) {
+                    // Find the max iteration from past trades
+                    const maxIteration = Math.max(...pastTrades.map(t => parseInt(t.iteration, 10) || 1));
+                    setFormData(prev => ({ ...prev, iteration: maxIteration + 1 }));
+                } else {
+                    // Never traded before, start at 1
+                    setFormData(prev => ({ ...prev, iteration: 1 }));
+                }
+            }
+        }
+    }, [formData.type, formData.stockCode, formData.broker, isEdit, openPosData, tradesData]);
 
     // Effect to auto-calculate totalValue for Buy/Sell trades
     useEffect(() => {
