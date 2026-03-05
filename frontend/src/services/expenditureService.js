@@ -14,7 +14,7 @@ const getAuthHeaders = () => {
 export const getExpenditures = (page = 1, limit = 25, type) => {
   return fetch(`${API_URL}?page=${page}&limit=${limit}&type=${type}`, { headers: getAuthHeaders() }).then(res => res.json());
 };
-export const getAllExpendituresForAnalysis = () => fetch(API_URL, { headers: getAuthHeaders() }).then(res => res.json());
+export const getAllExpendituresForAnalysis = () => fetch(`${API_URL}/all`, { headers: getAuthHeaders() }).then(res => res.json());
 export const getExpenditureById = (id) => fetch(`${API_URL}/${id}`, { headers: getAuthHeaders() }).then(res => res.json());
 export const getLatestExpenditure = () => fetch(`${API_URL}/latest`, { headers: getAuthHeaders() }).then(res => res.json());
 export const createExpenditure = (data) => fetch(API_URL, {
