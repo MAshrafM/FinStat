@@ -1,10 +1,10 @@
 // frontend/src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-
+import ProtectedRoute from './components/ProtectedRoute'; // Keep standard import for immediate auth evaluation
+import './App.css';
 
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
-import ProtectedRoute from './components/ProtectedRoute'; // Keep standard import for immediate auth evaluation
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Summary = React.lazy(() => import('./pages/DashboardSummary'));
 // Paycheck Log
@@ -56,10 +56,6 @@ const AddCurrencyPage = React.lazy(() => import('./pages/currency/AddCurrencyPag
 const EditCurrencyPage = React.lazy(() => import('./pages/currency/EditCurrencyPage'));
 // Credit Cards
 const CreditCardPage = React.lazy(() => import('./pages/credit-cards/CreditCardPage'));
-
-
-
-import './App.css';
 
 function App() {
   return (
