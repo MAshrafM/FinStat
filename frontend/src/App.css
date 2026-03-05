@@ -23,3 +23,35 @@
   border-radius: 5px;
   font-weight: bold;
 }
+
+/* Global Summary Item Styles */
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-width: 150px;
+}
+
+.summary-item span {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.summary-item strong {
+  font-size: 1.4rem;
+  color: #343a40;
+}
+
+.summary-item.highlight {
+  background-color: #e9f5ff;
+  /* A light blue highlight */
+}
+
+.summary-item.highlight strong {
+  color: #0056b3;
+}
