@@ -5,7 +5,8 @@ import { getTrades, deleteTrade } from '../../services/tradeService';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import PaginationControls from '../../components/PaginationControls';
-import './Trades.css'; // We will create this CSS file
+import '../../components/Table.css';
+import './Trades.css';
 
 const TradeLogPage = () => {
   const [trades, setTrades] = useState([]);
@@ -106,9 +107,9 @@ const TradeLogPage = () => {
                 <td data-label="Price">{trade.price ? formatCurrency(trade.price) : 'N/A'}</td>
                 <td data-label="Fees">{formatCurrency(trade.fees)}</td>
                 <td data-label="Value" className="total-value">{formatCurrency(trade.totalValue)}</td>
-                <td data-label="Actions" className="action-icons">
+                <td data-label="Actions" className="action-cell">
                   <Link to={`/trades/edit/${trade._id}`}><FaEdit className="action-icon edit-icon" /></Link>
-                  <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(trade._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
+                  <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(trade._id)} style={{ cursor: 'pointer' }} />
                 </td>
               </tr>
             ))}

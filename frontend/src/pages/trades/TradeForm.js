@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import { useData } from '../../context/DataContext';
+import './Trades.css';
 
 const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const { openPosData, tradesData } = useData();
