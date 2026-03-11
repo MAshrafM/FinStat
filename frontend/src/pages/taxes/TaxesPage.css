@@ -1,14 +1,35 @@
 /* frontend/src/pages/taxes/TaxesPage.css */
-.tax-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
-.tax-card h3 {
-  margin-top: 0;
+.page-header h1 {
+  margin: 0;
+}
+
+/* Global Card layout styles moved to App.css */
+
+.nav-button {
+  background-color: #009879;
+  color: white;
+  padding: 0.7rem 1.2rem;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.nav-button:hover {
+  background-color: #007a63;
 }
 
 .tax-card p {
@@ -63,35 +84,7 @@
   color: #34495e;
 }
 
-.top-summary-container {
-  display: flex;
-  /* This is the key property to align items horizontally */
-  gap: 2rem;
-  /* Creates a nice space between the two cards */
-  align-items: stretch;
-  /* Ensures both cards stretch to the same height */
-  margin-bottom: 2rem;
-  /* Space below the container before the yearly tables */
-  width: 100%;
-}
-
-/* 
-  By default, flex items shrink or grow. We want them to share the space.
-  We'll make each card take up roughly half the space.
-*/
-.top-summary-container>.tax-card {
-  flex-basis: 50%;
-  /* Tell each card to aim for 50% of the container's width */
-  flex-shrink: 1;
-  /* Allow the card to shrink if needed */
-  flex-grow: 1;
-  /* Allow the card to grow if there's extra space */
-
-  /* This is crucial: it prevents the card's content from stretching it too wide */
-  min-width: 0;
-
-  margin-bottom: 0;
-}
+/* .top-summary-container layout styles moved to App.css */
 
 .grand-summary-card .yearly-summary-grid {
   /* Ensure the grid inside the summary card wraps properly */
@@ -128,20 +121,14 @@
 }
 
 @media (max-width: 1024px) {
-  .top-summary-container {
-    flex-direction: column;
-    /* Stack them on top of each other */
-    align-items: stretch;
-    /* Ensure they take up full width */
-  }
-
-  /* Re-add the margin-bottom for spacing when stacked */
-  .top-summary-container>.tax-card {
-    margin-bottom: 2rem;
-  }
+  /* .top-summary-container media queries moved to App.css */
 }
 
 @media (max-width: 768px) {
+
+  .yearly-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
   .grand-summary-card .yearly-summary-grid {
     /* Ensure the grid inside the summary card wraps properly */
@@ -151,5 +138,11 @@
   .tax-bracket-edit-row {
     grid-template-columns: 1fr 1fr;
     /* Stack the last two columns on smaller screens */
+  }
+}
+
+@media (max-width: 576px) {
+  .yearly-summary-grid {
+    grid-template-columns: repeat(1, 1fr);
   }
 }
