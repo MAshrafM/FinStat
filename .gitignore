@@ -18,4 +18,5 @@ backend/seeder*
 backend/migration
 backend/backup_db.js
 backend/db_backup_*.xlsx
+backend/read_sheets.js
 .vercel

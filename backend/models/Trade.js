@@ -15,7 +15,7 @@ const TradeSchema = new mongoose.Schema({
   broker: {
     type: String,
     required: true,
-    enum: ['Thndr', 'EFG'], // Easily expandable
+    enum: ['Thndr', 'EFG', 'Telda'], // Easily expandable
   },
   stockCode: {
     type: String,

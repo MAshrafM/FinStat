@@ -144,6 +144,7 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                 <select name="broker" value={formData.broker} onChange={handleChange}>
                     <option value="Thndr">Thndr</option>
                     <option value="EFG">EFG</option>
+                    <option value="Telda">Telda</option>
                 </select>
             </div>
             <div className="form-group">
