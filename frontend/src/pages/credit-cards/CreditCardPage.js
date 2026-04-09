@@ -11,6 +11,7 @@ import EditTransactionModal from './EditTransactionModal';
 import { formatCurrency } from '../../utils/formatters';
 import '../trades/Trades.css'; // Reuse styles
 import './CreditCardPage.css'; // Custom styles for this page
+import '../../components/Table.css';
 
 const CreditCardPage = () => {
   const { creditCardsSummary } = useCreditData();

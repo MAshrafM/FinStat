@@ -11,8 +11,9 @@
 }
 
 .summary-item {
-  flex: 1;
-  min-width: 300px; /* Ensure items don't get too squished */
+  flex: 1 1 300px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .summary-item h4 {
