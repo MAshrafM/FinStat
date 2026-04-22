@@ -190,14 +190,14 @@ router.get('/summary', auth, async (req, res) => {
                             { $divide: ["$totalBuyValue", "$totalSharesBought"] }
                         ]
                     },
-                    // Formula: (BuyValue - DividendValue) / (SharesBought + SharesDividend)
+                    // Formula: BuyValue / (SharesBought + SharesDividend)
                     adjustedAvgPrice: {
                         $cond: [
                             { $eq: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, 0] },
                             0,
                             {
                                 $divide: [
-                                    { $subtract: ["$totalBuyValue", "$totalDividendValue"] },
+                                    "$totalBuyValue",
                                     { $add: ["$totalSharesBought", "$totalSharesDividend"] }
                                 ]
                             }
@@ -216,7 +216,7 @@ router.get('/summary', auth, async (req, res) => {
                     netBreakEvenPrice: {
                         $cond: [
                             // Avoid division by zero if you have sold everything
-                            { $lte: ["$currentShares", 0] },
+                            { $lte: [{ $subtract: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, "$totalSharesSold"] }, 0] },
                             0,
                             {
                                 $divide: [
@@ -226,7 +226,7 @@ router.get('/summary', auth, async (req, res) => {
                                             { $add: ["$totalSellValue", "$totalDividendValue"] } // Total Cash Returned
                                         ]
                                     },
-                                    "$currentShares"
+                                    { $subtract: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, "$totalSharesSold"] }
                                 ]
                             }
                         ]
@@ -237,8 +237,14 @@ router.get('/summary', auth, async (req, res) => {
             // --- Stage 4: Final P/L Calculation ---
             {
                 $addFields: {
-                    // Realized P/L = (Sell Value - Cost of those specific shares) + Dividends
-                    realizedPL: {
+                    // Trading P/L = (Sell Value - Cost of those specific shares)
+                    tradingPL: {
+                        $subtract: ["$totalSellValue", "$costOfSoldShares"]
+                    },
+                    // Dividend Income
+                    dividendIncome: "$totalDividendValue",
+                    // Total Realized Return = Trading P/L + Dividend
+                    totalRealizedReturn: {
                         $add: [
                             { $subtract: ["$totalSellValue", "$costOfSoldShares"] },
                             "$totalDividendValue"

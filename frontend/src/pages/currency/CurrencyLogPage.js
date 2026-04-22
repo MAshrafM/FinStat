@@ -27,10 +27,10 @@ const CurrencyLogPage = () => {
     return (
         <div className="page-container">
             <div className="page-header">
-                <h1>Foreign Cuurency</h1>
-            </div>         
-                {currencySummary && currencySummary.length > 0 && (
-                    currencySummary.map((curr) => (
+                <h1>Foreign Currency</h1>
+            </div>
+            {currencySummary && currencySummary.length > 0 && (
+                currencySummary.map((curr) => (
                     <div className="summary-row" key={curr._id}>
                         <div className="summary-item highlight">
                             <span>{curr._id}</span>
@@ -48,8 +48,8 @@ const CurrencyLogPage = () => {
                             <span>Current Value:  <strong>{formatCurrency(curr.currentPrice * curr.totalAmount)}</strong></span>
                         </div>
                     </div>
-                    ))
-                )}
+                ))
+            )}
 
 
             <div className="table-container">

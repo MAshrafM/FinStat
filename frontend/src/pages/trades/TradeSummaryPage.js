@@ -36,8 +36,12 @@ const TradeSummaryPage = () => {
         switch (key) {
             case 'stockCode':
                 return item._id.stockCode;
+            case 'tradingPL':
+                return item.tradingPL || 0;
+            case 'dividendIncome':
+                return item.dividendIncome || 0;
             case 'realizedPL':
-                return item.realizedPL;
+                return item.totalRealizedReturn;
             case 'profitPercentage':
                 return item.profitPercentage;
             case 'sellPrice':
@@ -64,7 +68,7 @@ const TradeSummaryPage = () => {
             case 'stockCode':
                 return item._id.stockCode;
             case 'realizedPL':
-                return Math.abs(item.realizedPL);
+                return Math.abs(item.totalRealizedReturn);
             case 'deals':
                 return Math.abs(item.totDeals);
             case 'shares':
@@ -303,11 +307,25 @@ const TradeSummaryPage = () => {
                                 Stock Code{getCloseSortIndicator('stockCode')}
                             </th>
                             <th
+                                onClick={() => handleCloseSort('tradingPL')}
+                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                title="Click to sort by Trading P/L"
+                            >
+                                Trading P/L{getCloseSortIndicator('tradingPL')}
+                            </th>
+                            <th
+                                onClick={() => handleCloseSort('dividendIncome')}
+                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                title="Click to sort by Dividends"
+                            >
+                                Dividends{getCloseSortIndicator('dividendIncome')}
+                            </th>
+                            <th
                                 onClick={() => handleCloseSort('realizedPL')}
                                 style={{ cursor: 'pointer', userSelect: 'none' }}
-                                title="Click to sort by Realized P/L"
+                                title="Click to sort by Total Return"
                             >
-                                Realized P/L{getCloseSortIndicator('realizedPL')}
+                                Total Return{getCloseSortIndicator('realizedPL')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('profitPercentage')}
@@ -375,8 +393,14 @@ const TradeSummaryPage = () => {
                                     <p>{item._id.iteration || '0'}</p>
                                     <p className="broker">{item._id.broker}</p>
                                 </td>
-                                <td data-label="Realized P/L" className="total-value" style={{ color: item.realizedPL >= 0 ? '#27ae60' : '#c0392b' }}>
-                                    {formatCurrency(item.realizedPL)}
+                                <td data-label="Trading P/L" className="total-value" style={{ color: item.tradingPL >= 0 ? '#27ae60' : '#c0392b' }}>
+                                    {formatCurrency(item.tradingPL || 0)}
+                                </td>
+                                <td data-label="Dividends" className="total-value" style={{ color: '#2980b9' }}>
+                                    {formatCurrency(item.dividendIncome || 0)}
+                                </td>
+                                <td data-label="Total Return" className="total-value" style={{ color: item.totalRealizedReturn >= 0 ? '#27ae60' : '#c0392b' }}>
+                                    {formatCurrency(item.totalRealizedReturn)}
                                 </td>
                                 <td data-label="Profit" style={{ color: item.profitPercentage >= 0 ? '#27ae60' : '#c0392b' }}>{item.profitPercentage} %</td>
                                 <td data-label="Selling Price" style={{ color: item.sellingPrice > stMarketPrices[item._id.stockCode] ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.sellingPrice || 0)}</td>

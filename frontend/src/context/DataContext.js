@@ -117,14 +117,16 @@ export const DataProvider = ({ children }) => {
             totalTradesNow: openPositions.reduce((sum, item) => sum + (item?.totalValueNow || 0), 0),
         };
 
-        // Wallet Balance = Cash In - Cash Out (This logic remains valid)
-        metrics.walletBalance = metrics.topUps + totalSell + totalDividends - totalBuy - metrics.withdraws - metrics.totalFees;
+        // Wallet Balance = Cash In - Cash Out
+        // Total Buy and Total Sell already include fees at the time of trade creation.
+        // Subtracting totalFees again would double-count them.
+        metrics.walletBalance = metrics.topUps + totalSell + totalDividends - totalBuy - metrics.withdraws;
 
         // --- FIX HERE ---
-        // Instead of (Sell - Buy), sum the realizedPL field from the backend.
+        // Instead of (Sell - Buy), sum the totalRealizedReturn field from the backend.
         // We look at BOTH open and closed positions because an open position might have partial realized profit.
-        const realizedOpen = openPositions.reduce((sum, item) => sum + (item?.realizedPL || 0), 0);
-        const realizedClosed = closedPositions.reduce((sum, item) => sum + (item?.realizedPL || 0), 0);
+        const realizedOpen = openPositions.reduce((sum, item) => sum + (item?.totalRealizedReturn || 0), 0);
+        const realizedClosed = closedPositions.reduce((sum, item) => sum + (item?.totalRealizedReturn || 0), 0);
 
         metrics.realizedProfit = realizedOpen + realizedClosed;
 
@@ -209,9 +211,9 @@ export const DataProvider = ({ children }) => {
 
                 const updatedItem = {
                     ...item,
-                    // USE BACKEND VALUE: realizedPL is now correct from the DB. 
+                    // USE BACKEND VALUE: totalRealizedReturn is now correct from the DB. 
                     // Don't recalculate it here.
-                    profitPercentage: safeDivision(item.realizedPL, item.costOfSoldShares || item.totalSellValue),
+                    profitPercentage: safeDivision(item.totalRealizedReturn, item.costOfSoldShares || item.totalSellValue),
                     sellingPrice,
                 };
                 closedPositions.push(updatedItem);
