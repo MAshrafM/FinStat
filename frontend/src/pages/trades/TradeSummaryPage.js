@@ -140,10 +140,43 @@ const TradeSummaryPage = () => {
             <div className="page-header">
                 <h1>Trade Position Summary</h1>
             </div>
+
+            {summaryMetrics && summaryMetrics.brokerMetrics && (
+                <div className="broker-summaries" style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', marginBottom: '20px' }}>
+                    {Object.entries(summaryMetrics.brokerMetrics).map(([broker, metrics]) => (
+                        <div key={broker} style={{ flex: '1', minWidth: '280px', backgroundColor: '#fff', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                            <h3 style={{ margin: '0 0 15px 0', color: '#34495e', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>{broker}</h3>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.85em', color: '#7f8c8d', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Top Up</div>
+                                    <strong style={{ fontSize: '1.1em', color: '#2c3e50' }}>{formatCurrency(metrics.topUps)}</strong>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '0.85em', color: '#7f8c8d', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Investment</div>
+                                    <strong style={{ fontSize: '1.1em', color: '#2c3e50' }}>{formatCurrency(metrics.totalTradesNow)}</strong>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '0.85em', color: '#7f8c8d', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Wallet</div>
+                                    <strong style={{ fontSize: '1.1em', color: '#2c3e50' }}>{formatCurrency(metrics.walletBalance)}</strong>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '0.85em', color: '#7f8c8d', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Profit %</div>
+                                    <strong style={{ fontSize: '1.1em', color: metrics.profitPercentage >= 0 ? '#27ae60' : '#c0392b' }}>
+                                        {metrics.profitPercentage.toFixed(2)}%
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {summaryMetrics && (
-                <div className="summary-row">
-                    <div className="summary-item">
-                        <h4>Total Top Ups</h4>
+                <div style={{ marginBottom: '15px' }}>
+                    <h3 style={{ margin: '0 0 10px 10px', color: '#34495e' }}>Total Overview</h3>
+                    <div className="summary-row">
+                        <div className="summary-item">
+                            <h4>Total Top Ups</h4>
                         <strong className="value">{formatCurrency(summaryMetrics.topUps)}</strong>
                     </div>
                     <div className="summary-item">
@@ -166,6 +199,7 @@ const TradeSummaryPage = () => {
                         <h4>Total Profilt Now</h4>
                         <strong className="value">{formatCurrency(summaryMetrics.totalProfitNow)}</strong>
                     </div>
+                </div>
                 </div>
             )}
 

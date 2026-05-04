@@ -134,6 +134,42 @@ export const DataProvider = ({ children }) => {
         // Or simpler: (Portfolio Value + Cash Balance) - Net Deposit
         metrics.totalProfitNow = (metrics.totalTradesNow + metrics.walletBalance) - (metrics.topUps - metrics.withdraws);
 
+        // --- BROKER METRICS ---
+        const brokerMetrics = {};
+
+        trades.forEach(t => {
+            const b = t.broker || 'Unknown';
+            if (!brokerMetrics[b]) brokerMetrics[b] = { topUps: 0, withdraws: 0, totalBuy: 0, totalSell: 0, totalDividends: 0, totalTradesNow: 0, realizedProfit: 0 };
+            if (t.type === 'TopUp') brokerMetrics[b].topUps += (t.totalValue || 0);
+            if (t.type === 'Withdraw') brokerMetrics[b].withdraws += (t.totalValue || 0);
+            if (t.type === 'Buy') brokerMetrics[b].totalBuy += (t.totalValue || 0);
+            if (t.type === 'Sell') brokerMetrics[b].totalSell += (t.totalValue || 0);
+            if (t.type === 'Dividend') brokerMetrics[b].totalDividends += (t.totalValue || 0);
+        });
+
+        openPositions.forEach(item => {
+            const b = item._id?.broker || 'Unknown';
+            if (!brokerMetrics[b]) brokerMetrics[b] = { topUps: 0, withdraws: 0, totalBuy: 0, totalSell: 0, totalDividends: 0, totalTradesNow: 0, realizedProfit: 0 };
+            brokerMetrics[b].totalTradesNow += (item.totalValueNow || 0);
+            brokerMetrics[b].realizedProfit += (item.totalRealizedReturn || 0);
+        });
+
+        closedPositions.forEach(item => {
+            const b = item._id?.broker || 'Unknown';
+            if (!brokerMetrics[b]) brokerMetrics[b] = { topUps: 0, withdraws: 0, totalBuy: 0, totalSell: 0, totalDividends: 0, totalTradesNow: 0, realizedProfit: 0 };
+            brokerMetrics[b].realizedProfit += (item.totalRealizedReturn || 0);
+        });
+
+        Object.keys(brokerMetrics).forEach(b => {
+            const bm = brokerMetrics[b];
+            bm.walletBalance = bm.topUps + bm.totalSell + bm.totalDividends - bm.totalBuy - bm.withdraws;
+            bm.netDeposits = bm.topUps - bm.withdraws;
+            bm.totalProfitNow = (bm.totalTradesNow + bm.walletBalance) - bm.netDeposits;
+            bm.profitPercentage = bm.netDeposits > 0 ? (bm.totalProfitNow / bm.netDeposits) * 100 : 0;
+        });
+
+        metrics.brokerMetrics = brokerMetrics;
+
         return metrics;
     }, []);
 
