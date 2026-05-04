@@ -116,7 +116,7 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         e.preventDefault();
 
         // Validation for sell transactions
-        if (formData.type === 'Sell') {
+        if (formData.type === 'Sell' && !isEdit) {
             const sharesToSell = parseFloat(formData.shares) || 0;
             const availableShares = selectedStockInfo ? parseFloat(selectedStockInfo.currentShares) || 0 : 0;
 
@@ -158,14 +158,14 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                 </select>
             </div>
 
-            {isStockTrade && !isSellTransaction && (
+            {isStockTrade && (!isSellTransaction || isEdit) && (
                 <div className="form-group">
                     <label>Stock Code</label>
                     <input type="text" name="stockCode" placeholder="e.g., AAPL, COMI.CA" value={formData.stockCode} onChange={handleChange} required />
                 </div>
             )}
 
-            {isSellTransaction && (
+            {isSellTransaction && !isEdit && (
                 <div className="form-group">
                     <label>Select Stock to Sell</label>
                     <select name="stockCode" value={formData.stockCode} onChange={handleChange} required>
@@ -227,10 +227,10 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                             value={formData.shares}
                             onChange={handleChange}
                             required
-                            max={isSellTransaction && selectedStockInfo ? selectedStockInfo.currentShares : undefined}
-                            placeholder={isSellTransaction && selectedStockInfo ? `Max: ${selectedStockInfo.currentShares}` : ''}
+                            max={isSellTransaction && !isEdit && selectedStockInfo ? selectedStockInfo.currentShares : undefined}
+                            placeholder={isSellTransaction && !isEdit && selectedStockInfo ? `Max: ${selectedStockInfo.currentShares}` : ''}
                         />
-                        {isSellTransaction && selectedStockInfo && parseFloat(formData.shares) > parseFloat(selectedStockInfo.currentShares) && (
+                        {isSellTransaction && !isEdit && selectedStockInfo && parseFloat(formData.shares) > parseFloat(selectedStockInfo.currentShares) && (
                             <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
                                 ⚠️ Cannot sell more than {selectedStockInfo.currentShares} shares
                             </div>
