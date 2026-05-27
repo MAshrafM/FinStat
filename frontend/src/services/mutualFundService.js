@@ -30,8 +30,8 @@ export const getMutualFundByCode = (code) => {
  * Get all Mutual funds trades without pagination.
  * @returns
  */
-export const getAllMutualFundTrades = async (page = 1) => {
-    const res = await fetch(`${API_URL}?page=${page}`, { headers: getAuthHeaders() });
+export const getAllMutualFundTrades = async () => {
+    const res = await fetch(`${API_URL}/all`, { headers: getAuthHeaders() });
     const data = await res.json();
     return data;
 };
