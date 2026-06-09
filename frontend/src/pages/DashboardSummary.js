@@ -72,7 +72,7 @@ const Summary = () => {
         const mfValue = safeNumber(safeObject(overallTotals).totalSellingValue);
         const mfProfit = safeObject(overallTotals).totalProfit;
         
-        const stockAmount = safeNumber(safeObject(summaryMetrics).topUps);
+        const stockAmount = safeNumber(safeObject(summaryMetrics).netDeposits);
         const stockProfit = safeNumber(safeObject(summaryMetrics).totalProfitNow);
         const stockCurrent = stockAmount + stockProfit;
         
@@ -363,7 +363,7 @@ const Summary = () => {
                   <h3>Stock Trading</h3>
                   <div className="dashboard-card-items">
                       <div className="dashboard-card-item">
-                          <span className="description">Total Amount</span>
+                          <span className="description">Net Deposits</span>
                           <span className="value">{formatCurrency(displayData.calculations.stockAmount)}</span>
                       </div>
                       <div className="dashboard-card-item">

@@ -104,9 +104,13 @@ export const DataProvider = ({ children }) => {
         const totalSell = trades.reduce((sum, t) => (t?.type === 'Sell' ? sum + (t.totalValue || 0) : sum), 0);
         const totalDividends = trades.reduce((sum, t) => (t?.type === 'Dividend' ? sum + (t.totalValue || 0) : sum), 0);
 
+        const topUps = trades.reduce((sum, t) => (t?.type === 'TopUp' ? sum + (t.totalValue || 0) : sum), 0);
+        const withdraws = trades.reduce((sum, t) => (t?.type === 'Withdraw' ? sum + (t.totalValue || 0) : sum), 0);
+
         const metrics = {
-            topUps: trades.reduce((sum, t) => (t?.type === 'TopUp' ? sum + (t.totalValue || 0) : sum), 0),
-            withdraws: trades.reduce((sum, t) => (t?.type === 'Withdraw' ? sum + (t.totalValue || 0) : sum), 0),
+            topUps,
+            withdraws,
+            netDeposits: topUps - withdraws,
             totalFees: trades.reduce((sum, t) => sum + (t?.fees || 0), 0),
 
             // Net Cash Flow (Money In vs Money Out)

@@ -148,8 +148,8 @@ const TradeSummaryPage = () => {
                             <h3 style={{ margin: '0 0 15px 0', color: '#34495e', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>{broker}</h3>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                 <div>
-                                    <div style={{ fontSize: '0.85em', color: '#7f8c8d', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Top Up</div>
-                                    <strong style={{ fontSize: '1.1em', color: '#2c3e50' }}>{formatCurrency(metrics.topUps)}</strong>
+                                    <div style={{ fontSize: '0.85em', color: '#7f8c8d', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Net Deposits</div>
+                                    <strong style={{ fontSize: '1.1em', color: '#2c3e50' }}>{formatCurrency(metrics.netDeposits)}</strong>
                                 </div>
                                 <div>
                                     <div style={{ fontSize: '0.85em', color: '#7f8c8d', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Investment</div>
@@ -176,9 +176,9 @@ const TradeSummaryPage = () => {
                     <h3 style={{ margin: '0 0 10px 10px', color: '#34495e' }}>Total Overview</h3>
                     <div className="summary-row">
                         <div className="summary-item">
-                            <h4>Total Top Ups</h4>
-                        <strong className="value">{formatCurrency(summaryMetrics.topUps)}</strong>
-                    </div>
+                            <h4>Total Net Deposits</h4>
+                            <strong className="value">{formatCurrency(summaryMetrics.netDeposits)}</strong>
+                        </div>
                     <div className="summary-item">
                         <h4>Total Deals</h4>
                         <strong className="value">{formatCurrency(summaryMetrics.totalTrades)}</strong>
