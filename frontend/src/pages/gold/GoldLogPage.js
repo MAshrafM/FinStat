@@ -101,7 +101,8 @@ const GoldLogPage = () => {
                             const taxes = log.paid - totalPrice;
                             const feesPerGram = taxes / log.weight;
                             const statusClass = log.status === 'sold' ? 'status-icon sold' : 'status-icon hold';
-                            const gain = log.status === 'sold' ? log.sellingPrice - log.paid : null;
+                            const totalSellingPrice = log.status === 'sold' ? log.sellingPrice * log.weight : null;
+                            const gain = log.status === 'sold' ? (log.sellingPrice - log.price) * log.weight : null;
                             return (
                                 <tr key={log._id}>
                                     <td data-label="Date">{formatDate(log.date)}</td>
@@ -116,7 +117,7 @@ const GoldLogPage = () => {
                                     <td data-label="Paid" className="total-value">{formatCurrency(log.paid)}</td>
                                     <td data-label="Taxes">{formatCurrency(taxes)}</td>
                                     <td data-label="Cost/g">{formatCurrency(feesPerGram)}</td>
-                                    <td data-label="Selling Price">{log.status === 'sold' ? formatCurrency(log.sellingPrice) : '-'}</td>
+                                    <td data-label="Selling Price">{totalSellingPrice !== null ? formatCurrency(totalSellingPrice) : '-'}</td>
                                     <td data-label="Gain" style={{ color: gain !== null ? (gain >= 0 ? '#27ae60' : '#c0392b') : 'inherit', fontWeight: gain !== null ? 'bold' : 'normal' }}>
                                         {gain !== null ? formatCurrency(gain) : '-'}
                                     </td>
