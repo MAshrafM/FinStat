@@ -75,7 +75,10 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
     // Effect to auto-calculate totalValue
     useEffect(() => {
-        const { type, units, price, fees } = formData;
+        const type = formData.type;
+        const units = formData.units;
+        const price = formData.price;
+        const fees = formData.fees;
         const numUnits = parseFloat(units) || 0;
         const numPrice = parseFloat(price) || 0;
         const numFees = parseFloat(fees) || 0;
@@ -83,14 +86,12 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
         if (type === 'Buy') {
             total = (numUnits * numPrice) + numFees;
-        } else if (type === 'Sell') {
+        } else if (type === 'Sell' || type === 'Coupon') {
             total = (numUnits * numPrice) - numFees;
         }
 
-        if (['Buy', 'Sell'].includes(type)) {
-            setFormData(prev => ({ ...prev, totalValue: total }));
-        }
-    }, [formData]);
+        setFormData(prev => ({ ...prev, totalValue: total }));
+    }, [formData.type, formData.units, formData.price, formData.fees]);
 
     // Effect to lookup fund details when code changes
     useEffect(() => {
@@ -160,16 +161,6 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             name: '' // Clear name when code changes
         }));
         setCodeFound(false);
-    };
-
-    const handleCashChange = (e) => {
-        const { name, value } = e.target
-        let newData = { ...formData, [name]: value };
-        // Handle cash input for coupon transactions
-        let price = parseFloat(newData.price) || 0;
-        let fees = parseFloat(newData.fees) || 0;
-        let totalValue = price * (formData.units ? parseFloat(formData.units) : 0) - fees; // Default to 1 unit if none specified
-        setFormData(prev => ({ ...prev, price: price, fees: fees, totalValue: totalValue }));
     };
 
     const handleSubmit = (e) => {
@@ -312,7 +303,7 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                                 name="price" 
                                 placeholder="Enter total cash received"
                                 value={formData.price} 
-                                onChange={handleCashChange} 
+                                onChange={handleChange} 
                                 required 
                             />
                         </div>
@@ -334,7 +325,7 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
                 <div className="form-group">
                     <label>Fees</label>
-                    <input type="number" step="any" name="fees" value={formData.fees} onChange={isCoupon ? handleCashChange : handleChange} />
+                    <input type="number" step="any" name="fees" value={formData.fees} onChange={handleChange} />
                 </div>
 
                 

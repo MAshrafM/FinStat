@@ -77,7 +77,7 @@ const MutualFundSummaryPage = () => {
                                     <td data-label="Coupons">{formatCurrency(item.totalCouponValue)}</td>
                                     <td data-label="Value w/ Coupons">{formatCurrency(valueWithoutCoupons)}</td>
                                     <td data-label="Curr. Price">{formatCurrency(row.lastPrice)}</td>
-                                    <td data-label="Sellinng Value" className="total-value" style={{ color: sellingValue > item.totalValue ? '#27ae60' : '#c0392b' }}>{formatCurrency(sellingValue)}</td>
+                                    <td data-label="Selling Value" className="total-value" style={{ color: sellingValue > item.totalValue ? '#27ae60' : '#c0392b' }}>{formatCurrency(sellingValue)}</td>
                                     <td data-label="Profit" style={{ color: totalProfit > 0 ? '#27ae60' : '#c0392b' }}>{totalProfit.toFixed(2)}%</td>
                                 </tr>
                             );
