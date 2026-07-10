@@ -41,6 +41,10 @@ const ExpenditureSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  categories: {
+    type: [String],
+    default: ['Other'],
+  },
   paymentMethod: {
     type: String, // 'Bank', 'Cash', 'Prepaid', etc.
     default: 'Bank',

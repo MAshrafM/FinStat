@@ -26,14 +26,15 @@ router.get('/', auth, async (req, res) => {
     const skip = (page - 1) * limit;
     const type = req.query.type; // Optional filter by type
 
-    const query = {};
-    if (type != 'all') {
+    const query = { user: req.user.id };
+    if (type && type !== 'all') {
       if (['Prepaid', 'Bank', 'Cash'].includes(type)) {
         query.paymentMethod = type;
+      } else if (['W', 'T', 'S', 'na'].includes(type)) {
+        query.transactionType = type;
       } else {
-        query.transactionType = type; // Filter by type if provided
+        query.categories = type;
       }
-      query.user = req.user.id;
     }
     // Get total number of documents for pagination calculation
     const total = await Expenditure.countDocuments(query);

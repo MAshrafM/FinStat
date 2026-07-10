@@ -5,7 +5,9 @@ import { getExpenditures, deleteExpenditure } from '../../services/expenditureSe
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import '../../components/Table.css'; // Reuse table styles
+import './Expenditure.css'; // Load expenditure styles
 import PaginationControls from '../../components/PaginationControls';
+import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 
 const transactionTypeMap = {
   W: 'Withdraw',
@@ -52,10 +54,32 @@ const ExpenditureLogPage = () => {
     }
   };
 
-  const handleYearFilter = (type) => {
+  const handleFilterChange = (type) => {
     setSelectedType(type);
     setCurrentPage(1); // Reset to first page when changing filter
   };
+
+  const getFilterButtonStyle = (isActive) => ({
+    padding: '0.5rem 1rem',
+    border: isActive ? '2px solid #3b82f6' : '1px solid #d1d5db',
+    borderRadius: '20px',
+    backgroundColor: isActive ? '#eff6ff' : 'white',
+    color: isActive ? '#1e40af' : '#374151',
+    cursor: 'pointer',
+    fontWeight: isActive ? '600' : '400',
+    transition: 'all 0.2s ease',
+  });
+
+  const getCategoryFilterButtonStyle = (isActive, catColor) => ({
+    padding: '0.5rem 1rem',
+    border: isActive ? `2px solid ${catColor}` : '1px solid #d1d5db',
+    borderRadius: '20px',
+    backgroundColor: isActive ? catColor : 'white',
+    color: isActive ? 'white' : '#374151',
+    cursor: 'pointer',
+    fontWeight: isActive ? '600' : '400',
+    transition: 'all 0.2s ease',
+  });
 
   // Calculate the 'Transaction' value on the frontend
   return (
@@ -66,55 +90,57 @@ const ExpenditureLogPage = () => {
 
       {/* Filter Section */}
       <div className="filter-section" style={{ marginBottom: '2rem' }}>
-        <div className="tax-card">
-          <h3>🔍 Filter by Type</h3>
-          <div className="filter-buttons" style={{
-            display: 'flex',
-            gap: '0.5rem',
-            flexWrap: 'wrap'
-          }}>
-            <button
-              onClick={() => handleYearFilter('all')}
-              style={{
-                padding: '0.5rem 1rem',
-                border: selectedType === 'all' ? '2px solid #3b82f6' : '1px solid #d1d5db',
-                borderRadius: '6px',
-                backgroundColor: selectedType === 'all' ? '#eff6ff' : 'white',
-                color: selectedType === 'all' ? '#1e40af' : '#374151',
-                cursor: 'pointer',
-                fontWeight: selectedType === 'all' ? '600' : '400'
-              }}
-            >
-              All Types
-            </button>
-            {Object.keys(transactionTypeMap).map(type => (
+        <div className="tax-card animate-fade-in">
+          <h3 style={{ margin: '0 0 1.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span>🔍</span> Filter Expenditures
+          </h3>
+          
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h4 style={{ margin: '0 0 0.75rem 0', color: '#4b5563', fontSize: '0.95rem', fontWeight: '600' }}>By Action / Account Type:</h4>
+            <div className="filter-buttons" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button
-                key={type}
-                onClick={() => handleYearFilter(type)}
-                style={{
-                  padding: '0.5rem 1rem',
-                  border: selectedType === type ? '2px solid #3b82f6' : '1px solid #d1d5db',
-                  borderRadius: '6px',
-                  backgroundColor: selectedType === type ? '#eff6ff' : 'white',
-                  color: selectedType === type ? '#1e40af' : '#374151',
-                  cursor: 'pointer',
-                  fontWeight: selectedType === type ? '600' : '400'
-                }}
+                onClick={() => handleFilterChange('all')}
+                style={getFilterButtonStyle(selectedType === 'all')}
               >
-                {transactionTypeMap[type]}
+                All Actions
               </button>
-            ))}
+              {Object.keys(transactionTypeMap).map(type => (
+                <button
+                  key={type}
+                  onClick={() => handleFilterChange(type)}
+                  style={getFilterButtonStyle(selectedType === type)}
+                >
+                  {transactionTypeMap[type]}
+                </button>
+              ))}
+            </div>
           </div>
+
+          <div>
+            <h4 style={{ margin: '0 0 0.75rem 0', color: '#4b5563', fontSize: '0.95rem', fontWeight: '600' }}>By Category:</h4>
+            <div className="filter-buttons" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {EXPENDITURE_CATEGORIES.map(cat => (
+                <button
+                  key={cat.name}
+                  onClick={() => handleFilterChange(cat.name)}
+                  style={getCategoryFilterButtonStyle(selectedType === cat.name, cat.color)}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {selectedType !== 'all' && (
             <div style={{
-              marginTop: '1rem',
+              marginTop: '1.5rem',
               padding: '0.75rem',
               backgroundColor: '#f3f4f6',
               borderRadius: '6px',
               fontSize: '0.9rem',
               color: '#4b5563'
             }}>
-              📅 Showing Expenditures for {transactionTypeMap[selectedType]} only
+              📅 Showing Expenditures filtered by: <strong>{transactionTypeMap[selectedType] || selectedType}</strong>
             </div>
           )}
         </div>
@@ -129,6 +155,7 @@ const ExpenditureLogPage = () => {
               <th>Prepaid</th>
               <th>Transaction</th>
               <th>Type</th>
+              <th>Categories</th>
               <th>Description</th>
               <th>Actions</th>
             </tr>
@@ -148,7 +175,25 @@ const ExpenditureLogPage = () => {
                   <strong>{formatCurrency(log.transactionValue)}</strong>
                 </td>
                 <td data-label="Type">{transactionTypeMap[log.transactionType] || log.transactionType}</td>
-                <td data-label="Description">{log.description}</td>
+                <td data-label="Categories">
+                  <div className="category-badges-list">
+                    {(log.categories && log.categories.length > 0 ? log.categories : ['Other']).map(catName => {
+                      const catConfig = EXPENDITURE_CATEGORIES.find(c => c.name === catName) || { color: '#6B7280' };
+                      return (
+                        <span
+                          key={catName}
+                          className="category-badge"
+                          style={{ backgroundColor: catConfig.color }}
+                        >
+                          {catName}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </td>
+                <td data-label="Description" style={{ fontSize: '0.9rem', color: '#4b5563', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={log.description}>
+                  {log.description || '-'}
+                </td>
                 <td data-label="Action" className="action-cell">
                   <Link to={`/expenditures/edit/${log._id}`}><FaPencilAlt className="action-icon edit-icon" /></Link>
                   <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(log._id)} />

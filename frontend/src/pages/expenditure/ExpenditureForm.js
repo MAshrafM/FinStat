@@ -4,6 +4,7 @@ import { formatDateForInput, formatCurrency } from '../../utils/formatters';
 import '../../components/Form.css'; // Reuse form styles
 import { FaPlus, FaMinus } from 'react-icons/fa';
 import './Expenditure.css'; // For new styles
+import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 
 const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastRecord = { bank: 0, cash: 0, prepaid: 0 } }) => {
   // State for form inputs
@@ -13,6 +14,7 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
   const [topupTarget, setTopupTarget] = useState('Bank'); // For T type
   const [logBankOp, setLogBankOp] = useState('+'); // For 'na' type
   const [logCashOp, setLogCashOp] = useState('+'); // For 'na' type
+  const [categories, setCategories] = useState(['Other']);
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(formatDateForInput(new Date()));
 
@@ -20,6 +22,7 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
     if (mode === 'edit' && initialData) {
       setDate(formatDateForInput(initialData.date));
       setTransactionType(initialData.transactionType || 'W');
+      setCategories(initialData.categories && initialData.categories.length > 0 ? initialData.categories : ['Other']);
       setDescription(initialData.description || '');
 
       // For edit mode, calculate transaction value from the difference
@@ -33,13 +36,20 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
   // Calculate new totals based on transaction type
   const calculateNewTotals = () => {
     const value = parseFloat(transactionValue) || 0;
-    //let newBank = mode === 'create' ? lastRecord.bank : (initialData.bank || 0);
-    //let newCash = mode === 'create' ? lastRecord.cash : (initialData.cash || 0);
-    let newBank = lastRecord.bank ? lastRecord.bank : (initialData.bank || 0);
-    let newCash = lastRecord.cash ? lastRecord.cash : (initialData.cash || 0);
-    let newPrepaid = lastRecord.prepaid ? lastRecord.prepaid : (initialData.prepaid || 0);
-    // Only calculate changes for create mode
-    //if (mode === 'create') {
+    
+    // For edit mode, we want to preserve the original balance snapshot
+    if (mode === 'edit') {
+      return {
+        newBank: initialData.bank || 0,
+        newCash: initialData.cash || 0,
+        newPrepaid: initialData.prepaid || 0
+      };
+    }
+
+    let newBank = lastRecord.bank || 0;
+    let newCash = lastRecord.cash || 0;
+    let newPrepaid = lastRecord.prepaid || 0;
+
     switch (transactionType) {
       case 'T': // Top-up
         if (topupTarget === 'Bank') {
@@ -75,7 +85,6 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
       default:
         break;
     }
-    //}
 
     return { newBank, newCash, newPrepaid };
   };
@@ -105,6 +114,7 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
       transactionValue: value,
       transactionType,
       paymentMethod: getPaymentMethod(),
+      categories: categories.length > 0 ? categories : ['Other'],
       description,
     };
 
@@ -260,12 +270,46 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
       </div>
 
       <div className="form-group">
-        <label>Description</label>
+        <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600' }}>Categories (Select all that apply)</label>
+        <div className="category-tags-container">
+          {EXPENDITURE_CATEGORIES.map(cat => {
+            const isChecked = categories.includes(cat.name);
+            return (
+              <div
+                key={cat.name}
+                className={`category-tag-checkbox ${isChecked ? 'checked' : ''}`}
+                style={{
+                  borderColor: cat.color,
+                  backgroundColor: isChecked ? cat.color : 'transparent',
+                  color: isChecked ? 'white' : cat.color
+                }}
+                onClick={() => {
+                  setCategories(prev => {
+                    let next;
+                    if (prev.includes(cat.name)) {
+                      next = prev.filter(c => c !== cat.name);
+                      if (next.length === 0) next = ['Other'];
+                    } else {
+                      next = [...prev.filter(c => c !== 'Other'), cat.name];
+                    }
+                    return next;
+                  });
+                }}
+              >
+                {cat.name}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="form-group" style={{ marginTop: '1.5rem' }}>
+        <label>Description (Optional Details)</label>
         <textarea
           value={description}
           onChange={e => setDescription(e.target.value)}
           rows="3"
-          placeholder="Enter transaction description..."
+          placeholder="Enter transaction details..."
         ></textarea>
       </div>
 

@@ -6,6 +6,7 @@ import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
 import './Expenditure.css'; // Reuse styles
+import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
@@ -46,9 +47,11 @@ const ExpenditureAnalysisPage = () => {
 
         if (currentSearchTerm && currentSearchTerm.trim() !== '') {
             const lowercasedTerm = currentSearchTerm.toLowerCase();
-            filteredExpenditures = expenditures.filter(item =>
-                item.description && item.description.toLowerCase().includes(lowercasedTerm)
-            );
+            filteredExpenditures = expenditures.filter(item => {
+                const descMatches = item.description && item.description.toLowerCase().includes(lowercasedTerm);
+                const catMatches = item.categories && item.categories.some(cat => cat.toLowerCase().includes(lowercasedTerm));
+                return descMatches || catMatches;
+            });
 
             currentSearchTotal = filteredExpenditures.reduce((sum, item) => {
                 return sum + item.transactionValue;
@@ -57,15 +60,24 @@ const ExpenditureAnalysisPage = () => {
         setSearchTotal(currentSearchTotal);
 
         const groupedData = {};
+        const overallCategoryVolumes = {};
+        EXPENDITURE_CATEGORIES.forEach(c => {
+            overallCategoryVolumes[c.name] = 0;
+        });
         const overallTotals = {
             totalWithdrawals: 0,
             totalTopups: 0,
             totalSavings: 0,
-            volumeByType: { W: 0, T: 0, S: 0 }
+            volumeByType: { W: 0, T: 0, S: 0 },
+            categoryVolumes: overallCategoryVolumes
         };
 
         const initializeYear = (year) => {
             if (!groupedData[year]) {
+                const categoryVolumes = {};
+                EXPENDITURE_CATEGORIES.forEach(c => {
+                    categoryVolumes[c.name] = 0;
+                });
                 groupedData[year] = {
                     byType: { W: 0, T: 0, S: 0, log: 0 },
                     volumeByType: { W: 0, T: 0, S: 0 }, // Add volume tracking by type
@@ -73,6 +85,7 @@ const ExpenditureAnalysisPage = () => {
                     totalWithdrawals: 0,
                     totalTopups: 0,
                     totalSavings: 0,
+                    categoryVolumes,
                 };
             }
         };
@@ -90,6 +103,18 @@ const ExpenditureAnalysisPage = () => {
                 groupedData[year].volumeByType.W += transactionValue;
                 overallTotals.totalWithdrawals += transactionValue;
                 overallTotals.volumeByType.W += transactionValue;
+
+                // Split categories values
+                const itemCats = item.categories && item.categories.length > 0 ? item.categories : ['Other'];
+                const splitVal = transactionValue / itemCats.length;
+                itemCats.forEach(catName => {
+                    if (groupedData[year].categoryVolumes[catName] !== undefined) {
+                        groupedData[year].categoryVolumes[catName] += splitVal;
+                    }
+                    if (overallTotals.categoryVolumes[catName] !== undefined) {
+                        overallTotals.categoryVolumes[catName] += splitVal;
+                    }
+                });
             } else if (item.transactionType === 'T') {
                 groupedData[year].byMonth[month].topups += transactionValue;
                 groupedData[year].totalTopups += transactionValue;
@@ -172,13 +197,19 @@ const ExpenditureAnalysisPage = () => {
     };
 
     const availableYears = Object.keys(yearlyData).sort((a, b) => b - a);
+    const initialCategoryVolumes = {};
+    EXPENDITURE_CATEGORIES.forEach(c => {
+        initialCategoryVolumes[c.name] = 0;
+    });
+
     const dataForYear = yearlyData[selectedYear] || {
         byType: {},
         volumeByType: { W: 0, T: 0, S: 0 },
         byMonth: [],
         totalWithdrawals: 0,
         totalTopups: 0,
-        totalSavings: 0
+        totalSavings: 0,
+        categoryVolumes: initialCategoryVolumes
     };
 
     // Overall pie chart data (by volume)
@@ -204,6 +235,38 @@ const ExpenditureAnalysisPage = () => {
                 dataForYear.volumeByType.S || 0
             ],
             backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+        }],
+    };
+
+    // Overall category pie chart data
+    const overallCategoryLabels = EXPENDITURE_CATEGORIES.map(c => c.name);
+    const overallCategoryValues = EXPENDITURE_CATEGORIES.map(c => {
+        const val = overallSummary.categoryVolumes ? (overallSummary.categoryVolumes[c.name] || 0) : 0;
+        return Math.round(val);
+    });
+    const overallCategoryColors = EXPENDITURE_CATEGORIES.map(c => c.color);
+
+    const overallCategoryPieChartData = {
+        labels: overallCategoryLabels,
+        datasets: [{
+            data: overallCategoryValues,
+            backgroundColor: overallCategoryColors,
+        }],
+    };
+
+    // Yearly category pie chart data
+    const yearlyCategoryLabels = EXPENDITURE_CATEGORIES.map(c => c.name);
+    const yearlyCategoryValues = EXPENDITURE_CATEGORIES.map(c => {
+        const val = dataForYear.categoryVolumes ? (dataForYear.categoryVolumes[c.name] || 0) : 0;
+        return Math.round(val);
+    });
+    const yearlyCategoryColors = EXPENDITURE_CATEGORIES.map(c => c.color);
+
+    const yearlyCategoryPieChartData = {
+        labels: yearlyCategoryLabels,
+        datasets: [{
+            data: yearlyCategoryValues,
+            backgroundColor: yearlyCategoryColors,
         }],
     };
 
@@ -285,13 +348,13 @@ const ExpenditureAnalysisPage = () => {
                             fontWeight: '500',
                             color: '#374151'
                         }}>
-                            Search by Description
+                            Search by Description or Category
                         </label>
                         <div style={{ position: 'relative' }}>
                             <input
                                 type="text"
                                 id="search-input"
-                                placeholder="e.g., groceries, fuel, restaurant..."
+                                placeholder="e.g., Groceries, Food & Dining, rent..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 style={{
@@ -397,6 +460,22 @@ const ExpenditureAnalysisPage = () => {
                     <h3>Volume by Type - {selectedYear}</h3>
                     <div style={{ height: '250px', display: 'flex', justifyContent: 'center' }}>
                         <Pie data={yearlyPieChartData} options={{ maintainAspectRatio: false, responsive: true }} />
+                    </div>
+                </div>
+            </div>
+
+            {/* Category Analysis Pie Charts */}
+            <div className="top-summary-container" style={{ marginTop: '2rem' }}>
+                <div className="tax-card">
+                    <h3>Category Breakdown (All Years)</h3>
+                    <div style={{ height: '350px', display: 'flex', justifyContent: 'center' }}>
+                        <Pie data={overallCategoryPieChartData} options={{ maintainAspectRatio: false, responsive: true }} />
+                    </div>
+                </div>
+                <div className="tax-card">
+                    <h3>Category Breakdown for {selectedYear}</h3>
+                    <div style={{ height: '350px', display: 'flex', justifyContent: 'center' }}>
+                        <Pie data={yearlyCategoryPieChartData} options={{ maintainAspectRatio: false, responsive: true }} />
                     </div>
                 </div>
             </div>
