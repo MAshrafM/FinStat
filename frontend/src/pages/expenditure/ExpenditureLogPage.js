@@ -1,9 +1,9 @@
 // frontend/src/pages/expenditure/ExpenditureLogPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { getExpenditures, deleteExpenditure } from '../../services/expenditureService';
+import { getExpenditures, deleteExpenditure, getLatestExpenditure } from '../../services/expenditureService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { FaPencilAlt, FaTrash } from 'react-icons/fa';
+import { FaPencilAlt, FaTrash, FaUniversity, FaMoneyBillWave, FaCreditCard, FaWallet } from 'react-icons/fa';
 import '../../components/Table.css'; // Reuse table styles
 import './Expenditure.css'; // Load expenditure styles
 import PaginationControls from '../../components/PaginationControls';
@@ -25,6 +25,7 @@ const ExpenditureLogPage = () => {
   const [selectedType, setSelectedType] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [latestHolding, setLatestHolding] = useState({ bank: 0, cash: 0, prepaid: 0 });
 
   const loadExpenditures = useCallback((page, selectedType) => {
     getExpenditures(page, 25, selectedType).then(response => {
@@ -33,9 +34,24 @@ const ExpenditureLogPage = () => {
     });
   }, []);
 
+  const loadLatestHolding = useCallback(() => {
+    getLatestExpenditure()
+      .then(data => {
+        if (data) {
+          setLatestHolding({
+            bank: data.bank || 0,
+            cash: data.cash || 0,
+            prepaid: data.prepaid || 0
+          });
+        }
+      })
+      .catch(err => console.error('Failed to load latest expenditure holding:', err));
+  }, []);
+
   useEffect(() => {
     loadExpenditures(currentPage, selectedType);
-  }, [currentPage, selectedType, loadExpenditures]);
+    loadLatestHolding();
+  }, [currentPage, selectedType, loadExpenditures, loadLatestHolding]);
 
   useEffect(() => {
     if (expenditures.length === 0) {
@@ -50,7 +66,8 @@ const ExpenditureLogPage = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this log?')) {
       await deleteExpenditure(id);
-      loadExpenditures();
+      loadExpenditures(currentPage, selectedType);
+      loadLatestHolding();
     }
   };
 
@@ -86,6 +103,89 @@ const ExpenditureLogPage = () => {
     <div className="page-container">
       <div className="page-header">
         <h1>Expenditure Log</h1>
+      </div>
+
+      {/* Current Holdings Summary Card */}
+      <div className="tax-card animate-fade-in" style={{ marginBottom: '2rem', padding: '1.5rem 2rem' }}>
+        <h3 style={{ margin: '0 0 1.25rem 0', display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1f2937', fontSize: '1.2rem' }}>
+          <FaWallet style={{ color: '#3b82f6' }} /> Current Holdings
+        </h3>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1.25rem',
+          alignItems: 'center'
+        }}>
+          {/* Bank */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            padding: '1rem 1.25rem',
+            backgroundColor: '#eff6ff',
+            borderRadius: '10px',
+            borderLeft: '4px solid #3b82f6'
+          }}>
+            <FaUniversity style={{ fontSize: '1.8rem', color: '#2563eb' }} />
+            <div>
+              <span style={{ display: 'block', fontSize: '0.85rem', color: '#4b5563', fontWeight: '500' }}>Bank</span>
+              <strong style={{ fontSize: '1.35rem', color: '#1e40af' }}>{formatCurrency(latestHolding.bank || 0)}</strong>
+            </div>
+          </div>
+
+          {/* Cash */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            padding: '1rem 1.25rem',
+            backgroundColor: '#ecfdf5',
+            borderRadius: '10px',
+            borderLeft: '4px solid #10b981'
+          }}>
+            <FaMoneyBillWave style={{ fontSize: '1.8rem', color: '#059669' }} />
+            <div>
+              <span style={{ display: 'block', fontSize: '0.85rem', color: '#4b5563', fontWeight: '500' }}>Cash</span>
+              <strong style={{ fontSize: '1.35rem', color: '#065f46' }}>{formatCurrency(latestHolding.cash || 0)}</strong>
+            </div>
+          </div>
+
+          {/* Prepaid */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            padding: '1rem 1.25rem',
+            backgroundColor: '#fffbebfb',
+            borderRadius: '10px',
+            borderLeft: '4px solid #f59e0b'
+          }}>
+            <FaCreditCard style={{ fontSize: '1.8rem', color: '#d97706' }} />
+            <div>
+              <span style={{ display: 'block', fontSize: '0.85rem', color: '#4b5563', fontWeight: '500' }}>Prepaid</span>
+              <strong style={{ fontSize: '1.35rem', color: '#92400e' }}>{formatCurrency(latestHolding.prepaid || 0)}</strong>
+            </div>
+          </div>
+
+          {/* Total Holding */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            padding: '1rem 1.25rem',
+            backgroundColor: '#f3f4f6',
+            borderRadius: '10px',
+            borderLeft: '4px solid #6b7280'
+          }}>
+            <FaWallet style={{ fontSize: '1.8rem', color: '#4b5563' }} />
+            <div>
+              <span style={{ display: 'block', fontSize: '0.85rem', color: '#4b5563', fontWeight: '500' }}>Total Holding</span>
+              <strong style={{ fontSize: '1.35rem', color: '#111827' }}>
+                {formatCurrency((latestHolding.bank || 0) + (latestHolding.cash || 0) + (latestHolding.prepaid || 0))}
+              </strong>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Filter Section */}
