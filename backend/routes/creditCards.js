@@ -33,8 +33,20 @@ router.put('/cards/:id', auth, async (req, res) => {
     try {
         let card = await CreditCard.findById(req.params.id);
         if (!card) return res.status(404).json({ msg: 'Card not found' });
-        if(card.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
-        card = await CreditCard.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (card.user.toString() !== req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
+
+        const { name, bank, limit, billingCycleDay } = req.body;
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (bank !== undefined) updateData.bank = bank;
+        if (limit !== undefined) updateData.limit = limit;
+        if (billingCycleDay !== undefined) updateData.billingCycleDay = billingCycleDay;
+
+        card = await CreditCard.findByIdAndUpdate(
+            req.params.id,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
         res.json(card);
     } catch (err) {
         res.status(400).json({ msg: err.message });

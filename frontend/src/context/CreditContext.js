@@ -17,28 +17,27 @@ export const CreditProvider = ({ children }) => {
     // Credit Cards
     const [creditCardsSummary, setCreditCardsSummary] = useState([]); // Store credit card data in state
 
-    useEffect(() => {
-        const fetchCreditData = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-                const creditCardsSummary = await getOverallSummary();
-                setCreditCardsSummary(creditCardsSummary);
-            } catch (err) {
-                console.error("Failed to load global data:", err);
-                setError(err);
-            } finally {
-                // Small delay to simulate loading time
-                setTimeout(() => {
-                    setIsLoading(false);
-                }, 300);
-            }
-        };
+    const fetchCreditData = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const summaryData = await getOverallSummary();
+            setCreditCardsSummary(summaryData);
+        } catch (err) {
+            console.error("Failed to load global data:", err);
+            setError(err);
+        } finally {
+            setTimeout(() => {
+                setIsLoading(false);
+            }, 300);
+        }
+    };
 
+    useEffect(() => {
         fetchCreditData();
     }, []);
 
-    const value = { creditCardsSummary, isLoading, error};
+    const value = { creditCardsSummary, isLoading, error, refetchCreditSummary: fetchCreditData };
 
     return (
         <CreditContext.Provider value={value}>

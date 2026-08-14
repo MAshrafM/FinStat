@@ -7,7 +7,7 @@ const CreditCardSchema = new Schema({
   name: { type: String, required: true },
   bank: { type: String, required: true },
   limit: { type: Number, required: true },
-  billingCycleDay: { type: Number, required: true, min: 1, max: 25 },
+  billingCycleDay: { type: Number, required: true, min: 1, max: 31 },
 }, { timestamps: true });
 
 module.exports = mongoose.model('CreditCard', CreditCardSchema);

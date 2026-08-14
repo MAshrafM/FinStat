@@ -2,17 +2,35 @@
 .card-selector {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 0 10px;
+  gap: 8px;
+  background-color: #f8fafc;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 .card-selector label {
-  font-weight: bold;
+  font-weight: 600;
+  color: #334155;
+  font-size: 0.9rem;
+  white-space: nowrap;
 }
 .card-selector select {
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #0f172a;
+  background-color: #ffffff;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
+.card-selector select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
 .payment-checkbox {
   width: 20px;
   height: 20px;
@@ -82,28 +100,109 @@
 .action-icon.delete {
   color: #e74c3c; /* Red */
 }
-.header-actions{
+
+/* Header Actions & Button Group */
+.header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.card-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.card-action-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
+}
+
+.card-action-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.card-action-btn.btn-add {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.card-action-btn.btn-add:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.card-action-btn.btn-edit {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.card-action-btn.btn-edit:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.card-action-btn.btn-transaction {
+  background-color: #8b5cf6;
+  color: #ffffff;
+}
+
+.card-action-btn.btn-transaction:hover:not(:disabled) {
+  background-color: #7c3aed;
+}
+
+.card-action-btn:disabled {
+  background-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.65;
+  box-shadow: none;
+  transform: none;
 }
 
 @media (max-width: 768px) {
   .header-actions {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     width: 100%;
   }
 
   .card-selector {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     width: 100%;
+    margin: 0;
   }
   .card-selector select {
     width: 100%;
     margin-top: 5px;
   }
+
+  .card-btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .card-action-btn {
+    width: 100%;
+  }
+
   .actions-cell {
     display: flex;
     flex-direction: column;

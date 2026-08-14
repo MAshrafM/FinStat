@@ -7,6 +7,8 @@ const getAuthHeaders = ( ) => ({ 'Content-Type': 'application/json', 'x-auth-tok
 // --- Card Management ---
 export const getCards = () => fetch(`${API_URL}/cards`, { headers: getAuthHeaders() }).then(res => res.json());
 export const createCard = (data) => fetch(`${API_URL}/cards`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(res => res.json());
+export const updateCard = (id, data) => fetch(`${API_URL}/cards/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(res => res.json());
+export const deleteCard = (id) => fetch(`${API_URL}/cards/${id}`, { method: 'DELETE', headers: getAuthHeaders() }).then(res => res.json());
 
 // --- Summary & Due Transactions ---
 export const getCardSummary = (cardId) => fetch(`${API_URL}/summary/${cardId}`, { headers: getAuthHeaders() }).then(res => res.json());

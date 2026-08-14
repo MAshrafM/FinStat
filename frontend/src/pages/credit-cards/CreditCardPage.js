@@ -1,12 +1,13 @@
 // frontend/src/pages/credit-cards/CreditCardPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useCreditData } from '../../context/CreditContext';
-import { FaCheckCircle, FaRegMoneyBillAlt, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaCheckCircle, FaRegMoneyBillAlt, FaEdit, FaTrash, FaPlus, FaReceipt } from 'react-icons/fa';
 import { getCards, getCardSummary, getDueTransactions, makeFullPayment,
          getTransactions, deleteTransaction } from '../../services/creditCardService';
 import AddTransactionModal from './AddTransactionModal';
 import PartialPaymentModal from './PartialPaymentModal';
 import AddCardModal from './AddCardModal';
+import EditCardModal from './EditCardModal';
 import EditTransactionModal from './EditTransactionModal';
 import { formatCurrency } from '../../utils/formatters';
 import '../trades/Trades.css'; // Reuse styles
@@ -14,7 +15,7 @@ import './CreditCardPage.css'; // Custom styles for this page
 import '../../components/Table.css';
 
 const CreditCardPage = () => {
-  const { creditCardsSummary } = useCreditData();
+  const { creditCardsSummary, refetchCreditSummary } = useCreditData();
   const [cards, setCards] = useState([]);
   const [selectedCardId, setSelectedCardId] =  useState('all');
   const [summary, setSummary] = useState(null);
@@ -27,6 +28,8 @@ const CreditCardPage = () => {
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [transactionHistory, setTransactionHistory] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditCardModalOpen, setIsEditCardModalOpen] = useState(false);
+  const [cardToEdit, setCardToEdit] = useState(null);
 
   // Fetch the list of cards on initial load
   useEffect(() => {
@@ -175,6 +178,20 @@ const handleDelete = async (transactionId) => {
   });
 }, []);
 
+  const handleOpenEditCard = () => {
+    const card = cards.find(c => c._id === selectedCardId);
+    if (card) {
+      setCardToEdit(card);
+      setIsEditCardModalOpen(true);
+    }
+  };
+
+  const handleCardUpdated = () => {
+    loadCards();
+    refreshData();
+    if (refetchCreditSummary) refetchCreditSummary();
+  };
+
 useEffect(() => {
   loadCards();
 }, [loadCards]);
@@ -212,8 +229,31 @@ const totalPartial = transactionHistory.reduce((sum, tx) => {
               ))}
             </select>
           </div>
-          <button className="action-button" onClick={() => setIsCardModalOpen(true)}>Add New Card</button>
-          <button className="action-button" onClick={() => setIsTransactionModalOpen(true)} disabled={selectedCardId === 'all'}>Log Transaction</button>
+          <div className="card-btn-group">
+            <button
+              className="card-action-btn btn-add"
+              onClick={() => setIsCardModalOpen(true)}
+              title="Add a new credit card"
+            >
+              <FaPlus style={{ marginRight: '6px' }} /> Add New Card
+            </button>
+            <button
+              className="card-action-btn btn-edit"
+              onClick={handleOpenEditCard}
+              disabled={selectedCardId === 'all'}
+              title={selectedCardId === 'all' ? "Select a card to edit" : "Edit card details"}
+            >
+              <FaEdit style={{ marginRight: '6px' }} /> Edit Card
+            </button>
+            <button
+              className="card-action-btn btn-transaction"
+              onClick={() => setIsTransactionModalOpen(true)}
+              disabled={selectedCardId === 'all'}
+              title={selectedCardId === 'all' ? "Select a card to log transaction" : "Log a new transaction"}
+            >
+              <FaReceipt style={{ marginRight: '6px' }} /> Log Transaction
+            </button>
+          </div>
         </div>
       </div>
 
@@ -406,6 +446,12 @@ const totalPartial = transactionHistory.reduce((sum, tx) => {
       isOpen={isCardModalOpen}
       onClose={() => setIsCardModalOpen(false)}
       onCardAdded={loadCards} // Pass the refresh function as a callback
+    />
+    <EditCardModal
+      isOpen={isEditCardModalOpen}
+      onClose={() => setIsEditCardModalOpen(false)}
+      card={cardToEdit}
+      onCardUpdated={handleCardUpdated}
     />
     </div>
   );
