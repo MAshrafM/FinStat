@@ -1,9 +1,12 @@
 // frontend/src/pages/currency/CurrencyForm.js
 import React, { useState, useEffect } from 'react';
+import { currencyMap } from '../../context/CurrContext';
 
 const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
+    const currencyOptions = Object.keys(currencyMap);
+
     const [formData, setFormData] = useState({
-        name: '',
+        name: currencyOptions[0] || '',
         amount: '',
         price: '',
         date: new Date().toISOString().split('T')[0],
@@ -12,10 +15,10 @@ const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     useEffect(() => {
         if (isEdit && initialData) {
             setFormData({
-                name: initialData.name || '',
+                name: initialData.name || currencyOptions[0] || '',
                 amount: initialData.amount || '',
                 price: initialData.price || '',
-                startDate: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : '',
+                date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : '',
             });
         }
     }, [initialData, isEdit]);
@@ -31,7 +34,16 @@ const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
     return (
         <form onSubmit={handleSubmit} className="standard-form">
-            <div className="form-group"><label>Currency Name</label><input type="text" name="name" placeholder="e.g., Dollar, Euro" value={formData.name} onChange={handleChange} required /></div>
+            <div className="form-group">
+                <label>Currency Name</label>
+                <select name="name" value={formData.name} onChange={handleChange} required>
+                    {currencyOptions.map((curr) => (
+                        <option key={curr} value={curr}>
+                            {curr}
+                        </option>
+                    ))}
+                </select>
+            </div>
             <div className="form-group"><label>Principal Amount</label><input type="number" step="any" name="amount" value={formData.amount} onChange={handleChange} required /></div>
             <div className="form-group"><label>Price Paid</label><input type="number" step="any" name="price" placeholder="e.g., 51.0" value={formData.price} onChange={handleChange} required /></div>
             <div className="form-group"><label>Date</label><input type="date" name="date" value={formData.date} onChange={handleChange} required /></div>
@@ -40,3 +52,4 @@ const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     );
 };
 export default CurrencyForm;
+

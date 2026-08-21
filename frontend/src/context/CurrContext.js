@@ -9,13 +9,13 @@ export const useCurrData = () => {
     return useContext(CurrContext);
 };
 
-const currencyMap ={
+export const currencyMap = {
     'Dollar': 'USD',
     'Euro': 'EUR',
     'Pound': 'GBP',
     'Yen': 'JPY',
     'Riyal': 'SAR',
-}
+};
 
 export const CurrProvider = ({ children }) => {
     // Currency
