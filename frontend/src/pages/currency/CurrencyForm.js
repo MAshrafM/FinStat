@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { currencyMap } from '../../context/CurrContext';
 
-const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
-    const currencyOptions = Object.keys(currencyMap);
+const CURRENCY_OPTIONS = Object.keys(currencyMap);
 
+const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const [formData, setFormData] = useState({
-        name: currencyOptions[0] || '',
+        name: CURRENCY_OPTIONS[0] || '',
         amount: '',
         price: '',
         date: new Date().toISOString().split('T')[0],
@@ -15,7 +15,7 @@ const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     useEffect(() => {
         if (isEdit && initialData) {
             setFormData({
-                name: initialData.name || currencyOptions[0] || '',
+                name: initialData.name || CURRENCY_OPTIONS[0] || '',
                 amount: initialData.amount || '',
                 price: initialData.price || '',
                 date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : '',
@@ -37,7 +37,7 @@ const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             <div className="form-group">
                 <label>Currency Name</label>
                 <select name="name" value={formData.name} onChange={handleChange} required>
-                    {currencyOptions.map((curr) => (
+                    {CURRENCY_OPTIONS.map((curr) => (
                         <option key={curr} value={curr}>
                             {curr}
                         </option>
