@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const asyncHandler = require('../utils/asyncHandler');
+const { NotFoundError, ForbiddenError, BadRequestError } = require('../utils/errors');
 const CreditCard = require('../models/CreditCard');
 const CardTransaction = require('../models/CardTransaction');
 const CardPayment = require('../models/CardPayment');
@@ -23,711 +25,504 @@ const { getValidated } = require('../utils/requestHelpers');
 // =============================================
 // --- Credit Card Management (The Cards Themselves) ---
 // =============================================
-router.post('/cards', auth, validate({ body: createCardSchema }), async (req, res) => { 
-  try {
-    const validatedBody = getValidated(req, 'body');
-    const newCard = new CreditCard({ ...validatedBody, user: req.user.id });
-    await newCard.save();
-    res.json(newCard);
-  } catch (err) {
-    res.status(400).json({ msg: err.message });
+router.post('/cards', auth, validate({ body: createCardSchema }), asyncHandler(async (req, res) => { 
+  const validatedBody = getValidated(req, 'body');
+  const newCard = new CreditCard({ ...validatedBody, user: req.user.id });
+  await newCard.save();
+  res.status(201).json(newCard);
+}));
+
+router.get('/cards', auth, asyncHandler(async (req, res) => { 
+  const cards = await CreditCard.find({ user: req.user.id }).sort({ startDate: -1 });
+  res.json(cards);
+}));
+
+router.put('/cards/:id', auth, validate({ params: paramsSchema, body: updateCardSchema }), asyncHandler(async (req, res) => {
+  const { id } = getValidated(req, 'params');
+  const validatedBody = getValidated(req, 'body');
+
+  let card = await CreditCard.findById(id);
+  if (!card) throw new NotFoundError('Card not found');
+  if (card.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized');
   }
-});
 
-router.get('/cards', auth, async (req, res) => { 
-  try {
-    const cards = await CreditCard.find({ user: req.user.id }).sort({ startDate: -1 });
-    res.json(cards);
-  } catch (err) {
-    res.status(500).send('Server Error');
+  card = await CreditCard.findByIdAndUpdate(
+    id,
+    { $set: validatedBody },
+    { new: true, runValidators: true }
+  );
+  res.json(card);
+}));
+
+router.delete('/cards/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  const { id } = getValidated(req, 'params');
+  let card = await CreditCard.findById(id);
+  if (!card) throw new NotFoundError('Credit Card not found');
+  if (card.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized');
   }
-});
-
-router.put('/cards/:id', auth, validate({ params: paramsSchema, body: updateCardSchema }), async (req, res) => {
-    try {
-        const { id } = getValidated(req, 'params');
-        const validatedBody = getValidated(req, 'body');
-
-        let card = await CreditCard.findById(id);
-        if (!card) return res.status(404).json({ msg: 'Card not found' });
-        if (card.user.toString() !== req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
-
-        card = await CreditCard.findByIdAndUpdate(
-            id,
-            { $set: validatedBody },
-            { new: true, runValidators: true }
-        );
-        res.json(card);
-    } catch (err) {
-        res.status(400).json({ msg: err.message });
-    }
-});
-
-router.delete('/cards/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
-    try {
-        const { id } = getValidated(req, 'params');
-        let card = await CreditCard.findById(id);
-        if (!card) return res.status(404).json({ msg: 'Credit Card not found' });
-        if (card.user.toString() !== req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
-        card = await CreditCard.findByIdAndDelete(id);
-        res.json({ msg: 'Credit Card deleted successfully' });
-    } catch (err) {
-        res.status(500).send('Server Error');
-    }
-});
+  await CreditCard.findByIdAndDelete(id);
+  res.json({ msg: 'Credit Card deleted successfully' });
+}));
 
 // =============================================
 // --- Card Transaction Management ---
 // =============================================
-router.post('/transactions', auth, validate({ body: createTransactionSchema }), async (req, res) => {
-  try {
-    const validatedBody = getValidated(req, 'body');
+router.post('/transactions', auth, validate({ body: createTransactionSchema }), asyncHandler(async (req, res) => {
+  const validatedBody = getValidated(req, 'body');
 
-    // Ensure the card being added to belongs to the user
-    const card = await CreditCard.findById(validatedBody.card);
-    if (!card || card.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized for this card' });
-    }
-
-    const newTransaction = new CardTransaction({
-      ...validatedBody,
-      user: req.user.id,
-    });
-    await newTransaction.save();
-    res.status(201).json(newTransaction);
-  } catch (err) {
-    console.error(err.message);
-    res.status(400).json({ msg: 'Failed to create transaction', error: err.message });
+  // Ensure the card being added to belongs to the user
+  const card = await CreditCard.findById(validatedBody.card);
+  if (!card || card.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized for this card');
   }
-});
 
-router.get('/transactions/:cardId', auth, validate({ params: cardIdParamsSchema }), async (req, res) => {
-  try {
-    const { cardId } = getValidated(req, 'params');
+  const newTransaction = new CardTransaction({
+    ...validatedBody,
+    user: req.user.id,
+  });
+  await newTransaction.save();
+  res.status(201).json(newTransaction);
+}));
 
-    // Ensure the user owns the card they are querying
-    const card = await CreditCard.findById(cardId);
-    if (!card || card.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized for this card' });
-    }
+router.get('/transactions/:cardId', auth, validate({ params: cardIdParamsSchema }), asyncHandler(async (req, res) => {
+  const { cardId } = getValidated(req, 'params');
 
-    const transactions = await CardTransaction.find({ card: cardId }).sort({ date: -1 });
-    res.json(transactions);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+  const card = await CreditCard.findById(cardId);
+  if (!card || card.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized for this card');
   }
-});
 
-router.put('/transactions/:id', auth, validate({ params: paramsSchema, body: updateTransactionSchema }), async (req, res) => {
-  try {
-    const { id } = getValidated(req, 'params');
-    const validatedBody = getValidated(req, 'body');
+  const transactions = await CardTransaction.find({ card: cardId }).sort({ date: -1 });
+  res.json(transactions);
+}));
 
-    let transaction = await CardTransaction.findById(id);
-    if (!transaction) return res.status(404).json({ msg: 'Transaction not found' });
+router.put('/transactions/:id', auth, validate({ params: paramsSchema, body: updateTransactionSchema }), asyncHandler(async (req, res) => {
+  const { id } = getValidated(req, 'params');
+  const validatedBody = getValidated(req, 'body');
 
-    // Security Check: Ensure the transaction belongs to the logged-in user
-    if (transaction.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
-    }
+  let transaction = await CardTransaction.findById(id);
+  if (!transaction) throw new NotFoundError('Transaction not found');
 
-    transaction = await CardTransaction.findByIdAndUpdate(id, { $set: validatedBody }, { new: true, runValidators: true });
-    res.json(transaction);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+  if (transaction.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized');
   }
-});
 
-router.delete('/transactions/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
-  try {
-    const { id } = getValidated(req, 'params');
-    const transaction = await CardTransaction.findById(id);
-    if (!transaction) return res.status(404).json({ msg: 'Transaction not found' });
+  transaction = await CardTransaction.findByIdAndUpdate(id, { $set: validatedBody }, { new: true, runValidators: true });
+  res.json(transaction);
+}));
 
-    // Security Check: Ensure the transaction belongs to the logged-in user
-    if (transaction.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
-    }
+router.delete('/transactions/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  const { id } = getValidated(req, 'params');
+  const transaction = await CardTransaction.findById(id);
+  if (!transaction) throw new NotFoundError('Transaction not found');
 
-    await CardTransaction.findByIdAndDelete(id);
-    res.json({ msg: 'Transaction deleted successfully' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+  if (transaction.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized');
   }
-});
 
-router.get('/transactions/due/:cardId', auth, validate({ params: cardIdParamsSchema }), async (req, res) => {
-  try {
-    const { cardId } = getValidated(req, 'params');
-    const userId = req.user.id;
+  await CardTransaction.findByIdAndDelete(id);
+  res.json({ msg: 'Transaction deleted successfully' });
+}));
 
-    // 1. Security Check: Ensure the user owns the card
-    const card = await CreditCard.findById(cardId);
-    if (!card || card.user.toString() !== userId) {
-      return res.status(401).json({ msg: 'User not authorized for this card' });
-    }
+router.get('/transactions/due/:cardId', auth, validate({ params: cardIdParamsSchema }), asyncHandler(async (req, res) => {
+  const { cardId } = getValidated(req, 'params');
+  const userId = req.user.id;
 
-    // 2. Determine the start of the current billing cycle
-    const now = new Date();
-    const billingDay = card.billingCycleDay;
-    let lastBillingDate = new Date(now.getFullYear(), now.getMonth(), billingDay);
-    if (now.getDate() < billingDay) {
-      lastBillingDate.setMonth(lastBillingDate.getMonth() - 1);
-    }
-    lastBillingDate.setHours(0, 0, 0, 0);
+  const card = await CreditCard.findById(cardId);
+  if (!card || card.user.toString() !== userId) {
+    throw new ForbiddenError('User not authorized for this card');
+  }
 
-    // 3. Find all standard 'Purchase' transactions within this cycle
-    const duePurchases = await CardTransaction.find({
-      card: cardId,
-      user: userId,
+  const now = new Date();
+  const billingDay = card.billingCycleDay;
+  let lastBillingDate = new Date(now.getFullYear(), now.getMonth(), billingDay);
+  if (now.getDate() < billingDay) {
+    lastBillingDate.setMonth(lastBillingDate.getMonth() - 1);
+  }
+  lastBillingDate.setHours(0, 0, 0, 0);
+
+  const duePurchases = await CardTransaction.find({
+    card: cardId,
+    user: userId,
+    type: 'Purchase',
+    status: { $in: ['Due', 'Partial'] },
+    date: { $gte: lastBillingDate }
+  }).lean();
+
+  const activeInstallments = await CardTransaction.find({
+    card: cardId,
+    user: userId,
+    type: 'Installment',
+    status: { $ne: 'Paid' }
+  }).lean();
+
+  let dueItems = [];
+
+  duePurchases.forEach(p => {
+    dueItems.push({
+      _id: p._id,
+      description: p.description,
+      amountDue: p.amount - p.paidAmount,
       type: 'Purchase',
-      status: { $in: ['Due', 'Partial'] },
-      date: { $gte: lastBillingDate }
-    }).lean();
+      date: p.date
+    });
+  });
 
-    // 4. Find all active 'Installment' plans
-    const activeInstallments = await CardTransaction.find({
-      card: cardId,
-      user: userId,
+  activeInstallments.forEach(i => {
+    dueItems.push({
+      _id: i._id,
+      description: `${i.description} (Installment)`,
+      amountDue: i.installmentDetails.monthlyPrincipal,
       type: 'Installment',
-      status: { $ne: 'Paid' }
-    }).lean();
-
-    // 5. Format the data into a consistent "due items" list
-    let dueItems = [];
-
-    duePurchases.forEach(p => {
-      dueItems.push({
-        _id: p._id,
-        description: p.description,
-        amountDue: p.amount - p.paidAmount,
-        type: 'Purchase',
-        date: p.date
-      });
+      date: i.date
     });
+  });
 
-    activeInstallments.forEach(i => {
-      dueItems.push({
-        _id: i._id,
-        description: `${i.description} (Installment)`,
-        amountDue: i.installmentDetails.monthlyPrincipal,
-        type: 'Installment',
-        date: i.date
-      });
-    });
-
-    dueItems.sort((a, b) => new Date(a.date) - new Date(b.date));
-    res.json(dueItems);
-
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
+  dueItems.sort((a, b) => new Date(a.date) - new Date(b.date));
+  res.json(dueItems);
+}));
 
 // =============================================
 // --- Payment Logging ---
 // =============================================
-router.post('/payments', auth, validate({ body: createPaymentSchema }), async (req, res) => {
-  try {
-    const validatedBody = getValidated(req, 'body');
+router.post('/payments', auth, validate({ body: createPaymentSchema }), asyncHandler(async (req, res) => {
+  const validatedBody = getValidated(req, 'body');
 
-    // Ensure the card being paid belongs to the user
-    const card = await CreditCard.findById(validatedBody.card);
-    if (!card || card.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized for this card' });
-    }
-
-    const newPayment = new CardPayment({
-      ...validatedBody,
-      user: req.user.id,
-    });
-    await newPayment.save();
-    res.status(201).json(newPayment);
-  } catch (err) {
-    console.error(err.message);
-    res.status(400).json({ msg: 'Failed to log payment', error: err.message });
+  const card = await CreditCard.findById(validatedBody.card);
+  if (!card || card.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized for this card');
   }
-});
 
-router.get('/payments/:cardId', auth, validate({ params: cardIdParamsSchema }), async (req, res) => {
-    try {
-        const { cardId } = getValidated(req, 'params');
-        const card = await CreditCard.findById(cardId);
-        if (!card || card.user.toString() !== req.user.id) {
-            return res.status(401).json({ msg: 'User not authorized for this card' });
-        }
-        const payments = await CardPayment.find({ card: cardId }).sort({ date: -1 });
-        res.json(payments);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
+  const newPayment = new CardPayment({
+    ...validatedBody,
+    user: req.user.id,
+  });
+  await newPayment.save();
+  res.status(201).json(newPayment);
+}));
 
-router.put('/payments/:id', auth, validate({ params: paramsSchema, body: updatePaymentSchema }), async (req, res) => {
-  try {
-    const { id } = getValidated(req, 'params');
-    const validatedBody = getValidated(req, 'body');
-
-    let payment = await CardPayment.findById(id);
-    if (!payment) return res.status(404).json({ msg: 'Payment log not found' });
-
-    // Security Check: Ensure the payment belongs to the logged-in user
-    if (payment.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
-    }
-
-    payment = await CardPayment.findByIdAndUpdate(id, { $set: validatedBody }, { new: true, runValidators: true });
-    res.json(payment);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+router.get('/payments/:cardId', auth, validate({ params: cardIdParamsSchema }), asyncHandler(async (req, res) => {
+  const { cardId } = getValidated(req, 'params');
+  const card = await CreditCard.findById(cardId);
+  if (!card || card.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized for this card');
   }
-});
+  const payments = await CardPayment.find({ card: cardId }).sort({ date: -1 });
+  res.json(payments);
+}));
 
-router.delete('/payments/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
-  try {
-    const { id } = getValidated(req, 'params');
-    const payment = await CardPayment.findById(id);
-    if (!payment) return res.status(404).json({ msg: 'Payment log not found' });
+router.put('/payments/:id', auth, validate({ params: paramsSchema, body: updatePaymentSchema }), asyncHandler(async (req, res) => {
+  const { id } = getValidated(req, 'params');
+  const validatedBody = getValidated(req, 'body');
 
-    // Security Check: Ensure the payment belongs to the logged-in user
-    if (payment.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
-    }
+  let payment = await CardPayment.findById(id);
+  if (!payment) throw new NotFoundError('Payment log not found');
 
-    await CardPayment.findByIdAndDelete(id);
-    res.json({ msg: 'Payment log deleted successfully' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+  if (payment.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized');
   }
-});
 
-router.post('/payments/full', auth, validate({ body: payInFullSchema }), async (req, res) => {
-  try {
-    const { transactionId } = getValidated(req, 'body');
-    const transaction = await CardTransaction.findById(transactionId);
+  payment = await CardPayment.findByIdAndUpdate(id, { $set: validatedBody }, { new: true, runValidators: true });
+  res.json(payment);
+}));
 
-    // Security check
-    if (!transaction || transaction.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
-    }
+router.delete('/payments/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  const { id } = getValidated(req, 'params');
+  const payment = await CardPayment.findById(id);
+  if (!payment) throw new NotFoundError('Payment log not found');
 
-    let paymentAmount = 0;
-    let isFullyPaid = false;
+  if (payment.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized');
+  }
 
-    // --- BRANCHING LOGIC BASED ON TRANSACTION TYPE ---
-    if (transaction.type === 'Purchase') {
-      // For a purchase, "Pay in Full" means paying the entire remaining balance.
+  await CardPayment.findByIdAndDelete(id);
+  res.json({ msg: 'Payment log deleted successfully' });
+}));
+
+router.post('/payments/full', auth, validate({ body: payInFullSchema }), asyncHandler(async (req, res) => {
+  const { transactionId } = getValidated(req, 'body');
+  const transaction = await CardTransaction.findById(transactionId);
+
+  if (!transaction || transaction.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized');
+  }
+
+  let paymentAmount = 0;
+  let isFullyPaid = false;
+
+  if (transaction.type === 'Purchase') {
+    paymentAmount = transaction.amount - transaction.paidAmount;
+    isFullyPaid = true;
+  } else if (transaction.type === 'Installment') {
+    paymentAmount = transaction.installmentDetails.monthlyPrincipal;
+    if (transaction.paidAmount + paymentAmount >= transaction.amount) {
+      isFullyPaid = true;
       paymentAmount = transaction.amount - transaction.paidAmount;
-      isFullyPaid = true; // The entire transaction is now considered paid.
-
-    } else if (transaction.type === 'Installment') {
-      // For an installment, "Pay in Full" means paying this month's principal.
-      paymentAmount = transaction.installmentDetails.monthlyPrincipal;
-      
-      // We only mark the entire installment as 'Paid' if the total paid amount
-      // now meets or exceeds the total original amount.
-      if (transaction.paidAmount + paymentAmount >= transaction.amount) {
-        isFullyPaid = true;
-        // Adjust payment amount to not overpay
-        paymentAmount = transaction.amount - transaction.paidAmount;
-      }
     }
-    // ----------------------------------------------------
-
-    if (paymentAmount <= 0) {
-        return res.status(400).json({ msg: 'No payment needed or transaction already paid.' });
-    }
-
-    // Log a corresponding payment record
-    const payment = new CardPayment({
-        user: req.user.id,
-        card: transaction.card,
-        amount: paymentAmount, // Pay the remaining balance
-        date: new Date(),
-    });
-    await payment.save();
-
-    // Update the transaction status
-    transaction.paidAmount += paymentAmount;
-    if (isFullyPaid) {
-      transaction.status = 'Paid';
-    } else {
-      // If it's an installment that isn't finished, it's still 'Partial'
-      transaction.status = 'Partial';
-    }
-    await transaction.save();
-    res.json({ msg: 'Transaction marked as fully paid.' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
   }
-});
 
-router.post('/payments/partial', auth, async (req, res) => {
-  try {
-    const { transactionId, amount } = req.body;
-    const paymentAmount = parseFloat(amount);
-    const transaction = await CardTransaction.findById(transactionId);
-
-    // Security check
-    if (!transaction || transaction.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
-    }
-
-    // Log the payment
-    const payment = new CardPayment({
-        user: req.user.id,
-        card: transaction.card,
-        amount: paymentAmount,
-        date: new Date(),
-    });
-    await payment.save();
-    // This is a simplified model. A real-world scenario would be much more complex,
-    // involving creating a new transaction for the remaining balance with interest.
-    // For now, we will just mark it as 'Partial'.
-    if (transaction.paidAmount >= transaction.amount) {
-        transaction.status = 'Paid';
-        transaction.paidAmount = transaction.amount;
-    }
-    
-    await transaction.save();
-
-    res.json({ msg: 'Partial payment logged successfully.' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+  if (paymentAmount <= 0) {
+    throw new BadRequestError('No payment needed or transaction already paid');
   }
-});
+
+  const payment = new CardPayment({
+    user: req.user.id,
+    card: transaction.card,
+    amount: paymentAmount,
+    date: new Date(),
+  });
+  await payment.save();
+
+  transaction.paidAmount += paymentAmount;
+  if (isFullyPaid) {
+    transaction.status = 'Paid';
+  } else {
+    transaction.status = 'Partial';
+  }
+  await transaction.save();
+  res.json({ msg: 'Transaction marked as fully paid.' });
+}));
+
+router.post('/payments/partial', auth, asyncHandler(async (req, res) => {
+  const { transactionId, amount } = req.body;
+  const paymentAmount = parseFloat(amount);
+  const transaction = await CardTransaction.findById(transactionId);
+
+  if (!transaction || transaction.user.toString() !== req.user.id) {
+    throw new ForbiddenError('User not authorized');
+  }
+
+  const payment = new CardPayment({
+    user: req.user.id,
+    card: transaction.card,
+    amount: paymentAmount,
+    date: new Date(),
+  });
+  await payment.save();
+
+  if (transaction.paidAmount >= transaction.amount) {
+    transaction.status = 'Paid';
+    transaction.paidAmount = transaction.amount;
+  }
+  
+  await transaction.save();
+  res.json({ msg: 'Partial payment logged successfully.' });
+}));
+
 // =============================================
-// --- Summary and Due Routes (Keep these as they were) ---
+// --- Summary Routes ---
 // =============================================
-/*router.get('/summary/:cardId', auth, async (req, res) => {
-  try {
-    const cardId = new mongoose.Types.ObjectId(req.params.cardId);
-    const userId = new mongoose.Types.ObjectId(req.user.id);
+router.get('/summary/:cardId', auth, asyncHandler(async (req, res) => {
+  const cardId = new mongoose.Types.ObjectId(req.params.cardId);
+  const userId = new mongoose.Types.ObjectId(req.user.id);
 
-    // 1. Get the card details
-    const card = await CreditCard.findOne({ _id: cardId, user: userId });
-    if (!card) return res.status(404).json({ msg: 'Card not found' });
+  const card = await CreditCard.findOne({ _id: cardId, user: userId });
+  if (!card) throw new NotFoundError('Card not found');
 
-    // 2. Calculate total spending (all transactions)
-    const purchaseBalanceResult = await CardTransaction.aggregate([
-      { $match: { card: card._id, user: userId, type: 'Purchase', status: { $in: ['Due', 'Partial'] } } },
-      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", "$paidAmount"] } } } } // Sum of remaining balances
-    ]);
-    const purchaseBalance = purchaseBalanceResult.length > 0 ? purchaseBalanceResult[0].total : 0;
+  const now = new Date();
+  const billingDay = card.billingCycleDay;
+  const gracePeriodDays = card.gracePeriodDays || 25;
 
-    // 2. Get the total original amount of all active (unpaid) installment plans.
-    const installmentBalanceResult = await CardTransaction.aggregate([
-      { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] } } },
-      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } } // Sum of the FULL original amounts
-    ]);
-    const installmentBalance = installmentBalanceResult.length > 0 ? installmentBalanceResult[0].total : 0;
-
-    // 3. The true outstanding balance is the sum of these two.
-    const outstandingBalance = purchaseBalance + installmentBalance;
-    const availableLimit = card.limit - outstandingBalance;
-
-
-    // 5. Calculate amount due this month (this is complex)
-    // For simplicity here, we'll calculate total for all installments + purchases in the last cycle.
-    // A real implementation would be more nuanced.
-    const now = new Date();
-    const billingDay = card.billingCycleDay;
-    const lastBillingDate = new Date(now.getFullYear(), now.getMonth(), billingDay);
-    if (now.getDate() < billingDay) {
-        lastBillingDate.setMonth(lastBillingDate.getMonth() - 1);
-    }
-    
-    const installmentDues = await CardTransaction.aggregate([
-        { $match: { card: card._id, user: userId, type: 'Installment' } },
-        { $group: { _id: null, total: { $sum: "$installmentDetails.monthlyPrincipal" } } }
-    ]);
-    const totalInstallmentDue = installmentDues.length > 0 ? installmentDues[0].total : 0;
-
-    const purchaseDues = await CardTransaction.aggregate([
-        { $match: { card: card._id, user: userId, type: 'Purchase', date: { $gte: lastBillingDate } } },
-        { $group: { _id: null, total: { $sum: "$amount" } } }
-    ]);
-    const totalPurchaseDue = purchaseDues.length > 0 ? purchaseDues[0].total : 0;
-    
-    const amountDueThisMonth = totalInstallmentDue + totalPurchaseDue;
-
-    res.json({
-      cardDetails: card,
-      outstandingBalance,
-      availableLimit,
-      amountDueThisMonth,
-      totalInstallmentDue,
-      totalPurchaseDue
-    });
-
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+  let cycleStart = new Date(now.getFullYear(), now.getMonth(), billingDay);
+  let cycleEnd = new Date(now.getFullYear(), now.getMonth() + 1, billingDay);
+  if (now.getDate() < billingDay) {
+    cycleStart.setMonth(cycleStart.getMonth() - 1);
+    cycleEnd.setMonth(cycleEnd.getMonth() - 1);
   }
-});
-*/
 
-router.get('/summary/:cardId', auth, async (req, res) => {
-  try {
-    const cardId = new mongoose.Types.ObjectId(req.params.cardId);
-    const userId = new mongoose.Types.ObjectId(req.user.id);
+  const dueDate = new Date(cycleEnd);
+  dueDate.setDate(dueDate.getDate() + gracePeriodDays);
 
-    // 1. Get the card details
-    const card = await CreditCard.findOne({ _id: cardId, user: userId });
-    if (!card) return res.status(404).json({ msg: 'Card not found' });
+  const purchaseBalanceResult = await CardTransaction.aggregate([
+    { $match: { card: card._id, user: userId, type: 'Purchase', status: { $in: ['Due', 'Partial'] } } },
+    { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
+  ]);
+  const purchaseBalance = purchaseBalanceResult.length > 0 ? purchaseBalanceResult[0].total : 0;
 
-    const now = new Date();
-    const billingDay = card.billingCycleDay;
-    const gracePeriodDays = card.gracePeriodDays || 25; // fallback default
+  const installmentBalanceResult = await CardTransaction.aggregate([
+    { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] } } },
+    { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
+  ]);
+  const installmentBalance = installmentBalanceResult.length > 0 ? installmentBalanceResult[0].total : 0;
 
-    // 2. Billing cycle start & end
-    let cycleStart = new Date(now.getFullYear(), now.getMonth(), billingDay);
-    let cycleEnd = new Date(now.getFullYear(), now.getMonth() + 1, billingDay);
-    if (now.getDate() < billingDay) {
-      cycleStart.setMonth(cycleStart.getMonth() - 1);
-      cycleEnd.setMonth(cycleEnd.getMonth() - 1);
-    }
+  const outstandingBalance = purchaseBalance + installmentBalance;
+  const availableLimit = card.limit - outstandingBalance;
 
-    // 3. Due date = cycleEnd + gracePeriodDays
-    const dueDate = new Date(cycleEnd);
-    dueDate.setDate(dueDate.getDate() + gracePeriodDays);
+  const purchaseDues = await CardTransaction.aggregate([
+    { 
+      $match: { 
+        card: card._id, 
+        user: userId, 
+        type: 'Purchase', 
+        date: { $gte: cycleStart, $lt: cycleEnd } 
+      } 
+    },
+    { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
+  ]);
+  const totalPurchaseDue = purchaseDues.length > 0 ? purchaseDues[0].total : 0;
 
-    // 4. Outstanding balances
-    const purchaseBalanceResult = await CardTransaction.aggregate([
-      { $match: { card: card._id, user: userId, type: 'Purchase', status: { $in: ['Due', 'Partial'] } } },
-      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
-    ]);
-    const purchaseBalance = purchaseBalanceResult.length > 0 ? purchaseBalanceResult[0].total : 0;
+  const installmentDues = await CardTransaction.aggregate([
+    { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] } } },
+    { $group: { _id: null, total: { $sum: "$installmentDetails.monthlyPrincipal" } } }
+  ]);
+  const totalInstallmentDue = installmentDues.length > 0 ? installmentDues[0].total : 0;
 
-    const installmentBalanceResult = await CardTransaction.aggregate([
-      { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] } } },
-      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
-    ]);
-    const installmentBalance = installmentBalanceResult.length > 0 ? installmentBalanceResult[0].total : 0;
+  const previousUnpaid = await CardTransaction.aggregate([
+    { 
+      $match: { 
+        card: card._id, 
+        user: userId, 
+        type: 'Purchase', 
+        date: { $lt: cycleStart }, 
+        status: { $in: ['Due', 'Partial'] } 
+      } 
+    },
+    { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
+  ]);
+  const unpaidBeforeCycle = previousUnpaid.length > 0 ? previousUnpaid[0].total : 0;
+  const interestOnUnpaid = unpaidBeforeCycle > 0 ? (unpaidBeforeCycle * (card.interestRate / 100)) : 0;
 
-    const outstandingBalance = purchaseBalance + installmentBalance;
-    const availableLimit = card.limit - outstandingBalance;
+  const amountDueThisMonth = totalPurchaseDue + totalInstallmentDue + interestOnUnpaid;
 
-    // 5. Purchases in current billing cycle
-    const purchaseDues = await CardTransaction.aggregate([
-      { 
-        $match: { 
-          card: card._id, 
-          user: userId, 
-          type: 'Purchase', 
-          date: { $gte: cycleStart, $lt: cycleEnd } 
-        } 
-      },
-      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
-    ]);
-    const totalPurchaseDue = purchaseDues.length > 0 ? purchaseDues[0].total : 0;
+  const minPaymentPercent = 0.05;
+  const minPaymentBase = Math.max(outstandingBalance * minPaymentPercent, card.minimumPaymentFixed || 0);
+  const minimumPaymentDue = minPaymentBase + totalInstallmentDue;
 
-    // 6. Installment dues (monthly principal only)
-    const installmentDues = await CardTransaction.aggregate([
-      { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] } } },
-      { $group: { _id: null, total: { $sum: "$installmentDetails.monthlyPrincipal" } } }
-    ]);
-    const totalInstallmentDue = installmentDues.length > 0 ? installmentDues[0].total : 0;
-
-    // 7. Interest calculation for unpaid balances before cycle
-    const previousUnpaid = await CardTransaction.aggregate([
-      { 
-        $match: { 
-          card: card._id, 
-          user: userId, 
-          type: 'Purchase', 
-          date: { $lt: cycleStart }, 
-          status: { $in: ['Due', 'Partial'] } 
-        } 
-      },
-      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
-    ]);
-    const unpaidBeforeCycle = previousUnpaid.length > 0 ? previousUnpaid[0].total : 0;
-    const interestOnUnpaid = unpaidBeforeCycle > 0 ? (unpaidBeforeCycle * (card.interestRate / 100)) : 0;
-
-    // 8. Amount due this month
-    const amountDueThisMonth = totalPurchaseDue + totalInstallmentDue + interestOnUnpaid;
-
-    // 9. Minimum payment logic
-    const minPaymentPercent = 0.05;
-    const minPaymentBase = Math.max(outstandingBalance * minPaymentPercent, card.minimumPaymentFixed || 0);
-    const minimumPaymentDue = minPaymentBase + totalInstallmentDue;
-
-    // 10. Response
-    res.json({
-      cardDetails: card,
-      cycleStart,
-      cycleEnd,
-      dueDate,
-      outstandingBalance,
-      availableLimit,
-      amountDueThisMonth,
-      totalInstallmentDue,
-      totalPurchaseDue,
-      interestOnUnpaid,
-      minimumPaymentDue
-    });
-
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
-
+  res.json({
+    cardDetails: card,
+    cycleStart,
+    cycleEnd,
+    dueDate,
+    outstandingBalance,
+    availableLimit,
+    amountDueThisMonth,
+    totalInstallmentDue,
+    totalPurchaseDue,
+    interestOnUnpaid,
+    minimumPaymentDue
+  });
+}));
 
 // @route   GET api/credit-cards/overall-summary
 // @desc    Get a summary of all credit cards for the logged-in user
 // @access  Private
-router.get('/overall-summary', auth, async (req, res) => {
-  try {
-    const userId = new mongoose.Types.ObjectId(req.user.id);
-    // 1. Get all cards for the user
-    const cards = await CreditCard.find({ user: userId });    
-    if (cards.length === 0) {
-      return res.json({
-        totalLimit: 0,
-        totalOutstanding: 0,
-        totalAvailable: 0,
-        totalDueThisMonth: 0,
-      });
-    }
-
-    const cardIds = cards.map(c => new mongoose.Types.ObjectId(c._id));
-
-    // 2. Calculate total limit
-    const totalLimit = cards.reduce((sum, card) => sum + card.limit, 0);
-
-    const purchaseQuery = { 
-      card: { $in: cardIds }, 
-      user: userId, 
-      type: 'Purchase', 
-      status: { $in: ['Due', 'Partial'] } 
-    };
-
-    // 3. Calculate total outstanding balance
-    const purchaseBalanceResult = await CardTransaction.aggregate([
-      { $match: purchaseQuery },
-      { $group: { 
-          _id: null, 
-          total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } },
-          count: { $sum: 1 }
-        }}
-    ]);
-    const totalPurchaseBalance = purchaseBalanceResult.length > 0 ? purchaseBalanceResult[0].total : 0;
-
-    const installmentQuery = { 
-      card: { $in: cardIds }, 
-      user: userId, 
-      type: 'Installment', 
-      status: { $in: ['Due', 'Partial'] } 
-    };
-
-    const installmentBalanceResult = await CardTransaction.aggregate([
-      { $match: installmentQuery },
-      { $group: { 
-          _id: null, 
-          total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } },
-          count: { $sum: 1 }
-        }}
-    ]);
-    const totalInstallmentBalance = installmentBalanceResult.length > 0 ? installmentBalanceResult[0].total : 0;
-
-    const totalOutstanding = totalPurchaseBalance + totalInstallmentBalance;
-    const totalAvailable = totalLimit - totalOutstanding;
-
-    // 4. Calculate total amount due this month - with debugging
-    let totalDueThisMonth = 0;
-    const now = new Date();
-    
-    for (const card of cards) {
-       
-        const billingDay = card.billingCycleDay;
-        
-        // Calculate current billing cycle dates
-        const currentBillingDate = new Date(now.getFullYear(), now.getMonth(), billingDay);
-        const previousBillingDate = new Date(currentBillingDate);
-        previousBillingDate.setMonth(previousBillingDate.getMonth() - 1);
-        
-        // Adjust if current date hasn't reached billing day yet
-        if (now.getDate() < billingDay) {
-            currentBillingDate.setMonth(currentBillingDate.getMonth() - 1);
-            previousBillingDate.setMonth(previousBillingDate.getMonth() - 1);
-        }
-
-        // Check what transactions exist for this card
-        const cardTransactions = await CardTransaction.find({ 
-          card: card._id, 
-          user: userId 
-        }).select('type amount paidAmount status date installmentDetails');
-
-        // Get installment payments due this month
-        const installmentQuery2 = { 
-          card: card._id, 
-          user: userId, 
-          type: 'Installment',
-          status: { $in: ['Due', 'Partial'] }
-        };
-        
-        const cardInstallments = await CardTransaction.find(installmentQuery2);
-        
-        const installmentDues = await CardTransaction.aggregate([
-            { $match: installmentQuery2 },
-            { $group: { 
-                _id: null, 
-                total: { $sum: { $ifNull: ["$installmentDetails.monthlyPrincipal", 0] } },
-                count: { $sum: 1 }
-            }}
-        ]);
-        const cardInstallmentDue = installmentDues.length > 0 ? installmentDues[0].total : 0;
-
-        // Get purchases from previous billing cycle
-        const purchaseQuery2 = { 
-          card: card._id, 
-          user: userId, 
-          type: 'Purchase',
-          status: { $in: ['Due', 'Partial'] },
-          date: { 
-              $gte: previousBillingDate, 
-              $lt: currentBillingDate 
-          }
-        };
-        
-        const cardPurchasesInRange = await CardTransaction.find(purchaseQuery2);
-        
-        const purchaseDues = await CardTransaction.aggregate([
-            { $match: purchaseQuery2 },
-            { $group: { 
-                _id: null, 
-                total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } },
-                count: { $sum: 1 }
-            }}
-        ]);
-        const cardPurchaseDue = purchaseDues.length > 0 ? purchaseDues[0].total : 0;
-        
-        totalDueThisMonth += cardInstallmentDue + cardPurchaseDue;
-    }
-
-    res.json({
-      totalLimit,
-      totalOutstanding,
-      totalAvailable,
-      totalDueThisMonth,
+router.get('/overall-summary', auth, asyncHandler(async (req, res) => {
+  const userId = new mongoose.Types.ObjectId(req.user.id);
+  const cards = await CreditCard.find({ user: userId });    
+  if (cards.length === 0) {
+    return res.json({
+      totalLimit: 0,
+      totalOutstanding: 0,
+      totalAvailable: 0,
+      totalDueThisMonth: 0,
     });
-
-  } catch (err) {
-    console.error('Error in overall-summary:', err.message);
-    console.error('Stack:', err.stack);
-    res.status(500).send('Server Error');
   }
-});
+
+  const cardIds = cards.map(c => new mongoose.Types.ObjectId(c._id));
+  const totalLimit = cards.reduce((sum, card) => sum + card.limit, 0);
+
+  const purchaseQuery = { 
+    card: { $in: cardIds }, 
+    user: userId, 
+    type: 'Purchase', 
+    status: { $in: ['Due', 'Partial'] } 
+  };
+
+  const purchaseBalanceResult = await CardTransaction.aggregate([
+    { $match: purchaseQuery },
+    { $group: { 
+        _id: null, 
+        total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } },
+        count: { $sum: 1 }
+      }}
+  ]);
+  const totalPurchaseBalance = purchaseBalanceResult.length > 0 ? purchaseBalanceResult[0].total : 0;
+
+  const installmentQuery = { 
+    card: { $in: cardIds }, 
+    user: userId, 
+    type: 'Installment', 
+    status: { $in: ['Due', 'Partial'] } 
+  };
+
+  const installmentBalanceResult = await CardTransaction.aggregate([
+    { $match: installmentQuery },
+    { $group: { 
+        _id: null, 
+        total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } },
+        count: { $sum: 1 }
+      }}
+  ]);
+  const totalInstallmentBalance = installmentBalanceResult.length > 0 ? installmentBalanceResult[0].total : 0;
+
+  const totalOutstanding = totalPurchaseBalance + totalInstallmentBalance;
+  const totalAvailable = totalLimit - totalOutstanding;
+
+  let totalDueThisMonth = 0;
+  const now = new Date();
+  
+  for (const card of cards) {
+      const billingDay = card.billingCycleDay;
+      
+      const currentBillingDate = new Date(now.getFullYear(), now.getMonth(), billingDay);
+      const previousBillingDate = new Date(currentBillingDate);
+      previousBillingDate.setMonth(previousBillingDate.getMonth() - 1);
+      
+      if (now.getDate() < billingDay) {
+          currentBillingDate.setMonth(currentBillingDate.getMonth() - 1);
+          previousBillingDate.setMonth(previousBillingDate.getMonth() - 1);
+      }
+
+      const installmentQuery2 = { 
+        card: card._id, 
+        user: userId, 
+        type: 'Installment', 
+        status: { $in: ['Due', 'Partial'] } 
+      };
+      
+      const installmentDues = await CardTransaction.aggregate([
+          { $match: installmentQuery2 },
+          { $group: { 
+              _id: null, 
+              total: { $sum: { $ifNull: ["$installmentDetails.monthlyPrincipal", 0] } },
+              count: { $sum: 1 }
+          }}
+      ]);
+      const cardInstallmentDue = installmentDues.length > 0 ? installmentDues[0].total : 0;
+
+      const purchaseQuery2 = { 
+        card: card._id, 
+        user: userId, 
+        type: 'Purchase', 
+        status: { $in: ['Due', 'Partial'] },
+        date: { 
+            $gte: previousBillingDate, 
+            $lt: currentBillingDate 
+        }
+      };
+      
+      const purchaseDues = await CardTransaction.aggregate([
+          { $match: purchaseQuery2 },
+          { $group: { 
+              _id: null, 
+              total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } },
+              count: { $sum: 1 }
+          }}
+      ]);
+      const cardPurchaseDue = purchaseDues.length > 0 ? purchaseDues[0].total : 0;
+      
+      totalDueThisMonth += cardInstallmentDue + cardPurchaseDue;
+  }
+
+  res.json({
+    totalLimit,
+    totalOutstanding,
+    totalAvailable,
+    totalDueThisMonth,
+  });
+}));
 
 module.exports = router;
+

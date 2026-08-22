@@ -1,9 +1,10 @@
-// frontend/src/pages/credit-cards/AddTransactionModal.js
 import React, { useState } from 'react';
 import Modal from '../../components/Modal';
 import { createTransaction } from '../../services/creditCardService';
+import { useToast } from '../../context/ToastContext';
 
 const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) => {
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
@@ -46,10 +47,11 @@ const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) =>
 
     try {
       await createTransaction(dataToSubmit);
+      showToast('Transaction logged successfully', 'success');
       onTransactionAdded(); // Callback to refresh data on the parent page
       onClose(); // Close the modal
     } catch (err) {
-      setError('Failed to create transaction. Please check the console.');
+      setError(err.message || 'Failed to create transaction.');
       console.error(err);
     }
   };

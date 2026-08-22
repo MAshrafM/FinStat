@@ -79,12 +79,29 @@ describe('Expenditure API Integration Tests (HTTP & Middleware Pipeline)', () =>
       expect(res.body.data.bank).toBe(0); // default applied
     });
 
+    it('should return 201 when description is empty string (optional)', async () => {
+      const payload = {
+        date: '2026-08-22',
+        transactionValue: 250,
+        transactionType: 'W',
+        description: '',
+      };
+
+      const res = await request(app)
+        .post('/api/expenditures')
+        .send(payload);
+
+      expect(res.status).toBe(201);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.description).toBeUndefined();
+    });
+
     it('should return 400 with aggregated error details when multiple fields are invalid', async () => {
       const invalidPayload = {
         date: 'invalid-date',
         // missing transactionValue
         transactionType: 'WRONG_ENUM',
-        description: '   ', // empty after trim
+        description: 12345, // invalid type: number instead of string
       };
 
       const res = await request(app)

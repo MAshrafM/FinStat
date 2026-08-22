@@ -1,9 +1,10 @@
-// frontend/src/pages/credit-cards/EditTransactionModal.js
 import React, { useState, useEffect } from 'react';
 import Modal from '../../components/Modal';
 import { updateTransaction } from '../../services/creditCardService';
+import { useToast } from '../../context/ToastContext';
 
 const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdated }) => {
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
@@ -59,10 +60,11 @@ const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdat
 
     try {
       await updateTransaction(transaction._id, dataToSubmit);
+      showToast('Transaction updated successfully', 'success');
       onTransactionUpdated(); // Callback to refresh data
       onClose(); // Close the modal
     } catch (err) {
-      setError('Failed to update transaction. Please check the console.');
+      setError(err.message || 'Failed to update transaction.');
       console.error(err);
     }
   };

@@ -1,7 +1,10 @@
+// backend/server.js
 // Import the Express library
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db'); // Import the DB connection function
+const errorHandler = require('./middleware/errorHandler');
+const { NotFoundError } = require('./utils/errors');
 
 // Connect to Database
 connectDB();
@@ -19,7 +22,7 @@ app.use(express.json());
 // Define a simple test route
 app.get('/', (req, res) => res.send('API Running'));
 
-//ROUTES
+// ROUTES
 app.use('/api/paychecks', require('./routes/paychecks'));
 app.use('/api/salary-profile', require('./routes/salaryProfiles'));
 app.use('/api/social-insurance', require('./routes/socialInsurance'));
@@ -33,14 +36,23 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/currency', require('./routes/currency'));
 app.use('/api/credit-cards', require('./routes/creditCards'));
 
-
-// Define the port the server will run on. 
-// We use 5000 for the backend to avoid conflict with the React frontend (which usually runs on 3000)
-const PORT = process.env.PORT || 5000;
-
-// Start the server and make it listen for incoming requests on the specified port
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}` );
+// 404 handler specifically scoped to unmatched /api routes
+app.use('/api', (req, res, next) => {
+  next(new NotFoundError(`API endpoint ${req.originalUrl} not found`));
 });
+
+// Centralized error handling middleware (must be registered after all routes)
+app.use(errorHandler);
+
+// Define the port the server will run on (local execution only)
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
+
 
 

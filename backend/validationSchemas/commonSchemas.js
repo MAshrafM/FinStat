@@ -62,11 +62,26 @@ const sanitizeQueryParam = (schema, { allowAll = false } = {}) =>
     return val;
   }, schema);
 
+/**
+ * Reusable helper for optional string fields that coerces empty or whitespace-only strings to undefined,
+ * enforces non-empty string when provided, and rejects null.
+ */
+const optionalString = (fieldName = 'Field') =>
+  z.preprocess(
+    (val) => (val === '' || (typeof val === 'string' && val.trim() === '') ? undefined : val),
+    z.string({ message: `${fieldName} must be a string` })
+      .trim()
+      .min(1, `${fieldName} cannot be empty`)
+      .optional()
+  );
+
 module.exports = {
   mongoIdSchema,
   paramsIdSchema,
   paginationQuerySchema,
   dateStringSchema,
   sanitizeQueryParam,
+  optionalString,
 };
+
 

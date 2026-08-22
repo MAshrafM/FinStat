@@ -1,40 +1,47 @@
 // frontend/src/services/creditCardService.js
 import { BASE_API_URL } from '../config/api';
-const API_URL = `${BASE_API_URL}/credit-cards`; // Use the deployed backend URL
+import apiClient from './apiClient';
 
-const getAuthHeaders = ( ) => ({ 'Content-Type': 'application/json', 'x-auth-token': localStorage.getItem('token') });
+const API_URL = `${BASE_API_URL}/credit-cards`;
 
 // --- Card Management ---
-export const getCards = () => fetch(`${API_URL}/cards`, { headers: getAuthHeaders() }).then(res => res.json());
-export const createCard = (data) => fetch(`${API_URL}/cards`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(res => res.json());
-export const updateCard = (id, data) => fetch(`${API_URL}/cards/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(res => res.json());
-export const deleteCard = (id) => fetch(`${API_URL}/cards/${id}`, { method: 'DELETE', headers: getAuthHeaders() }).then(res => res.json());
+export const getCards = (options = {}) =>
+  apiClient.get(`${API_URL}/cards`, options);
+
+export const createCard = (data, options = {}) =>
+  apiClient.post(`${API_URL}/cards`, data, options);
+
+export const updateCard = (id, data, options = {}) =>
+  apiClient.put(`${API_URL}/cards/${id}`, data, options);
+
+export const deleteCard = (id, options = {}) =>
+  apiClient.delete(`${API_URL}/cards/${id}`, options);
 
 // --- Summary & Due Transactions ---
-export const getCardSummary = (cardId) => fetch(`${API_URL}/summary/${cardId}`, { headers: getAuthHeaders() }).then(res => res.json());
-export const getDueTransactions = (cardId) => fetch(`${API_URL}/transactions/due/${cardId}`, { headers: getAuthHeaders() }).then(res => res.json()); // We need to build this backend route
-export const getTransactions = (cardId) => fetch(`${API_URL}/transactions/${cardId}`, { headers: getAuthHeaders() }).then(res => res.json());
-/**
- * Fetches an overall summary of all credit cards combined.
- * @returns {Promise<Object>} A promise that resolves to the overall summary object.
- */
-export const getOverallSummary = () => {
-  return fetch(`${API_URL}/overall-summary`, { headers: getAuthHeaders() }).then(res => res.json());
-};
+export const getCardSummary = (cardId, options = {}) =>
+  apiClient.get(`${API_URL}/summary/${cardId}`, options);
+
+export const getDueTransactions = (cardId, options = {}) =>
+  apiClient.get(`${API_URL}/transactions/due/${cardId}`, options);
+
+export const getTransactions = (cardId, options = {}) =>
+  apiClient.get(`${API_URL}/transactions/${cardId}`, options);
+
+export const getOverallSummary = (options = {}) =>
+  apiClient.get(`${API_URL}/overall-summary`, options);
+
 // --- Transaction & Payment Logging ---
-export const createTransaction = (data) => fetch(`${API_URL}/transactions`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(res => res.json());
-export const makeFullPayment = (transactionId) => fetch(`${API_URL}/payments/full`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ transactionId }) }).then(res => res.json()); // We need this backend route
-export const makePartialPayment = (transactionId, amount) => fetch(`${API_URL}/payments/partial`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ transactionId, amount }) }).then(res => res.json()); // And this one
-export const updateTransaction = (id, data) => {
-  return fetch(`${API_URL}/transactions/${id}`, {
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
-  }).then(res => res.json());
-};
-export const deleteTransaction = (id) => {
-  return fetch(`${API_URL}/transactions/${id}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  }).then(res => res.json());
-};
+export const createTransaction = (data, options = {}) =>
+  apiClient.post(`${API_URL}/transactions`, data, options);
+
+export const makeFullPayment = (transactionId, options = {}) =>
+  apiClient.post(`${API_URL}/payments/full`, { transactionId }, options);
+
+export const makePartialPayment = (transactionId, amount, options = {}) =>
+  apiClient.post(`${API_URL}/payments/partial`, { transactionId, amount }, options);
+
+export const updateTransaction = (id, data, options = {}) =>
+  apiClient.put(`${API_URL}/transactions/${id}`, data, options);
+
+export const deleteTransaction = (id, options = {}) =>
+  apiClient.delete(`${API_URL}/transactions/${id}`, options);

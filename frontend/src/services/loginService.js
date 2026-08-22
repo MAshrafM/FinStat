@@ -1,17 +1,9 @@
 import { BASE_API_URL } from '../config/api';
+import apiClient from './apiClient';
+
 const API_URL = `${BASE_API_URL}/auth`;
 
-export const login = async (username, password) => { 
-    const response = await fetch(`${API_URL}/login`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-    });
-    if (!response.ok) {
-        throw new Error('Login failed. Please check your credentials.');
-    }
-    const data = await response.json();
-    return data.token; // Return the JWT token
-}
+export const login = async (username, password, options = {}) => {
+  const data = await apiClient.post(`${API_URL}/login`, { username, password }, options);
+  return data.token;
+};

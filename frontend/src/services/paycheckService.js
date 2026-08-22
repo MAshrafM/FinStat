@@ -1,58 +1,31 @@
 // frontend/src/services/paycheckService.js
 import { BASE_API_URL } from '../config/api';
+import apiClient from './apiClient';
+
 const API_URL = `${BASE_API_URL}/paychecks`;
 
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-        'Content-Type': 'application/json',
-        'x-auth-token': token || '', // Include the token in the 'x-auth-token' header
-    };
-};
-
 // Get all paychecks
-export const getPaychecks = async () => {
-    const response = await fetch(`${API_URL}/all`, { headers: getAuthHeaders() });
-  return await response.json();
+export const getPaychecks = (options = {}) =>
+  apiClient.get(`${API_URL}/all`, options);
+
+export const getPaychecksLog = (page = 1, limit = 15, year, options = {}) => {
+  const yearParam = year ? `&year=${encodeURIComponent(year)}` : '';
+  return apiClient.get(`${API_URL}?page=${page}&limit=${limit}${yearParam}`, options);
 };
 
-export const getPaychecksLog = async (page = 1, limit = 15, year) => {
-    const response = await fetch(`${API_URL}?page=${page}&limit=${limit}&year=${year}`, { headers: getAuthHeaders() });
-  return await response.json();
-
-};
-
-// Get a single paycheck by its ID ===
-export const getPaycheckById = async (id) => {
-    const response = await fetch(`${API_URL}/${id}`, { headers: getAuthHeaders() });
-  return await response.json();
-};
+// Get a single paycheck by its ID
+export const getPaycheckById = (id, options = {}) =>
+  apiClient.get(`${API_URL}/${id}`, options);
 
 // Create a new paycheck
-export const createPaycheck = async (paycheck) => {
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers:  getAuthHeaders(),
-    body: JSON.stringify(paycheck),
-  });
-  return await response.json();
-};
+export const createPaycheck = (paycheck, options = {}) =>
+  apiClient.post(API_URL, paycheck, options);
 
-// Update an existing paycheck ===
-export const updatePaycheck = async (id, paycheck) => {
-  const response = await fetch(`${API_URL}/${id}`, {
-    method: 'PUT',
-      headers:  getAuthHeaders(),
-    body: JSON.stringify(paycheck),
-  });
-  return await response.json();
-};
+// Update an existing paycheck
+export const updatePaycheck = (id, paycheck, options = {}) =>
+  apiClient.put(`${API_URL}/${id}`, paycheck, options);
 
 // Delete a paycheck
-export const deletePaycheck = async (id) => {
-    const response = await fetch(`${API_URL}/${id}`, { headers: getAuthHeaders(), method: 'DELETE',
-  });
-  return await response.json();
-};
+export const deletePaycheck = (id, options = {}) =>
+  apiClient.delete(`${API_URL}/${id}`, options);
 
-// (We will add the update function later when we implement editing)

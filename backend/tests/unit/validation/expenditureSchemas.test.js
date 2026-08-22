@@ -79,12 +79,34 @@ describe('Expenditure Validation Schemas (Unit Tests)', () => {
       expect(messages.some((m) => m.includes('Payment method must be one of'))).toBe(true);
     });
 
-    it('should reject empty strings and trim whitespace', () => {
+    it('should allow empty or whitespace-only description and convert to undefined', () => {
       const result = createSchema.safeParse({
         date: '2026-08-22',
         transactionValue: 100,
         transactionType: 'W',
-        description: '   ', // becomes empty after trim
+        description: '   ', // whitespace only
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data.description).toBeUndefined();
+
+      const resultEmpty = createSchema.safeParse({
+        date: '2026-08-22',
+        transactionValue: 100,
+        transactionType: 'W',
+        description: '', // empty string
+      });
+
+      expect(resultEmpty.success).toBe(true);
+      expect(resultEmpty.data.description).toBeUndefined();
+    });
+
+    it('should reject null for description in create', () => {
+      const result = createSchema.safeParse({
+        date: '2026-08-22',
+        transactionValue: 100,
+        transactionType: 'W',
+        description: null,
       });
 
       expect(result.success).toBe(false);
@@ -101,6 +123,16 @@ describe('Expenditure Validation Schemas (Unit Tests)', () => {
       const result = updateSchema.safeParse(partialUpdate);
       expect(result.success).toBe(true);
       expect(result.data).toEqual(partialUpdate);
+    });
+
+    it('should allow description: "" in update and treat as undefined', () => {
+      const updateWithEmpty = {
+        description: '',
+      };
+
+      const result = updateSchema.safeParse(updateWithEmpty);
+      expect(result.success).toBe(true);
+      expect(result.data.description).toBeUndefined();
     });
 
     it('should reject unknown fields in update due to .strict()', () => {

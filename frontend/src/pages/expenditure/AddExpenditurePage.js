@@ -1,11 +1,12 @@
-// frontend/src/pages/expenditure/AddExpenditurePage.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createExpenditure, getLatestExpenditure } from '../../services/expenditureService';
+import { useToast } from '../../context/ToastContext';
 import ExpenditureForm from './ExpenditureForm';
 
 const AddExpenditurePage = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [lastRecord, setLastRecord] = useState({ bank: 0, cash: 0, prepaid: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -24,14 +25,12 @@ const AddExpenditurePage = () => {
   }, []);
 
   const handleSubmit = async (dataToSubmit) => {
-
     try {
       await createExpenditure(dataToSubmit);
+      showToast('Expenditure added successfully', 'success');
       navigate('/expenditures');
     } catch (error) {
       console.error("Failed to create expenditure:", error);
-      console.error("Error details:", error.message);
-      alert(`Failed to create expenditure: ${error.message}`);
     }
   };
 

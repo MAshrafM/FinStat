@@ -1,5 +1,5 @@
 const { z } = require('zod');
-const { paramsIdSchema, dateStringSchema, paginationQuerySchema, sanitizeQueryParam } = require('./commonSchemas');
+const { paramsIdSchema, dateStringSchema, paginationQuerySchema, sanitizeQueryParam, optionalString } = require('./commonSchemas');
 
 const ALLOWED_TRANSACTION_TYPES = ['W', 'T', 'S', 'na'];
 const ALLOWED_PAYMENT_METHODS = ['Bank', 'Cash', 'Prepaid'];
@@ -30,11 +30,7 @@ const createSchema = z.object({
     )
     .min(1, 'At least one category is required')
     .default(['Other']),
-  description: z
-    .string({ message: 'Description must be a string' })
-    .trim()
-    .min(1, 'Description cannot be empty')
-    .optional(),
+  description: optionalString('Description'),
 }).strict();
 
 /**
@@ -61,11 +57,7 @@ const updateSchema = z.object({
     )
     .min(1, 'At least one category is required')
     .optional(),
-  description: z
-    .string({ message: 'Description must be a string' })
-    .trim()
-    .min(1, 'Description cannot be empty')
-    .optional(),
+  description: optionalString('Description'),
 }).strict();
 
 /**

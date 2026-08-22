@@ -1,5 +1,5 @@
 const { z } = require('zod');
-const { mongoIdSchema, paramsIdSchema, dateStringSchema } = require('./commonSchemas');
+const { mongoIdSchema, paramsIdSchema, dateStringSchema, optionalString } = require('./commonSchemas');
 
 const ALLOWED_TX_TYPES = ['Purchase', 'Installment'];
 const ALLOWED_TX_STATUS = ['Due', 'Paid', 'Partial'];
@@ -16,8 +16,8 @@ const createCardSchema = z.object({
 }).strict();
 
 const updateCardSchema = z.object({
-  name: z.string({ message: 'Card name must be a string' }).trim().min(1, 'Card name cannot be empty').optional(),
-  bank: z.string({ message: 'Bank must be a string' }).trim().min(1, 'Bank cannot be empty').optional(),
+  name: optionalString('Card name'),
+  bank: optionalString('Bank'),
   limit: z.number({ message: 'Limit must be a valid number' }).positive('Limit must be positive').optional(),
   billingCycleDay: z
     .number({ message: 'Billing cycle day must be a number' })
@@ -48,7 +48,7 @@ const createTransactionSchema = z.object({
 }).strict();
 
 const updateTransactionSchema = z.object({
-  description: z.string({ message: 'Description must be a string' }).trim().min(1, 'Description cannot be empty').optional(),
+  description: optionalString('Description'),
   amount: z.number({ message: 'Amount must be a valid number' }).positive('Amount must be positive').optional(),
   date: dateStringSchema.optional(),
   type: z.enum(ALLOWED_TX_TYPES).optional(),

@@ -5,42 +5,35 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const validate = require('../middleware/validate');
+const asyncHandler = require('../utils/asyncHandler');
+const { UnauthorizedError } = require('../utils/errors');
 const { createSchema: loginSchema } = require('../validationSchemas/authSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 require('dotenv').config();
 
 // @route   POST api/auth/login
 // @desc    Authenticate user & get token
-router.post('/login', validate({ body: loginSchema }), async (req, res) => {
+router.post('/login', validate({ body: loginSchema }), asyncHandler(async (req, res) => {
     const { username, password } = getValidated(req, 'body');
-    try {
-        // Check if user exists
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(400).json({ msg: 'Invalid credentials' });
-        }
 
-        // Check if password matches
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ msg: 'Invalid credentials' });
-        }
-
-        // User matched, create and sign a JWT
-        const payload = { user: { id: user.id } };
-        jwt.sign(
-            payload,
-            process.env.JWT_SECRET, // Add a JWT_SECRET to your .env file!
-            { expiresIn: '8h' }, // Token expires in 8 hours
-            (err, token) => {
-                if (err) throw err;
-                res.json({ token });
-            }
-        );
-    } catch (err) {
-        res.status(500).send('Server Error');
+    // Check if user exists
+    const user = await User.findOne({ username });
+    if (!user) {
+        throw new UnauthorizedError('Invalid credentials');
     }
-});
+
+    // Check if password matches
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        throw new UnauthorizedError('Invalid credentials');
+    }
+
+    // User matched, create and sign a JWT
+    const payload = { user: { id: user.id } };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '8h' });
+    res.json({ token });
+}));
 
 module.exports = router;
+
 

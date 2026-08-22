@@ -4,6 +4,7 @@ const router = express.Router();
 const TaxBracket = require('../models/TaxBracket');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const asyncHandler = require('../utils/asyncHandler');
 const { updateSchema } = require('../validationSchemas/taxSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 
@@ -19,39 +20,30 @@ const initialBrackets = [
 
 // @route   GET api/tax-brackets
 // @desc    Get the current tax brackets. If none exist, create and return them.
-router.get('/', auth, async (req, res) => {
-  try {
-    let taxInfo = await TaxBracket.findOne({ identifier: 'singleton' });
+router.get('/', auth, asyncHandler(async (req, res) => {
+  let taxInfo = await TaxBracket.findOne({ identifier: 'singleton' });
 
-    if (!taxInfo) {
-      // If no document exists, create one with the initial data
-      taxInfo = new TaxBracket({ brackets: initialBrackets });
-      await taxInfo.save();
-    }
-    res.json(taxInfo);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+  if (!taxInfo) {
+    // If no document exists, create one with the initial data
+    taxInfo = new TaxBracket({ brackets: initialBrackets });
+    await taxInfo.save();
   }
-});
+  res.json(taxInfo);
+}));
 
 // @route   PUT api/tax-brackets
 // @desc    Update the entire set of tax brackets
-router.put('/', auth, validate({ body: updateSchema }), async (req, res) => {
-  try {
-    const { brackets } = getValidated(req, 'body');
+router.put('/', auth, validate({ body: updateSchema }), asyncHandler(async (req, res) => {
+  const { brackets } = getValidated(req, 'body');
 
-    const updatedTaxInfo = await TaxBracket.findOneAndUpdate(
-      { identifier: 'singleton' },
-      { $set: { brackets: brackets, lastUpdated: new Date() } },
-      { new: true, upsert: true }
-    );
-    res.json(updatedTaxInfo);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
+  const updatedTaxInfo = await TaxBracket.findOneAndUpdate(
+    { identifier: 'singleton' },
+    { $set: { brackets: brackets, lastUpdated: new Date() } },
+    { new: true, upsert: true }
+  );
+  res.json(updatedTaxInfo);
+}));
 
 module.exports = router;
+
 

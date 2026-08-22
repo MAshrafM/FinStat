@@ -1,110 +1,35 @@
 // frontend/src/services/mutualFundService.js
-
 import { BASE_API_URL } from '../config/api';
+import apiClient from './apiClient';
+
 const API_URL = `${BASE_API_URL}/mutual-funds`;
 
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-        'Content-Type': 'application/json',
-        'x-auth-token': token || '', // Include the token in the 'x-auth-token' header
-    };
+export const getMutualFundTrades = (page = 1, type, options = {}) => {
+  const typeParam = type ? `&type=${encodeURIComponent(type)}` : '';
+  return apiClient.get(`${API_URL}?page=${page}${typeParam}`, options);
 };
 
-/**
- * Fetches a paginated list of mutual fund trades.
- * @param {number} page - The page number to fetch.
- * @returns {Promise<Object>} A promise that resolves to the paginated data object.
- */
-export const getMutualFundTrades = (page = 1, type) => {
-    return fetch(`${API_URL}?page=${page}&type=${type}`, { headers: getAuthHeaders() }).then(res => res.json());
-};
+export const getMutualFundByCode = (code, options = {}) =>
+  apiClient.get(`${API_URL}/code/${code}`, options);
 
-export const getMutualFundByCode = (code) => {
+export const getAllMutualFundTrades = (options = {}) =>
+  apiClient.get(`${API_URL}/all`, options);
 
-    return fetch(`${API_URL}/code/${code}`, { headers: getAuthHeaders() }).then(res => res.json());
+export const getMutualFundSummary = (options = {}) =>
+  apiClient.get(`${API_URL}/summary`, options);
 
-};
+export const getLastPrice = (fundName, options = {}) =>
+  apiClient.get(`${API_URL}/last-price?name=${encodeURIComponent(fundName)}`, options);
 
-/**
- * Get all Mutual funds trades without pagination.
- * @returns
- */
-export const getAllMutualFundTrades = async () => {
-    const res = await fetch(`${API_URL}/all`, { headers: getAuthHeaders() });
-    const data = await res.json();
-    return data;
-};
+export const getTradeById = (id, options = {}) =>
+  apiClient.get(`${API_URL}/${id}`, options);
 
-/**
- * Fetches an aggregated summary of all mutual fund holdings.
- * @returns {Promise<Array>} A promise that resolves to the summary data array.
- */
-export const getMutualFundSummary = () => {
-    return fetch(`${API_URL}/summary`, { headers: getAuthHeaders() }).then(res => res.json());
-};
+export const createTrade = (tradeData, options = {}) =>
+  apiClient.post(API_URL, tradeData, options);
 
-/**
- * Fetches the last price of mutual funds from an external API.
- * @returns {Promise<Object>} A promise that resolves to the last price data object.
- */
-export const getLastPrice = (fundName) => {
-    return fetch(`${API_URL}/last-price?name=${fundName}`, { headers: getAuthHeaders() }).then(res => res.json());
-};
+export const updateTrade = (id, tradeData, options = {}) =>
+  apiClient.put(`${API_URL}/${id}`, tradeData, options);
 
-/**
- * Fetches a single mutual fund trade by its ID.
- * @param {string} id - The ID of the trade.
- * @returns {Promise<Object>} A promise that resolves to the trade object.
- */
-export const getTradeById = (id) => {
-    return fetch(`${API_URL}/${id}`, { headers: getAuthHeaders() }).then(res => res.json());
-};
+export const deleteTrade = (id, options = {}) =>
+  apiClient.delete(`${API_URL}/${id}`, options);
 
-/**
- * Creates a new mutual fund trade record.
- * @param {Object} tradeData - The data for the new trade.
- * @returns {Promise<Object>} A promise that resolves to the newly created trade object.
- */
-export const createTrade = (tradeData) => {
-    return fetch(API_URL, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(tradeData),
-    }).then(res => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-    });
-};
-
-/**
- * Updates an existing mutual fund trade record.
- * @param {string} id - The ID of the trade to update.
- * @param {Object} tradeData - The new data for the trade.
- * @returns {Promise<Object>} A promise that resolves to the updated trade object.
- */
-export const updateTrade = (id, tradeData) => {
-    return fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(tradeData),
-    }).then(res => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-    });
-};
-
-/**
- * Deletes a mutual fund trade record.
- * @param {string} id - The ID of the trade to delete.
- * @returns {Promise<Object>} A promise that resolves to a success message.
- */
-export const deleteTrade = (id) => {
-    return fetch(`${API_URL}/${id}`, {
-        headers: getAuthHeaders(),
-        method: 'DELETE',
-    }).then(res => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-    });
-};

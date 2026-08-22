@@ -1,11 +1,12 @@
-// frontend/src/pages/expenditure/EditExpenditurePage.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { updateExpenditure, getExpenditureById } from '../../services/expenditureService';
+import { useToast } from '../../context/ToastContext';
 import ExpenditureForm from './ExpenditureForm';
 
 const EditExpenditurePage = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const { id } = useParams();
   const [expenditure, setExpenditure] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,11 +26,10 @@ const EditExpenditurePage = () => {
   const handleSubmit = async (dataToSubmit) => {
     try {
       await updateExpenditure(id, dataToSubmit);
+      showToast('Expenditure updated successfully', 'success');
       navigate('/expenditures');
     } catch (error) {
       console.error("Failed to update expenditure:", error);
-      console.error("Error details:", error.message);
-      alert(`Failed to update expenditure: ${error.message}`);
     }
   };
 
