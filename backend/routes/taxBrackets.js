@@ -3,6 +3,9 @@ const express = require('express');
 const router = express.Router();
 const TaxBracket = require('../models/TaxBracket');
 const auth = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { updateSchema } = require('../validationSchemas/taxSchemas');
+const { getValidated } = require('../utils/requestHelpers');
 
 // The initial set of tax brackets if none exist in the DB
 const initialBrackets = [
@@ -34,14 +37,14 @@ router.get('/', auth, async (req, res) => {
 
 // @route   PUT api/tax-brackets
 // @desc    Update the entire set of tax brackets
-router.put('/', auth, async (req, res) => {
+router.put('/', auth, validate({ body: updateSchema }), async (req, res) => {
   try {
-    const { brackets } = req.body; // Expecting an array of bracket objects
+    const { brackets } = getValidated(req, 'body');
 
     const updatedTaxInfo = await TaxBracket.findOneAndUpdate(
       { identifier: 'singleton' },
       { $set: { brackets: brackets, lastUpdated: new Date() } },
-      { new: true, upsert: true } // 'upsert' will create it if it doesn't exist
+      { new: true, upsert: true }
     );
     res.json(updatedTaxInfo);
   } catch (err) {
@@ -51,3 +54,4 @@ router.put('/', auth, async (req, res) => {
 });
 
 module.exports = router;
+

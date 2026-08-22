@@ -5,16 +5,22 @@ const Gold = require('../models/Gold');
 const axios = require('axios');
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const {
+    createSchema,
+    updateSchema,
+    paramsSchema,
+    querySchema,
+} = require('../validationSchemas/goldSchemas');
+const { getValidated } = require('../utils/requestHelpers');
 
 // Standard CRUD routes, very similar to our other features
 
 // @route   GET api/golds
 // @desc    Get all gold logs (with pagination)
-router.get('/', auth, async (req, res) => {
-    const page = Number.isInteger(Number(req.query.page)) && Number(req.query.page) > 0 ? Number(req.query.page) : 1;
-    const limit = 25;
+router.get('/', auth, validate({ query: querySchema }), async (req, res) => {
+    const { page, limit, status, sortBy, sortOrder } = getValidated(req, 'query');
     const skip = (page - 1) * limit;
-    const { status, sortBy, sortOrder } = req.query;
 
     try {
         const query = { user: req.user.id };
@@ -170,9 +176,10 @@ router.get('/price', auth, async (req, res) => {
 
 // @route   POST api/golds
 // @desc    Create a new gold log
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, validate({ body: createSchema }), async (req, res) => {
     try {
-        const newLog = new Gold({ ...req.body, user: req.user.id });
+        const validatedBody = getValidated(req, 'body');
+        const newLog = new Gold({ ...validatedBody, user: req.user.id });
         await newLog.save();
         res.json(newLog);
     } catch (err) {
@@ -182,9 +189,10 @@ router.post('/', auth, async (req, res) => {
 
 // @route   GET api/golds/:id
 // @desc    Get a single log by ID
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
     try {
-        const log = await Gold.findById(req.params.id);
+        const { id } = getValidated(req, 'params');
+        const log = await Gold.findById(id);
         if (!log) return res.status(404).json({ msg: 'Log not found' });
         res.json(log);
     } catch (err) {
@@ -194,12 +202,15 @@ router.get('/:id', auth, async (req, res) => {
 
 // @route   PUT api/golds/:id
 // @desc    Update a log
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), async (req, res) => {
     try {
-        let log = await Gold.findById(req.params.id);
+        const { id } = getValidated(req, 'params');
+        const validatedBody = getValidated(req, 'body');
+
+        let log = await Gold.findById(id);
         if (!log) return res.status(404).json({ msg: 'Gold not found' });
-        if (log.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
-        log = await Gold.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (log.user.toString() !== req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
+        log = await Gold.findByIdAndUpdate(id, validatedBody, { new: true, runValidators: true });
         res.json(log);
     } catch (err) {
         res.status(400).json({ msg: err.message });
@@ -208,12 +219,13 @@ router.put('/:id', auth, async (req, res) => {
 
 // @route   DELETE api/golds/:id
 // @desc    Delete a log
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
     try {
-        let log = await Gold.findById(req.params.id);
+        const { id } = getValidated(req, 'params');
+        let log = await Gold.findById(id);
         if (!log) return res.status(404).json({ msg: 'Gold not found' });
-        if (log.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
-        log = await Gold.findByIdAndDelete(req.params.id);
+        if (log.user.toString() !== req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
+        log = await Gold.findByIdAndDelete(id);
         res.json({ msg: 'Log deleted successfully' });
     } catch (err) {
         res.status(500).send('Server Error');
@@ -221,3 +233,4 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 module.exports = router;
+

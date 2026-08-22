@@ -2,23 +2,24 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-// Bring in the Paycheck model
+const validate = require('../middleware/validate');
 const Paycheck = require('../models/Paycheck');
+const {
+  createSchema,
+  updateSchema,
+  paramsSchema,
+  querySchema,
+} = require('../validationSchemas/paycheckSchemas');
+const { getValidated } = require('../utils/requestHelpers');
 
 // @route   POST api/paychecks
 // @desc    Create a new paycheck
-// @access  Public
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, validate({ body: createSchema }), async (req, res) => {
   try {
+    const validatedBody = getValidated(req, 'body');
     const newPaycheck = new Paycheck({
-      month: req.body.month,
-      type: req.body.type,
-      amount: req.body.amount,
-      note: req.body.note,
+      ...validatedBody,
       user: req.user.id,
-      insuranceDeduction: req.body.insuranceDeduction,
-      grossAmount: req.body.grossAmount,
-      taxDeduction: req.body.taxDeduction,
     });
 
     const paycheck = await newPaycheck.save();
@@ -43,27 +44,22 @@ router.get('/all', auth, async (req, res) => {
 
 // @route   GET api/paychecks
 // @desc    Get all paychecks
-// @access  Public
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, validate({ query: querySchema }), async (req, res) => {
   try {
-    // Find all paychecks and sort them by date in descending order
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 25; // Can use a different limit
-      const skip = (page - 1) * limit;
-      const year = parseInt(req.query.year);
+    const { page, limit, year } = getValidated(req, 'query');
+    const skip = (page - 1) * limit;
 
-      // Build query for year filter
-      const query = {};
-      if (!isNaN(year)) {
-          query.month = query.month = { $regex: `^${year}` };
-          query.user = req.user.id;
-      }
+    const query = { user: req.user.id };
+    if (year) {
+      query.month = { $regex: `^${year}` };
+    }
+
     const total = await Paycheck.countDocuments(query);
-
     const paychecks = await Paycheck.find(query)
-      .sort({ month: -1, createdAt: -1 }) // Sort by month, then creation time
+      .sort({ month: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit);
+
     res.json({
       data: paychecks,
       total,
@@ -78,10 +74,10 @@ router.get('/', auth, async (req, res) => {
 
 // @route   GET api/paychecks/:id
 // @desc    Get a single paycheck by ID
-// @access  Public
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
   try {
-    const paycheck = await Paycheck.findById(req.params.id);
+    const { id } = getValidated(req, 'params');
+    const paycheck = await Paycheck.findById(id);
 
     if (!paycheck) {
       return res.status(404).json({ msg: 'Paycheck not found' });
@@ -90,26 +86,27 @@ router.get('/:id', auth, async (req, res) => {
     res.json(paycheck);
   } catch (err) {
     console.error(err.message);
-    // If the ID is not a valid format, it can also cause an error
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Paycheck not found' });
-    }
     res.status(500).send('Server Error');
   }
 });
 
 // @route   PUT api/paychecks/:id
 // @desc    Update a paycheck
-// @access  Public
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), async (req, res) => {
   try {
-    let paycheck = await Paycheck.findById(req.params.id);
+    const { id } = getValidated(req, 'params');
+    const validatedBody = getValidated(req, 'body');
+
+    let paycheck = await Paycheck.findById(id);
     if (!paycheck) return res.status(404).json({ msg: 'Paycheck not found' });
-    if(paycheck.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
+    if (paycheck.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'User not authorized' });
+    }
+
     paycheck = await Paycheck.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true } // This option returns the document after the update
+      id,
+      validatedBody,
+      { new: true, runValidators: true }
     );
     res.json(paycheck);
   } catch (err) {
@@ -120,13 +117,15 @@ router.put('/:id', auth, async (req, res) => {
 
 // @route   DELETE api/paychecks/:id
 // @desc    Delete a paycheck
-// @access  Public
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
   try {
-    let paycheck = await Paycheck.findById(req.params.id);
+    const { id } = getValidated(req, 'params');
+    let paycheck = await Paycheck.findById(id);
     if (!paycheck) return res.status(404).json({ msg: 'Paycheck not found' });
-    if(paycheck.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
-    await paycheck.deleteOne(); // Mongoose v6+ uses deleteOne()
+    if (paycheck.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'User not authorized' });
+    }
+    await paycheck.deleteOne();
     res.json({ msg: 'Paycheck removed' });
   } catch (err) {
     console.error(err.message);
@@ -135,3 +134,4 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 module.exports = router;
+

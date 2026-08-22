@@ -3,6 +3,14 @@ const express = require('express');
 const router = express.Router();
 const Expenditure = require('../models/Expenditure');
 const auth = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const {
+  createSchema,
+  updateSchema,
+  paramsSchema,
+  querySchema,
+} = require('../validationSchemas/expenditureSchemas');
+const { getValidated } = require('../utils/requestHelpers');
 
 
 // @route   GET api/expenditure/all
@@ -17,14 +25,24 @@ router.get('/all', auth, async (req, res) => {
   }
 });
 
+// @route   GET api/expenditures/latest
+// @desc    Get latest expenditure record
+router.get('/latest', auth, async (req, res) => {
+  try {
+    const latestExpenditure = await Expenditure.findOne({ user: req.user.id }).sort({ createdAt: -1 });
+    res.json(latestExpenditure);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route   GET api/expenditures
 // @desc    Get all expenditure logs, sorted by date descending
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, validate({ query: querySchema }), async (req, res) => {
   try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10; // Default to 10 items per page
+    const { page, limit, type } = getValidated(req, 'query');
     const skip = (page - 1) * limit;
-    const type = req.query.type; // Optional filter by type
 
     const query = { user: req.user.id };
     if (type && type !== 'all') {
@@ -56,23 +74,12 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-router.get('/latest', auth, async (req, res) => {
-  try {
-    // Find one record, sort by the 'createdAt' timestamp descending to get the latest.
-    const latestExpenditure = await Expenditure.findOne({ user: req.user.id }).sort({ createdAt: -1 });
-    res.json(latestExpenditure);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-}
-);
-
 // @route   POST api/expenditures
 // @desc    Create a new expenditure log
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, validate({ body: createSchema }), async (req, res) => {
   try {
-    const newExpenditure = new Expenditure({ ...req.body, user: req.user.id });
+    const validatedBody = getValidated(req, 'body');
+    const newExpenditure = new Expenditure({ ...validatedBody, user: req.user.id });
     const expenditure = await newExpenditure.save();
     res.json(expenditure);
   } catch (err) {
@@ -82,9 +89,10 @@ router.post('/', auth, async (req, res) => {
 
 // @route   GET api/expenditures/:id
 // @desc    Get a single expenditure log by ID
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
   try {
-    const expenditure = await Expenditure.findById(req.params.id);
+    const { id } = getValidated(req, 'params');
+    const expenditure = await Expenditure.findById(id);
     if (!expenditure) return res.status(404).json({ msg: 'Expenditure not found' });
     res.json(expenditure);
   } catch (err) {
@@ -94,12 +102,18 @@ router.get('/:id', auth, async (req, res) => {
 
 // @route   PUT api/expenditures/:id
 // @desc    Update an expenditure log
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), async (req, res) => {
   try {
-    let expenditure = await Expenditure.findById(req.params.id);
+    const { id } = getValidated(req, 'params');
+    const validatedBody = getValidated(req, 'body');
+
+    let expenditure = await Expenditure.findById(id);
     if (!expenditure) return res.status(404).json({ msg: 'Expenditure not found' });
-    if (expenditure.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
-    expenditure = await Expenditure.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (expenditure.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'User not authorized' });
+    }
+
+    expenditure = await Expenditure.findByIdAndUpdate(id, validatedBody, { new: true, runValidators: true });
     res.json(expenditure);
   } catch (err) {
     res.status(500).send('Server Error');
@@ -108,12 +122,15 @@ router.put('/:id', auth, async (req, res) => {
 
 // @route   DELETE api/expenditures/:id
 // @desc    Delete an expenditure log
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
   try {
-    let expenditure = await Expenditure.findById(req.params.id);
+    const { id } = getValidated(req, 'params');
+    let expenditure = await Expenditure.findById(id);
     if (!expenditure) return res.status(404).json({ msg: 'Expenditure not found' });
-    if (expenditure.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
-    expenditure = await Expenditure.findByIdAndDelete(req.params.id);
+    if (expenditure.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'User not authorized' });
+    }
+    expenditure = await Expenditure.findByIdAndDelete(id);
     res.json({ msg: 'Expenditure deleted' });
   } catch (err) {
     res.status(500).send('Server Error');

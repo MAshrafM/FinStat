@@ -4,12 +4,15 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const validate = require('../middleware/validate');
+const { createSchema: loginSchema } = require('../validationSchemas/authSchemas');
+const { getValidated } = require('../utils/requestHelpers');
 require('dotenv').config();
 
 // @route   POST api/auth/login
 // @desc    Authenticate user & get token
-router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+router.post('/login', validate({ body: loginSchema }), async (req, res) => {
+    const { username, password } = getValidated(req, 'body');
     try {
         // Check if user exists
         const user = await User.findOne({ username });
@@ -40,3 +43,4 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
+

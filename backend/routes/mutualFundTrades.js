@@ -1,24 +1,31 @@
 // backend/routes/mutualFundTrades.js
 const express = require('express');
 const router = express.Router();
-const MutualFundTrade = require('../models/MutualFundTrade');
+ const MutualFundTrade = require('../models/MutualFundTrade');
 const axios = require('axios');
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const {
+    createSchema,
+    updateSchema,
+    paramsSchema,
+    querySchema,
+} = require('../validationSchemas/mutualFundSchemas');
+const { getValidated } = require('../utils/requestHelpers');
 
 // @route   GET api/mutual-funds
 // @desc    Get all mutual fund trades (with pagination)
-router.get('/', auth, async (req, res) => {
-    const page = Number.isInteger(Number(req.query.page)) && Number(req.query.page) > 0 ? Number(req.query.page) : 1;
-    const limit = 25;
+router.get('/', auth, validate({ query: querySchema }), async (req, res) => {
+    const { page, limit, type } = getValidated(req, 'query');
     const skip = (page - 1) * limit;
-
-    const type = req.query.type; // Optional filter by type
 
     const query = {};
 
     if (type && type !== 'all') {
         query.type = type; // Filter by type if provided
+        query.user = req.user.id;
+    } else {
         query.user = req.user.id;
     }
 
@@ -69,9 +76,10 @@ router.get('/last-price', auth, async (req, res) => {
 
 // @route   POST api/mutual-funds
 // @desc    Create a new trade
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, validate({ body: createSchema }), async (req, res) => {
     try {
-        const newTrade = new MutualFundTrade({ ...req.body, user: req.user.id });
+        const validatedBody = getValidated(req, 'body');
+        const newTrade = new MutualFundTrade({ ...validatedBody, user: req.user.id });
         await newTrade.save();
         res.json(newTrade);
     } catch (err) {
@@ -153,9 +161,10 @@ router.get('/summary', auth, async (req, res) => {
 
 // @route   GET api/mutual-funds/:id
 // @desc    Get a single trade by ID
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
     try {
-        const trade = await MutualFundTrade.findById(req.params.id);
+        const { id } = getValidated(req, 'params');
+        const trade = await MutualFundTrade.findById(id);
         if (!trade) return res.status(404).json({ msg: 'Trade not found' });
         res.json(trade);
     } catch (err) {
@@ -165,12 +174,15 @@ router.get('/:id', auth, async (req, res) => {
 
 // @route   PUT api/mutual-funds/:id
 // @desc    Update a trade
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), async (req, res) => {
     try {
-        let trade = await MutualFundTrade.findById(req.params.id);
+        const { id } = getValidated(req, 'params');
+        const validatedBody = getValidated(req, 'body');
+
+        let trade = await MutualFundTrade.findById(id);
         if (!trade) return res.status(404).json({ msg: 'Trade not found' });
-        if (trade.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
-        trade = await MutualFundTrade.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (trade.user.toString() !== req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
+        trade = await MutualFundTrade.findByIdAndUpdate(id, validatedBody, { new: true, runValidators: true });
         res.json(trade);
     } catch (err) {
         res.status(400).json({ msg: err.message });
@@ -179,12 +191,13 @@ router.put('/:id', auth, async (req, res) => {
 
 // @route   DELETE api/mutual-funds/:id
 // @desc    Delete a trade
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
     try {
-        let trade = await MutualFundTrade.findById(req.params.id);
+        const { id } = getValidated(req, 'params');
+        let trade = await MutualFundTrade.findById(id);
         if (!trade) return res.status(404).json({ msg: 'Trade not found' });
-        if (trade.user.toString() != req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
-        trade = await MutualFundTrade.findByIdAndDelete(req.params.id);
+        if (trade.user.toString() !== req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
+        trade = await MutualFundTrade.findByIdAndDelete(id);
         res.json({ msg: 'Trade deleted successfully' });
     } catch (err) {
         res.status(500).send('Server Error');
@@ -192,3 +205,4 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 module.exports = router;
+

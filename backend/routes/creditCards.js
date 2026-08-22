@@ -3,48 +3,58 @@ const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
 const auth = require('../middleware/auth');
+const validate = require('../middleware/validate');
 const CreditCard = require('../models/CreditCard');
 const CardTransaction = require('../models/CardTransaction');
 const CardPayment = require('../models/CardPayment');
+const {
+  createCardSchema,
+  updateCardSchema,
+  createTransactionSchema,
+  updateTransactionSchema,
+  createPaymentSchema,
+  updatePaymentSchema,
+  payInFullSchema,
+  cardIdParamsSchema,
+  paramsSchema,
+} = require('../validationSchemas/creditCardSchemas');
+const { getValidated } = require('../utils/requestHelpers');
 
 // =============================================
 // --- Credit Card Management (The Cards Themselves) ---
 // =============================================
-router.post('/cards', auth, async (req, res) => { 
+router.post('/cards', auth, validate({ body: createCardSchema }), async (req, res) => { 
   try {
-          const newCard = new CreditCard({...req.body, user: req.user.id});
-          await newCard.save();
-          res.json(newCard);
-      } catch (err) {
-          res.status(400).json({ msg: err.message });
-      }
+    const validatedBody = getValidated(req, 'body');
+    const newCard = new CreditCard({ ...validatedBody, user: req.user.id });
+    await newCard.save();
+    res.json(newCard);
+  } catch (err) {
+    res.status(400).json({ msg: err.message });
+  }
 });
+
 router.get('/cards', auth, async (req, res) => { 
   try {
-          // No pagination needed for this feature as the list is usually short
-          const cards = await CreditCard.find({ user: req.user.id }).sort({ startDate: -1 });
-          res.json(cards);
-      } catch (err) {
-          res.status(500).send('Server Error');
-      }
- });
-// ... PUT and DELETE for cards ...
-router.put('/cards/:id', auth, async (req, res) => {
+    const cards = await CreditCard.find({ user: req.user.id }).sort({ startDate: -1 });
+    res.json(cards);
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+});
+
+router.put('/cards/:id', auth, validate({ params: paramsSchema, body: updateCardSchema }), async (req, res) => {
     try {
-        let card = await CreditCard.findById(req.params.id);
+        const { id } = getValidated(req, 'params');
+        const validatedBody = getValidated(req, 'body');
+
+        let card = await CreditCard.findById(id);
         if (!card) return res.status(404).json({ msg: 'Card not found' });
         if (card.user.toString() !== req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
 
-        const { name, bank, limit, billingCycleDay } = req.body;
-        const updateData = {};
-        if (name !== undefined) updateData.name = name;
-        if (bank !== undefined) updateData.bank = bank;
-        if (limit !== undefined) updateData.limit = limit;
-        if (billingCycleDay !== undefined) updateData.billingCycleDay = billingCycleDay;
-
         card = await CreditCard.findByIdAndUpdate(
-            req.params.id,
-            { $set: updateData },
+            id,
+            { $set: validatedBody },
             { new: true, runValidators: true }
         );
         res.json(card);
@@ -53,12 +63,13 @@ router.put('/cards/:id', auth, async (req, res) => {
     }
 });
 
-router.delete('/cards/:id', auth, async (req, res) => {
+router.delete('/cards/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
     try {
-        let card = await CreditCard.findById(req.params.id);
+        const { id } = getValidated(req, 'params');
+        let card = await CreditCard.findById(id);
         if (!card) return res.status(404).json({ msg: 'Credit Card not found' });
-        if(card.user.toString() != req.user.id) {return res.status(401).json({ msg: 'User not authorized' });}
-        card = await CreditCard.findByIdAndDelete(req.params.id);
+        if (card.user.toString() !== req.user.id) { return res.status(401).json({ msg: 'User not authorized' }); }
+        card = await CreditCard.findByIdAndDelete(id);
         res.json({ msg: 'Credit Card deleted successfully' });
     } catch (err) {
         res.status(500).send('Server Error');
@@ -68,16 +79,18 @@ router.delete('/cards/:id', auth, async (req, res) => {
 // =============================================
 // --- Card Transaction Management ---
 // =============================================
-router.post('/transactions', auth, async (req, res) => {
+router.post('/transactions', auth, validate({ body: createTransactionSchema }), async (req, res) => {
   try {
+    const validatedBody = getValidated(req, 'body');
+
     // Ensure the card being added to belongs to the user
-    const card = await CreditCard.findById(req.body.card);
+    const card = await CreditCard.findById(validatedBody.card);
     if (!card || card.user.toString() !== req.user.id) {
       return res.status(401).json({ msg: 'User not authorized for this card' });
     }
 
     const newTransaction = new CardTransaction({
-      ...req.body,
+      ...validatedBody,
       user: req.user.id,
     });
     await newTransaction.save();
@@ -88,15 +101,17 @@ router.post('/transactions', auth, async (req, res) => {
   }
 });
 
-router.get('/transactions/:cardId', auth, async (req, res) => {
+router.get('/transactions/:cardId', auth, validate({ params: cardIdParamsSchema }), async (req, res) => {
   try {
+    const { cardId } = getValidated(req, 'params');
+
     // Ensure the user owns the card they are querying
-    const card = await CreditCard.findById(req.params.cardId);
+    const card = await CreditCard.findById(cardId);
     if (!card || card.user.toString() !== req.user.id) {
       return res.status(401).json({ msg: 'User not authorized for this card' });
     }
 
-    const transactions = await CardTransaction.find({ card: req.params.cardId }).sort({ date: -1 });
+    const transactions = await CardTransaction.find({ card: cardId }).sort({ date: -1 });
     res.json(transactions);
   } catch (err) {
     console.error(err.message);
@@ -104,9 +119,12 @@ router.get('/transactions/:cardId', auth, async (req, res) => {
   }
 });
 
-router.put('/transactions/:id', auth, async (req, res) => {
+router.put('/transactions/:id', auth, validate({ params: paramsSchema, body: updateTransactionSchema }), async (req, res) => {
   try {
-    let transaction = await CardTransaction.findById(req.params.id);
+    const { id } = getValidated(req, 'params');
+    const validatedBody = getValidated(req, 'body');
+
+    let transaction = await CardTransaction.findById(id);
     if (!transaction) return res.status(404).json({ msg: 'Transaction not found' });
 
     // Security Check: Ensure the transaction belongs to the logged-in user
@@ -114,7 +132,7 @@ router.put('/transactions/:id', auth, async (req, res) => {
       return res.status(401).json({ msg: 'User not authorized' });
     }
 
-    transaction = await CardTransaction.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+    transaction = await CardTransaction.findByIdAndUpdate(id, { $set: validatedBody }, { new: true, runValidators: true });
     res.json(transaction);
   } catch (err) {
     console.error(err.message);
@@ -122,9 +140,10 @@ router.put('/transactions/:id', auth, async (req, res) => {
   }
 });
 
-router.delete('/transactions/:id', auth, async (req, res) => {
+router.delete('/transactions/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
   try {
-    const transaction = await CardTransaction.findById(req.params.id);
+    const { id } = getValidated(req, 'params');
+    const transaction = await CardTransaction.findById(id);
     if (!transaction) return res.status(404).json({ msg: 'Transaction not found' });
 
     // Security Check: Ensure the transaction belongs to the logged-in user
@@ -132,7 +151,7 @@ router.delete('/transactions/:id', auth, async (req, res) => {
       return res.status(401).json({ msg: 'User not authorized' });
     }
 
-    await CardTransaction.findByIdAndDelete(req.params.id);
+    await CardTransaction.findByIdAndDelete(id);
     res.json({ msg: 'Transaction deleted successfully' });
   } catch (err) {
     console.error(err.message);
@@ -140,9 +159,9 @@ router.delete('/transactions/:id', auth, async (req, res) => {
   }
 });
 
-router.get('/transactions/due/:cardId', auth, async (req, res) => {
+router.get('/transactions/due/:cardId', auth, validate({ params: cardIdParamsSchema }), async (req, res) => {
   try {
-    const { cardId } = req.params;
+    const { cardId } = getValidated(req, 'params');
     const userId = req.user.id;
 
     // 1. Security Check: Ensure the user owns the card
@@ -154,15 +173,11 @@ router.get('/transactions/due/:cardId', auth, async (req, res) => {
     // 2. Determine the start of the current billing cycle
     const now = new Date();
     const billingDay = card.billingCycleDay;
-    // The last billing date is the billing day of this month or last month.
     let lastBillingDate = new Date(now.getFullYear(), now.getMonth(), billingDay);
     if (now.getDate() < billingDay) {
-      // If we haven't reached this month's billing day yet, the cycle started last month.
       lastBillingDate.setMonth(lastBillingDate.getMonth() - 1);
     }
-    // To be safe, set the time to the beginning of that day.
     lastBillingDate.setHours(0, 0, 0, 0);
-
 
     // 3. Find all standard 'Purchase' transactions within this cycle
     const duePurchases = await CardTransaction.find({
@@ -170,8 +185,8 @@ router.get('/transactions/due/:cardId', auth, async (req, res) => {
       user: userId,
       type: 'Purchase',
       status: { $in: ['Due', 'Partial'] },
-      date: { $gte: lastBillingDate } // Find purchases on or after the last billing date
-    }).lean(); // .lean() makes the query faster and returns plain JS objects
+      date: { $gte: lastBillingDate }
+    }).lean();
 
     // 4. Find all active 'Installment' plans
     const activeInstallments = await CardTransaction.find({
@@ -179,38 +194,32 @@ router.get('/transactions/due/:cardId', auth, async (req, res) => {
       user: userId,
       type: 'Installment',
       status: { $ne: 'Paid' }
-      // A more advanced query could also check if the installment period is over
     }).lean();
 
     // 5. Format the data into a consistent "due items" list
     let dueItems = [];
 
-    // Add the purchases to the list
     duePurchases.forEach(p => {
       dueItems.push({
-        _id: p._id, // The original transaction ID
+        _id: p._id,
         description: p.description,
-        // The amount due is the remaining balance
         amountDue: p.amount - p.paidAmount,
         type: 'Purchase',
         date: p.date
       });
     });
 
-    // Add the monthly portion of each installment to the list
     activeInstallments.forEach(i => {
       dueItems.push({
-        _id: i._id, // The original transaction ID
+        _id: i._id,
         description: `${i.description} (Installment)`,
-        amountDue: i.installmentDetails.monthlyPrincipal, // Only the monthly portion is due
+        amountDue: i.installmentDetails.monthlyPrincipal,
         type: 'Installment',
         date: i.date
       });
     });
 
-    // 6. Sort the final list by date for a clean display
     dueItems.sort((a, b) => new Date(a.date) - new Date(b.date));
-
     res.json(dueItems);
 
   } catch (err) {
@@ -219,20 +228,21 @@ router.get('/transactions/due/:cardId', auth, async (req, res) => {
   }
 });
 
-
 // =============================================
 // --- Payment Logging ---
 // =============================================
-router.post('/payments', auth, async (req, res) => {
+router.post('/payments', auth, validate({ body: createPaymentSchema }), async (req, res) => {
   try {
+    const validatedBody = getValidated(req, 'body');
+
     // Ensure the card being paid belongs to the user
-    const card = await CreditCard.findById(req.body.card);
+    const card = await CreditCard.findById(validatedBody.card);
     if (!card || card.user.toString() !== req.user.id) {
       return res.status(401).json({ msg: 'User not authorized for this card' });
     }
 
     const newPayment = new CardPayment({
-      ...req.body,
+      ...validatedBody,
       user: req.user.id,
     });
     await newPayment.save();
@@ -243,13 +253,14 @@ router.post('/payments', auth, async (req, res) => {
   }
 });
 
-router.get('/payments/:cardId', auth, async (req, res) => {
+router.get('/payments/:cardId', auth, validate({ params: cardIdParamsSchema }), async (req, res) => {
     try {
-        const card = await CreditCard.findById(req.params.cardId);
+        const { cardId } = getValidated(req, 'params');
+        const card = await CreditCard.findById(cardId);
         if (!card || card.user.toString() !== req.user.id) {
             return res.status(401).json({ msg: 'User not authorized for this card' });
         }
-        const payments = await CardPayment.find({ card: req.params.cardId }).sort({ date: -1 });
+        const payments = await CardPayment.find({ card: cardId }).sort({ date: -1 });
         res.json(payments);
     } catch (err) {
         console.error(err.message);
@@ -257,9 +268,12 @@ router.get('/payments/:cardId', auth, async (req, res) => {
     }
 });
 
-router.put('/payments/:id', auth, async (req, res) => {
+router.put('/payments/:id', auth, validate({ params: paramsSchema, body: updatePaymentSchema }), async (req, res) => {
   try {
-    let payment = await CardPayment.findById(req.params.id);
+    const { id } = getValidated(req, 'params');
+    const validatedBody = getValidated(req, 'body');
+
+    let payment = await CardPayment.findById(id);
     if (!payment) return res.status(404).json({ msg: 'Payment log not found' });
 
     // Security Check: Ensure the payment belongs to the logged-in user
@@ -267,7 +281,7 @@ router.put('/payments/:id', auth, async (req, res) => {
       return res.status(401).json({ msg: 'User not authorized' });
     }
 
-    payment = await CardPayment.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+    payment = await CardPayment.findByIdAndUpdate(id, { $set: validatedBody }, { new: true, runValidators: true });
     res.json(payment);
   } catch (err) {
     console.error(err.message);
@@ -275,9 +289,10 @@ router.put('/payments/:id', auth, async (req, res) => {
   }
 });
 
-router.delete('/payments/:id', auth, async (req, res) => {
+router.delete('/payments/:id', auth, validate({ params: paramsSchema }), async (req, res) => {
   try {
-    const payment = await CardPayment.findById(req.params.id);
+    const { id } = getValidated(req, 'params');
+    const payment = await CardPayment.findById(id);
     if (!payment) return res.status(404).json({ msg: 'Payment log not found' });
 
     // Security Check: Ensure the payment belongs to the logged-in user
@@ -285,7 +300,7 @@ router.delete('/payments/:id', auth, async (req, res) => {
       return res.status(401).json({ msg: 'User not authorized' });
     }
 
-    await CardPayment.findByIdAndDelete(req.params.id);
+    await CardPayment.findByIdAndDelete(id);
     res.json({ msg: 'Payment log deleted successfully' });
   } catch (err) {
     console.error(err.message);
@@ -293,9 +308,9 @@ router.delete('/payments/:id', auth, async (req, res) => {
   }
 });
 
-router.post('/payments/full', auth, async (req, res) => {
+router.post('/payments/full', auth, validate({ body: payInFullSchema }), async (req, res) => {
   try {
-    const { transactionId } = req.body;
+    const { transactionId } = getValidated(req, 'body');
     const transaction = await CardTransaction.findById(transactionId);
 
     // Security check
