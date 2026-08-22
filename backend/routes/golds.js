@@ -24,7 +24,7 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
     const { page, limit, status, sortBy, sortOrder } = getValidated(req, 'query');
     const skip = (page - 1) * limit;
 
-    const query = { user: req.user.id };
+    const query = { user: req.effectiveUserId };
     if (status && status !== 'all') {
         query.status = status;
     }
@@ -49,7 +49,7 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
 // @route   GET api/golds/all
 // @desc    Get all gold logs (without pagination)
 router.get('/all', auth, asyncHandler(async (req, res) => {
-    const logs = await Gold.find({ user: req.user.id }).sort({ date: -1, createdAt: -1 });
+    const logs = await Gold.find({ user: req.effectiveUserId }).sort({ date: -1, createdAt: -1 });
     res.json(logs);
 }));
 
@@ -58,7 +58,7 @@ router.get('/all', auth, asyncHandler(async (req, res) => {
 router.get('/summary', auth, asyncHandler(async (req, res) => {
     const summary = await Gold.aggregate([
         {
-            $match: { user: new mongoose.Types.ObjectId(req.user.id) }
+            $match: { user: new mongoose.Types.ObjectId(req.effectiveUserId) }
         },
         // Stage 1: Group documents by status and karat
         {
@@ -159,8 +159,11 @@ router.get('/price', auth, asyncHandler(async (req, res) => {
 // @route   POST api/golds
 // @desc    Create a new gold log
 router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const validatedBody = getValidated(req, 'body');
-    const newLog = new Gold({ ...validatedBody, user: req.user.id });
+    const newLog = new Gold({ ...validatedBody, user: req.effectiveUserId });
     await newLog.save();
     res.status(201).json(newLog);
 }));
@@ -169,7 +172,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
 // @desc    Get a single log by ID
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
     const { id } = getValidated(req, 'params');
-    const log = await Gold.findById(id);
+    const log = await Gold.findOne({ _id: id, user: req.effectiveUserId });
     if (!log) {
         throw new NotFoundError('Gold log not found');
     }
@@ -179,6 +182,9 @@ router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async 
 // @route   PUT api/golds/:id
 // @desc    Update a log
 router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const { id } = getValidated(req, 'params');
     const validatedBody = getValidated(req, 'body');
 
@@ -186,7 +192,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     if (!log) {
         throw new NotFoundError('Gold log not found');
     }
-    if (log.user.toString() !== req.user.id) {
+    if (log.user.toString() !== req.effectiveUserId.toString()) {
         throw new ForbiddenError('User not authorized');
     }
     log = await Gold.findByIdAndUpdate(id, validatedBody, { new: true, runValidators: true });
@@ -196,12 +202,15 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
 // @route   DELETE api/golds/:id
 // @desc    Delete a log
 router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const { id } = getValidated(req, 'params');
     let log = await Gold.findById(id);
     if (!log) {
         throw new NotFoundError('Gold log not found');
     }
-    if (log.user.toString() !== req.user.id) {
+    if (log.user.toString() !== req.effectiveUserId.toString()) {
         throw new ForbiddenError('User not authorized');
     }
     await Gold.findByIdAndDelete(id);

@@ -18,15 +18,18 @@ const { getValidated } = require('../utils/requestHelpers');
 // @route   GET api/certificates
 // @desc    Get all certificates
 router.get('/', auth, asyncHandler(async (req, res) => {
-    const certificates = await Certificate.find({ user: req.user.id }).sort({ startDate: -1 });
+    const certificates = await Certificate.find({ user: req.effectiveUserId }).sort({ startDate: -1 });
     res.json(certificates);
 }));
 
 // @route   POST api/certificates
 // @desc    Create a new certificate
 router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const validatedBody = getValidated(req, 'body');
-    const newCertificate = new Certificate({ ...validatedBody, user: req.user.id });
+    const newCertificate = new Certificate({ ...validatedBody, user: req.effectiveUserId });
     await newCertificate.save();
     res.status(201).json(newCertificate);
 }));
@@ -35,7 +38,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
 // @desc    Get a single certificate by ID
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
     const { id } = getValidated(req, 'params');
-    const certificate = await Certificate.findOne({ _id: id, user: req.user.id });
+    const certificate = await Certificate.findOne({ _id: id, user: req.effectiveUserId });
     if (!certificate) {
         throw new NotFoundError('Certificate not found');
     }
@@ -45,6 +48,9 @@ router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async 
 // @route   PUT api/certificates/:id
 // @desc    Update a certificate
 router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const { id } = getValidated(req, 'params');
     const validatedBody = getValidated(req, 'body');
 
@@ -52,7 +58,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     if (!certificate) {
         throw new NotFoundError('Certificate not found');
     }
-    if (certificate.user.toString() !== req.user.id) {
+    if (certificate.user.toString() !== req.effectiveUserId.toString()) {
         throw new ForbiddenError('User not authorized');
     }
     certificate = await Certificate.findByIdAndUpdate(id, validatedBody, { new: true, runValidators: true });
@@ -62,12 +68,15 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
 // @route   DELETE api/certificates/:id
 // @desc    Delete a certificate
 router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const { id } = getValidated(req, 'params');
     let certificate = await Certificate.findById(id);
     if (!certificate) {
         throw new NotFoundError('Certificate not found');
     }
-    if (certificate.user.toString() !== req.user.id) {
+    if (certificate.user.toString() !== req.effectiveUserId.toString()) {
         throw new ForbiddenError('User not authorized');
     }
     await Certificate.findByIdAndDelete(id);

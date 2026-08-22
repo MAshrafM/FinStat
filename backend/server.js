@@ -2,6 +2,7 @@
 // Import the Express library
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db'); // Import the DB connection function
 const errorHandler = require('./middleware/errorHandler');
 const { NotFoundError } = require('./utils/errors');
@@ -17,7 +18,9 @@ app.use(cors({
   credentials: true
 }));
 // This allows us to accept JSON data in the body of requests
-app.use(express.json()); 
+app.use(express.json());
+// Parse cookies for refresh token handling
+app.use(cookieParser()); 
 
 // Define a simple test route
 app.get('/', (req, res) => res.send('API Running'));
@@ -35,6 +38,7 @@ app.use('/api/certificates', require('./routes/certificates'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/currency', require('./routes/currency'));
 app.use('/api/credit-cards', require('./routes/creditCards'));
+app.use('/api/admin', require('./routes/admin'));
 
 // 404 handler specifically scoped to unmatched /api routes
 app.use('/api', (req, res, next) => {

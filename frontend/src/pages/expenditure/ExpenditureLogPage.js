@@ -25,13 +25,24 @@ const ExpenditureLogPage = () => {
   const [selectedType, setSelectedType] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const [latestHolding, setLatestHolding] = useState({ bank: 0, cash: 0, prepaid: 0 });
 
-  const loadExpenditures = useCallback((page, selectedType) => {
-    getExpenditures(page, 25, selectedType).then(response => {
-      setExpenditures(response.data); // The data is now in a 'data' property
-      setTotalPages(response.totalPages);
-    });
+  const loadExpenditures = useCallback((page, typeFilter) => {
+    setIsLoading(true);
+    getExpenditures(page, 25, typeFilter)
+      .then(response => {
+        const list = Array.isArray(response?.data) ? response.data : (Array.isArray(response) ? response : []);
+        setExpenditures(list);
+        setTotalPages(response?.totalPages || 1);
+      })
+      .catch(err => {
+        console.error('Failed to load expenditures:', err);
+        setExpenditures([]);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   const loadLatestHolding = useCallback(() => {
@@ -54,20 +65,28 @@ const ExpenditureLogPage = () => {
   }, [currentPage, selectedType, loadExpenditures, loadLatestHolding]);
 
   useEffect(() => {
-    if (expenditures.length === 0) {
+    if (!Array.isArray(expenditures) || expenditures.length === 0) {
       setProcessedExpenditures([]);
       return;
     }
 
-    const sortedByTimestamp = [...expenditures].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-    setProcessedExpenditures(sortedByTimestamp.reverse());
+    const sortedByTimestamp = [...expenditures].sort((a, b) => {
+      const dateA = new Date(a.date || a.createdAt || 0).getTime();
+      const dateB = new Date(b.date || b.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
+    setProcessedExpenditures(sortedByTimestamp);
   }, [expenditures]);
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this log?')) {
-      await deleteExpenditure(id);
-      loadExpenditures(currentPage, selectedType);
-      loadLatestHolding();
+      try {
+        await deleteExpenditure(id);
+        loadExpenditures(currentPage, selectedType);
+        loadLatestHolding();
+      } catch (err) {
+        console.error('Failed to delete expenditure:', err);
+      }
     }
   };
 
@@ -98,7 +117,6 @@ const ExpenditureLogPage = () => {
     transition: 'all 0.2s ease',
   });
 
-  // Calculate the 'Transaction' value on the frontend
   return (
     <div className="page-container">
       <div className="page-header">
@@ -261,45 +279,59 @@ const ExpenditureLogPage = () => {
             </tr>
           </thead>
           <tbody>
-            {processedExpenditures.map(log => (
-              <tr key={log._id}>
-                <td data-label="Date">{formatDate(log.date)}</td>
-                <td data-label="Bank">{formatCurrency(log.bank)}</td>
-                <td data-label="Cash">{formatCurrency(log.cash)}</td>
-                <td data-label="Prepaid">{formatCurrency(log.prepaid || 0)}</td>
-                <td data-label="Transaction" style={{
-                  color: log.transactionType === 'W' ? 'red' :
-                    log.transactionType === 'S' ? 'rgba(194, 139, 0, 0.9)' :
-                      log.transactionType === 'T' ? 'green' : 'gray'
-                }}>
-                  <strong>{formatCurrency(log.transactionValue)}</strong>
-                </td>
-                <td data-label="Type">{transactionTypeMap[log.transactionType] || log.transactionType}</td>
-                <td data-label="Categories">
-                  <div className="category-badges-list">
-                    {(log.categories && log.categories.length > 0 ? log.categories : ['Other']).map(catName => {
-                      const catConfig = EXPENDITURE_CATEGORIES.find(c => c.name === catName) || { color: '#6B7280' };
-                      return (
-                        <span
-                          key={catName}
-                          className="category-badge"
-                          style={{ backgroundColor: catConfig.color }}
-                        >
-                          {catName}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </td>
-                <td data-label="Description" style={{ fontSize: '0.9rem', color: '#4b5563', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={log.description}>
-                  {log.description || '-'}
-                </td>
-                <td data-label="Action" className="action-cell">
-                  <Link to={`/expenditures/edit/${log._id}`}><FaPencilAlt className="action-icon edit-icon" /></Link>
-                  <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(log._id)} />
+            {isLoading ? (
+              <tr>
+                <td colSpan="9" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                  Loading expenditures...
                 </td>
               </tr>
-            ))}
+            ) : processedExpenditures.length === 0 ? (
+              <tr>
+                <td colSpan="9" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                  No expenditure records found. Click <strong>Add Expenditure</strong> to record a new transaction.
+                </td>
+              </tr>
+            ) : (
+              processedExpenditures.map(log => (
+                <tr key={log._id}>
+                  <td data-label="Date">{formatDate(log.date)}</td>
+                  <td data-label="Bank">{formatCurrency(log.bank)}</td>
+                  <td data-label="Cash">{formatCurrency(log.cash)}</td>
+                  <td data-label="Prepaid">{formatCurrency(log.prepaid || 0)}</td>
+                  <td data-label="Transaction" style={{
+                    color: log.transactionType === 'W' ? 'red' :
+                      log.transactionType === 'S' ? 'rgba(194, 139, 0, 0.9)' :
+                        log.transactionType === 'T' ? 'green' : 'gray'
+                  }}>
+                    <strong>{formatCurrency(log.transactionValue)}</strong>
+                  </td>
+                  <td data-label="Type">{transactionTypeMap[log.transactionType] || log.transactionType}</td>
+                  <td data-label="Categories">
+                    <div className="category-badges-list">
+                      {(log.categories && log.categories.length > 0 ? log.categories : ['Other']).map(catName => {
+                        const catConfig = EXPENDITURE_CATEGORIES.find(c => c.name === catName) || { color: '#6B7280' };
+                        return (
+                          <span
+                            key={catName}
+                            className="category-badge"
+                            style={{ backgroundColor: catConfig.color }}
+                          >
+                            {catName}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </td>
+                  <td data-label="Description" style={{ fontSize: '0.9rem', color: '#4b5563', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={log.description}>
+                    {log.description || '-'}
+                  </td>
+                  <td data-label="Action" className="action-cell">
+                    <Link to={`/expenditures/edit/${log._id}`}><FaPencilAlt className="action-icon edit-icon" /></Link>
+                    <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(log._id)} style={{ cursor: 'pointer' }} />
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

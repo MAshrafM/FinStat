@@ -88,6 +88,20 @@ const ProtectedRoute = () => {
         return <Navigate to="/" replace />;
     }
 
+    // Role-based access control for /admin route
+    const userStr = localStorage.getItem('user');
+    let userRole = 'viewer';
+    if (userStr) {
+      try {
+        const parsed = JSON.parse(userStr);
+        if (parsed.role) userRole = parsed.role;
+      } catch (e) {}
+    }
+
+    if (location.pathname.startsWith('/admin') && userRole !== 'admin' && userRole !== 'manager') {
+      return <Navigate to="/dashboard" replace />;
+    }
+
    return (
     <div className="App">
       <Navbar onSidebarToggle={handleSidebarToggle} />

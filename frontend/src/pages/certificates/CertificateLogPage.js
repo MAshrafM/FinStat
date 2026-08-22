@@ -9,12 +9,18 @@ import '../trades/Trades.css'; // Reuse styles
 
 const CertificateLogPage = () => {
     // Use the global data context
-    const { certificates, certificateSummary, isLoading, calculateProgress } = useCertData(); // Access any global data if needed
-    //console.log(certificates);
+    const { certificates = [], certificateSummary = {}, isLoading, calculateProgress, refreshCertificates } = useCertData();
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this certificate?')) {
-            await deleteCertificate(id);
+            try {
+                await deleteCertificate(id);
+                if (typeof refreshCertificates === 'function') {
+                    refreshCertificates();
+                }
+            } catch (err) {
+                console.error("Failed to delete certificate:", err);
+            }
         }
     };
 
@@ -44,7 +50,7 @@ const CertificateLogPage = () => {
                     marginBottom: '4px'
                 }}>
                     <div style={{
-                        width: `${progress}%`,
+                        width: `${Math.max(0, Math.min(100, progress || 0))}%`,
                         height: '100%',
                         backgroundColor: progressColor,
                         transition: 'width 0.3s ease'
@@ -64,7 +70,7 @@ const CertificateLogPage = () => {
                         Future
                     </span>) :(
                         <span>
-                            {daysRemaining} days left
+                            {daysRemaining || 0} days left
                         </span>
                     )}
                 </div>
@@ -83,6 +89,8 @@ const CertificateLogPage = () => {
     if (isLoading) {
         return <p className="page-container">Loading Certificates...</p>;
     }
+
+    const safeCertList = Array.isArray(certificates) ? certificates : [];
 
     return (
         <div className="page-container">
@@ -112,10 +120,10 @@ const CertificateLogPage = () => {
                     }}>
                         <div style={{ fontSize: '14px', opacity: '0.9' }}>Active Certificates</div>
                         <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '5px 0' }}>
-                            {certificateSummary.activeCertificates}
+                            {certificateSummary.activeCertificates || 0}
                         </div>
                         <div style={{ fontSize: '12px', opacity: '0.8' }}>
-                            out of {certificateSummary.totalCertificates} total
+                            out of {certificateSummary.totalCertificates || safeCertList.length} total
                         </div>
                     </div>
 
@@ -127,7 +135,7 @@ const CertificateLogPage = () => {
                     }}>
                         <div style={{ fontSize: '14px', opacity: '0.9' }}>Active Investment</div>
                         <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '5px 0' }}>
-                            {formatCurrency(certificateSummary.totalActiveAmount)}
+                            {formatCurrency(certificateSummary.totalActiveAmount || 0)}
                         </div>
                         <div style={{ fontSize: '12px', opacity: '0.8' }}>
                             currently invested
@@ -142,7 +150,7 @@ const CertificateLogPage = () => {
                     }}>
                         <div style={{ fontSize: '14px', opacity: '0.9' }}>Expected Returns</div>
                         <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '5px 0' }}>
-                            {formatCurrency(certificateSummary.totalExpectedReturns)}
+                            {formatCurrency(certificateSummary.totalExpectedReturns || 0)}
                         </div>
                         <div style={{ fontSize: '12px', opacity: '0.8' }}>
                             from active certificates
@@ -157,9 +165,9 @@ const CertificateLogPage = () => {
                     }}>
                         <div style={{ fontSize: '14px', opacity: '0.9' }}>Portfolio Status</div>
                         <div style={{ fontSize: '14px', margin: '5px 0' }}>
-                            <div style={{ color: '#4CAF50' }}>✓ {certificateSummary.activeCertificates} Active</div>
-                            <div style={{ color: '#ff9800' }}>⏳ {certificateSummary.futureCertificates} Future</div>
-                            <div style={{ color: '#f44336' }}>✗ {certificateSummary.expiredCertificates} Expired</div>
+                            <div style={{ color: '#4CAF50' }}>✓ {certificateSummary.activeCertificates || 0} Active</div>
+                            <div style={{ color: '#ff9800' }}>⏳ {certificateSummary.futureCertificates || 0} Future</div>
+                            <div style={{ color: '#f44336' }}>✗ {certificateSummary.expiredCertificates || 0} Expired</div>
                         </div>
                     </div>
                 </div>
@@ -176,49 +184,63 @@ const CertificateLogPage = () => {
                             <th>Progress</th>
                             <th>Maturity Date</th>
                             <th>Total Return</th>
-                            <th>total interest</th>
+                            <th>Total Interest</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {certificates.map(cert => {
-                            const years = cert.period / 12;
-                            const totalReturn = cert.amount * (1 + (cert.interest / 100) * years);
-                            const interest = (cert.amount * cert.interest / 100) * years;
-                            const maturityDate = new Date(cert.startDate);
-                            maturityDate.setMonth(maturityDate.getMonth() + cert.period);
+                        {safeCertList.length === 0 ? (
+                            <tr>
+                                <td colSpan="9" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                                    No bank certificates found. Click <strong>Add Certificate</strong> above to get started.
+                                </td>
+                            </tr>
+                        ) : (
+                            safeCertList.map(cert => {
+                                const amount = Number(cert.amount) || 0;
+                                const interestRate = Number(cert.interest) || 0;
+                                const period = Number(cert.period) || 0;
+                                const years = period / 12;
+                                const totalReturn = amount * (1 + (interestRate / 100) * years);
+                                const interestAmount = (amount * interestRate / 100) * years;
+                                const maturityDate = cert.startDate ? new Date(cert.startDate) : null;
+                                if (maturityDate) {
+                                    maturityDate.setMonth(maturityDate.getMonth() + period);
+                                }
 
-                            const { progress, isExpired, isActive, daysRemaining } = calculateProgress(cert.startDate, cert.period);
+                                const progressData = calculateProgress ? calculateProgress(cert.startDate, period) : { progress: 0, isExpired: false, isActive: false, daysRemaining: 0 };
+                                const { progress, isExpired, isActive, daysRemaining } = progressData;
 
-                            return (
-                                <tr key={cert._id} style={{backgroundColor: isExpired ? '#ffebee' : 'transparent'}}>
-                                    <td style={{ fontWeight: 'bold' }} data-label="Name">{cert.name}</td>
-                                    <td className="total-value" data-label="Amount">{formatCurrency(cert.amount)}</td>
-                                    <td data-label="Interest">{cert.interest.toFixed(2)}%</td>
-                                    <td data-label="Period">{cert.period} months</td>
-                                    <td data-label="Progress">
-                                        <ProgressBar
-                                            progress={progress}
-                                            isExpired={isExpired}
-                                            isActive={isActive}
-                                            daysRemaining={daysRemaining}
-                                        />
-                                    </td>
-                                    <td style={{
-                                        color: isExpired ? '#f44336' : 'inherit',
-                                        fontWeight: isExpired ? 'bold' : 'normal'
-                                    }} data-label="Maturity Date">
-                                        {formatDate(maturityDate)}
-                                    </td>
-                                    <td data-label="Return">{formatCurrency(totalReturn)}</td>
-                                    <td data-label="Total Interest">{formatCurrency(interest)}</td>
-                                    <td className="action-icons" data-label="Actions">
-                                        <Link className="action-icon edit-icon" to={`/certificates/edit/${cert._id}`}><FaEdit /></Link>
-                                        <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(cert._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
-                                    </td>
-                                </tr>
-                            );
-                        })}
+                                return (
+                                    <tr key={cert._id} style={{backgroundColor: isExpired ? '#ffebee' : 'transparent'}}>
+                                        <td style={{ fontWeight: 'bold' }} data-label="Name">{cert.name || 'Unnamed'}</td>
+                                        <td className="total-value" data-label="Amount">{formatCurrency(amount)}</td>
+                                        <td data-label="Interest">{interestRate.toFixed(2)}%</td>
+                                        <td data-label="Period">{period} months</td>
+                                        <td data-label="Progress">
+                                            <ProgressBar
+                                                progress={progress}
+                                                isExpired={isExpired}
+                                                isActive={isActive}
+                                                daysRemaining={daysRemaining}
+                                            />
+                                        </td>
+                                        <td style={{
+                                            color: isExpired ? '#f44336' : 'inherit',
+                                            fontWeight: isExpired ? 'bold' : 'normal'
+                                        }} data-label="Maturity Date">
+                                            {maturityDate ? formatDate(maturityDate) : '-'}
+                                        </td>
+                                        <td data-label="Return">{formatCurrency(totalReturn)}</td>
+                                        <td data-label="Total Interest">{formatCurrency(interestAmount)}</td>
+                                        <td className="action-icons" data-label="Actions">
+                                            <Link className="action-icon edit-icon" to={`/certificates/edit/${cert._id}`}><FaEdit /></Link>
+                                            <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(cert._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        )}
                     </tbody>
                 </table>
             </div>

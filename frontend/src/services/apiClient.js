@@ -1,5 +1,6 @@
 // frontend/src/services/apiClient.js
 import { extractApiError, clearStaleToken } from '../utils/errorHelpers';
+import { BASE_API_URL } from '../config/api';
 
 /**
  * Custom error class representing API failures.
@@ -40,17 +41,55 @@ export const dispatchToast = (message, type = 'error') => {
   }
 };
 
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+const subscribeTokenRefresh = (callback) => {
+  refreshSubscribers.push(callback);
+};
+
+const onTokenRefreshed = (newToken) => {
+  refreshSubscribers.forEach((cb) => cb(newToken));
+  refreshSubscribers = [];
+};
+
 /**
- * Core API request handler with timeout, auth headers, error extraction,
- * and automatic toast dispatching.
+ * Calls /api/auth/refresh without Authorization headers to obtain a new access token.
+ */
+const refreshAccessToken = async () => {
+  const refreshUrl = `${BASE_API_URL}/auth/refresh`;
+  const response = await fetch(refreshUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include', // sends HTTP-only refreshToken cookie
+  });
+
+  if (!response.ok) {
+    throw new Error('Refresh failed');
+  }
+
+  const data = await response.json();
+  if (data.token) {
+    localStorage.setItem('token', data.token);
+    return data.token;
+  }
+  throw new Error('No token returned from refresh');
+};
+
+/**
+ * Core API request handler with timeout, auth headers, automatic 401 refresh interceptor,
+ * and error handling.
  *
  * @param {string} url - API endpoint URL
  * @param {Object} [options={}] - Request options
  * @param {string} [options.method='GET'] - HTTP method
  * @param {Object} [options.headers] - Extra request headers
- * @param {any} [options.body] - Request body (will be JSON-stringified if object)
+ * @param {any} [options.body] - Request body
  * @param {number} [options.timeout=30000] - Request timeout in milliseconds
- * @param {boolean} [options.suppressToast=false] - If true, skips global error toast dispatch
+ * @param {boolean} [options.suppressToast=false] - If true, skips error toast
+ * @param {boolean} [options._retry=false] - Internal flag to prevent infinite refresh loops
  * @returns {Promise<any>} Resolves with response data
  */
 export const apiRequest = async (url, options = {}) => {
@@ -60,6 +99,7 @@ export const apiRequest = async (url, options = {}) => {
     body,
     timeout = 30000,
     suppressToast = false,
+    _retry = false,
     ...restOptions
   } = options;
 
@@ -83,6 +123,7 @@ export const apiRequest = async (url, options = {}) => {
       method,
       headers: finalHeaders,
       body: body !== undefined && typeof body !== 'string' ? JSON.stringify(body) : body,
+      credentials: 'include',
       signal: controller ? controller.signal : undefined,
       ...restOptions,
     });
@@ -107,20 +148,75 @@ export const apiRequest = async (url, options = {}) => {
       }
     }
 
+    // Handle 401 Unauthorized with token refresh (if not a login/refresh request itself)
+    const isAuthEndpoint =
+      url.includes('/api/auth/login') ||
+      url.includes('/api/auth/refresh') ||
+      url.includes('/api/auth/login/2fa');
+
+    if (response.status === 401 && !isAuthEndpoint && !_retry) {
+      if (!isRefreshing) {
+        isRefreshing = true;
+        try {
+          const newToken = await refreshAccessToken();
+          isRefreshing = false;
+          onTokenRefreshed(newToken);
+          // Retry current request with new token
+          return apiRequest(url, {
+            ...options,
+            _retry: true,
+            headers: {
+              ...headers,
+              'x-auth-token': newToken,
+            },
+          });
+        } catch (refreshErr) {
+          isRefreshing = false;
+          refreshSubscribers = [];
+          clearStaleToken();
+          const userFriendlyMessage = 'Your session has expired. Please log in again.';
+          if (!suppressToast) {
+            dispatchToast(userFriendlyMessage, 'warning');
+          }
+          if (
+            typeof window !== 'undefined' &&
+            window.location.pathname !== '/' &&
+            window.location.pathname !== '/login'
+          ) {
+            const currentUrl = window.location.pathname + window.location.search;
+            setTimeout(() => {
+              window.location.href = `/?redirect=${encodeURIComponent(currentUrl)}`;
+            }, 1000);
+          }
+          throw new ApiError(userFriendlyMessage, 401, data);
+        }
+      } else {
+        // Wait for token refresh to resolve
+        return new Promise((resolve, reject) => {
+          subscribeTokenRefresh((newToken) => {
+            apiRequest(url, {
+              ...options,
+              _retry: true,
+              headers: {
+                ...headers,
+                'x-auth-token': newToken,
+              },
+            })
+              .then(resolve)
+              .catch(reject);
+          });
+        });
+      }
+    }
+
     // Check for HTTP error status or explicit success: false payload
     if (!response.ok || (data && data.success === false)) {
       const status = response.status || 400;
       let userFriendlyMessage = extractApiError({ response: { status, data } });
 
-      if (status === 401) {
+      if (status === 401 && !isAuthEndpoint) {
         clearStaleToken();
         userFriendlyMessage = 'Your session has expired. Please log in again.';
-        if (typeof window !== 'undefined' && window.location.pathname !== '/' && window.location.pathname !== '/login') {
-          const currentUrl = window.location.pathname + window.location.search;
-          setTimeout(() => {
-            window.location.href = `/?redirect=${encodeURIComponent(currentUrl)}`;
-          }, 1200);
-        }
       }
 
       if (!suppressToast) {

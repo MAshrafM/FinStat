@@ -2,6 +2,8 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../../server');
 
+jest.setTimeout(30000);
+
 describe('Centralized Error Handling (Integration Tests)', () => {
   afterAll(async () => {
     await mongoose.disconnect();

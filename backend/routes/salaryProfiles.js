@@ -5,7 +5,7 @@ const SalaryProfile = require('../models/SalaryProfile');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError } = require('../utils/errors');
+const { NotFoundError, ForbiddenError } = require('../utils/errors');
 const {
   createSchema,
   updateSchema,
@@ -17,16 +17,19 @@ const { getValidated } = require('../utils/requestHelpers');
 // @route   GET api/salary-profile
 // @desc    Get the single salary profile. If it doesn't exist, it can be created by the client.
 router.get('/', auth, asyncHandler(async (req, res) => {
-  const profile = await SalaryProfile.findOne({ user: req.user.id });
+  const profile = await SalaryProfile.findOne({ user: req.effectiveUserId });
   res.json(profile);
 }));
 
 // @route   PUT api/salary-profile
 // @desc    Update the main details of the single salary profile
 router.put('/', auth, validate({ body: updateSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
   const validatedBody = getValidated(req, 'body');
 
-  let profile = await SalaryProfile.findOne({ user: req.user.id });
+  let profile = await SalaryProfile.findOne({ user: req.effectiveUserId });
   if (!profile) {
     throw new NotFoundError('Profile not found. Cannot update.');
   }
@@ -43,9 +46,12 @@ router.put('/', auth, validate({ body: updateSchema }), asyncHandler(async (req,
 // @route   POST api/salary-profile
 // @desc    Create or update the single salary profile.
 router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
   const { name, title, position, year, salaryDetails } = getValidated(req, 'body');
 
-  let profile = await SalaryProfile.findOne({ user: req.user.id });
+  let profile = await SalaryProfile.findOne({ user: req.effectiveUserId });
 
   if (profile) {
     // --- UPDATE EXISTING PROFILE ---
@@ -65,7 +71,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
       position,
       year,
       salaryHistory: salaryDetails ? [salaryDetails] : [],
-      user: req.user.id,
+      user: req.effectiveUserId,
     });
   }
 
@@ -76,10 +82,13 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
 // @route   PUT /api/salary-profile/history/:historyId
 // @desc    Update a specific record in the salary history
 router.put('/history/:historyId', auth, validate({ params: historyParamsSchema, body: updateHistorySchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
   const { historyId } = getValidated(req, 'params');
   const updatedRecordData = getValidated(req, 'body');
 
-  const profile = await SalaryProfile.findOne({ user: req.user.id });
+  const profile = await SalaryProfile.findOne({ user: req.effectiveUserId });
   if (!profile) {
     throw new NotFoundError('Profile not found');
   }
@@ -97,9 +106,12 @@ router.put('/history/:historyId', auth, validate({ params: historyParamsSchema, 
 // @route   DELETE /api/salary-profile/history/:historyId
 // @desc    Delete a specific record from the salary history
 router.delete('/history/:historyId', auth, validate({ params: historyParamsSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
   const { historyId } = getValidated(req, 'params');
 
-  const profile = await SalaryProfile.findOne({ user: req.user.id });
+  const profile = await SalaryProfile.findOne({ user: req.effectiveUserId });
   if (!profile) {
     throw new NotFoundError('Profile not found');
   }

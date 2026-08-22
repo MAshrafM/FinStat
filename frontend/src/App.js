@@ -59,6 +59,10 @@ const AddCurrencyPage = React.lazy(() => import('./pages/currency/AddCurrencyPag
 const EditCurrencyPage = React.lazy(() => import('./pages/currency/EditCurrencyPage'));
 // Credit Cards
 const CreditCardPage = React.lazy(() => import('./pages/credit-cards/CreditCardPage'));
+// Security & Access Control
+const SecuritySettingsPage = React.lazy(() => import('./pages/security/SecuritySettingsPage'));
+// Admin User Management
+const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 
 function App() {
   return (
@@ -71,6 +75,8 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/summary" element={<Summary />} />
+                <Route path="/security" element={<SecuritySettingsPage />} />
+                <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/paycheck-log" element={<PaycheckLog />} />
                 <Route path="/paycheck-log/new" element={<AddPaycheck />} />
                 <Route path="/paycheck-log/edit/:id" element={<EditPaycheck />} />

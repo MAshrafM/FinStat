@@ -17,10 +17,13 @@ const { getValidated } = require('../utils/requestHelpers');
 // @route   POST api/paychecks
 // @desc    Create a new paycheck
 router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
   const validatedBody = getValidated(req, 'body');
   const newPaycheck = new Paycheck({
     ...validatedBody,
-    user: req.user.id,
+    user: req.effectiveUserId,
   });
 
   const paycheck = await newPaycheck.save();
@@ -30,7 +33,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
 // @route   GET api/paychecks/all
 // @desc    Get ALL paychecks without pagination (for analysis pages)
 router.get('/all', auth, asyncHandler(async (req, res) => {
-  const paychecks = await Paycheck.find({ user: req.user.id }).sort({ month: -1 });
+  const paychecks = await Paycheck.find({ user: req.effectiveUserId }).sort({ month: -1 });
   res.json(paychecks);
 }));
 
@@ -40,7 +43,7 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
   const { page, limit, year } = getValidated(req, 'query');
   const skip = (page - 1) * limit;
 
-  const query = { user: req.user.id };
+  const query = { user: req.effectiveUserId };
   if (year) {
     query.month = { $regex: `^${year}` };
   }
@@ -63,7 +66,7 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
 // @desc    Get a single paycheck by ID
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
   const { id } = getValidated(req, 'params');
-  const paycheck = await Paycheck.findById(id);
+  const paycheck = await Paycheck.findOne({ _id: id, user: req.effectiveUserId });
 
   if (!paycheck) {
     throw new NotFoundError('Paycheck not found');
@@ -75,6 +78,9 @@ router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async 
 // @route   PUT api/paychecks/:id
 // @desc    Update a paycheck
 router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
@@ -82,7 +88,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   if (!paycheck) {
     throw new NotFoundError('Paycheck not found');
   }
-  if (paycheck.user.toString() !== req.user.id) {
+  if (paycheck.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
 
@@ -97,12 +103,15 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
 // @route   DELETE api/paychecks/:id
 // @desc    Delete a paycheck
 router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
   const { id } = getValidated(req, 'params');
   let paycheck = await Paycheck.findById(id);
   if (!paycheck) {
     throw new NotFoundError('Paycheck not found');
   }
-  if (paycheck.user.toString() !== req.user.id) {
+  if (paycheck.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
   await paycheck.deleteOne();

@@ -22,7 +22,7 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
     const { page, limit, type } = getValidated(req, 'query');
     const skip = (page - 1) * limit;
 
-    const query = { user: req.user.id };
+    const query = { user: req.effectiveUserId };
     if (type && type !== 'all') {
         query.type = type;
     }
@@ -37,7 +37,7 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
 }));
 
 router.get('/code/:code', auth, asyncHandler(async (req, res) => {
-    const trade = await MutualFundTrade.find({ code: req.params.code, user: req.user.id });
+    const trade = await MutualFundTrade.find({ code: req.params.code, user: req.effectiveUserId });
     if (!trade || trade.length === 0) {
         throw new NotFoundError('Trade not found');
     }
@@ -45,7 +45,7 @@ router.get('/code/:code', auth, asyncHandler(async (req, res) => {
 }));
 
 router.get('/all', auth, asyncHandler(async (req, res) => {
-    const trades = await MutualFundTrade.find({ user: req.user.id }).sort({ date: -1, createdAt: -1 });
+    const trades = await MutualFundTrade.find({ user: req.effectiveUserId }).sort({ date: -1, createdAt: -1 });
     res.json(trades);
 }));
 
@@ -60,8 +60,11 @@ router.get('/last-price', auth, asyncHandler(async (req, res) => {
 // @route   POST api/mutual-funds
 // @desc    Create a new trade
 router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const validatedBody = getValidated(req, 'body');
-    const newTrade = new MutualFundTrade({ ...validatedBody, user: req.user.id });
+    const newTrade = new MutualFundTrade({ ...validatedBody, user: req.effectiveUserId });
     await newTrade.save();
     res.status(201).json(newTrade);
 }));
@@ -71,7 +74,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
 router.get('/summary', auth, asyncHandler(async (req, res) => {
     const summary = await MutualFundTrade.aggregate([
         {
-            $match: { user: new mongoose.Types.ObjectId(req.user.id) }
+            $match: { user: new mongoose.Types.ObjectId(req.effectiveUserId) }
         },
         // Stage 1: Group documents by the fund code
         {
@@ -133,7 +136,7 @@ router.get('/summary', auth, asyncHandler(async (req, res) => {
 // @desc    Get a single trade by ID
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
     const { id } = getValidated(req, 'params');
-    const trade = await MutualFundTrade.findById(id);
+    const trade = await MutualFundTrade.findOne({ _id: id, user: req.effectiveUserId });
     if (!trade) {
         throw new NotFoundError('Trade not found');
     }
@@ -143,6 +146,9 @@ router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async 
 // @route   PUT api/mutual-funds/:id
 // @desc    Update a trade
 router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const { id } = getValidated(req, 'params');
     const validatedBody = getValidated(req, 'body');
 
@@ -150,7 +156,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     if (!trade) {
         throw new NotFoundError('Trade not found');
     }
-    if (trade.user.toString() !== req.user.id) {
+    if (trade.user.toString() !== req.effectiveUserId.toString()) {
         throw new ForbiddenError('User not authorized');
     }
     trade = await MutualFundTrade.findByIdAndUpdate(id, validatedBody, { new: true, runValidators: true });
@@ -160,12 +166,15 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
 // @route   DELETE api/mutual-funds/:id
 // @desc    Delete a trade
 router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const { id } = getValidated(req, 'params');
     let trade = await MutualFundTrade.findById(id);
     if (!trade) {
         throw new NotFoundError('Trade not found');
     }
-    if (trade.user.toString() !== req.user.id) {
+    if (trade.user.toString() !== req.effectiveUserId.toString()) {
         throw new ForbiddenError('User not authorized');
     }
     await MutualFundTrade.findByIdAndDelete(id);

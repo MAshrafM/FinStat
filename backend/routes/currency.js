@@ -20,15 +20,18 @@ const { getValidated } = require('../utils/requestHelpers');
 // @route   GET api/currency
 // @desc    Get all currency
 router.get('/', auth, asyncHandler(async (req, res) => {
-    const currencies = await Currency.find({ user: req.user.id }).sort({ date: -1 });
+    const currencies = await Currency.find({ user: req.effectiveUserId }).sort({ date: -1 });
     res.json(currencies);
 }));
 
 // @route   POST api/currency
 // @desc    Create a new currency
 router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const validatedBody = getValidated(req, 'body');
-    const newCurrency = new Currency({ ...validatedBody, user: req.user.id });
+    const newCurrency = new Currency({ ...validatedBody, user: req.effectiveUserId });
     await newCurrency.save();
     res.status(201).json(newCurrency);
 }));
@@ -36,7 +39,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
 router.get('/summary', auth, asyncHandler(async (req, res) => {
     const summary = await Currency.aggregate([
         {
-            $match: { user: new mongoose.Types.ObjectId(req.user.id) }
+            $match: { user: new mongoose.Types.ObjectId(req.effectiveUserId) }
         },
         {
             $group: {
@@ -72,7 +75,7 @@ router.get('/price', auth, asyncHandler(async (req, res) => {
 // @desc    Get a single Currency by ID
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
     const { id } = getValidated(req, 'params');
-    const currency = await Currency.findOne({ _id: id, user: req.user.id });
+    const currency = await Currency.findOne({ _id: id, user: req.effectiveUserId });
     if (!currency) {
         throw new NotFoundError('Currency not found');
     }
@@ -82,6 +85,9 @@ router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async 
 // @route   PUT api/Currency/:id
 // @desc    Update a Currency
 router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const { id } = getValidated(req, 'params');
     const validatedBody = getValidated(req, 'body');
 
@@ -89,7 +95,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     if (!currency) {
         throw new NotFoundError('Currency not found');
     }
-    if (currency.user.toString() !== req.user.id) {
+    if (currency.user.toString() !== req.effectiveUserId.toString()) {
         throw new ForbiddenError('User not authorized');
     }
     currency = await Currency.findByIdAndUpdate(id, validatedBody, { new: true, runValidators: true });
@@ -99,12 +105,15 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
 // @route   DELETE api/Currency/:id
 // @desc    Delete a Currency
 router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const { id } = getValidated(req, 'params');
     let currency = await Currency.findById(id);
     if (!currency) {
         throw new NotFoundError('Currency not found');
     }
-    if (currency.user.toString() !== req.user.id) {
+    if (currency.user.toString() !== req.effectiveUserId.toString()) {
         throw new ForbiddenError('User not authorized');
     }
     await Currency.findByIdAndDelete(id);

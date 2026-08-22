@@ -1,9 +1,11 @@
-import { BASE_API_URL } from '../config/api';
-import apiClient from './apiClient';
-
-const API_URL = `${BASE_API_URL}/auth`;
+// frontend/src/services/loginService.js
+import { loginUser } from './authService';
 
 export const login = async (username, password, options = {}) => {
-  const data = await apiClient.post(`${API_URL}/login`, { username, password }, options);
-  return data.token;
+  const data = await loginUser(username, password, options);
+  return data;
 };
+
+const loginService = { login };
+
+export default loginService;

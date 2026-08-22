@@ -22,7 +22,7 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
     const { page, limit, broker, search } = getValidated(req, 'query');
     const skip = (page - 1) * limit;
 
-    const query = { user: req.user.id };
+    const query = { user: req.effectiveUserId };
     if (broker && broker !== 'TopUp') {
         query.broker = broker;
     } else if (broker === 'TopUp') {
@@ -45,7 +45,7 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
 // @route   GET api/trades/all
 // @desc    Get all trades (without pagination)
 router.get('/all', auth, asyncHandler(async (req, res) => {
-    const trades = await Trade.find({ user: req.user.id }).sort({ createdAt: -1 });
+    const trades = await Trade.find({ user: req.effectiveUserId }).sort({ createdAt: -1 });
     res.json(trades);
 }));
 
@@ -55,7 +55,7 @@ router.get('/summary', auth, asyncHandler(async (req, res) => {
     const summary = await Trade.aggregate([
         // --- Stage 0: Match user ---
         {
-            $match: { user: new mongoose.Types.ObjectId(req.user.id) }
+            $match: { user: new mongoose.Types.ObjectId(req.effectiveUserId) }
         },
         // --- Stage 1: Grouping ---
         {
@@ -191,8 +191,11 @@ router.get('/market-prices', auth, asyncHandler(async (req, res) => {
 // @route   POST api/trades
 // @desc    Create a new trade
 router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const validatedBody = getValidated(req, 'body');
-    const newTrade = new Trade({ ...validatedBody, user: req.user.id });
+    const newTrade = new Trade({ ...validatedBody, user: req.effectiveUserId });
     await newTrade.save();
     res.status(201).json(newTrade);
 }));
@@ -201,7 +204,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
 // @desc    Get a single trade by ID
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
     const { id } = getValidated(req, 'params');
-    const trade = await Trade.findOne({ _id: id, user: req.user.id });
+    const trade = await Trade.findOne({ _id: id, user: req.effectiveUserId });
     if (!trade) {
         throw new NotFoundError('Trade not found');
     }
@@ -211,6 +214,9 @@ router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async 
 // @route   PUT api/trades/:id
 // @desc    Update a trade
 router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const { id } = getValidated(req, 'params');
     const validatedBody = getValidated(req, 'body');
 
@@ -218,7 +224,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     if (!trade) {
         throw new NotFoundError('Trade not found');
     }
-    if (trade.user.toString() !== req.user.id) {
+    if (trade.user.toString() !== req.effectiveUserId.toString()) {
         throw new ForbiddenError('User not authorized');
     }
     trade = await Trade.findByIdAndUpdate(id, validatedBody, { new: true, runValidators: true });
@@ -228,12 +234,15 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
 // @route   DELETE api/trades/:id
 // @desc    Delete a trade
 router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+    if (!req.canModify) {
+        throw new ForbiddenError('Viewers have read-only access');
+    }
     const { id } = getValidated(req, 'params');
     let trade = await Trade.findById(id);
     if (!trade) {
         throw new NotFoundError('Trade not found');
     }
-    if (trade.user.toString() !== req.user.id) {
+    if (trade.user.toString() !== req.effectiveUserId.toString()) {
         throw new ForbiddenError('User not authorized');
     }
     await Trade.findByIdAndDelete(id);

@@ -5,6 +5,7 @@ const TaxBracket = require('../models/TaxBracket');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
+const { ForbiddenError } = require('../utils/errors');
 const { updateSchema } = require('../validationSchemas/taxSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 
@@ -34,6 +35,9 @@ router.get('/', auth, asyncHandler(async (req, res) => {
 // @route   PUT api/tax-brackets
 // @desc    Update the entire set of tax brackets
 router.put('/', auth, validate({ body: updateSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
   const { brackets } = getValidated(req, 'body');
 
   const updatedTaxInfo = await TaxBracket.findOneAndUpdate(
