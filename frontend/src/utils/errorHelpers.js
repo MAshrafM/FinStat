@@ -69,6 +69,8 @@ export const extractApiError = (error) => {
  */
 export const clearStaleToken = () => {
   localStorage.removeItem('token');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('user');
 };
 
 /**

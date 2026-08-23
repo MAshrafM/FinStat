@@ -4,8 +4,8 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
-const ACCESS_TOKEN_EXPIRY = '15m';
-const REFRESH_TOKEN_DAYS = 7;
+const ACCESS_TOKEN_EXPIRY = process.env.JWT_EXPIRES_IN || '30d';
+const REFRESH_TOKEN_DAYS = 90;
 const TEMP_2FA_TOKEN_EXPIRY = '5m';
 
 /**

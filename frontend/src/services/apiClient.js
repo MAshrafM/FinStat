@@ -58,11 +58,13 @@ const onTokenRefreshed = (newToken) => {
  */
 const refreshAccessToken = async () => {
   const refreshUrl = `${BASE_API_URL}/auth/refresh`;
+  const storedRefreshToken = typeof localStorage !== 'undefined' ? localStorage.getItem('refreshToken') : null;
   const response = await fetch(refreshUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({ refreshToken: storedRefreshToken }),
     credentials: 'include', // sends HTTP-only refreshToken cookie
   });
 
@@ -73,6 +75,12 @@ const refreshAccessToken = async () => {
   const data = await response.json();
   if (data.token) {
     localStorage.setItem('token', data.token);
+    if (data.refreshToken) {
+      localStorage.setItem('refreshToken', data.refreshToken);
+    }
+    if (data.user) {
+      localStorage.setItem('user', JSON.stringify(data.user));
+    }
     return data.token;
   }
   throw new Error('No token returned from refresh');

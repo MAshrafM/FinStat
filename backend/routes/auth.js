@@ -55,7 +55,7 @@ const getCookieOptions = () => {
     httpOnly: true,
     secure: isProd,
     sameSite: isProd ? 'none' : 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    maxAge: 90 * 24 * 60 * 60 * 1000, // 90 days
     path: '/',
   };
 };
@@ -148,6 +148,7 @@ router.post(
     res.json({
       success: true,
       token,
+      refreshToken: rawRefreshToken,
       user: await formatUserResponse(user),
     });
   })
@@ -251,6 +252,7 @@ router.post(
     res.json({
       success: true,
       token,
+      refreshToken: rawRefreshToken,
       user: await formatUserResponse(user),
     });
   })
@@ -262,7 +264,7 @@ router.post(
 router.post(
   '/refresh',
   asyncHandler(async (req, res) => {
-    const rawRefreshToken = req.cookies?.refreshToken;
+    const rawRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
     if (!rawRefreshToken) {
       throw new UnauthorizedError('No refresh token provided');
@@ -325,6 +327,7 @@ router.post(
     res.json({
       success: true,
       token: newAccessToken,
+      refreshToken: newRawRefreshToken,
       user: await formatUserResponse(user),
     });
   })
@@ -337,7 +340,7 @@ router.post(
   '/logout',
   auth,
   asyncHandler(async (req, res) => {
-    const rawRefreshToken = req.cookies?.refreshToken;
+    const rawRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
     if (rawRefreshToken) {
       const tokens = await RefreshToken.find({ userId: req.user.id, revoked: false });

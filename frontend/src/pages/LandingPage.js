@@ -24,7 +24,11 @@ const LandingPage = () => {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   const handleInitialLogin = async (e) => {
     e.preventDefault();
@@ -44,6 +48,9 @@ const LandingPage = () => {
         setIsLoading(false);
       } else if (data.token) {
         localStorage.setItem('token', data.token);
+        if (data.refreshToken) {
+          localStorage.setItem('refreshToken', data.refreshToken);
+        }
         if (data.user) {
           localStorage.setItem('user', JSON.stringify(data.user));
         }
@@ -80,6 +87,9 @@ const LandingPage = () => {
       const data = await login2FA(payload, { suppressToast: true });
       if (data.token) {
         localStorage.setItem('token', data.token);
+        if (data.refreshToken) {
+          localStorage.setItem('refreshToken', data.refreshToken);
+        }
         if (data.user) {
           localStorage.setItem('user', JSON.stringify(data.user));
         }

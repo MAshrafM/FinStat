@@ -58,10 +58,12 @@ export const getAuditLogs = async (page = 1, limit = 10, options = {}) => {
  * Logs out user: revokes refresh token on backend and clears client token.
  */
 export const logoutUser = async (options = {}) => {
+  const storedRefreshToken = typeof localStorage !== 'undefined' ? localStorage.getItem('refreshToken') : null;
   try {
-    await apiClient.post(`${AUTH_URL}/logout`, {}, { ...options, suppressToast: true });
+    await apiClient.post(`${AUTH_URL}/logout`, { refreshToken: storedRefreshToken }, { ...options, suppressToast: true });
   } finally {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
   }
 };
