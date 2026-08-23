@@ -38,7 +38,31 @@ const GoldForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onFormSubmit(formData);
+
+        const payload = {
+            date: formData.date,
+            item: formData.item.trim(),
+            karat: Number(formData.karat),
+            weight: parseFloat(formData.weight),
+            price: parseFloat(formData.price),
+            paid: parseFloat(formData.paid),
+            status: formData.status,
+        };
+
+        if (formData.seller && formData.seller.trim()) {
+            payload.seller = formData.seller.trim();
+        }
+
+        if (formData.status === 'sold') {
+            if (formData.sellingPrice !== '' && formData.sellingPrice !== undefined && formData.sellingPrice !== null) {
+                payload.sellingPrice = parseFloat(formData.sellingPrice);
+            }
+            if (formData.sellingDate) {
+                payload.sellingDate = formData.sellingDate;
+            }
+        }
+
+        onFormSubmit(payload);
     };
 
     return (
