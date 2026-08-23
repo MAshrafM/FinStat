@@ -1,11 +1,12 @@
 // backend/models/Expenditure.js
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const softDeletePlugin = require('../utils/softDeletePlugin');
 
 const ExpenditureSchema = new mongoose.Schema({
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User', // This creates a reference to the User model
+    ref: 'User', // Reference to User model
     required: true,
   },
   date: {
@@ -17,9 +18,17 @@ const ExpenditureSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
+  bankInPiastres: {
+    type: Number,
+    default: 0,
+  },
   cash: {
     type: Number,
     required: true,
+    default: 0,
+  },
+  cashInPiastres: {
+    type: Number,
     default: 0,
   },
   prepaid: {
@@ -27,15 +36,23 @@ const ExpenditureSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
+  prepaidInPiastres: {
+    type: Number,
+    default: 0,
+  },
   transactionValue: {
     type: Number,
     required: true,
     default: 0,
   },
+  transactionValueInPiastres: {
+    type: Number,
+    default: 0,
+  },
   transactionType: {
     type: String,
     required: true,
-    enum: ['W', 'T', 'S', 'na'], // Withdraw, Top-up, Saving, log
+    enum: ['W', 'T', 'S', 'na'], // Withdraw, Top-up, Saving, Log / Transfer
   },
   description: {
     type: String,
@@ -86,12 +103,30 @@ const ExpenditureSchema = new mongoose.Schema({
       default: 0,
     },
   },
+  runningBalancesInPiastres: {
+    bank: {
+      type: Number,
+      default: 0,
+    },
+    cash: {
+      type: Number,
+      default: 0,
+    },
+    prepaid: {
+      type: Number,
+      default: 0,
+    },
+  },
 }, {
-  timestamps: true, // Adds createdAt and updatedAt fields
+  timestamps: true,
 });
 
-// Index for balance propagation and chronological queries
+ExpenditureSchema.plugin(softDeletePlugin);
+
+// Compound indexes for query performance and tie-breakers
+ExpenditureSchema.index({ user: 1, date: -1, _id: 1 });
 ExpenditureSchema.index({ user: 1, date: 1, _id: 1 });
+ExpenditureSchema.index({ user: 1, paymentMethod: 1, date: -1 });
+ExpenditureSchema.index({ user: 1, deletedAt: 1 });
 
 module.exports = mongoose.model('Expenditure', ExpenditureSchema);
-

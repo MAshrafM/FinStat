@@ -8,16 +8,26 @@ const asyncHandler = require('../utils/asyncHandler');
 const { ForbiddenError } = require('../utils/errors');
 const { updateSchema } = require('../validationSchemas/taxSchemas');
 const { getValidated } = require('../utils/requestHelpers');
+const { toPiastres } = require('../utils/currencyUtils');
 
 // The initial set of tax brackets if none exist in the DB
 const initialBrackets = [
-  { level: 1, from: 0, to: 30000, rate: 0 },
-  { level: 2, from: 30000, to: 45000, rate: 0.10 },
-  { level: 3, from: 45000, to: 60000, rate: 0.15 },
-  { level: 4, from: 60000, to: 200000, rate: 0.20 },
-  { level: 5, from: 200000, to: 400000, rate: 0.225 },
-  { level: 6, from: 400000, to: 600000, rate: 0.25 },
+  { level: 1, from: 0, fromInPiastres: 0, to: 30000, toInPiastres: 3000000, rate: 0 },
+  { level: 2, from: 30000, fromInPiastres: 3000000, to: 45000, toInPiastres: 4500000, rate: 0.10 },
+  { level: 3, from: 45000, fromInPiastres: 4500000, to: 60000, toInPiastres: 6000000, rate: 0.15 },
+  { level: 4, from: 60000, fromInPiastres: 6000000, to: 200000, toInPiastres: 20000000, rate: 0.20 },
+  { level: 5, from: 200000, fromInPiastres: 20000000, to: 400000, toInPiastres: 40000000, rate: 0.225 },
+  { level: 6, from: 400000, fromInPiastres: 40000000, to: 600000, toInPiastres: 60000000, rate: 0.25 },
 ];
+
+const mapBracketsWithPiastres = (brackets) => {
+  if (!Array.isArray(brackets)) return brackets;
+  return brackets.map((b) => ({
+    ...b,
+    fromInPiastres: toPiastres(b.from),
+    toInPiastres: toPiastres(b.to),
+  }));
+};
 
 // @route   GET api/tax-brackets
 // @desc    Get the current tax brackets. If none exist, create and return them.
@@ -25,7 +35,6 @@ router.get('/', auth, asyncHandler(async (req, res) => {
   let taxInfo = await TaxBracket.findOne({ identifier: 'singleton' });
 
   if (!taxInfo) {
-    // If no document exists, create one with the initial data
     taxInfo = new TaxBracket({ brackets: initialBrackets });
     await taxInfo.save();
   }
@@ -39,15 +48,14 @@ router.put('/', auth, validate({ body: updateSchema }), asyncHandler(async (req,
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { brackets } = getValidated(req, 'body');
+  const processedBrackets = mapBracketsWithPiastres(brackets);
 
   const updatedTaxInfo = await TaxBracket.findOneAndUpdate(
     { identifier: 'singleton' },
-    { $set: { brackets: brackets, lastUpdated: new Date() } },
+    { $set: { brackets: processedBrackets, lastUpdated: new Date() } },
     { new: true, upsert: true }
   );
   res.json(updatedTaxInfo);
 }));
 
 module.exports = router;
-
-

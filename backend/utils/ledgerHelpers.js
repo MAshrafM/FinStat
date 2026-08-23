@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 const Expenditure = require('../models/Expenditure');
 const { BadRequestError } = require('./errors');
+const { toPiastres } = require('./currencyUtils');
 
 /**
  * Normalizes paymentMethod / account string to lowercase account key.
@@ -36,12 +37,9 @@ const mapAccountFields = (paymentMethod, transactionValue) => {
 };
 
 /**
- * Calculates signed balance deltas across all accounts.
- * - T (Topup): +val to paymentMethod account
- * - W (Withdraw) / S (Saving): -val from paymentMethod account
- * - na (Log / Transfer): Moves money between accounts or applies explicit log operations
+ * Calculates signed balance deltas across all accounts in both decimal EGP and integer piastres.
  * @param {Object} tx
- * @returns {Array<{ account: 'bank' | 'cash' | 'prepaid', delta: number }>}
+ * @returns {Array<{ account: 'bank' | 'cash' | 'prepaid', delta: number, deltaInPiastres: number }>}
  */
 const calculateSignedDeltas = (tx) => {
   const {
@@ -55,58 +53,59 @@ const calculateSignedDeltas = (tx) => {
     toAccount,
   } = tx;
   const absValue = Math.abs(Number(transactionValue) || 0);
+  const absPiastres = toPiastres(absValue);
   const deltas = [];
 
   if (transactionType === 'T') {
     const acc = normalizeAccount(paymentMethod || 'Bank');
-    deltas.push({ account: acc, delta: absValue });
+    deltas.push({ account: acc, delta: absValue, deltaInPiastres: absPiastres });
   } else if (transactionType === 'W') {
     const acc = normalizeAccount(paymentMethod || 'Bank');
-    deltas.push({ account: acc, delta: -absValue });
+    deltas.push({ account: acc, delta: -absValue, deltaInPiastres: -absPiastres });
   } else if (transactionType === 'S') {
     const acc = normalizeAccount(paymentMethod || 'Bank');
-    deltas.push({ account: acc, delta: -absValue });
+    deltas.push({ account: acc, delta: -absValue, deltaInPiastres: -absPiastres });
   } else if (transactionType === 'na') {
     // Log / Inter-account transfer
     if (fromAccount && toAccount && fromAccount !== toAccount) {
-      deltas.push({ account: normalizeAccount(fromAccount), delta: -absValue });
-      deltas.push({ account: normalizeAccount(toAccount), delta: absValue });
+      deltas.push({ account: normalizeAccount(fromAccount), delta: -absValue, deltaInPiastres: -absPiastres });
+      deltas.push({ account: normalizeAccount(toAccount), delta: absValue, deltaInPiastres: absPiastres });
     } else {
       let hasOp = false;
 
       if (logBankOp === '+') {
-        deltas.push({ account: 'bank', delta: absValue });
+        deltas.push({ account: 'bank', delta: absValue, deltaInPiastres: absPiastres });
         hasOp = true;
       } else if (logBankOp === '-') {
-        deltas.push({ account: 'bank', delta: -absValue });
+        deltas.push({ account: 'bank', delta: -absValue, deltaInPiastres: -absPiastres });
         hasOp = true;
       }
 
       if (logCashOp === '+') {
-        deltas.push({ account: 'cash', delta: absValue });
+        deltas.push({ account: 'cash', delta: absValue, deltaInPiastres: absPiastres });
         hasOp = true;
       } else if (logCashOp === '-') {
-        deltas.push({ account: 'cash', delta: -absValue });
+        deltas.push({ account: 'cash', delta: -absValue, deltaInPiastres: -absPiastres });
         hasOp = true;
       }
 
       if (logPrepaidOp === '+') {
-        deltas.push({ account: 'prepaid', delta: absValue });
+        deltas.push({ account: 'prepaid', delta: absValue, deltaInPiastres: absPiastres });
         hasOp = true;
       } else if (logPrepaidOp === '-') {
-        deltas.push({ account: 'prepaid', delta: -absValue });
+        deltas.push({ account: 'prepaid', delta: -absValue, deltaInPiastres: -absPiastres });
         hasOp = true;
       }
 
       // Default fallback if no specific ops provided
       if (!hasOp) {
         const acc = normalizeAccount(paymentMethod || 'Bank');
-        deltas.push({ account: acc, delta: absValue });
+        deltas.push({ account: acc, delta: absValue, deltaInPiastres: absPiastres });
       }
     }
   } else {
     const acc = normalizeAccount(paymentMethod || 'Bank');
-    deltas.push({ account: acc, delta: -absValue });
+    deltas.push({ account: acc, delta: -absValue, deltaInPiastres: -absPiastres });
   }
 
   return deltas;
@@ -125,16 +124,16 @@ const calculateSignedDelta = (paymentMethod, transactionType, transactionValue) 
 };
 
 /**
- * Finds the immediately preceding transaction for a user relative to a given date and tie-breaker ID.
+ * Finds the immediately preceding non-deleted transaction for a user relative to a given date and tie-breaker ID.
  * @param {string|mongoose.Types.ObjectId} userId
  * @param {Date|string} date
  * @param {string|mongoose.Types.ObjectId|null} excludeId
  * @param {mongoose.ClientSession|null} session
- * @returns {Promise<{ bank: number, cash: number, prepaid: number }>}
+ * @returns {Promise<{ bank: number, cash: number, prepaid: number, bankInPiastres: number, cashInPiastres: number, prepaidInPiastres: number }>}
  */
 const calculatePreviousBalance = async (userId, date, excludeId = null, session = null) => {
   const targetDate = new Date(date);
-  const query = { user: userId };
+  const query = { user: userId, deletedAt: null };
 
   if (excludeId) {
     query._id = { $ne: excludeId };
@@ -153,18 +152,33 @@ const calculatePreviousBalance = async (userId, date, excludeId = null, session 
 
   const prevDoc = await findQuery.exec();
   if (!prevDoc) {
-    return { bank: 0, cash: 0, prepaid: 0 };
+    return {
+      bank: 0,
+      cash: 0,
+      prepaid: 0,
+      bankInPiastres: 0,
+      cashInPiastres: 0,
+      prepaidInPiastres: 0,
+    };
   }
 
+  const bank = prevDoc.runningBalances?.bank ?? prevDoc.bank ?? 0;
+  const cash = prevDoc.runningBalances?.cash ?? prevDoc.cash ?? 0;
+  const prepaid = prevDoc.runningBalances?.prepaid ?? prevDoc.prepaid ?? 0;
+
   return {
-    bank: prevDoc.runningBalances?.bank ?? prevDoc.bank ?? 0,
-    cash: prevDoc.runningBalances?.cash ?? prevDoc.cash ?? 0,
-    prepaid: prevDoc.runningBalances?.prepaid ?? prevDoc.prepaid ?? 0,
+    bank,
+    cash,
+    prepaid,
+    bankInPiastres: prevDoc.runningBalancesInPiastres?.bank ?? toPiastres(bank),
+    cashInPiastres: prevDoc.runningBalancesInPiastres?.cash ?? toPiastres(cash),
+    prepaidInPiastres: prevDoc.runningBalancesInPiastres?.prepaid ?? toPiastres(prepaid),
   };
 };
 
 /**
- * Propagates a balance delta to all subsequent transactions for a specific account.
+ * Propagates a balance delta to all subsequent non-deleted transactions for a specific account.
+ * Updates both decimal EGP fields and integer piastres fields.
  * @param {string|mongoose.Types.ObjectId} userId
  * @param {string} account - 'bank' | 'cash' | 'prepaid'
  * @param {Date|string} date
@@ -186,8 +200,9 @@ const propagateBalanceChange = async (
   }
 
   const acc = normalizeAccount(account);
+  const changePiastres = toPiastres(changeAmount);
   const targetDate = new Date(date);
-  const query = { user: userId };
+  const query = { user: userId, deletedAt: null };
 
   if (excludeId) {
     query._id = { $ne: excludeId };
@@ -202,7 +217,9 @@ const propagateBalanceChange = async (
   const updateOp = {
     $inc: {
       [`runningBalances.${acc}`]: changeAmount,
+      [`runningBalancesInPiastres.${acc}`]: changePiastres,
       [acc]: changeAmount,
+      [`${acc}InPiastres`]: changePiastres,
     },
   };
 

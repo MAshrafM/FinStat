@@ -21,28 +21,29 @@ const {
   propagateBalanceChanges,
   executeInTransaction,
 } = require('../utils/ledgerHelpers');
+const { toPiastres } = require('../utils/currencyUtils');
 
 // @route   GET api/expenditures/all
-// @desc    Get ALL expenditure without pagination (for analysis pages)
+// @desc    Get ALL non-deleted expenditure without pagination (for analysis pages)
 router.get('/all', auth, asyncHandler(async (req, res) => {
-  const expenditures = await Expenditure.find({ user: req.effectiveUserId }).sort({ date: -1, _id: -1 });
+  const expenditures = await Expenditure.find({ user: req.effectiveUserId, deletedAt: null }).sort({ date: -1, _id: -1 });
   res.json(expenditures);
 }));
 
 // @route   GET api/expenditures/latest
-// @desc    Get chronologically latest expenditure record
+// @desc    Get chronologically latest non-deleted expenditure record
 router.get('/latest', auth, asyncHandler(async (req, res) => {
-  const latestExpenditure = await Expenditure.findOne({ user: req.effectiveUserId }).sort({ date: -1, _id: -1 });
+  const latestExpenditure = await Expenditure.findOne({ user: req.effectiveUserId, deletedAt: null }).sort({ date: -1, _id: -1 });
   res.json(latestExpenditure);
 }));
 
 // @route   GET api/expenditures
-// @desc    Get all expenditure logs, sorted by date descending
+// @desc    Get all active expenditure logs, sorted by date descending
 router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req, res) => {
   const { page, limit, type } = getValidated(req, 'query');
   const skip = (page - 1) * limit;
 
-  const query = { user: req.effectiveUserId };
+  const query = { user: req.effectiveUserId, deletedAt: null };
   if (type && type !== 'all') {
     if (['Prepaid', 'Bank', 'Cash'].includes(type)) {
       query.paymentMethod = type;
@@ -80,6 +81,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
       ...validatedBody,
       user: req.effectiveUserId,
       date: new Date(validatedBody.date),
+      transactionValueInPiastres: toPiastres(validatedBody.transactionValue),
     });
 
     const prevBalances = await calculatePreviousBalance(
@@ -91,15 +93,30 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
 
     const deltas = calculateSignedDeltas(newExpenditure);
 
-    const updatedRunningBalances = { ...prevBalances };
-    for (const { account, delta } of deltas) {
+    const updatedRunningBalances = {
+      bank: prevBalances.bank,
+      cash: prevBalances.cash,
+      prepaid: prevBalances.prepaid,
+    };
+    const updatedRunningBalancesInPiastres = {
+      bank: prevBalances.bankInPiastres,
+      cash: prevBalances.cashInPiastres,
+      prepaid: prevBalances.prepaidInPiastres,
+    };
+
+    for (const { account, delta, deltaInPiastres } of deltas) {
       updatedRunningBalances[account] = (updatedRunningBalances[account] || 0) + delta;
+      updatedRunningBalancesInPiastres[account] = (updatedRunningBalancesInPiastres[account] || 0) + deltaInPiastres;
     }
 
     newExpenditure.runningBalances = updatedRunningBalances;
+    newExpenditure.runningBalancesInPiastres = updatedRunningBalancesInPiastres;
     newExpenditure.bank = updatedRunningBalances.bank;
+    newExpenditure.bankInPiastres = updatedRunningBalancesInPiastres.bank;
     newExpenditure.cash = updatedRunningBalances.cash;
+    newExpenditure.cashInPiastres = updatedRunningBalancesInPiastres.cash;
     newExpenditure.prepaid = updatedRunningBalances.prepaid;
+    newExpenditure.prepaidInPiastres = updatedRunningBalancesInPiastres.prepaid;
 
     await newExpenditure.save(session ? { session } : undefined);
 
@@ -121,7 +138,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
 // @desc    Get a single expenditure log by ID
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
   const { id } = getValidated(req, 'params');
-  const expenditure = await Expenditure.findOne({ _id: id, user: req.effectiveUserId });
+  const expenditure = await Expenditure.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!expenditure) {
     throw new NotFoundError('Expenditure not found');
   }
@@ -137,7 +154,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  const existingExpenditure = await Expenditure.findById(id);
+  const existingExpenditure = await Expenditure.findOne({ _id: id, deletedAt: null });
   if (!existingExpenditure) {
     throw new NotFoundError('Expenditure not found');
   }
@@ -148,7 +165,11 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   const updatedDoc = await executeInTransaction(async (session) => {
     // 1. Revert previous transaction deltas on future records
     const oldDeltas = calculateSignedDeltas(existingExpenditure);
-    const revertedOldDeltas = oldDeltas.map(({ account, delta }) => ({ account, delta: -delta }));
+    const revertedOldDeltas = oldDeltas.map(({ account, delta, deltaInPiastres }) => ({
+      account,
+      delta: -delta,
+      deltaInPiastres: -deltaInPiastres,
+    }));
     await propagateBalanceChanges(
       existingExpenditure.user,
       revertedOldDeltas,
@@ -173,6 +194,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
 
     existingExpenditure.date = targetDate;
     existingExpenditure.transactionValue = targetValue;
+    existingExpenditure.transactionValueInPiastres = toPiastres(targetValue);
     existingExpenditure.transactionType = targetType;
     existingExpenditure.paymentMethod = targetMethod;
 
@@ -186,15 +208,30 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
 
     // 4. Calculate new deltas and update runningBalances
     const newDeltas = calculateSignedDeltas(existingExpenditure);
-    const newRunningBalances = { ...prevBalances };
-    for (const { account, delta } of newDeltas) {
+    const newRunningBalances = {
+      bank: prevBalances.bank,
+      cash: prevBalances.cash,
+      prepaid: prevBalances.prepaid,
+    };
+    const newRunningBalancesInPiastres = {
+      bank: prevBalances.bankInPiastres,
+      cash: prevBalances.cashInPiastres,
+      prepaid: prevBalances.prepaidInPiastres,
+    };
+
+    for (const { account, delta, deltaInPiastres } of newDeltas) {
       newRunningBalances[account] = (newRunningBalances[account] || 0) + delta;
+      newRunningBalancesInPiastres[account] = (newRunningBalancesInPiastres[account] || 0) + deltaInPiastres;
     }
 
     existingExpenditure.runningBalances = newRunningBalances;
+    existingExpenditure.runningBalancesInPiastres = newRunningBalancesInPiastres;
     existingExpenditure.bank = newRunningBalances.bank;
+    existingExpenditure.bankInPiastres = newRunningBalancesInPiastres.bank;
     existingExpenditure.cash = newRunningBalances.cash;
+    existingExpenditure.cashInPiastres = newRunningBalancesInPiastres.cash;
     existingExpenditure.prepaid = newRunningBalances.prepaid;
+    existingExpenditure.prepaidInPiastres = newRunningBalancesInPiastres.prepaid;
 
     await existingExpenditure.save(session ? { session } : undefined);
 
@@ -214,13 +251,13 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
 }));
 
 // @route   DELETE api/expenditures/:id
-// @desc    Delete an expenditure log and revert propagated balances
+// @desc    Soft delete an expenditure log and revert propagated balances
 router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
   if (!req.canModify) {
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  const expenditure = await Expenditure.findById(id);
+  const expenditure = await Expenditure.findOne({ _id: id, deletedAt: null });
   if (!expenditure) {
     throw new NotFoundError('Expenditure not found');
   }
@@ -230,7 +267,11 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
 
   await executeInTransaction(async (session) => {
     const deltas = calculateSignedDeltas(expenditure);
-    const revertedDeltas = deltas.map(({ account, delta }) => ({ account, delta: -delta }));
+    const revertedDeltas = deltas.map(({ account, delta, deltaInPiastres }) => ({
+      account,
+      delta: -delta,
+      deltaInPiastres: -deltaInPiastres,
+    }));
 
     // Revert balance changes on future records
     await propagateBalanceChanges(
@@ -241,16 +282,40 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
       session
     );
 
-    if (session) {
-      await Expenditure.findByIdAndDelete(id, { session });
-    } else {
-      await Expenditure.findByIdAndDelete(id);
-    }
+    await expenditure.softDelete(session);
   });
 
   res.json({ msg: 'Expenditure deleted' });
 }));
 
+// @route   POST api/expenditures/:id/restore
+// @desc    Restore a soft-deleted expenditure log and re-apply propagated balances
+router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const expenditure = await Expenditure.findOne({ _id: id, user: req.effectiveUserId, deletedAt: { $ne: null } });
+  if (!expenditure) {
+    throw new NotFoundError('Soft-deleted expenditure not found');
+  }
+
+  await executeInTransaction(async (session) => {
+    const deltas = calculateSignedDeltas(expenditure);
+
+    // Re-apply balance changes on future records
+    await propagateBalanceChanges(
+      expenditure.user,
+      deltas,
+      expenditure.date,
+      expenditure._id,
+      session
+    );
+
+    await expenditure.restore(session);
+  });
+
+  res.json({ msg: 'Expenditure restored successfully', expenditure });
+}));
+
 module.exports = router;
-
-

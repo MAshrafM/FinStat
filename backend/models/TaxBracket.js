@@ -5,13 +5,14 @@ const mongoose = require('mongoose');
 const BracketLevelSchema = new mongoose.Schema({
   level: { type: Number, required: true },
   from: { type: Number, required: true },
+  fromInPiastres: { type: Number, default: 0 },
   to: { type: Number, required: true },
+  toInPiastres: { type: Number, default: 0 },
   rate: { type: Number, required: true }, // e.g., 0.10 for 10%
 });
 
-// This is the main schema. We will only ever have ONE document of this type.
+// Singleton schema for tax brackets
 const TaxBracketSchema = new mongoose.Schema({
-  // An identifier to make it easy to find the single document
   identifier: {
     type: String,
     default: 'singleton',

@@ -9,117 +9,139 @@ const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const { NotFoundError, ForbiddenError } = require('../utils/errors');
 const {
-    createSchema,
-    updateSchema,
-    paramsSchema,
+  createSchema,
+  updateSchema,
+  paramsSchema,
 } = require('../validationSchemas/currencySchemas');
 const { getValidated } = require('../utils/requestHelpers');
-
-// Standard CRUD routes, very similar to our other features
+const { toPiastres } = require('../utils/currencyUtils');
 
 // @route   GET api/currency
-// @desc    Get all currency
+// @desc    Get all active currencies
 router.get('/', auth, asyncHandler(async (req, res) => {
-    const currencies = await Currency.find({ user: req.effectiveUserId }).sort({ date: -1 });
-    res.json(currencies);
+  const currencies = await Currency.find({ user: req.effectiveUserId, deletedAt: null }).sort({ date: -1 });
+  res.json(currencies);
 }));
 
 // @route   POST api/currency
-// @desc    Create a new currency
+// @desc    Create a new currency entry
 router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
-    if (!req.canModify) {
-        throw new ForbiddenError('Viewers have read-only access');
-    }
-    const validatedBody = getValidated(req, 'body');
-    const newCurrency = new Currency({ ...validatedBody, user: req.effectiveUserId });
-    await newCurrency.save();
-    res.status(201).json(newCurrency);
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const validatedBody = getValidated(req, 'body');
+  const newCurrency = new Currency({
+    ...validatedBody,
+    user: req.effectiveUserId,
+    priceInPiastres: toPiastres(validatedBody.price),
+  });
+  await newCurrency.save();
+  res.status(201).json(newCurrency);
 }));
 
 router.get('/summary', auth, asyncHandler(async (req, res) => {
-    const summary = await Currency.aggregate([
-        {
-            $match: { user: new mongoose.Types.ObjectId(req.effectiveUserId) }
-        },
-        {
-            $group: {
-                _id: "$name",
-                totalAmount: { $sum: "$amount" },
-                totalPrice: { $sum: "$price" },
-            }
-        }
-    ]);
-    res.json(summary);
+  const summary = await Currency.aggregate([
+    {
+      $match: { user: new mongoose.Types.ObjectId(req.effectiveUserId), deletedAt: null }
+    },
+    {
+      $group: {
+        _id: "$name",
+        totalAmount: { $sum: "$amount" },
+        totalPrice: { $sum: "$price" },
+      }
+    }
+  ]);
+  res.json(summary);
 }));
 
 router.get('/price', auth, asyncHandler(async (req, res) => {
-    const response = await axios.get('https://www.cibeg.com/api/currency/rates', {
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Referer': 'https://www.cibeg.com/',
-            'Accept': 'application/json, text/plain, */*',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin'
-        }
-    });
+  const response = await axios.get('https://www.cibeg.com/api/currency/rates', {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      'Referer': 'https://www.cibeg.com/',
+      'Accept': 'application/json, text/plain, */*',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Connection': 'keep-alive',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-origin'
+    }
+  });
 
-    const data = response.data.rates;
-    res.json(data);
+  const data = response.data.rates;
+  res.json(data);
 }));
 
-// @route   GET api/Currency/:id
+// @route   GET api/currency/:id
 // @desc    Get a single Currency by ID
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
-    const { id } = getValidated(req, 'params');
-    const currency = await Currency.findOne({ _id: id, user: req.effectiveUserId });
-    if (!currency) {
-        throw new NotFoundError('Currency not found');
-    }
-    res.json(currency);
+  const { id } = getValidated(req, 'params');
+  const currency = await Currency.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
+  if (!currency) {
+    throw new NotFoundError('Currency not found');
+  }
+  res.json(currency);
 }));
 
-// @route   PUT api/Currency/:id
+// @route   PUT api/currency/:id
 // @desc    Update a Currency
 router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), asyncHandler(async (req, res) => {
-    if (!req.canModify) {
-        throw new ForbiddenError('Viewers have read-only access');
-    }
-    const { id } = getValidated(req, 'params');
-    const validatedBody = getValidated(req, 'body');
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const validatedBody = getValidated(req, 'body');
 
-    let currency = await Currency.findById(id);
-    if (!currency) {
-        throw new NotFoundError('Currency not found');
-    }
-    if (currency.user.toString() !== req.effectiveUserId.toString()) {
-        throw new ForbiddenError('User not authorized');
-    }
-    currency = await Currency.findByIdAndUpdate(id, validatedBody, { new: true, runValidators: true });
-    res.json(currency);
+  let currency = await Currency.findOne({ _id: id, deletedAt: null });
+  if (!currency) {
+    throw new NotFoundError('Currency not found');
+  }
+  if (currency.user.toString() !== req.effectiveUserId.toString()) {
+    throw new ForbiddenError('User not authorized');
+  }
+
+  const updateData = { ...validatedBody };
+  if (validatedBody.price !== undefined) {
+    updateData.priceInPiastres = toPiastres(validatedBody.price);
+  }
+
+  currency = await Currency.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  res.json(currency);
 }));
 
-// @route   DELETE api/Currency/:id
-// @desc    Delete a Currency
+// @route   DELETE api/currency/:id
+// @desc    Soft delete a Currency
 router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
-    if (!req.canModify) {
-        throw new ForbiddenError('Viewers have read-only access');
-    }
-    const { id } = getValidated(req, 'params');
-    let currency = await Currency.findById(id);
-    if (!currency) {
-        throw new NotFoundError('Currency not found');
-    }
-    if (currency.user.toString() !== req.effectiveUserId.toString()) {
-        throw new ForbiddenError('User not authorized');
-    }
-    await Currency.findByIdAndDelete(id);
-    res.json({ msg: 'Currency deleted successfully' });
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  let currency = await Currency.findOne({ _id: id, deletedAt: null });
+  if (!currency) {
+    throw new NotFoundError('Currency not found');
+  }
+  if (currency.user.toString() !== req.effectiveUserId.toString()) {
+    throw new ForbiddenError('User not authorized');
+  }
+  await currency.softDelete();
+  res.json({ msg: 'Currency deleted successfully' });
+}));
+
+// @route   POST api/currency/:id/restore
+// @desc    Restore a soft-deleted Currency
+router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const currency = await Currency.findOne({ _id: id, user: req.effectiveUserId, deletedAt: { $ne: null } });
+  if (!currency) {
+    throw new NotFoundError('Soft-deleted currency not found');
+  }
+  await currency.restore();
+  res.json({ msg: 'Currency restored successfully', currency });
 }));
 
 module.exports = router;
-
-

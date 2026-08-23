@@ -50,8 +50,8 @@ describe('Ledger Helpers (Unit Tests)', () => {
         logPrepaidOp: 'none',
       });
       expect(result).toEqual([
-        { account: 'bank', delta: -500 },
-        { account: 'cash', delta: 500 },
+        { account: 'bank', delta: -500, deltaInPiastres: -50000 },
+        { account: 'cash', delta: 500, deltaInPiastres: 50000 },
       ]);
     });
 
@@ -63,8 +63,8 @@ describe('Ledger Helpers (Unit Tests)', () => {
         toAccount: 'Prepaid',
       });
       expect(result).toEqual([
-        { account: 'bank', delta: -300 },
-        { account: 'prepaid', delta: 300 },
+        { account: 'bank', delta: -300, deltaInPiastres: -30000 },
+        { account: 'prepaid', delta: 300, deltaInPiastres: 30000 },
       ]);
     });
 
@@ -74,7 +74,7 @@ describe('Ledger Helpers (Unit Tests)', () => {
         paymentMethod: 'Bank',
         transactionValue: 1000,
       });
-      expect(result).toEqual([{ account: 'bank', delta: 1000 }]);
+      expect(result).toEqual([{ account: 'bank', delta: 1000, deltaInPiastres: 100000 }]);
     });
   });
 });

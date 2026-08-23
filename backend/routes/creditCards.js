@@ -21,6 +21,7 @@ const {
   paramsSchema,
 } = require('../validationSchemas/creditCardSchemas');
 const { getValidated } = require('../utils/requestHelpers');
+const { toPiastres } = require('../utils/currencyUtils');
 
 // =============================================
 // --- Credit Card Management (The Cards Themselves) ---
@@ -30,13 +31,17 @@ router.post('/cards', auth, validate({ body: createCardSchema }), asyncHandler(a
     throw new ForbiddenError('Viewers have read-only access');
   }
   const validatedBody = getValidated(req, 'body');
-  const newCard = new CreditCard({ ...validatedBody, user: req.effectiveUserId });
+  const newCard = new CreditCard({
+    ...validatedBody,
+    user: req.effectiveUserId,
+    limitInPiastres: toPiastres(validatedBody.limit),
+  });
   await newCard.save();
   res.status(201).json(newCard);
 }));
 
 router.get('/cards', auth, asyncHandler(async (req, res) => { 
-  const cards = await CreditCard.find({ user: req.effectiveUserId }).sort({ startDate: -1 });
+  const cards = await CreditCard.find({ user: req.effectiveUserId, deletedAt: null }).sort({ createdAt: -1 });
   res.json(cards);
 }));
 
@@ -47,15 +52,20 @@ router.put('/cards/:id', auth, validate({ params: paramsSchema, body: updateCard
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  let card = await CreditCard.findById(id);
+  let card = await CreditCard.findOne({ _id: id, deletedAt: null });
   if (!card) throw new NotFoundError('Card not found');
   if (card.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
 
+  const updateData = { ...validatedBody };
+  if (validatedBody.limit !== undefined) {
+    updateData.limitInPiastres = toPiastres(validatedBody.limit);
+  }
+
   card = await CreditCard.findByIdAndUpdate(
     id,
-    { $set: validatedBody },
+    { $set: updateData },
     { new: true, runValidators: true }
   );
   res.json(card);
@@ -66,13 +76,24 @@ router.delete('/cards/:id', auth, validate({ params: paramsSchema }), asyncHandl
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  let card = await CreditCard.findById(id);
+  let card = await CreditCard.findOne({ _id: id, deletedAt: null });
   if (!card) throw new NotFoundError('Credit Card not found');
   if (card.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
-  await CreditCard.findByIdAndDelete(id);
+  await card.softDelete();
   res.json({ msg: 'Credit Card deleted successfully' });
+}));
+
+router.post('/cards/:id/restore', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const card = await CreditCard.findOne({ _id: id, user: req.effectiveUserId, deletedAt: { $ne: null } });
+  if (!card) throw new NotFoundError('Soft-deleted card not found');
+  await card.restore();
+  res.json({ msg: 'Credit Card restored successfully', card });
 }));
 
 // =============================================
@@ -84,16 +105,26 @@ router.post('/transactions', auth, validate({ body: createTransactionSchema }), 
   }
   const validatedBody = getValidated(req, 'body');
 
-  // Ensure the card being added to belongs to the effective user
-  const card = await CreditCard.findById(validatedBody.card);
+  const card = await CreditCard.findOne({ _id: validatedBody.card, deletedAt: null });
   if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized for this card');
   }
 
-  const newTransaction = new CardTransaction({
+  const transactionData = {
     ...validatedBody,
     user: req.effectiveUserId,
-  });
+    amountInPiastres: toPiastres(validatedBody.amount),
+    paidAmountInPiastres: toPiastres(validatedBody.paidAmount || 0),
+  };
+
+  if (validatedBody.installmentDetails?.monthlyPrincipal !== undefined) {
+    transactionData.installmentDetails = {
+      ...validatedBody.installmentDetails,
+      monthlyPrincipalInPiastres: toPiastres(validatedBody.installmentDetails.monthlyPrincipal),
+    };
+  }
+
+  const newTransaction = new CardTransaction(transactionData);
   await newTransaction.save();
   res.status(201).json(newTransaction);
 }));
@@ -101,12 +132,12 @@ router.post('/transactions', auth, validate({ body: createTransactionSchema }), 
 router.get('/transactions/:cardId', auth, validate({ params: cardIdParamsSchema }), asyncHandler(async (req, res) => {
   const { cardId } = getValidated(req, 'params');
 
-  const card = await CreditCard.findById(cardId);
+  const card = await CreditCard.findOne({ _id: cardId, deletedAt: null });
   if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized for this card');
   }
 
-  const transactions = await CardTransaction.find({ card: cardId }).sort({ date: -1 });
+  const transactions = await CardTransaction.find({ card: cardId, deletedAt: null }).sort({ date: -1 });
   res.json(transactions);
 }));
 
@@ -117,14 +148,25 @@ router.put('/transactions/:id', auth, validate({ params: paramsSchema, body: upd
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  let transaction = await CardTransaction.findById(id);
+  let transaction = await CardTransaction.findOne({ _id: id, deletedAt: null });
   if (!transaction) throw new NotFoundError('Transaction not found');
 
   if (transaction.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
 
-  transaction = await CardTransaction.findByIdAndUpdate(id, { $set: validatedBody }, { new: true, runValidators: true });
+  const updateData = { ...validatedBody };
+  if (validatedBody.amount !== undefined) {
+    updateData.amountInPiastres = toPiastres(validatedBody.amount);
+  }
+  if (validatedBody.paidAmount !== undefined) {
+    updateData.paidAmountInPiastres = toPiastres(validatedBody.paidAmount);
+  }
+  if (validatedBody.installmentDetails?.monthlyPrincipal !== undefined) {
+    updateData['installmentDetails.monthlyPrincipalInPiastres'] = toPiastres(validatedBody.installmentDetails.monthlyPrincipal);
+  }
+
+  transaction = await CardTransaction.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true });
   res.json(transaction);
 }));
 
@@ -133,22 +175,33 @@ router.delete('/transactions/:id', auth, validate({ params: paramsSchema }), asy
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  const transaction = await CardTransaction.findById(id);
+  const transaction = await CardTransaction.findOne({ _id: id, deletedAt: null });
   if (!transaction) throw new NotFoundError('Transaction not found');
 
   if (transaction.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
 
-  await CardTransaction.findByIdAndDelete(id);
+  await transaction.softDelete();
   res.json({ msg: 'Transaction deleted successfully' });
+}));
+
+router.post('/transactions/:id/restore', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const transaction = await CardTransaction.findOne({ _id: id, user: req.effectiveUserId, deletedAt: { $ne: null } });
+  if (!transaction) throw new NotFoundError('Soft-deleted transaction not found');
+  await transaction.restore();
+  res.json({ msg: 'Transaction restored successfully', transaction });
 }));
 
 router.get('/transactions/due/:cardId', auth, validate({ params: cardIdParamsSchema }), asyncHandler(async (req, res) => {
   const { cardId } = getValidated(req, 'params');
   const userId = req.effectiveUserId;
 
-  const card = await CreditCard.findById(cardId);
+  const card = await CreditCard.findOne({ _id: cardId, deletedAt: null });
   if (!card || card.user.toString() !== userId.toString()) {
     throw new ForbiddenError('User not authorized for this card');
   }
@@ -166,14 +219,16 @@ router.get('/transactions/due/:cardId', auth, validate({ params: cardIdParamsSch
     user: userId,
     type: 'Purchase',
     status: { $in: ['Due', 'Partial'] },
-    date: { $gte: lastBillingDate }
+    date: { $gte: lastBillingDate },
+    deletedAt: null,
   }).lean();
 
   const activeInstallments = await CardTransaction.find({
     card: cardId,
     user: userId,
     type: 'Installment',
-    status: { $ne: 'Paid' }
+    status: { $ne: 'Paid' },
+    deletedAt: null,
   }).lean();
 
   let dueItems = [];
@@ -192,7 +247,7 @@ router.get('/transactions/due/:cardId', auth, validate({ params: cardIdParamsSch
     dueItems.push({
       _id: i._id,
       description: `${i.description} (Installment)`,
-      amountDue: i.installmentDetails.monthlyPrincipal,
+      amountDue: i.installmentDetails?.monthlyPrincipal || 0,
       type: 'Installment',
       date: i.date
     });
@@ -211,7 +266,7 @@ router.post('/payments', auth, validate({ body: createPaymentSchema }), asyncHan
   }
   const validatedBody = getValidated(req, 'body');
 
-  const card = await CreditCard.findById(validatedBody.card);
+  const card = await CreditCard.findOne({ _id: validatedBody.card, deletedAt: null });
   if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized for this card');
   }
@@ -219,6 +274,7 @@ router.post('/payments', auth, validate({ body: createPaymentSchema }), asyncHan
   const newPayment = new CardPayment({
     ...validatedBody,
     user: req.effectiveUserId,
+    amountInPiastres: toPiastres(validatedBody.amount),
   });
   await newPayment.save();
   res.status(201).json(newPayment);
@@ -226,11 +282,11 @@ router.post('/payments', auth, validate({ body: createPaymentSchema }), asyncHan
 
 router.get('/payments/:cardId', auth, validate({ params: cardIdParamsSchema }), asyncHandler(async (req, res) => {
   const { cardId } = getValidated(req, 'params');
-  const card = await CreditCard.findById(cardId);
+  const card = await CreditCard.findOne({ _id: cardId, deletedAt: null });
   if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized for this card');
   }
-  const payments = await CardPayment.find({ card: cardId }).sort({ date: -1 });
+  const payments = await CardPayment.find({ card: cardId, deletedAt: null }).sort({ date: -1 });
   res.json(payments);
 }));
 
@@ -241,14 +297,19 @@ router.put('/payments/:id', auth, validate({ params: paramsSchema, body: updateP
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  let payment = await CardPayment.findById(id);
+  let payment = await CardPayment.findOne({ _id: id, deletedAt: null });
   if (!payment) throw new NotFoundError('Payment log not found');
 
   if (payment.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
 
-  payment = await CardPayment.findByIdAndUpdate(id, { $set: validatedBody }, { new: true, runValidators: true });
+  const updateData = { ...validatedBody };
+  if (validatedBody.amount !== undefined) {
+    updateData.amountInPiastres = toPiastres(validatedBody.amount);
+  }
+
+  payment = await CardPayment.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true });
   res.json(payment);
 }));
 
@@ -257,15 +318,26 @@ router.delete('/payments/:id', auth, validate({ params: paramsSchema }), asyncHa
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  const payment = await CardPayment.findById(id);
+  const payment = await CardPayment.findOne({ _id: id, deletedAt: null });
   if (!payment) throw new NotFoundError('Payment log not found');
 
   if (payment.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
 
-  await CardPayment.findByIdAndDelete(id);
+  await payment.softDelete();
   res.json({ msg: 'Payment log deleted successfully' });
+}));
+
+router.post('/payments/:id/restore', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const payment = await CardPayment.findOne({ _id: id, user: req.effectiveUserId, deletedAt: { $ne: null } });
+  if (!payment) throw new NotFoundError('Soft-deleted payment not found');
+  await payment.restore();
+  res.json({ msg: 'Payment restored successfully', payment });
 }));
 
 router.post('/payments/full', auth, validate({ body: payInFullSchema }), asyncHandler(async (req, res) => {
@@ -273,7 +345,7 @@ router.post('/payments/full', auth, validate({ body: payInFullSchema }), asyncHa
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { transactionId } = getValidated(req, 'body');
-  const transaction = await CardTransaction.findById(transactionId);
+  const transaction = await CardTransaction.findOne({ _id: transactionId, deletedAt: null });
 
   if (!transaction || transaction.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
@@ -286,7 +358,7 @@ router.post('/payments/full', auth, validate({ body: payInFullSchema }), asyncHa
     paymentAmount = transaction.amount - transaction.paidAmount;
     isFullyPaid = true;
   } else if (transaction.type === 'Installment') {
-    paymentAmount = transaction.installmentDetails.monthlyPrincipal;
+    paymentAmount = transaction.installmentDetails?.monthlyPrincipal || 0;
     if (transaction.paidAmount + paymentAmount >= transaction.amount) {
       isFullyPaid = true;
       paymentAmount = transaction.amount - transaction.paidAmount;
@@ -301,11 +373,13 @@ router.post('/payments/full', auth, validate({ body: payInFullSchema }), asyncHa
     user: req.effectiveUserId,
     card: transaction.card,
     amount: paymentAmount,
+    amountInPiastres: toPiastres(paymentAmount),
     date: new Date(),
   });
   await payment.save();
 
   transaction.paidAmount += paymentAmount;
+  transaction.paidAmountInPiastres = toPiastres(transaction.paidAmount);
   if (isFullyPaid) {
     transaction.status = 'Paid';
   } else {
@@ -321,7 +395,7 @@ router.post('/payments/partial', auth, asyncHandler(async (req, res) => {
   }
   const { transactionId, amount } = req.body;
   const paymentAmount = parseFloat(amount);
-  const transaction = await CardTransaction.findById(transactionId);
+  const transaction = await CardTransaction.findOne({ _id: transactionId, deletedAt: null });
 
   if (!transaction || transaction.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
@@ -331,14 +405,17 @@ router.post('/payments/partial', auth, asyncHandler(async (req, res) => {
     user: req.effectiveUserId,
     card: transaction.card,
     amount: paymentAmount,
+    amountInPiastres: toPiastres(paymentAmount),
     date: new Date(),
   });
   await payment.save();
 
+  transaction.paidAmount = (transaction.paidAmount || 0) + paymentAmount;
   if (transaction.paidAmount >= transaction.amount) {
     transaction.status = 'Paid';
     transaction.paidAmount = transaction.amount;
   }
+  transaction.paidAmountInPiastres = toPiastres(transaction.paidAmount);
   
   await transaction.save();
   res.json({ msg: 'Partial payment logged successfully.' });
@@ -351,7 +428,7 @@ router.get('/summary/:cardId', auth, asyncHandler(async (req, res) => {
   const cardId = new mongoose.Types.ObjectId(req.params.cardId);
   const userId = new mongoose.Types.ObjectId(req.effectiveUserId);
 
-  const card = await CreditCard.findOne({ _id: cardId, user: userId });
+  const card = await CreditCard.findOne({ _id: cardId, user: userId, deletedAt: null });
   if (!card) throw new NotFoundError('Card not found');
 
   const now = new Date();
@@ -369,13 +446,13 @@ router.get('/summary/:cardId', auth, asyncHandler(async (req, res) => {
   dueDate.setDate(dueDate.getDate() + gracePeriodDays);
 
   const purchaseBalanceResult = await CardTransaction.aggregate([
-    { $match: { card: card._id, user: userId, type: 'Purchase', status: { $in: ['Due', 'Partial'] } } },
+    { $match: { card: card._id, user: userId, type: 'Purchase', status: { $in: ['Due', 'Partial'] }, deletedAt: null } },
     { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
   ]);
   const purchaseBalance = purchaseBalanceResult.length > 0 ? purchaseBalanceResult[0].total : 0;
 
   const installmentBalanceResult = await CardTransaction.aggregate([
-    { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] } } },
+    { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] }, deletedAt: null } },
     { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
   ]);
   const installmentBalance = installmentBalanceResult.length > 0 ? installmentBalanceResult[0].total : 0;
@@ -389,7 +466,8 @@ router.get('/summary/:cardId', auth, asyncHandler(async (req, res) => {
         card: card._id, 
         user: userId, 
         type: 'Purchase', 
-        date: { $gte: cycleStart, $lt: cycleEnd } 
+        date: { $gte: cycleStart, $lt: cycleEnd },
+        deletedAt: null,
       } 
     },
     { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
@@ -397,7 +475,7 @@ router.get('/summary/:cardId', auth, asyncHandler(async (req, res) => {
   const totalPurchaseDue = purchaseDues.length > 0 ? purchaseDues[0].total : 0;
 
   const installmentDues = await CardTransaction.aggregate([
-    { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] } } },
+    { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] }, deletedAt: null } },
     { $group: { _id: null, total: { $sum: "$installmentDetails.monthlyPrincipal" } } }
   ]);
   const totalInstallmentDue = installmentDues.length > 0 ? installmentDues[0].total : 0;
@@ -409,7 +487,8 @@ router.get('/summary/:cardId', auth, asyncHandler(async (req, res) => {
         user: userId, 
         type: 'Purchase', 
         date: { $lt: cycleStart }, 
-        status: { $in: ['Due', 'Partial'] } 
+        status: { $in: ['Due', 'Partial'] },
+        deletedAt: null,
       } 
     },
     { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
@@ -438,12 +517,9 @@ router.get('/summary/:cardId', auth, asyncHandler(async (req, res) => {
   });
 }));
 
-// @route   GET api/credit-cards/overall-summary
-// @desc    Get a summary of all credit cards for the logged-in user
-// @access  Private
 router.get('/overall-summary', auth, asyncHandler(async (req, res) => {
   const userId = new mongoose.Types.ObjectId(req.effectiveUserId);
-  const cards = await CreditCard.find({ user: userId });    
+  const cards = await CreditCard.find({ user: userId, deletedAt: null });    
   if (cards.length === 0) {
     return res.json({
       totalLimit: 0,
@@ -460,7 +536,8 @@ router.get('/overall-summary', auth, asyncHandler(async (req, res) => {
     card: { $in: cardIds }, 
     user: userId, 
     type: 'Purchase', 
-    status: { $in: ['Due', 'Partial'] } 
+    status: { $in: ['Due', 'Partial'] },
+    deletedAt: null,
   };
 
   const purchaseBalanceResult = await CardTransaction.aggregate([
@@ -477,7 +554,8 @@ router.get('/overall-summary', auth, asyncHandler(async (req, res) => {
     card: { $in: cardIds }, 
     user: userId, 
     type: 'Installment', 
-    status: { $in: ['Due', 'Partial'] } 
+    status: { $in: ['Due', 'Partial'] },
+    deletedAt: null,
   };
 
   const installmentBalanceResult = await CardTransaction.aggregate([
@@ -512,7 +590,8 @@ router.get('/overall-summary', auth, asyncHandler(async (req, res) => {
         card: card._id, 
         user: userId, 
         type: 'Installment', 
-        status: { $in: ['Due', 'Partial'] } 
+        status: { $in: ['Due', 'Partial'] },
+        deletedAt: null,
       };
       
       const installmentDues = await CardTransaction.aggregate([
@@ -533,7 +612,8 @@ router.get('/overall-summary', auth, asyncHandler(async (req, res) => {
         date: { 
             $gte: previousBillingDate, 
             $lt: currentBillingDate 
-        }
+        },
+        deletedAt: null,
       };
       
       const purchaseDues = await CardTransaction.aggregate([

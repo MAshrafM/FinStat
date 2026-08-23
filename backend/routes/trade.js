@@ -1,4 +1,4 @@
-// backend/routes/trades.js
+// backend/routes/trade.js
 const express = require('express');
 const router = express.Router();
 const Trade = require('../models/Trade');
@@ -9,246 +9,276 @@ const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const { NotFoundError, ForbiddenError } = require('../utils/errors');
 const {
-    createSchema,
-    updateSchema,
-    paramsSchema,
-    querySchema,
+  createSchema,
+  updateSchema,
+  paramsSchema,
+  querySchema,
 } = require('../validationSchemas/tradeSchemas');
 const { getValidated } = require('../utils/requestHelpers');
+const { toPiastres } = require('../utils/currencyUtils');
 
 // @route   GET api/trades
-// @desc    Get all trades (with pagination)
+// @desc    Get all active trades (with pagination)
 router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req, res) => {
-    const { page, limit, broker, search } = getValidated(req, 'query');
-    const skip = (page - 1) * limit;
+  const { page, limit, broker, search } = getValidated(req, 'query');
+  const skip = (page - 1) * limit;
 
-    const query = { user: req.effectiveUserId };
-    if (broker && broker !== 'TopUp') {
-        query.broker = broker;
-    } else if (broker === 'TopUp') {
-        query.type = 'TopUp';
-    }
+  const query = { user: req.effectiveUserId, deletedAt: null };
+  if (broker && broker !== 'TopUp') {
+    query.broker = broker;
+  } else if (broker === 'TopUp') {
+    query.type = 'TopUp';
+  }
 
-    if (search) {
-        query.stockCode = { $regex: search, $options: 'i' };
-    }
+  if (search) {
+    query.stockCode = { $regex: search, $options: 'i' };
+  }
 
-    const trades = await Trade.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
-    const total = await Trade.countDocuments(query);
-    res.json({
-        data: trades,
-        totalPages: Math.ceil(total / limit),
-        page,
-    });
+  const trades = await Trade.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
+  const total = await Trade.countDocuments(query);
+  res.json({
+    data: trades,
+    totalPages: Math.ceil(total / limit),
+    page,
+  });
 }));
 
 // @route   GET api/trades/all
-// @desc    Get all trades (without pagination)
+// @desc    Get all active trades (without pagination)
 router.get('/all', auth, asyncHandler(async (req, res) => {
-    const trades = await Trade.find({ user: req.effectiveUserId }).sort({ createdAt: -1 });
-    res.json(trades);
+  const trades = await Trade.find({ user: req.effectiveUserId, deletedAt: null }).sort({ createdAt: -1 });
+  res.json(trades);
 }));
 
 // @route   GET api/trades/summary
 // @desc    Get a summary of trades grouped by broker, stock, and iteration
 router.get('/summary', auth, asyncHandler(async (req, res) => {
-    const summary = await Trade.aggregate([
-        // --- Stage 0: Match user ---
-        {
-            $match: { user: new mongoose.Types.ObjectId(req.effectiveUserId) }
+  const summary = await Trade.aggregate([
+    // --- Stage 0: Match user and active records ---
+    {
+      $match: { user: new mongoose.Types.ObjectId(req.effectiveUserId), deletedAt: null }
+    },
+    // --- Stage 1: Grouping ---
+    {
+      $group: {
+        _id: {
+          broker: "$broker",
+          stockCode: "$stockCode",
+          iteration: "$iteration"
         },
-        // --- Stage 1: Grouping ---
-        {
-            $group: {
-                _id: {
-                    broker: "$broker",
-                    stockCode: "$stockCode",
-                    iteration: "$iteration"
-                },
-                totalBuyValue: {
-                    $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$totalValue", 0] }
-                },
-                totalSellValue: {
-                    $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$totalValue", 0] }
-                },
-                totalDividendValue: {
-                    $sum: { $cond: [{ $eq: ["$type", "Dividend"] }, "$totalValue", 0] }
-                },
-                totalSharesBought: {
-                    $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$shares", 0] }
-                },
-                totalSharesSold: {
-                    $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$shares", 0] }
-                },
-                totalSharesDividend: {
-                    $sum: { $cond: [{ $eq: ["$type", "Dividend"] }, "$shares", 0] }
-                },
-                totalFees: { $sum: "$fees" },
-                tradeCount: { $sum: 1 },
-                firstTradeDate: { $min: "$date" },
-                lastTradeDate: { $max: "$date" }
-            }
+        totalBuyValue: {
+          $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$totalValue", 0] }
         },
-
-        // --- Stage 2: Calculate Averages & Current Holdings ---
-        {
-            $addFields: {
-                currentShares: {
-                    $subtract: [
-                        { $add: ["$totalSharesBought", "$totalSharesDividend"] },
-                        "$totalSharesSold"
-                    ]
-                },
-                averageBuyPrice: {
-                    $cond: [
-                        { $eq: ["$totalSharesBought", 0] },
-                        0,
-                        { $divide: ["$totalBuyValue", "$totalSharesBought"] }
-                    ]
-                },
-                adjustedAvgPrice: {
-                    $cond: [
-                        { $eq: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, 0] },
-                        0,
-                        {
-                            $divide: [
-                                "$totalBuyValue",
-                                { $add: ["$totalSharesBought", "$totalSharesDividend"] }
-                            ]
-                        }
-                    ]
-                }
-            }
+        totalSellValue: {
+          $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$totalValue", 0] }
         },
-
-        // --- Stage 3: Calculate Cost of Goods Sold (COGS) ---
-        {
-            $addFields: {
-                costOfSoldShares: {
-                    $multiply: ["$totalSharesSold", "$averageBuyPrice"]
-                },
-                netBreakEvenPrice: {
-                    $cond: [
-                        { $lte: [{ $subtract: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, "$totalSharesSold"] }, 0] },
-                        0,
-                        {
-                            $divide: [
-                                {
-                                    $subtract: [
-                                        "$totalBuyValue",
-                                        { $add: ["$totalSellValue", "$totalDividendValue"] }
-                                    ]
-                                },
-                                { $subtract: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, "$totalSharesSold"] }
-                            ]
-                        }
-                    ]
-                }
-            }
+        totalDividendValue: {
+          $sum: { $cond: [{ $eq: ["$type", "Dividend"] }, "$totalValue", 0] }
         },
-
-        // --- Stage 4: Final P/L Calculation ---
-        {
-            $addFields: {
-                tradingPL: {
-                    $subtract: ["$totalSellValue", "$costOfSoldShares"]
-                },
-                dividendIncome: "$totalDividendValue",
-                totalRealizedReturn: {
-                    $add: [
-                        { $subtract: ["$totalSellValue", "$costOfSoldShares"] },
-                        "$totalDividendValue"
-                    ]
-                },
-                totDeals: {
-                    $subtract: [
-                        "$totalBuyValue",
-                        { $add: ["$totalSellValue", "$totalDividendValue"] }
-                    ]
-                },
-                investedAmountRemaining: {
-                    $multiply: ["$currentShares", "$averageBuyPrice"]
-                }
-            }
+        totalSharesBought: {
+          $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$shares", 0] }
         },
-
-        // --- Stage 5: Sorting ---
-        {
-            $sort: {
-                "_id.stockCode": 1,
-                "lastTradeDate": -1
-            }
+        totalSharesSold: {
+          $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$shares", 0] }
+        },
+        totalSharesDividend: {
+          $sum: { $cond: [{ $eq: ["$type", "Dividend"] }, "$shares", 0] }
+        },
+        totalFees: { $sum: "$fees" },
+        tradeCount: { $sum: 1 },
+        firstTradeDate: { $min: "$date" },
+        lastTradeDate: { $max: "$date" }
+      }
+    },
+    // --- Stage 2: Calculate Averages & Current Holdings ---
+    {
+      $addFields: {
+        currentShares: {
+          $subtract: [
+            { $add: ["$totalSharesBought", "$totalSharesDividend"] },
+            "$totalSharesSold"
+          ]
+        },
+        averageBuyPrice: {
+          $cond: [
+            { $gt: ["$totalSharesBought", 0] },
+            { $divide: ["$totalBuyValue", "$totalSharesBought"] },
+            0
+          ]
+        },
+        averageSellPrice: {
+          $cond: [
+            { $gt: ["$totalSharesSold", 0] },
+            { $divide: ["$totalSellValue", "$totalSharesSold"] },
+            0
+          ]
         }
-    ]);
-    res.json(summary);
+      }
+    },
+    // --- Stage 3: Realized & Unrealized PnL & Status ---
+    {
+      $addFields: {
+        realizedPnL: {
+          $cond: [
+            { $gt: ["$totalSharesSold", 0] },
+            {
+              $subtract: [
+                "$totalSellValue",
+                {
+                  $add: [
+                    { $multiply: ["$totalSharesSold", "$averageBuyPrice"] },
+                    "$totalFees"
+                  ]
+                }
+              ]
+            },
+            0
+          ]
+        },
+        realizedPnLPercentage: {
+          $cond: [
+            {
+              $and: [
+                { $gt: ["$totalSharesSold", 0] },
+                { $gt: [{ $multiply: ["$totalSharesSold", "$averageBuyPrice"] }, 0] }
+              ]
+            },
+            {
+              $multiply: [
+                {
+                  $divide: [
+                    {
+                      $subtract: [
+                        "$totalSellValue",
+                        {
+                          $add: [
+                            { $multiply: ["$totalSharesSold", "$averageBuyPrice"] },
+                            "$totalFees"
+                          ]
+                        }
+                      ]
+                    },
+                    { $multiply: ["$totalSharesSold", "$averageBuyPrice"] }
+                  ]
+                },
+                100
+              ]
+            },
+            0
+          ]
+        },
+        status: {
+          $cond: [{ $eq: ["$currentShares", 0] }, "Closed", "Open"]
+        }
+      }
+    },
+    {
+      $sort: {
+        "_id.stockCode": 1,
+        "_id.iteration": 1
+      }
+    }
+  ]);
+  res.json(summary);
 }));
 
 router.get('/market-prices', auth, asyncHandler(async (req, res) => {
-    const response = await axios.get('https://english.mubasher.info/api/1/stocks/prices?country=eg');
-    res.json(response.data);
+  const response = await axios.get('https://english.mubasher.info/api/1/stocks/prices?country=eg');
+  res.json(response.data);
 }));
 
 // @route   POST api/trades
 // @desc    Create a new trade
 router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
-    if (!req.canModify) {
-        throw new ForbiddenError('Viewers have read-only access');
-    }
-    const validatedBody = getValidated(req, 'body');
-    const newTrade = new Trade({ ...validatedBody, user: req.effectiveUserId });
-    await newTrade.save();
-    res.status(201).json(newTrade);
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const validatedBody = getValidated(req, 'body');
+  const newTrade = new Trade({
+    ...validatedBody,
+    user: req.effectiveUserId,
+    priceInPiastres: toPiastres(validatedBody.price),
+    feesInPiastres: toPiastres(validatedBody.fees),
+    totalValueInPiastres: toPiastres(validatedBody.totalValue),
+  });
+  await newTrade.save();
+  res.status(201).json(newTrade);
 }));
 
 // @route   GET api/trades/:id
 // @desc    Get a single trade by ID
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
-    const { id } = getValidated(req, 'params');
-    const trade = await Trade.findOne({ _id: id, user: req.effectiveUserId });
-    if (!trade) {
-        throw new NotFoundError('Trade not found');
-    }
-    res.json(trade);
+  const { id } = getValidated(req, 'params');
+  const trade = await Trade.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
+  if (!trade) {
+    throw new NotFoundError('Trade not found');
+  }
+  res.json(trade);
 }));
 
 // @route   PUT api/trades/:id
 // @desc    Update a trade
 router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), asyncHandler(async (req, res) => {
-    if (!req.canModify) {
-        throw new ForbiddenError('Viewers have read-only access');
-    }
-    const { id } = getValidated(req, 'params');
-    const validatedBody = getValidated(req, 'body');
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const validatedBody = getValidated(req, 'body');
 
-    let trade = await Trade.findById(id);
-    if (!trade) {
-        throw new NotFoundError('Trade not found');
-    }
-    if (trade.user.toString() !== req.effectiveUserId.toString()) {
-        throw new ForbiddenError('User not authorized');
-    }
-    trade = await Trade.findByIdAndUpdate(id, validatedBody, { new: true, runValidators: true });
-    res.json(trade);
+  let trade = await Trade.findOne({ _id: id, deletedAt: null });
+  if (!trade) {
+    throw new NotFoundError('Trade not found');
+  }
+  if (trade.user.toString() !== req.effectiveUserId.toString()) {
+    throw new ForbiddenError('User not authorized');
+  }
+
+  const updateData = { ...validatedBody };
+  if (validatedBody.price !== undefined) {
+    updateData.priceInPiastres = toPiastres(validatedBody.price);
+  }
+  if (validatedBody.fees !== undefined) {
+    updateData.feesInPiastres = toPiastres(validatedBody.fees);
+  }
+  if (validatedBody.totalValue !== undefined) {
+    updateData.totalValueInPiastres = toPiastres(validatedBody.totalValue);
+  }
+
+  trade = await Trade.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  res.json(trade);
 }));
 
 // @route   DELETE api/trades/:id
-// @desc    Delete a trade
+// @desc    Soft delete a trade
 router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
-    if (!req.canModify) {
-        throw new ForbiddenError('Viewers have read-only access');
-    }
-    const { id } = getValidated(req, 'params');
-    let trade = await Trade.findById(id);
-    if (!trade) {
-        throw new NotFoundError('Trade not found');
-    }
-    if (trade.user.toString() !== req.effectiveUserId.toString()) {
-        throw new ForbiddenError('User not authorized');
-    }
-    await Trade.findByIdAndDelete(id);
-    res.json({ msg: 'Trade deleted successfully' });
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  let trade = await Trade.findOne({ _id: id, deletedAt: null });
+  if (!trade) {
+    throw new NotFoundError('Trade not found');
+  }
+  if (trade.user.toString() !== req.effectiveUserId.toString()) {
+    throw new ForbiddenError('User not authorized');
+  }
+  await trade.softDelete();
+  res.json({ msg: 'Trade deleted successfully' });
+}));
+
+// @route   POST api/trades/:id/restore
+// @desc    Restore a soft-deleted trade
+router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const trade = await Trade.findOne({ _id: id, user: req.effectiveUserId, deletedAt: { $ne: null } });
+  if (!trade) {
+    throw new NotFoundError('Soft-deleted trade not found');
+  }
+  await trade.restore();
+  res.json({ msg: 'Trade restored successfully', trade });
 }));
 
 module.exports = router;
-
-

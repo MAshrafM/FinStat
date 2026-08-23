@@ -1,12 +1,13 @@
 // backend/models/SalaryProfile.js
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const softDeletePlugin = require('../utils/softDeletePlugin');
 
 // This sub-schema defines the salary components for a specific period.
 const SalaryDetailSchema = new mongoose.Schema({
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User', // This creates a reference to the User model
+    ref: 'User',
   },
   effectiveDate: {
     type: Date,
@@ -14,22 +15,32 @@ const SalaryDetailSchema = new mongoose.Schema({
     default: Date.now,
   },
   basicSalary: { type: Number, default: 0 },
+  basicSalaryInPiastres: { type: Number, default: 0 },
   basicProduction: { type: Number, default: 0 },
+  basicProductionInPiastres: { type: Number, default: 0 },
   prepaid: { type: Number, default: 0 },
+  prepaidInPiastres: { type: Number, default: 0 },
   variables: { type: Number, default: 0 },
+  variablesInPiastres: { type: Number, default: 0 },
   environment: { type: Number, default: 0 },
+  environmentInPiastres: { type: Number, default: 0 },
   meal: { type: Number, default: 0 },
+  mealInPiastres: { type: Number, default: 0 },
   shift: { type: Number, default: 0 },
+  shiftInPiastres: { type: Number, default: 0 },
   supervising: { type: Number, default: 0 },
+  supervisingInPiastres: { type: Number, default: 0 },
   others: { type: Number, default: 0 },
+  othersInPiastres: { type: Number, default: 0 },
   bonds: { type: Number, default: 0 },
+  bondsInPiastres: { type: Number, default: 0 },
 });
 
-// This is the main schema for a salary profile.
+// Main schema for salary profile
 const SalaryProfileSchema = new mongoose.Schema({
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User', // This creates a reference to the User model
+    ref: 'User',
   },
   name: {
     type: String,
@@ -49,44 +60,26 @@ const SalaryProfileSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  // We embed an array of salary details. The most recent one is the "current" one.
   salaryHistory: [SalaryDetailSchema],
   createdAt: {
     type: Date,
     default: Date.now,
   },
+}, {
+  timestamps: true,
 });
 
-// Helper to get the most recent salary details.
-// We use a "virtual" property which is not stored in the DB but calculated on the fly.
-SalaryProfileSchema.virtual('currentSalary').get(function() {
-  if (this.salaryHistory && this.salaryHistory.length > 0) {
-    // Sort history by effectiveDate descending and return the first one.
-    return this.salaryHistory.sort((a, b) => b.effectiveDate - a.effectiveDate)[0];
+SalaryProfileSchema.plugin(softDeletePlugin);
+
+// Helper to get the most recent salary details
+SalaryProfileSchema.methods.getCurrentSalary = function () {
+  if (!this.salaryHistory || this.salaryHistory.length === 0) {
+    return null;
   }
-  return null;
-});
+  return this.salaryHistory.slice().sort((a, b) => b.effectiveDate - a.effectiveDate)[0];
+};
 
-// Helper to calculate the monthly gross estimate from the current salary.
-SalaryProfileSchema.virtual('monthlyGrossEstimate').get(function() {
-  const current = this.currentSalary;
-  if (!current) return 0;
-
-  // Sum of all fields except 'bonds' and internal fields.
-  return (
-    current.basicSalary +
-    current.basicProduction +
-    current.variables +
-    current.environment +
-    current.meal +
-    current.shift +
-    current.supervising +
-    current.others
-  );
-});
-
-// Ensure virtuals are included when converting documents to JSON.
-SalaryProfileSchema.set('toJSON', { virtuals: true });
-SalaryProfileSchema.set('toObject', { virtuals: true });
+SalaryProfileSchema.index({ user: 1, year: -1 });
+SalaryProfileSchema.index({ user: 1, deletedAt: 1 });
 
 module.exports = mongoose.model('SalaryProfile', SalaryProfileSchema);
