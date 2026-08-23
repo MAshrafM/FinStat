@@ -50,9 +50,9 @@ const ExpenditureLogPage = () => {
       .then(data => {
         if (data) {
           setLatestHolding({
-            bank: data.bank || 0,
-            cash: data.cash || 0,
-            prepaid: data.prepaid || 0
+            bank: data.runningBalances?.bank ?? data.bank ?? 0,
+            cash: data.runningBalances?.cash ?? data.cash ?? 0,
+            prepaid: data.runningBalances?.prepaid ?? data.prepaid ?? 0
           });
         }
       })
@@ -295,9 +295,9 @@ const ExpenditureLogPage = () => {
               processedExpenditures.map(log => (
                 <tr key={log._id}>
                   <td data-label="Date">{formatDate(log.date)}</td>
-                  <td data-label="Bank">{formatCurrency(log.bank)}</td>
-                  <td data-label="Cash">{formatCurrency(log.cash)}</td>
-                  <td data-label="Prepaid">{formatCurrency(log.prepaid || 0)}</td>
+                  <td data-label="Bank">{formatCurrency(log.runningBalances?.bank ?? log.bank)}</td>
+                  <td data-label="Cash">{formatCurrency(log.runningBalances?.cash ?? log.cash)}</td>
+                  <td data-label="Prepaid">{formatCurrency(log.runningBalances?.prepaid ?? log.prepaid ?? 0)}</td>
                   <td data-label="Transaction" style={{
                     color: log.transactionType === 'W' ? 'red' :
                       log.transactionType === 'S' ? 'rgba(194, 139, 0, 0.9)' :

@@ -15,13 +15,18 @@ const createSchema = z.object({
   prepaid: z.number({ message: 'Prepaid balance must be a valid number' }).default(0),
   transactionValue: z.number({
     message: 'Transaction value is required and must be a valid number',
-  }),
+  }).positive('Transaction value must be greater than 0'),
   transactionType: z.enum(ALLOWED_TRANSACTION_TYPES, {
     message: `Transaction type must be one of: ${ALLOWED_TRANSACTION_TYPES.join(', ')}`,
   }),
   paymentMethod: z.enum(ALLOWED_PAYMENT_METHODS, {
     message: `Payment method must be one of: ${ALLOWED_PAYMENT_METHODS.join(', ')}`,
   }).default('Bank'),
+  logBankOp: z.enum(['+', '-', 'none']).nullish(),
+  logCashOp: z.enum(['+', '-', 'none']).nullish(),
+  logPrepaidOp: z.enum(['+', '-', 'none']).nullish(),
+  fromAccount: z.string().trim().nullish(),
+  toAccount: z.string().trim().nullish(),
   categories: z
     .array(
       z.string({ message: 'Category must be a string' })
@@ -42,13 +47,18 @@ const updateSchema = z.object({
   bank: z.number({ message: 'Bank balance must be a valid number' }).optional(),
   cash: z.number({ message: 'Cash balance must be a valid number' }).optional(),
   prepaid: z.number({ message: 'Prepaid balance must be a valid number' }).optional(),
-  transactionValue: z.number({ message: 'Transaction value must be a valid number' }).optional(),
+  transactionValue: z.number({ message: 'Transaction value must be a valid number' }).positive('Transaction value must be greater than 0').optional(),
   transactionType: z.enum(ALLOWED_TRANSACTION_TYPES, {
     message: `Transaction type must be one of: ${ALLOWED_TRANSACTION_TYPES.join(', ')}`,
   }).optional(),
   paymentMethod: z.enum(ALLOWED_PAYMENT_METHODS, {
     message: `Payment method must be one of: ${ALLOWED_PAYMENT_METHODS.join(', ')}`,
   }).optional(),
+  logBankOp: z.enum(['+', '-', 'none']).nullish(),
+  logCashOp: z.enum(['+', '-', 'none']).nullish(),
+  logPrepaidOp: z.enum(['+', '-', 'none']).nullish(),
+  fromAccount: z.string().trim().nullish(),
+  toAccount: z.string().trim().nullish(),
   categories: z
     .array(
       z.string({ message: 'Category must be a string' })

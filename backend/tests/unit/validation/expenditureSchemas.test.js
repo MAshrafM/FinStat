@@ -52,6 +52,22 @@ describe('Expenditure Validation Schemas (Unit Tests)', () => {
       expect(fields).toContain('transactionType');
     });
 
+    it('should reject zero or negative transactionValue', () => {
+      const zeroResult = createSchema.safeParse({
+        date: '2026-08-22',
+        transactionValue: 0,
+        transactionType: 'W',
+      });
+      expect(zeroResult.success).toBe(false);
+
+      const negResult = createSchema.safeParse({
+        date: '2026-08-22',
+        transactionValue: -100,
+        transactionType: 'W',
+      });
+      expect(negResult.success).toBe(false);
+    });
+
     it('should reject unknown fields in create due to .strict()', () => {
       const payloadWithExtra = {
         date: '2026-08-22',

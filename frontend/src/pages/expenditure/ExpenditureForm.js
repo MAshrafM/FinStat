@@ -12,8 +12,9 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
   const [transactionType, setTransactionType] = useState('W');
   const [withdrawSource, setWithdrawSource] = useState('Bank'); // For W type
   const [topupTarget, setTopupTarget] = useState('Bank'); // For T type
-  const [logBankOp, setLogBankOp] = useState('+'); // For 'na' type
-  const [logCashOp, setLogCashOp] = useState('+'); // For 'na' type
+  const [logBankOp, setLogBankOp] = useState('-'); // Default: - from Bank
+  const [logCashOp, setLogCashOp] = useState('+'); // Default: + to Cash
+  const [logPrepaidOp, setLogPrepaidOp] = useState('none');
   const [categories, setCategories] = useState(['Other']);
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(formatDateForInput(new Date()));
@@ -24,6 +25,9 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
       setTransactionType(initialData.transactionType || 'W');
       setCategories(initialData.categories && initialData.categories.length > 0 ? initialData.categories : ['Other']);
       setDescription(initialData.description || '');
+      if (initialData.logBankOp) setLogBankOp(initialData.logBankOp);
+      if (initialData.logCashOp) setLogCashOp(initialData.logCashOp);
+      if (initialData.logPrepaidOp) setLogPrepaidOp(initialData.logPrepaidOp);
 
       // For edit mode, calculate transaction value from the difference
       // This is a simplified approach - you might need to adjust based on your data structure
@@ -70,16 +74,21 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
           newPrepaid -= value;
         }
         break;
-      case 'na': // Log
+      case 'na': // Log / Transfer
         if (logBankOp === '+') {
           newBank += value;
-        } else {
+        } else if (logBankOp === '-') {
           newBank -= value;
         }
         if (logCashOp === '+') {
           newCash += value;
-        } else {
+        } else if (logCashOp === '-') {
           newCash -= value;
+        }
+        if (logPrepaidOp === '+') {
+          newPrepaid += value;
+        } else if (logPrepaidOp === '-') {
+          newPrepaid -= value;
         }
         break;
       default:
@@ -114,6 +123,9 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
       transactionValue: value,
       transactionType,
       paymentMethod: getPaymentMethod(),
+      logBankOp: transactionType === 'na' ? logBankOp : undefined,
+      logCashOp: transactionType === 'na' ? logCashOp : undefined,
+      logPrepaidOp: transactionType === 'na' ? logPrepaidOp : undefined,
       categories: categories.length > 0 ? categories : ['Other'],
       description,
     };
@@ -152,7 +164,7 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
       {/* Transaction Value and Type Side by Side */}
       <div className="value-type-row">
         <div className="form-group">
-          <label>Transaction Value'</label>
+          <label>Transaction Value</label>
           <input
             type="number"
             value={transactionValue}
@@ -172,7 +184,7 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
             <option value="W">Withdraw</option>
             <option value="T">Top-up</option>
             <option value="S">Saving</option>
-            <option value="na">Log</option>
+            <option value="na">Log / Transfer</option>
           </select>
         </div>
       </div>
@@ -200,11 +212,14 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
       )}
 
       {transactionType === 'na' && (
-        <div className="log-operations">
+        <div className="log-operations" style={{ gap: '2rem', flexWrap: 'wrap' }}>
           <div className="operation-group">
-            <h4>Bank Operation</h4>
+            <h4>Bank</h4>
             <div className="radio-group">
-              <label className="radio-option">
+              <label
+                className={`radio-option ${logBankOp === '+' ? 'selected-plus' : ''}`}
+                title="Deposit to Bank"
+              >
                 <input
                   type="radio"
                   name="bankOp"
@@ -214,7 +229,10 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
                 />
                 <FaPlus />
               </label>
-              <label className="radio-option">
+              <label
+                className={`radio-option ${logBankOp === '-' ? 'selected-minus' : ''}`}
+                title="Withdraw from Bank"
+              >
                 <input
                   type="radio"
                   name="bankOp"
@@ -224,13 +242,30 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
                 />
                 <FaMinus />
               </label>
+              <label
+                className={`radio-option ${logBankOp === 'none' ? 'selected-off' : ''}`}
+                title="No change to Bank"
+                style={{ fontSize: '0.85rem', fontWeight: 'bold' }}
+              >
+                <input
+                  type="radio"
+                  name="bankOp"
+                  value="none"
+                  checked={logBankOp === 'none'}
+                  onChange={e => setLogBankOp(e.target.value)}
+                />
+                Off
+              </label>
             </div>
           </div>
 
           <div className="operation-group">
-            <h4>Cash Operation</h4>
+            <h4>Cash</h4>
             <div className="radio-group">
-              <label className="radio-option">
+              <label
+                className={`radio-option ${logCashOp === '+' ? 'selected-plus' : ''}`}
+                title="Add to Cash"
+              >
                 <input
                   type="radio"
                   name="cashOp"
@@ -240,7 +275,10 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
                 />
                 <FaPlus />
               </label>
-              <label className="radio-option">
+              <label
+                className={`radio-option ${logCashOp === '-' ? 'selected-minus' : ''}`}
+                title="Subtract from Cash"
+              >
                 <input
                   type="radio"
                   name="cashOp"
@@ -249,6 +287,66 @@ const ExpenditureForm = ({ onSubmit, initialData = {}, mode = 'create', lastReco
                   onChange={e => setLogCashOp(e.target.value)}
                 />
                 <FaMinus />
+              </label>
+              <label
+                className={`radio-option ${logCashOp === 'none' ? 'selected-off' : ''}`}
+                title="No change to Cash"
+                style={{ fontSize: '0.85rem', fontWeight: 'bold' }}
+              >
+                <input
+                  type="radio"
+                  name="cashOp"
+                  value="none"
+                  checked={logCashOp === 'none'}
+                  onChange={e => setLogCashOp(e.target.value)}
+                />
+                Off
+              </label>
+            </div>
+          </div>
+
+          <div className="operation-group">
+            <h4>Prepaid</h4>
+            <div className="radio-group">
+              <label
+                className={`radio-option ${logPrepaidOp === '+' ? 'selected-plus' : ''}`}
+                title="Add to Prepaid"
+              >
+                <input
+                  type="radio"
+                  name="prepaidOp"
+                  value="+"
+                  checked={logPrepaidOp === '+'}
+                  onChange={e => setLogPrepaidOp(e.target.value)}
+                />
+                <FaPlus />
+              </label>
+              <label
+                className={`radio-option ${logPrepaidOp === '-' ? 'selected-minus' : ''}`}
+                title="Subtract from Prepaid"
+              >
+                <input
+                  type="radio"
+                  name="prepaidOp"
+                  value="-"
+                  checked={logPrepaidOp === '-'}
+                  onChange={e => setLogPrepaidOp(e.target.value)}
+                />
+                <FaMinus />
+              </label>
+              <label
+                className={`radio-option ${logPrepaidOp === 'none' ? 'selected-off' : ''}`}
+                title="No change to Prepaid"
+                style={{ fontSize: '0.85rem', fontWeight: 'bold' }}
+              >
+                <input
+                  type="radio"
+                  name="prepaidOp"
+                  value="none"
+                  checked={logPrepaidOp === 'none'}
+                  onChange={e => setLogPrepaidOp(e.target.value)}
+                />
+                Off
               </label>
             </div>
           </div>
