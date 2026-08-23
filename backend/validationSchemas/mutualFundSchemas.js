@@ -16,25 +16,34 @@ const createSchema = z.object({
   type: z.enum(ALLOWED_MF_TYPES, {
     message: `Type must be one of: ${ALLOWED_MF_TYPES.join(', ')}`,
   }),
-  units: z.number({ message: 'Units must be a valid number' }).default(0),
-  price: z.number({ message: 'Price must be a valid number' }).default(0),
-  fees: z.number({ message: 'Fees must be a valid number' }).default(0),
-  totalValue: z.number({
+  units: z.coerce.number({ message: 'Units must be a valid number' }).default(0),
+  price: z.coerce.number({ message: 'Price must be a valid number' }).default(0),
+  fees: z.coerce.number({ message: 'Fees must be a valid number' }).default(0),
+  totalValue: z.coerce.number({
     message: 'Total value is required and must be a valid number',
   }),
 }).strict();
 
 const updateSchema = z.object({
-  date: dateStringSchema.optional(),
-  name: z.string({ message: 'Fund name must be a string' }).trim().min(1, 'Fund name cannot be empty').optional(),
-  code: z.string({ message: 'Fund code must be a string' }).trim().min(1, 'Fund code cannot be empty').optional(),
+  date: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    dateStringSchema.optional()
+  ),
+  name: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    z.string({ message: 'Fund name must be a string' }).trim().min(1, 'Fund name cannot be empty').optional()
+  ),
+  code: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    z.string({ message: 'Fund code must be a string' }).trim().min(1, 'Fund code cannot be empty').optional()
+  ),
   type: z.enum(ALLOWED_MF_TYPES, {
     message: `Type must be one of: ${ALLOWED_MF_TYPES.join(', ')}`,
   }).optional(),
-  units: z.number({ message: 'Units must be a valid number' }).optional(),
-  price: z.number({ message: 'Price must be a valid number' }).optional(),
-  fees: z.number({ message: 'Fees must be a valid number' }).optional(),
-  totalValue: z.number({ message: 'Total value must be a valid number' }).optional(),
+  units: z.coerce.number({ message: 'Units must be a valid number' }).optional(),
+  price: z.coerce.number({ message: 'Price must be a valid number' }).optional(),
+  fees: z.coerce.number({ message: 'Fees must be a valid number' }).optional(),
+  totalValue: z.coerce.number({ message: 'Total value must be a valid number' }).optional(),
 }).strict();
 
 const paramsSchema = paramsIdSchema;

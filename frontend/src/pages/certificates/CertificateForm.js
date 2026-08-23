@@ -28,7 +28,12 @@ const CertificateForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => 
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onFormSubmit(formData);
+        onFormSubmit({
+            ...formData,
+            period: parseInt(formData.period, 10),
+            amount: parseFloat(formData.amount),
+            interest: parseFloat(formData.interest),
+        });
     };
 
     return (

@@ -29,7 +29,11 @@ const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onFormSubmit(formData);
+        onFormSubmit({
+            ...formData,
+            amount: parseFloat(formData.amount),
+            price: parseFloat(formData.price),
+        });
     };
 
     return (

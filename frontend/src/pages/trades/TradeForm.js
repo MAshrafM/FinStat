@@ -126,7 +126,16 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             }
         }
 
-        onFormSubmit(formData);
+        const payload = {
+            ...formData,
+            shares: parseFloat(formData.shares) || 0,
+            price: parseFloat(formData.price) || 0,
+            fees: parseFloat(formData.fees) || 0,
+            totalValue: parseFloat(formData.totalValue) || 0,
+            iteration: formData.iteration !== '' && formData.iteration !== undefined ? parseInt(formData.iteration, 10) : undefined,
+        };
+
+        onFormSubmit(payload);
     };
 
     const isStockTrade = ['Buy', 'Sell', 'Dividend'].includes(formData.type);

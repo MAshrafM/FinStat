@@ -17,6 +17,20 @@ describe('Additional Validation Schemas (Unit Tests)', () => {
       expect(certCreate.safeParse(valid).success).toBe(true);
     });
 
+    it('should coerce string numbers in certificate payload', () => {
+      const valid = {
+        name: 'Platinum 3Y Certificate',
+        period: '36',
+        amount: '100000',
+        interest: '21.5',
+        startDate: '2026-01-01',
+      };
+      const result = certCreate.safeParse(valid);
+      expect(result.success).toBe(true);
+      expect(result.data.amount).toBe(100000);
+      expect(result.data.interest).toBe(21.5);
+    });
+
     it('should validate currency payload', () => {
       const valid = {
         name: 'USD',
@@ -25,6 +39,19 @@ describe('Additional Validation Schemas (Unit Tests)', () => {
         date: '2026-08-22',
       };
       expect(currCreate.safeParse(valid).success).toBe(true);
+    });
+
+    it('should coerce string numbers in currency payload', () => {
+      const valid = {
+        name: 'USD',
+        amount: '1000',
+        price: '48.5',
+        date: '2026-08-22',
+      };
+      const result = currCreate.safeParse(valid);
+      expect(result.success).toBe(true);
+      expect(result.data.amount).toBe(1000);
+      expect(result.data.price).toBe(48.5);
     });
   });
 

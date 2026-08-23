@@ -165,7 +165,13 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onFormSubmit(formData);
+        onFormSubmit({
+            ...formData,
+            units: parseFloat(formData.units) || 0,
+            price: parseFloat(formData.price) || 0,
+            fees: parseFloat(formData.fees) || 0,
+            totalValue: parseFloat(formData.totalValue) || 0,
+        });
     };
 
     const isTrade = ['Buy', 'Sell'].includes(formData.type);

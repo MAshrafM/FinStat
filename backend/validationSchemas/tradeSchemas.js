@@ -21,13 +21,16 @@ const createSchema = z.object({
   type: z.enum(ALLOWED_TRADE_TYPES, {
     message: `Type must be one of: ${ALLOWED_TRADE_TYPES.join(', ')}`,
   }),
-  price: z.number({ message: 'Price must be a valid number' }).default(0),
-  shares: z.number({ message: 'Shares must be a valid number' }).default(0),
-  fees: z.number({ message: 'Fees must be a valid number' }).default(0),
-  totalValue: z.number({
+  price: z.coerce.number({ message: 'Price must be a valid number' }).default(0),
+  shares: z.coerce.number({ message: 'Shares must be a valid number' }).default(0),
+  fees: z.coerce.number({ message: 'Fees must be a valid number' }).default(0),
+  totalValue: z.coerce.number({
     message: 'Total value is required and must be a valid number',
   }),
-  iteration: z.number({ message: 'Iteration must be an integer' }).int().optional(),
+  iteration: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    z.coerce.number({ message: 'Iteration must be an integer' }).int().optional()
+  ),
 })
   .strict()
   .refine(
@@ -47,23 +50,28 @@ const createSchema = z.object({
  * Trade update schema
  */
 const updateSchema = z.object({
-  date: dateStringSchema.optional(),
+  date: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    dateStringSchema.optional()
+  ),
   broker: z.enum(ALLOWED_BROKERS, {
     message: `Broker must be one of: ${ALLOWED_BROKERS.join(', ')}`,
   }).optional(),
-  stockCode: z
-    .string({ message: 'Stock code must be a string' })
-    .trim()
-    .min(1, 'Stock code cannot be empty')
-    .optional(),
+  stockCode: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    z.string({ message: 'Stock code must be a string' }).trim().min(1, 'Stock code cannot be empty').optional()
+  ),
   type: z.enum(ALLOWED_TRADE_TYPES, {
     message: `Type must be one of: ${ALLOWED_TRADE_TYPES.join(', ')}`,
   }).optional(),
-  price: z.number({ message: 'Price must be a valid number' }).optional(),
-  shares: z.number({ message: 'Shares must be a valid number' }).optional(),
-  fees: z.number({ message: 'Fees must be a valid number' }).optional(),
-  totalValue: z.number({ message: 'Total value must be a valid number' }).optional(),
-  iteration: z.number({ message: 'Iteration must be an integer' }).int().optional(),
+  price: z.coerce.number({ message: 'Price must be a valid number' }).optional(),
+  shares: z.coerce.number({ message: 'Shares must be a valid number' }).optional(),
+  fees: z.coerce.number({ message: 'Fees must be a valid number' }).optional(),
+  totalValue: z.coerce.number({ message: 'Total value must be a valid number' }).optional(),
+  iteration: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    z.coerce.number({ message: 'Iteration must be an integer' }).int().optional()
+  ),
 }).strict();
 
 const paramsSchema = paramsIdSchema;
