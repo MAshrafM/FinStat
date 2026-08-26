@@ -49,12 +49,22 @@ async function getAllHoldings(effectiveUserId, { forceRefresh = false } = {}) {
     marketPriceService.getCurrencyRates({ forceRefresh }),
   ]);
 
-  const stockPrices = Array.isArray(stockPricesRes.data)
-    ? stockPricesRes.data.reduce((acc, item) => {
-        if (item && item.symbol) acc[item.symbol] = Number(item.price) || 0;
+  const rawStockList = Array.isArray(stockPricesRes.data)
+    ? stockPricesRes.data
+    : (stockPricesRes.data?.prices || stockPricesRes.data?.data || []);
+
+  const stockPrices = Array.isArray(rawStockList)
+    ? rawStockList.reduce((acc, item) => {
+        if (!item) return acc;
+        const symbol = item.code || item.symbol || item.stockCode || item.ticker;
+        const price = Number(item.value ?? item.price ?? item.lastPrice ?? item.close) || 0;
+        if (symbol) {
+          acc[symbol] = price;
+        }
         return acc;
       }, {})
     : {};
+
 
   const goldPrices = goldPricesRes.data || { '24': 0, '21': 0, '18': 0 };
   const currencyRates = Array.isArray(currencyRatesRes.data) ? currencyRatesRes.data : [];

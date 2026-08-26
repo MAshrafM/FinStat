@@ -285,15 +285,23 @@ export const DataProvider = ({ children }) => {
                 setLoadingProgress(50);
 
                 let marketMap = {};
-                if (stMarketData?.prices) {
-                    marketMap = stMarketData.prices.reduce((acc, item) => {
-                        if (item?.code) {
-                            acc[item.code] = item.value;
+                const rawPrices = Array.isArray(stMarketData)
+                    ? stMarketData
+                    : (stMarketData?.prices || stMarketData?.data || []);
+
+                if (Array.isArray(rawPrices) && rawPrices.length > 0) {
+                    marketMap = rawPrices.reduce((acc, item) => {
+                        if (!item) return acc;
+                        const code = item.code || item.symbol || item.stockCode || item.ticker;
+                        const price = Number(item.value ?? item.price ?? item.lastPrice ?? item.close) || 0;
+                        if (code) {
+                            acc[code] = price;
                         }
                         return acc;
                     }, {});
                     setStMarketPrices(marketMap);
                 }
+
 
                 // Update derived state
                 const { openPositions, closedPositions } = computeSummaryData(stSummaryData, marketMap, trades);

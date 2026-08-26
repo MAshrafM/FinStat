@@ -311,13 +311,15 @@ const TradeSummaryPage = () => {
                                 <td data-label="Deals" style={{ color: item.totDeals <= item.totalValueNow ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totDeals)}</td>
 
                                 <td data-label="Shares" style={{ fontWeight: 'bold' }}>{item.currentShares}</td>
-                                <td data-label="Net Break Even ">{item.netBreakEven < 0 ? <span style={{ color: '#27ae60', fontWeight: 'bold' }}>Free Ride</span> : formatCurrency(item.netBreakEven)}</td>
+                                <td data-label="Net Break Even">{item.netBreakEven < 0 ? <span style={{ color: '#27ae60', fontWeight: 'bold' }}>Free Ride</span> : formatCurrency(item.netBreakEven)}</td>
                                 <td data-label="Break Even Price">{formatCurrency(item.breakEvenPrice)}</td>
                                 <td data-label="Target Sell">{item.netBreakEven < 0 ? <span style={{ color: '#27ae60', fontWeight: 'bold' }}>Free Ride</span> : formatCurrency(item.breakEvenTarget)}</td>
-
-                                <td data-label="Price" style={{ color: item.netBreakEven > stMarketPrices[item._id.stockCode] ? '#c0392b' : '#27ae60' }}>${stMarketPrices[item._id.stockCode]}</td>
+                                <td data-label="Price" style={{ color: (item.netBreakEven > (stMarketPrices[item._id.stockCode] || 0)) ? '#c0392b' : '#27ae60' }}>
+                                    {stMarketPrices[item._id.stockCode] ? formatCurrency(stMarketPrices[item._id.stockCode]) : '-'}
+                                </td>
                                 <td data-label="Total Now" className="total-value" style={{ color: item.totalValueNow >= item.totDeals ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totalValueNow)}</td>
-                                <td data-label="Change" className="total-value" style={{ color: item.changeNow > 0 ? '#27ae60' : '#c0392b' }} >{item.changeNow}%</td>
+                                <td data-label="Change" className="total-value" style={{ color: item.changeNow > 0 ? '#27ae60' : '#c0392b' }}>{item.changeNow}%</td>
+
                                 <td data-label="Fees">{formatCurrency(item.totalFees)}</td>
                                 <td data-label="Count">{item.tradeCount}</td>
                                 <td data-label="Period">{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</td>
