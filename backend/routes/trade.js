@@ -114,72 +114,81 @@ router.get('/summary', auth, asyncHandler(async (req, res) => {
             { $divide: ["$totalSellValue", "$totalSharesSold"] },
             0
           ]
+        },
+        adjustedAvgPrice: {
+          $cond: [
+            { $eq: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, 0] },
+            0,
+            {
+              $divide: [
+                "$totalBuyValue",
+                { $add: ["$totalSharesBought", "$totalSharesDividend"] }
+              ]
+            }
+          ]
         }
       }
     },
-    // --- Stage 3: Realized & Unrealized PnL & Status ---
+    // --- Stage 3: Calculate Cost of Goods Sold (COGS) & Net Break Even ---
     {
       $addFields: {
-        realizedPnL: {
-          $cond: [
-            { $gt: ["$totalSharesSold", 0] },
-            {
-              $subtract: [
-                "$totalSellValue",
-                {
-                  $add: [
-                    { $multiply: ["$totalSharesSold", "$averageBuyPrice"] },
-                    "$totalFees"
-                  ]
-                }
-              ]
-            },
-            0
-          ]
+        costOfSoldShares: {
+          $multiply: ["$totalSharesSold", "$averageBuyPrice"]
         },
-        realizedPnLPercentage: {
+        netBreakEvenPrice: {
           $cond: [
+            { $lte: [{ $subtract: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, "$totalSharesSold"] }, 0] },
+            0,
             {
-              $and: [
-                { $gt: ["$totalSharesSold", 0] },
-                { $gt: [{ $multiply: ["$totalSharesSold", "$averageBuyPrice"] }, 0] }
-              ]
-            },
-            {
-              $multiply: [
+              $divide: [
                 {
-                  $divide: [
-                    {
-                      $subtract: [
-                        "$totalSellValue",
-                        {
-                          $add: [
-                            { $multiply: ["$totalSharesSold", "$averageBuyPrice"] },
-                            "$totalFees"
-                          ]
-                        }
-                      ]
-                    },
-                    { $multiply: ["$totalSharesSold", "$averageBuyPrice"] }
+                  $subtract: [
+                    "$totalBuyValue",
+                    { $add: ["$totalSellValue", "$totalDividendValue"] }
                   ]
                 },
-                100
+                { $subtract: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, "$totalSharesSold"] }
               ]
-            },
-            0
+            }
           ]
+        }
+      }
+    },
+    // --- Stage 4: Final P/L Calculation & Tot Deals ---
+    {
+      $addFields: {
+        tradingPL: {
+          $subtract: ["$totalSellValue", "$costOfSoldShares"]
+        },
+        dividendIncome: "$totalDividendValue",
+        totalRealizedReturn: {
+          $add: [
+            { $subtract: ["$totalSellValue", "$costOfSoldShares"] },
+            "$totalDividendValue"
+          ]
+        },
+        totDeals: {
+          $subtract: [
+            "$totalBuyValue",
+            { $add: ["$totalSellValue", "$totalDividendValue"] }
+          ]
+        },
+        investedAmountRemaining: {
+          $multiply: ["$currentShares", "$averageBuyPrice"]
         },
         status: {
           $cond: [{ $eq: ["$currentShares", 0] }, "Closed", "Open"]
         }
       }
     },
+    // --- Stage 5: Sorting ---
     {
       $sort: {
         "_id.stockCode": 1,
-        "_id.iteration": 1
+        "lastTradeDate": -1
       }
     }
+
   ]);
   res.json(summary);
 }));
