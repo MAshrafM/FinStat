@@ -14,6 +14,7 @@ import {
   FaCreditCard,
   FaShieldAlt,
   FaUsers,
+  FaHome,
 } from 'react-icons/fa';
 import './Dashboard.css';
 
@@ -64,11 +65,17 @@ const Dashboard = () => {
       <h1>Welcome to Your Dashboard</h1>
       <p>Select a feature to get started.</p>
 
-      <div className="dashboard-summary" style={{ justifyContent: 'center' }}>
-        <Link to="/summary" className="dashboard-card">
-          <FaBalanceScale size={80} />
-          <h2>Profile Summary</h2>
-          <p>Comprehensive overview of your complete financial portfolio.</p>
+      <div className="dashboard-summary" style={{ justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
+        <Link to="/portfolio" className="dashboard-card" style={{ flex: '1', minWidth: '280px', maxWidth: '420px', borderTop: '4px solid #38bdf8' }}>
+          <FaChartLine size={70} color="#38bdf8" />
+          <h2 style={{ color: '#38bdf8' }}>Portfolio Analytics</h2>
+          <p>Unified performance tracking, asset allocation, and XIRR return metrics.</p>
+        </Link>
+
+        <Link to="/summary" className="dashboard-card" style={{ flex: '1', minWidth: '280px', maxWidth: '420px', borderTop: '4px solid #a855f7' }}>
+          <FaBalanceScale size={70} color="#a855f7" />
+          <h2 style={{ color: '#a855f7' }}>Profile Summary</h2>
+          <p>Comprehensive overview of your complete financial portfolio and holdings.</p>
         </Link>
       </div>
 
@@ -119,6 +126,12 @@ const Dashboard = () => {
           <FaDollarSign size={45} />
           <h2>Foreign Currency</h2>
           <p>Track your Foreign Currency Wallet.</p>
+        </Link>
+
+        <Link to="/real-estate" className="dashboard-card" style={{ borderTop: '4px solid #ec4899' }}>
+          <FaHome size={45} color="#ec4899" />
+          <h2 style={{ color: '#ec4899' }}>Real Estate</h2>
+          <p>Track property investments, purchases, and estimated market valuations.</p>
         </Link>
 
         <Link to="/credit-cards" className="dashboard-card">

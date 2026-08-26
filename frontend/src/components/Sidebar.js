@@ -63,6 +63,12 @@ const Sidebar = () => {
       description: 'Main overview',
     },
     {
+      path: '/portfolio',
+      icon: '📈',
+      title: 'Portfolio',
+      description: 'Unified investments & performance',
+    },
+    {
       path: '/salary-profile',
       icon: '👔',
       title: 'Salary Profile',
@@ -157,6 +163,12 @@ const Sidebar = () => {
       icon: '💱',
       title: 'Foreign Currency',
       description: 'Currency Wallet',
+    },
+    {
+      path: '/real-estate',
+      icon: '🏘️',
+      title: 'Real Estate',
+      description: 'Property portfolio',
     },
     {
       path: '/credit-cards',

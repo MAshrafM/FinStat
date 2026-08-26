@@ -36,7 +36,29 @@ const mapSalaryDetailsWithPiastres = (details) => {
 // @desc    Get the single active salary profile
 router.get('/', auth, asyncHandler(async (req, res) => {
   const profile = await SalaryProfile.findOne({ user: req.effectiveUserId, deletedAt: null });
-  res.json(profile);
+  if (!profile) {
+    return res.json(null);
+  }
+
+  const profileObj = profile.toObject();
+  const currentSalary = profile.getCurrentSalary();
+  profileObj.currentSalary = currentSalary ? (currentSalary.toObject ? currentSalary.toObject() : currentSalary) : null;
+
+  if (profileObj.currentSalary) {
+    const cs = profileObj.currentSalary;
+    const gross =
+      (cs.basicSalary || 0) +
+      (cs.basicProduction || 0) +
+      (cs.variables || 0) +
+      (cs.environment || 0) +
+      (cs.meal || 0) +
+      (cs.shift || 0) +
+      (cs.supervising || 0) +
+      (cs.others || 0);
+    profileObj.monthlyGrossEstimate = gross;
+  }
+
+  res.json(profileObj);
 }));
 
 // @route   PUT api/salary-profile

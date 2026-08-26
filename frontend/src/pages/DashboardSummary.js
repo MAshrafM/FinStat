@@ -18,6 +18,7 @@ import { useCertData } from '../context/CertContext';
 import { useCurrData } from '../context/CurrContext';
 import { useBankData } from '../context/BankContext';
 import { useCreditData } from '../context/CreditContext';
+import { getRealEstates } from '../services/realEstateService';
 
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
 import { safePercentage, normDiv } from '../utils/helper'; // Import safe division and percentage functions }
@@ -51,6 +52,13 @@ const Summary = () => {
     const { currencySummary = [] } = useCurrData();
     const { bankAccountData = {} } = useBankData();
     const { creditCardsSummary = {} } = useCreditData();
+    const [realEstates, setRealEstates] = useState([]);
+
+    useEffect(() => {
+        getRealEstates({ status: 'Owned' })
+            .then((data) => setRealEstates(data || []))
+            .catch((err) => console.error('Failed to load real estate for summary:', err));
+    }, []);
 
     // Safely process currency data
     const safeCurrencySummary = useMemo(() => {
@@ -82,15 +90,13 @@ const Summary = () => {
         const creditAvailable = safeNumber(safeObject(creditCardsSummary).totalAvailable);
         const creditOutstanding = safeNumber(safeObject(creditCardsSummary).totalOutstanding);
 
-        // Real estate (hardcoded values)
-        const realEstatePaid1 = 334125;
-        const realEstateValue1 = 800000;
-        const realEstatePaid2 = 720000;
-        const realEstateValue2 = 720000;
+        // Real estate (dynamic from DB)
+        const realEstateTotalPaid = realEstates.reduce((sum, item) => sum + safeNumber(item.purchasePrice), 0);
+        const realEstateTotalCurrent = realEstates.reduce((sum, item) => sum + safeNumber(item.currentValuation), 0);
 
         // Total calculations
-        const totalPaid = goldPaid + certAmount + mfAmount + stockAmount + bankBalance + currencyTotalPrice;
-        const totalCurrent = goldCurrent + certAmount + mfValue + stockCurrent + bankBalance + currencyCurrentValue;
+        const totalPaid = goldPaid + certAmount + mfAmount + stockAmount + bankBalance + currencyTotalPrice + realEstateTotalPaid;
+        const totalCurrent = goldCurrent + certAmount + mfValue + stockCurrent + bankBalance + currencyCurrentValue + realEstateTotalCurrent;
 
         // CAGR calculations with safe division
         const goldCAGR = goldPaid > 0 ? ((Math.pow(normDiv(goldCurrent, goldPaid), (1 / INVESTMENT_PERIOD)) - 1) * 100).toFixed(2) : 0;
@@ -105,13 +111,13 @@ const Summary = () => {
             stockAmount, stockCurrent, stockCAGR,
             bankBalance, creditAvailable, creditOutstanding,
             currencyTotalPrice, currencyCurrentValue,
-            realEstatePaid1, realEstateValue1,
-            realEstatePaid2, realEstateValue2,
+            realEstateTotalPaid, realEstateTotalCurrent,
+            realEstates,
             totalPaid, totalCurrent
         };
     }, [
         overallTotalPaid, goldtotalNow, certificateSummary, overallTotals,
-        summaryMetrics, bankAccountData, creditCardsSummary, safeCurrencySummary
+        summaryMetrics, bankAccountData, creditCardsSummary, safeCurrencySummary, realEstates
     ]);
 
     // Memoized chart data
@@ -434,21 +440,37 @@ const Summary = () => {
                     </div>
 
                     <div className="dashboard-card">
-                        <h3>Realstate</h3>
-                        <div className="dashboard-card-items">
-                            <div className="dashboard-card-item">
-                                <span className="description">Home1</span>
-                                <span className="value">65m2</span>
-                            </div>
-                            <div className="dashboard-card-item">
-                                <span className="description">Paid</span>
-                                <span className="value">{formatCurrency(displayData.calculations.realEstatePaid1)}</span>
-                            </div>
-                            <div className="dashboard-card-item">
-                                <span className="description">Est. Sell</span>
-                                <span className="value">{formatCurrency(displayData.calculations.realEstateValue1)}</span>
-                            </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <h3 style={{ margin: 0 }}>Real Estate</h3>
+                            <Link to="/real-estate" style={{ color: '#38bdf8', fontSize: '0.85rem', textDecoration: 'none' }}>
+                                Manage ↗
+                            </Link>
                         </div>
+                        {realEstates && realEstates.length > 0 ? (
+                            realEstates.map((prop) => (
+                                <div key={prop._id} className="dashboard-card-items" style={{ marginBottom: '12px' }}>
+                                    <div className="dashboard-card-item">
+                                        <span className="description">{prop.name}</span>
+                                        <span className="value">{prop.area > 0 ? `${prop.area}m²` : prop.type}</span>
+                                    </div>
+                                    <div className="dashboard-card-item">
+                                        <span className="description">Paid</span>
+                                        <span className="value">{formatCurrency(prop.purchasePrice)}</span>
+                                    </div>
+                                    <div className="dashboard-card-item">
+                                        <span className="description">Est. Valuation</span>
+                                        <span className="value">{formatCurrency(prop.currentValuation)}</span>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="dashboard-card-items">
+                                <div className="dashboard-card-item">
+                                    <span className="description">No real estate recorded</span>
+                                    <Link to="/real-estate/new" style={{ color: '#ec4899', fontSize: '0.85rem' }}>+ Add Property</Link>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

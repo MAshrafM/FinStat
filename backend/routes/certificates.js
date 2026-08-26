@@ -13,6 +13,7 @@ const {
 } = require('../validationSchemas/certificateSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
+const { invalidatePortfolioCache } = require('../utils/portfolioService');
 
 // @route   GET api/certificates
 // @desc    Get all active certificates
@@ -34,6 +35,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     amountInPiastres: toPiastres(validatedBody.amount),
   });
   await newCertificate.save();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.status(201).json(newCertificate);
 }));
 
@@ -71,6 +73,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   }
 
   certificate = await Certificate.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json(certificate);
 }));
 
@@ -89,6 +92,7 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
     throw new ForbiddenError('User not authorized');
   }
   await certificate.softDelete();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Certificate deleted successfully' });
 }));
 
@@ -104,6 +108,7 @@ router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandl
     throw new NotFoundError('Soft-deleted certificate not found');
   }
   await certificate.restore();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Certificate restored successfully', certificate });
 }));
 

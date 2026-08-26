@@ -16,6 +16,8 @@ const {
 } = require('../validationSchemas/goldSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
+const marketPriceService = require('../utils/marketPriceService');
+const { invalidatePortfolioCache } = require('../utils/portfolioService');
 
 // @route   GET api/golds
 // @desc    Get all gold logs (with pagination)
@@ -107,50 +109,9 @@ router.get('/summary', auth, asyncHandler(async (req, res) => {
 // @route   GET api/golds/price
 // @desc    Get the current gold price per gram
 router.get('/price', auth, asyncHandler(async (req, res) => {
-  try {
-    const response = await axios.get('https://dahabmasr.com/api/price/fetch', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Referer': 'https://dahabmasr.com/',
-        'Accept': 'application/json, text/plain, */*',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-origin'
-      }
-    });
-
-    const data = response.data[0];
-    const pricePerGram = {
-      '24': data.LocalSellPrice24,
-      '21': data.Sell,
-      '18': data.LocalSellPrice18,
-    };
-    res.json(pricePerGram);
-  } catch (err) {
-    const fallResponse = await axios.get('https://dahabzaman.eg/en/GoldPrice/GetcurrentPriceList', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Referer': 'https://dahabzaman.eg',
-        'Accept': 'application/json, text/plain, */*',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-origin'
-      }
-    });
-    const fallData = fallResponse.data;
-    const fallPricePerGram = {
-      '24': fallData["1"].SellPrice,
-      '21': fallData["2"].SellPrice,
-      '18': fallData["3"].SellPrice,
-    };
-    res.json(fallPricePerGram);
-  }
+  const forceRefresh = req.query.refresh === 'true';
+  const result = await marketPriceService.getGoldPrices({ forceRefresh });
+  res.json(result.data);
 }));
 
 // @route   POST api/golds
@@ -168,6 +129,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     sellingPriceInPiastres: toPiastres(validatedBody.sellingPrice),
   });
   await newLog.save();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.status(201).json(newLog);
 }));
 
@@ -211,6 +173,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   }
 
   log = await Gold.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json(log);
 }));
 
@@ -229,6 +192,7 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
     throw new ForbiddenError('User not authorized');
   }
   await log.softDelete();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Log deleted successfully' });
 }));
 
@@ -244,6 +208,7 @@ router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandl
     throw new NotFoundError('Soft-deleted gold log not found');
   }
   await log.restore();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Gold log restored successfully', log });
 }));
 

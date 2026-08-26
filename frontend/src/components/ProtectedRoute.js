@@ -13,7 +13,7 @@ const BankProvider = React.lazy(() => import('../context/BankContext').then(m =>
 const CreditProvider = React.lazy(() => import('../context/CreditContext').then(m => ({ default: m.CreditProvider })));
 // Route configuration for better maintainability
 const ROUTE_CONFIG = {
-  basicRoutes: ['/dashboard', '/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/social-insurance'],
+  basicRoutes: ['/dashboard', '/portfolio', '/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/social-insurance', '/real-estate', '/real-estate/new', '/real-estate/edit'],
   contextRoutes: {
     data: ['/trades/new', '/trades/edit', '/trade-summary'],
     gold: ['/gold-wallet/summary'],
@@ -102,27 +102,31 @@ const ProtectedRoute = () => {
       return <Navigate to="/dashboard" replace />;
     }
 
-   return (
-    <div className="App">
-      <Navbar onSidebarToggle={handleSidebarToggle} />
-      <Sidebar />
-      <main className={`main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
-        <React.Suspense fallback={<div>Loading...</div>}>
-          {requiredProviders.length > 0 ? (
-            <ProviderWrapper providers={requiredProviders}>
-              {needsDataLoader ? (
-                  <Outlet />
-              ) : (
-                <Outlet />
-              )}
-            </ProviderWrapper>
-          ) : (
-            <Outlet />
-          )}
-        </React.Suspense>
-      </main>
-    </div>
-  );
-};
+    const isFullBleedPage =
+      location.pathname.startsWith('/portfolio') ||
+      location.pathname.startsWith('/real-estate');
+
+    return (
+      <div className="App">
+        <Navbar onSidebarToggle={handleSidebarToggle} />
+        <Sidebar />
+        <main
+          className={`main-content ${sidebarOpen ? 'sidebar-open' : ''} ${
+            isFullBleedPage ? 'full-bleed' : ''
+          }`}
+        >
+          <React.Suspense fallback={<div>Loading...</div>}>
+            {requiredProviders.length > 0 ? (
+              <ProviderWrapper providers={requiredProviders}>
+                {needsDataLoader ? <Outlet /> : <Outlet />}
+              </ProviderWrapper>
+            ) : (
+              <Outlet />
+            )}
+          </React.Suspense>
+        </main>
+      </div>
+    );
+  };
 
 export default ProtectedRoute;

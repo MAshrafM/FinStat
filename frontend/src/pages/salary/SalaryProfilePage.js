@@ -8,7 +8,7 @@ import SalaryForm from '../../components/SalaryForm'; // We'll reuse this
 import './SalaryProfile.css';
 
 const SalaryProfilePage = () => {
-  const { isMobile } =  window.innerWidth <= 768;
+  const isMobile = window.innerWidth <= 768;
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -19,14 +19,19 @@ const SalaryProfilePage = () => {
 
   const loadProfile = () => {
     setIsLoading(true);
-    getProfile().then(data => {
-      setProfile(data);
-      // If no profile exists, immediately go into editing/creation mode.
-      if (!data) {
-        setIsEditing(true);
-      }
-      setIsLoading(false);
-    });
+    getProfile()
+      .then((data) => {
+        setProfile(data);
+        // If no profile exists, immediately go into editing/creation mode.
+        if (!data) {
+          setIsEditing(true);
+        }
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to load salary profile:', err);
+        setIsLoading(false);
+      });
   };
 
   const handleFormSubmit = async (formData) => {
@@ -39,26 +44,49 @@ const SalaryProfilePage = () => {
     return <div className="page-container">Loading...</div>;
   }
 
-  if (profile && profile.salaryHistory.length === 0) {
+  const currentSalary =
+    profile?.currentSalary ||
+    (profile?.salaryHistory && profile.salaryHistory.length > 0
+      ? [...profile.salaryHistory].sort(
+          (a, b) => new Date(b.effectiveDate || 0) - new Date(a.effectiveDate || 0)
+        )[0]
+      : null);
+
+  const monthlyGrossEstimate =
+    profile?.monthlyGrossEstimate !== undefined
+      ? profile.monthlyGrossEstimate
+      : currentSalary
+      ? (currentSalary.basicSalary || 0) +
+        (currentSalary.basicProduction || 0) +
+        (currentSalary.variables || 0) +
+        (currentSalary.environment || 0) +
+        (currentSalary.meal || 0) +
+        (currentSalary.shift || 0) +
+        (currentSalary.supervising || 0) +
+        (currentSalary.others || 0)
+      : 0;
+
+  if (profile && (!profile.salaryHistory || profile.salaryHistory.length === 0) && !currentSalary) {
     return (
       <div className="page-container">
-        <div className="profile-card empty-history-card" style={{maxWidth: '800px', margin: '0 auto'}}>
-           <div className="card-header">
+        <div className="profile-card empty-history-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div className="card-header">
             <div className="header-content">
               <h3>{profile.name}</h3>
-              <p>{profile.title} - {profile.year}</p>
+              <p>
+                {profile.title} - {profile.year}
+              </p>
             </div>
-            {console.log(isMobile)}
             {!isMobile && (
               <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
-              <FaUserEdit />
-            </Link>
+                <FaUserEdit />
+              </Link>
             )}
           </div>
           <div className="card-body">
             <h4>No Salary Details Found</h4>
             <p>This profile doesn't have any salary history yet. Add the first set of salary details to get started.</p>
-            <Link to="/salary-profile/update" className="submit-button" style={{marginTop: '1rem', textDecoration: 'none'}}>
+            <Link to="/salary-profile/update" className="submit-button" style={{ marginTop: '1rem', textDecoration: 'none' }}>
               Add Initial Salary Details
             </Link>
           </div>
@@ -66,6 +94,7 @@ const SalaryProfilePage = () => {
       </div>
     );
   }
+
   // If we are in editing mode (or creating for the first time)
   if (isEditing) {
     return (
@@ -76,37 +105,61 @@ const SalaryProfilePage = () => {
           mode={profile ? 'update' : 'create'}
         />
         {/* Allow canceling the edit if a profile already exists */}
-        {profile && <button className="cancel-button" onClick={() => setIsEditing(false)}>Cancel</button>}
+        {profile && (
+          <button className="cancel-button" onClick={() => setIsEditing(false)}>
+            Cancel
+          </button>
+        )}
       </div>
     );
   }
 
+  const effectiveDateStr = currentSalary?.effectiveDate
+    ? new Date(currentSalary.effectiveDate).toLocaleDateString()
+    : 'N/A';
+
   // Default view: Display the profile
   return (
     <div className="page-container">
-      <div className="profile-card" style={{maxWidth: '800px', margin: '0 auto'}}>
+      <div className="profile-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
         <div className="card-header">
-            <div className="header-content">
-              <h3>{profile.title} {profile.name}</h3>
-              <p>{profile.position} - {profile.year}</p>
-              {isMobile && (
-                <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
-                  <FaUserEdit />
-                </Link>
-              )}
-            </div>
-          {!isMobile && (<Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
-            <FaUserEdit />
-          </Link>)}
+          <div className="header-content">
+            <h3>
+              {profile.title} {profile.name}
+            </h3>
+            <p>
+              {profile.position} - {profile.year}
+            </p>
+            {isMobile && (
+              <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
+                <FaUserEdit />
+              </Link>
+            )}
+          </div>
+          {!isMobile && (
+            <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
+              <FaUserEdit />
+            </Link>
+          )}
         </div>
         <div className="card-body">
-          <h4>Current Salary Details (as of {new Date(profile.currentSalary.effectiveDate).toLocaleDateString()})</h4>
+          <h4>Current Salary Details (as of {effectiveDateStr})</h4>
           <ul>
-            {Object.entries(profile.currentSalary)
-              .filter(([key]) => !['_id', 'effectiveDate', 'prepaid'].includes(key))
+            {Object.entries(currentSalary || {})
+              .filter(
+                ([key]) =>
+                  !['_id', 'effectiveDate', 'prepaid', 'user', '__v', 'createdAt', 'updatedAt'].includes(key) &&
+                  !key.toLowerCase().endsWith('inpiastres')
+              )
               .map(([key, value]) => (
                 <li key={key}>
-                  <span>{key.charAt(0).toUpperCase() + key.slice(1)}:</span>
+                  <span>
+                    {key
+                      .replace(/([A-Z])/g, ' $1')
+                      .replace(/^./, (str) => str.toUpperCase())
+                      .trim()}
+                    :
+                  </span>
                   <strong>{formatCurrency(value)}</strong>
                 </li>
               ))}
@@ -115,15 +168,15 @@ const SalaryProfilePage = () => {
         <div className="card-footer">
           <div className="gross-estimate">
             <span>Monthly Gross Estimate:</span>
-            <strong>{formatCurrency(profile.monthlyGrossEstimate)}</strong>
+            <strong>{formatCurrency(monthlyGrossEstimate)}</strong>
           </div>
           <div className="gross-estimate prepaid">
             <span>Monthly Prepaid:</span>
-            <strong>{formatCurrency(profile.currentSalary.prepaid)}</strong>
+            <strong>{formatCurrency(currentSalary?.prepaid || 0)}</strong>
           </div>
           <div className="card-actions">
             <Link to="/salary-profile/update" className="action-button" title="Update Salary">
-                <FaEdit /> Update
+              <FaEdit /> Update
             </Link>
             <Link to="/salary-profile/history" className="action-button" title="View History">
               <FaHistory /> History

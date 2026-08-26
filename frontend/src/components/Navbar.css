@@ -3,69 +3,98 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #282c34;
-  padding: 1rem 2rem;
+  background: #1e1e2e;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.85rem 2rem;
   color: white;
-  margin-left: 45px;
+  margin-left: 70px;
+  height: 64px;
+  box-sizing: border-box;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: sticky;
+  top: 0;
+  z-index: 900;
 }
+
 .navbar-brand {
-  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  padding: 0;
 }
+
 .navbar-brand a {
-  color: white;
+  color: #f8fafc;
   text-decoration: none;
-  font-size: 1.3rem;
-  font-weight: bold;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: color 0.2s ease;
 }
+
+.navbar-brand a:hover {
+  color: #38bdf8;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .navbar-links .nav-button {
-  background-color: #61dafb;
-  color: #282c34;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  color: #ffffff;
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 0.88rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+  transition: all 0.2s ease;
 }
+
+.navbar-links .nav-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45);
+  color: #ffffff;
+}
+
 .nav-button-text {
   display: inline;
 }
 
 .sidebar-toggle {
-    display: none; /* Hidden by default */
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0.5rem;
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
 }
 
-@media (max-width: 768px) {
-    .sidebar-toggle {
-        display: block; /* Show only on mobile */
-    }
-    .navbar {
-        margin-left: 0;
-        padding: 1rem;
-    }
-}
-
-/* Responsive: Remove left margin on small screens */
 @media (max-width: 768px) {
   .navbar {
     margin-left: 0;
-    padding: 1rem 1rem;
-    font-size: 1rem;
+    padding: 0.85rem 1rem;
   }
+  
+  .sidebar-toggle {
+    display: block;
+  }
+
   .navbar-brand a {
     font-size: 1.05rem;
   }
+
   .navbar-links .nav-button {
     padding: 0.4rem 0.8rem;
-    font-size: 0.95rem;
+    font-size: 0.82rem;
   }
+
   .nav-button-text {
     display: none;
   }

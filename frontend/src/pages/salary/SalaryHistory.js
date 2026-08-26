@@ -8,13 +8,15 @@ import '../../components/Table.css'; // Reuse the nice table styles
 
 const SalaryHistory = () => {
   const [profile, setProfile] = useState(null);
-  const { isMobile } = window.innerWidth <= 768; // Get the mobile state from context
+  const isMobile = window.innerWidth <= 768;
   useEffect(() => {
     loadProfile();
   }, []);
 
   const loadProfile = () => {
-    getProfile().then(setProfile);
+    getProfile()
+      .then(setProfile)
+      .catch((err) => console.error('Failed to load salary history profile:', err));
   };
 
   const handleDelete = async (historyId) => {
@@ -27,13 +29,19 @@ const SalaryHistory = () => {
   if (!profile) return <div className="page-container">Loading...</div>;
 
   // Sort history so the newest is at the top
-  const sortedHistory = [...profile.salaryHistory].sort((a, b) => new Date(b.effectiveDate) - new Date(a.effectiveDate));
+  const sortedHistory = [...(profile.salaryHistory || [])].sort(
+    (a, b) => new Date(b.effectiveDate || 0) - new Date(a.effectiveDate || 0)
+  );
 
   return (
     <div className="page-container">
       <div className="page-header">
         <h1>Salary History for {profile.name}</h1>
-        {!isMobile && (<Link to="/salary-profile" className="nav-button">Back to Profiles</Link>)}
+        {!isMobile && (
+          <Link to="/salary-profile" className="nav-button">
+            Back to Profiles
+          </Link>
+        )}
       </div>
       <div className="table-container">
         <table className="styled-table">
@@ -54,9 +62,11 @@ const SalaryHistory = () => {
             </tr>
           </thead>
           <tbody>
-            {sortedHistory.map(record => (
+            {sortedHistory.map((record) => (
               <tr key={record._id} data-id={record._id}>
-                <td data-label="Date">{new Date(record.effectiveDate).toLocaleDateString()}</td>
+                <td data-label="Date">
+                  {record.effectiveDate ? new Date(record.effectiveDate).toLocaleDateString() : 'N/A'}
+                </td>
                 <td data-label="Basic Salary">{formatCurrency(record.basicSalary)}</td>
                 <td data-label="Production">{formatCurrency(record.basicProduction)}</td>
                 <td data-label="Variables">{formatCurrency(record.variables)}</td>

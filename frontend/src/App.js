@@ -9,6 +9,7 @@ import './components/Table.css';
 
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const Portfolio = React.lazy(() => import('./pages/portfolio/PortfolioDashboard'));
 const Summary = React.lazy(() => import('./pages/DashboardSummary'));
 // Paycheck Log
 const PaycheckLog = React.lazy(() => import('./pages/paycheck/PaycheckLog'));
@@ -57,6 +58,10 @@ const EditCertificatePage = React.lazy(() => import('./pages/certificates/EditCe
 const CurrencyLogPage = React.lazy(() => import('./pages/currency/CurrencyLogPage'));
 const AddCurrencyPage = React.lazy(() => import('./pages/currency/AddCurrencyPage'));
 const EditCurrencyPage = React.lazy(() => import('./pages/currency/EditCurrencyPage'));
+// Real Estate
+const RealEstateLogPage = React.lazy(() => import('./pages/real-estate/RealEstateLogPage'));
+const AddRealEstatePage = React.lazy(() => import('./pages/real-estate/AddRealEstatePage'));
+const EditRealEstatePage = React.lazy(() => import('./pages/real-estate/EditRealEstatePage'));
 // Credit Cards
 const CreditCardPage = React.lazy(() => import('./pages/credit-cards/CreditCardPage'));
 // Security & Access Control
@@ -74,6 +79,7 @@ function App() {
               <Route path="*" element={<LandingPage />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/portfolio" element={<Portfolio />} />
                 <Route path="/summary" element={<Summary />} />
                 <Route path="/security" element={<SecuritySettingsPage />} />
                 <Route path="/admin" element={<AdminDashboard />} />
@@ -113,6 +119,9 @@ function App() {
                 <Route path="/currency" element={<CurrencyLogPage />} />
                 <Route path="/currency/new" element={<AddCurrencyPage />} />
                 <Route path="/currency/edit/:id" element={<EditCurrencyPage />} />
+                <Route path="/real-estate" element={<RealEstateLogPage />} />
+                <Route path="/real-estate/new" element={<AddRealEstatePage />} />
+                <Route path="/real-estate/edit/:id" element={<EditRealEstatePage />} />
                 <Route path="/credit-cards" element={<CreditCardPage />} />
               </Route>
             </Routes>

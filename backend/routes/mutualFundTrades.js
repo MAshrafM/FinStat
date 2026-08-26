@@ -16,6 +16,8 @@ const {
 } = require('../validationSchemas/mutualFundSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
+const marketPriceService = require('../utils/marketPriceService');
+const { invalidatePortfolioCache } = require('../utils/portfolioService');
 
 // @route   GET api/mutual-funds
 // @desc    Get all active mutual fund trades (with pagination)
@@ -54,8 +56,9 @@ router.get('/all', auth, asyncHandler(async (req, res) => {
 // @desc    Get the last price of a mutual fund
 router.get('/last-price', auth, asyncHandler(async (req, res) => {
   const fundName = req.query.name;
-  const response = await axios.get(`https://english.mubasher.info/api/1/funds?country=eg&name=${fundName}`);
-  res.json(response.data);
+  const forceRefresh = req.query.refresh === 'true';
+  const result = await marketPriceService.getFundPrice(fundName, { forceRefresh });
+  res.json(result.data);
 }));
 
 // @route   POST api/mutual-funds
@@ -73,6 +76,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     totalValueInPiastres: toPiastres(validatedBody.totalValue),
   });
   await newTrade.save();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.status(201).json(newTrade);
 }));
 
@@ -176,6 +180,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   }
 
   trade = await MutualFundTrade.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json(trade);
 }));
 
@@ -194,6 +199,7 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
     throw new ForbiddenError('User not authorized');
   }
   await trade.softDelete();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Trade deleted successfully' });
 }));
 
@@ -209,6 +215,7 @@ router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandl
     throw new NotFoundError('Soft-deleted trade not found');
   }
   await trade.restore();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Trade restored successfully', trade });
 }));
 

@@ -15,6 +15,8 @@ const {
 } = require('../validationSchemas/currencySchemas');
 const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
+const marketPriceService = require('../utils/marketPriceService');
+const { invalidatePortfolioCache } = require('../utils/portfolioService');
 
 // @route   GET api/currency
 // @desc    Get all active currencies
@@ -36,6 +38,7 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     priceInPiastres: toPiastres(validatedBody.price),
   });
   await newCurrency.save();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.status(201).json(newCurrency);
 }));
 
@@ -56,22 +59,9 @@ router.get('/summary', auth, asyncHandler(async (req, res) => {
 }));
 
 router.get('/price', auth, asyncHandler(async (req, res) => {
-  const response = await axios.get('https://www.cibeg.com/api/currency/rates', {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      'Referer': 'https://www.cibeg.com/',
-      'Accept': 'application/json, text/plain, */*',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Accept-Encoding': 'gzip, deflate, br',
-      'Connection': 'keep-alive',
-      'Sec-Fetch-Dest': 'empty',
-      'Sec-Fetch-Mode': 'cors',
-      'Sec-Fetch-Site': 'same-origin'
-    }
-  });
-
-  const data = response.data.rates;
-  res.json(data);
+  const forceRefresh = req.query.refresh === 'true';
+  const result = await marketPriceService.getCurrencyRates({ forceRefresh });
+  res.json(result.data);
 }));
 
 // @route   GET api/currency/:id
@@ -108,6 +98,7 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   }
 
   currency = await Currency.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json(currency);
 }));
 
@@ -126,11 +117,12 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
     throw new ForbiddenError('User not authorized');
   }
   await currency.softDelete();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Currency deleted successfully' });
 }));
 
 // @route   POST api/currency/:id/restore
-// @desc    Restore a soft-deleted Currency
+// @desc    Restore a soft-deleted currency
 router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
   if (!req.canModify) {
     throw new ForbiddenError('Viewers have read-only access');
@@ -141,6 +133,7 @@ router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandl
     throw new NotFoundError('Soft-deleted currency not found');
   }
   await currency.restore();
+  invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Currency restored successfully', currency });
 }));
 
