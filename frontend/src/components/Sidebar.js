@@ -81,6 +81,12 @@ const Sidebar = () => {
       description: 'Manage paycheck entries',
     },
     {
+      path: '/salary/paychecks/new',
+      icon: '🧮',
+      title: 'Paycheck Calculator',
+      description: 'Smart preview & breakdown',
+    },
+    {
       path: '/expenditures',
       icon: '💰',
       title: 'Expenditure Log',
@@ -177,6 +183,12 @@ const Sidebar = () => {
       description: 'Manage credit cards',
     },
     {
+      path: '/profile',
+      icon: '👤',
+      title: 'User Profile',
+      description: 'Personal & account profile',
+    },
+    {
       path: '/security',
       icon: '🔒',
       title: 'Security & 2FA',
@@ -184,7 +196,7 @@ const Sidebar = () => {
     },
   ];
 
-  // If user is admin or manager, append management link
+  // If user is admin or manager, append management links
   const menuItems = [
     ...baseMenuItems,
     ...(userRole === 'admin'
@@ -192,8 +204,20 @@ const Sidebar = () => {
           {
             path: '/admin',
             icon: '👥',
-            title: 'Admin Panel',
+            title: 'Admin Users',
             description: 'User management',
+          },
+          {
+            path: '/admin/tax-brackets',
+            icon: '🏛️',
+            title: 'Tax Brackets',
+            description: 'Admin tax configuration',
+          },
+          {
+            path: '/admin/social-insurance',
+            icon: '🛡️',
+            title: 'Social Insurance',
+            description: 'Admin insurance rules',
           },
         ]
       : userRole === 'manager'

@@ -1,5 +1,7 @@
-// frontend/src/pages/PaycheckLog.js
+// frontend/src/pages/paycheck/PaycheckLog.js
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { FaPlus, FaCalculator } from 'react-icons/fa';
 import PaycheckTable from './PaycheckTable';
 import { getPaychecksLog, deletePaycheck, getPaychecks } from '../../services/paycheckService';
 import PaginationControls from '../../components/PaginationControls';
@@ -21,19 +23,25 @@ const PaycheckLog = () => {
     useEffect(() => {
         // Load all paychecks for summary calculations
         getPaychecks().then(response => {
-            calculateSummaryData(response);
+            if (response) {
+                const list = Array.isArray(response) ? response : (response.data || []);
+                calculateSummaryData(list);
+            }
+        }).catch(err => {
+            console.error('Failed to load all paychecks:', err);
         });
     }, []);
 
     const calculateSummaryData = (paychecksData) => {
+        if (!Array.isArray(paychecksData)) return;
         let totalCash = 0;
         let totalPrepaid = 0;
         const yearlyBreakdown = {};
 
         // Process all paychecks
         paychecksData.forEach(paycheck => {
-            const year = paycheck.month.substring(0, 4);
-            const amount = paycheck.amount || 0;
+            const year = (paycheck.month || paycheck.period || '').substring(0, 4) || new Date(paycheck.payDate || paycheck.date || Date.now()).getFullYear().toString();
+            const amount = paycheck.amount !== undefined ? paycheck.amount : (paycheck.netPay || 0);
 
             // Initialize year if not exists
             if (!yearlyBreakdown[year]) {
@@ -51,6 +59,9 @@ const PaycheckLog = () => {
             } else if (paycheck.type === 'Prepaid') {
                 totalPrepaid += amount;
                 yearlyBreakdown[year].prepaid += amount;
+            } else {
+                totalCash += amount;
+                yearlyBreakdown[year].cash += amount;
             }
 
             yearlyBreakdown[year].total += amount;
@@ -88,8 +99,13 @@ const PaycheckLog = () => {
 
     const loadPaychecks = useCallback((page, year = selectedYear) => {
         getPaychecksLog(page, 25, year).then(response => {
-            setPaychecks(response.data);
-            setTotalPages(response.totalPages);
+            if (response) {
+                const list = Array.isArray(response) ? response : (response.data || []);
+                setPaychecks(list);
+                setTotalPages(response.totalPages || 1);
+            }
+        }).catch(err => {
+            console.error('Failed to load paychecks:', err);
         });
     }, [selectedYear]);
 
@@ -100,10 +116,13 @@ const PaycheckLog = () => {
     const handleDeletePaycheck = async (id) => {
         if (window.confirm('Are you sure you want to delete this entry?')) {
             await deletePaycheck(id);
-            loadPaychecks(currentPage);
+            loadPaychecks(currentPage, selectedYear);
             // Refresh summary data
             const updatedPaychecks = await getPaychecks();
-            calculateSummaryData(updatedPaychecks);
+            if (updatedPaychecks) {
+                const list = Array.isArray(updatedPaychecks) ? updatedPaychecks : (updatedPaychecks.data || []);
+                calculateSummaryData(list);
+            }
         }
     };
 
@@ -116,8 +135,49 @@ const PaycheckLog = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1>Paycheck Log</h1>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
+                <div>
+                    <h1 style={{ margin: 0 }}>Paycheck Log</h1>
+                    <p style={{ color: '#6c757d', margin: '0.25rem 0 0 0', fontSize: '0.95rem' }}>
+                        Track monthly net salaries, prepaid distributions, and audit history
+                    </p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <Link to="/salary-profile" style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.65rem 1.1rem',
+                        backgroundColor: '#ffffff',
+                        color: '#334155',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '8px',
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        textDecoration: 'none',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                        transition: 'all 0.15s ease',
+                    }}>
+                        <FaCalculator style={{ color: '#009879' }} /> Salary Profile & Components
+                    </Link>
+                    <Link to="/paycheck-log/new" style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.65rem 1.35rem',
+                        background: 'linear-gradient(135deg, #009879 0%, #059669 100%)',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        fontSize: '0.92rem',
+                        textDecoration: 'none',
+                        boxShadow: '0 4px 10px rgba(0, 152, 121, 0.3)',
+                        transition: 'all 0.15s ease',
+                    }}>
+                        <FaPlus /> Log Paycheck
+                    </Link>
+                </div>
             </div>
 
             {/* Overall Summary Card */}

@@ -3,68 +3,232 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const softDeletePlugin = require('../utils/softDeletePlugin');
 
+const PaycheckComponentSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  value: {
+    type: Number,
+    required: true,
+  },
+  category: {
+    type: String,
+    enum: ['basic', 'allowance', 'bonus', 'deduction', 'other'],
+    required: true,
+  },
+  isTaxable: {
+    type: Boolean,
+    default: true,
+  },
+  isInsurable: {
+    type: Boolean,
+    default: true,
+  },
+}, { _id: true });
+
 const PaycheckSchema = new mongoose.Schema({
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User', // Reference to User model
+    ref: 'User',
     required: true,
   },
-  month: {
-    type: String,
-    required: true, // e.g., "2024-07"
+  salaryProfile: {
+    type: Schema.Types.ObjectId,
+    ref: 'SalaryProfile',
+    default: null,
   },
-  type: {
+  period: {
     type: String,
+    required: true, // e.g., 'January 2025' or '2025-01'
+    trim: true,
+  },
+  payDate: {
+    type: Date,
     required: true,
-    enum: ['Cash', 'Prepaid'],
+    default: Date.now,
   },
-  amount: {
+  components: [PaycheckComponentSchema],
+
+  // Summary figures
+  grossSalary: {
     type: Number,
     required: true,
+    default: 0,
   },
-  amountInPiastres: {
+  grossSalaryInPiastres: {
     type: Number,
     default: 0,
   },
-  note: {
+  totalDeductions: {
+    type: Number,
+    default: 0,
+  },
+  totalDeductionsInPiastres: {
+    type: Number,
+    default: 0,
+  },
+  netPay: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+  netPayInPiastres: {
+    type: Number,
+    default: 0,
+  },
+
+  // Calculated vs Actual Tax & Insurance Details
+  taxDetails: {
+    taxableIncome: { type: Number, default: 0 },
+    expectedTax: { type: Number, default: 0 },
+    actualTax: { type: Number, default: 0 },
+    taxBracketApplied: { type: String, default: '' },
+    trancheDescription: { type: String, default: '' },
+  },
+  insuranceDetails: {
+    insurableIncome: { type: Number, default: 0 },
+    expectedEmployeeShare: { type: Number, default: 0 },
+    actualEmployeeShare: { type: Number, default: 0 },
+    expectedEmployerShare: { type: Number, default: 0 },
+    actualEmployerShare: { type: Number, default: 0 },
+  },
+  martyrsFund: {
+    type: Number,
+    default: 0,
+  },
+  martyrsFundInPiastres: {
+    type: Number,
+    default: 0,
+  },
+
+  disbursementType: {
+    type: String,
+    enum: [
+      'Regular',
+      'Basic Months',
+      'Basic Production',
+      'Sector Bonus',
+      'Individual Bonus',
+      'Surplus',
+      'Bond Distribution',
+      'End of Year Bonus',
+      'Prepaid',
+      'Other',
+    ],
+    default: 'Regular',
+  },
+  multiplier: {
+    type: Number,
+    default: 1,
+  },
+  unitRate: {
+    type: Number,
+    default: 0,
+  },
+  priorYtdGross: {
+    type: Number,
+    default: 0,
+  },
+  cumulativeYtdGross: {
+    type: Number,
+    default: 0,
+  },
+  appliedTaxRate: {
+    type: Number,
+    default: 0,
+  },
+  includeTax: {
+    type: Boolean,
+    default: true,
+  },
+  includeInsurance: {
+    type: Boolean,
+    default: true,
+  },
+  includeMartyrsFund: {
+    type: Boolean,
+    default: true,
+  },
+  notes: {
     type: String,
     trim: true,
   },
-  insuranceDeduction: {
-    type: Number,
-    default: 0,
+
+  // Legacy field support
+  month: {
+    type: String,
   },
-  insuranceDeductionInPiastres: {
+  type: {
+    type: String,
+    enum: ['Cash', 'Prepaid', 'Direct Deposit', 'Other'],
+    default: 'Direct Deposit',
+  },
+  amount: {
     type: Number,
-    default: 0,
+  },
+  amountInPiastres: {
+    type: Number,
   },
   grossAmount: {
     type: Number,
-    default: 0,
   },
   grossAmountInPiastres: {
     type: Number,
-    default: 0,
+  },
+  insuranceDeduction: {
+    type: Number,
+  },
+  insuranceDeductionInPiastres: {
+    type: Number,
   },
   taxDeduction: {
     type: Number,
-    default: 0,
   },
   taxDeductionInPiastres: {
     type: Number,
-    default: 0,
   },
   date: {
     type: Date,
-    default: Date.now,
   },
 }, {
   timestamps: true,
 });
 
+// Middleware to sync legacy fields before saving
+PaycheckSchema.pre('save', function (next) {
+  if (!this.month && this.period) {
+    this.month = this.period;
+  }
+  if (!this.period && this.month) {
+    this.period = this.month;
+  }
+  if (!this.date && this.payDate) {
+    this.date = this.payDate;
+  }
+  if (!this.payDate && this.date) {
+    this.payDate = this.date;
+  }
+  if (this.netPay !== undefined && this.amount === undefined) {
+    this.amount = this.netPay;
+  }
+  if (this.amount !== undefined && this.netPay === undefined) {
+    this.netPay = this.amount;
+  }
+  if (this.grossSalary !== undefined && this.grossAmount === undefined) {
+    this.grossAmount = this.grossSalary;
+  }
+  if (this.grossAmount !== undefined && this.grossSalary === undefined) {
+    this.grossSalary = this.grossAmount;
+  }
+  next();
+});
+
 PaycheckSchema.plugin(softDeletePlugin);
 
-PaycheckSchema.index({ user: 1, date: -1 });
+PaycheckSchema.index({ user: 1, period: 1 });
+PaycheckSchema.index({ user: 1, payDate: -1 });
 PaycheckSchema.index({ user: 1, month: -1 });
 PaycheckSchema.index({ user: 1, deletedAt: 1 });
 

@@ -126,8 +126,19 @@ export const apiRequest = async (url, options = {}) => {
       }, timeout)
     : null;
 
+  let targetUrl = url;
+  if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+    if (targetUrl.startsWith('/api/')) {
+      targetUrl = `${BASE_API_URL}${targetUrl.slice(4)}`;
+    } else if (targetUrl.startsWith('/')) {
+      targetUrl = `${BASE_API_URL}${targetUrl}`;
+    } else {
+      targetUrl = `${BASE_API_URL}/${targetUrl}`;
+    }
+  }
+
   try {
-    const response = await fetch(url, {
+    const response = await fetch(targetUrl, {
       method,
       headers: finalHeaders,
       body: body !== undefined && typeof body !== 'string' ? JSON.stringify(body) : body,

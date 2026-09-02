@@ -11,61 +11,78 @@ const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Portfolio = React.lazy(() => import('./pages/portfolio/PortfolioDashboard'));
 const Summary = React.lazy(() => import('./pages/DashboardSummary'));
-// Paycheck Log
-const PaycheckLog = React.lazy(() => import('./pages/paycheck/PaycheckLog'));
-const AddPaycheck = React.lazy(() => import('./pages/paycheck/AddPaycheck'));
-const EditPaycheck = React.lazy(() => import('./pages/paycheck/EditPaycheck'));
-// Pay Analysis
-const CalendarAnalysis = React.lazy(() => import('./pages/analysis/CalendarAnalysis'));
-const FiscalAnalysis = React.lazy(() => import('./pages/analysis/FiscalAnalysis'));
-// Salary Profile
+
+// User Profile
+const ProfilePage = React.lazy(() => import('./pages/profile/ProfilePage'));
+
+// Salary Management & Profiles
 const SalaryProfilePage = React.lazy(() => import('./pages/salary/SalaryProfilePage'));
+const PaycheckFormPage = React.lazy(() => import('./pages/salary/PaycheckFormPage'));
+
+// Salary & Paycheck Support
+const PaycheckLog = React.lazy(() => import('./pages/paycheck/PaycheckLog'));
 const SalaryHistory = React.lazy(() => import('./pages/salary/SalaryHistory'));
 const EditProfilePage = React.lazy(() => import('./pages/salary/EditProfilePage'));
 const EditHistoryRecord = React.lazy(() => import('./pages/salary/EditHistoryRecord'));
 const UpdateSalary = React.lazy(() => import('./pages/salary/UpdateSalary'));
-// Social Insurance
+
+// Pay Analysis
+const CalendarAnalysis = React.lazy(() => import('./pages/analysis/CalendarAnalysis'));
+const FiscalAnalysis = React.lazy(() => import('./pages/analysis/FiscalAnalysis'));
+
+// Social Insurance & Taxes (User & Admin)
 const SocialInsurancePage = React.lazy(() => import('./pages/insurance/SocialInsurancePage'));
 const ManageInsurancePage = React.lazy(() => import('./pages/insurance/ManageInsurancePage'));
-// Taxes
 const TaxesPage = React.lazy(() => import('./pages/taxes/TaxesPage'));
 const ManageTaxBracketsPage = React.lazy(() => import('./pages/taxes/ManageTaxBracketsPage'));
+const TaxConfigPage = React.lazy(() => import('./pages/admin/TaxConfigPage'));
+const InsuranceConfigPage = React.lazy(() => import('./pages/admin/InsuranceConfigPage'));
+
 // Expenditures
 const ExpenditureLogPage = React.lazy(() => import('./pages/expenditure/ExpenditureLogPage'));
 const AddExpenditurePage = React.lazy(() => import('./pages/expenditure/AddExpenditurePage'));
 const EditExpenditurePage = React.lazy(() => import('./pages/expenditure/EditExpenditurePage'));
 const ExpenditureAnalysisPage = React.lazy(() => import('./pages/expenditure/ExpenditureAnalysisPage'));
+
 // Trades
 const TradeLogPage = React.lazy(() => import('./pages/trades/TradeLogPage'));
 const AddTradePage = React.lazy(() => import('./pages/trades/AddTradePage'));
 const EditTradePage = React.lazy(() => import('./pages/trades/EditTradePage'));
 const TradeSummaryPage = React.lazy(() => import('./pages/trades/TradeSummaryPage'));
+
 // Mutual Funds
 const MutualFundLogPage = React.lazy(() => import('./pages/mutual-funds/MutualFundLogPage'));
 const AddMutualFundPage = React.lazy(() => import('./pages/mutual-funds/AddMutualFundPage'));
 const EditMutualFundPage = React.lazy(() => import('./pages/mutual-funds/EditMutualFundPage'));
 const MutualFundSummaryPage = React.lazy(() => import('./pages/mutual-funds/MutualFundSummaryPage'));
+
 // Gold Logs
 const GoldLogPage = React.lazy(() => import('./pages/gold/GoldLogPage'));
 const AddGoldPage = React.lazy(() => import('./pages/gold/AddGoldPage'));
 const EditGoldPage = React.lazy(() => import('./pages/gold/EditGoldPage'));
 const GoldSummaryPage = React.lazy(() => import('./pages/gold/GoldSummaryPage'));
+
 // Certificates
 const CertificateLogPage = React.lazy(() => import('./pages/certificates/CertificateLogPage'));
 const AddCertificatePage = React.lazy(() => import('./pages/certificates/AddCertificatePage'));
 const EditCertificatePage = React.lazy(() => import('./pages/certificates/EditCertificatePage'));
+
 // Currency
 const CurrencyLogPage = React.lazy(() => import('./pages/currency/CurrencyLogPage'));
 const AddCurrencyPage = React.lazy(() => import('./pages/currency/AddCurrencyPage'));
 const EditCurrencyPage = React.lazy(() => import('./pages/currency/EditCurrencyPage'));
+
 // Real Estate
 const RealEstateLogPage = React.lazy(() => import('./pages/real-estate/RealEstateLogPage'));
 const AddRealEstatePage = React.lazy(() => import('./pages/real-estate/AddRealEstatePage'));
 const EditRealEstatePage = React.lazy(() => import('./pages/real-estate/EditRealEstatePage'));
+
 // Credit Cards
 const CreditCardPage = React.lazy(() => import('./pages/credit-cards/CreditCardPage'));
+
 // Security & Access Control
 const SecuritySettingsPage = React.lazy(() => import('./pages/security/SecuritySettingsPage'));
+
 // Admin User Management
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 
@@ -81,26 +98,44 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/portfolio" element={<Portfolio />} />
                 <Route path="/summary" element={<Summary />} />
+                <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/security" element={<SecuritySettingsPage />} />
                 <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/paycheck-log" element={<PaycheckLog />} />
-                <Route path="/paycheck-log/new" element={<AddPaycheck />} />
-                <Route path="/paycheck-log/edit/:id" element={<EditPaycheck />} />
-                <Route path="/analysis/calendar" element={<CalendarAnalysis />} />
-                <Route path="/analysis/fiscal" element={<FiscalAnalysis />} />
+                <Route path="/admin/tax-brackets" element={<TaxConfigPage />} />
+                <Route path="/admin/social-insurance" element={<InsuranceConfigPage />} />
+                
+                {/* Salary & Paycheck Routes */}
                 <Route path="/salary-profile" element={<SalaryProfilePage />} />
+                <Route path="/salary/profiles" element={<SalaryProfilePage />} />
                 <Route path="/salary-profile/history" element={<SalaryHistory />} />
                 <Route path="/salary-profile/edit" element={<EditProfilePage />} />
                 <Route path="/salary-profile/history/edit/:historyId" element={<EditHistoryRecord />} />
                 <Route path="/salary-profile/update" element={<UpdateSalary />} />
+
+                <Route path="/paycheck-log" element={<PaycheckLog />} />
+                <Route path="/salary/paychecks" element={<PaycheckLog />} />
+                <Route path="/paycheck-log/new" element={<PaycheckFormPage />} />
+                <Route path="/salary/paychecks/new" element={<PaycheckFormPage />} />
+                <Route path="/paycheck-log/edit/:id" element={<PaycheckFormPage />} />
+                <Route path="/salary/paychecks/edit/:id" element={<PaycheckFormPage />} />
+
+                {/* Analytics */}
+                <Route path="/analysis/calendar" element={<CalendarAnalysis />} />
+                <Route path="/analysis/fiscal" element={<FiscalAnalysis />} />
+
+                {/* Social Insurance & Taxes */}
                 <Route path="/social-insurance" element={<SocialInsurancePage />} />
                 <Route path="/social-insurance/manage" element={<ManageInsurancePage />} />
                 <Route path="/taxes" element={<TaxesPage />} />
                 <Route path="/taxes/manage" element={<ManageTaxBracketsPage />} />
+
+                {/* Expenditures */}
                 <Route path="/expenditures" element={<ExpenditureLogPage />} />
                 <Route path="/expenditures/new" element={<AddExpenditurePage />} />
                 <Route path="/expenditures/edit/:id" element={<EditExpenditurePage />} />
                 <Route path="/expenditure-analysis" element={<ExpenditureAnalysisPage />} />
+
+                {/* Investment Asset Classes */}
                 <Route path="/trades" element={<TradeLogPage />} />
                 <Route path="/trades/new" element={<AddTradePage />} />
                 <Route path="/trades/edit/:id" element={<EditTradePage />} />
@@ -133,4 +168,3 @@ function App() {
 }
 
 export default App;
-

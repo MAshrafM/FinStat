@@ -6,9 +6,13 @@ const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db'); // Import the DB connection function
 const errorHandler = require('./middleware/errorHandler');
 const { NotFoundError } = require('./utils/errors');
+const { seedDefaultTaxAndInsurance } = require('./utils/seedTaxAndInsurance');
 
-// Connect to Database
-connectDB();
+// Connect to Database and auto-seed defaults
+connectDB().then(() => {
+  seedDefaultTaxAndInsurance();
+}).catch(() => {});
+
 // Create an instance of an Express application
 const app = express();
 
@@ -26,8 +30,10 @@ app.use(cookieParser());
 app.get('/', (req, res) => res.send('API Running'));
 
 // ROUTES
+app.use('/api/users', require('./routes/users'));
 app.use('/api/paychecks', require('./routes/paychecks'));
-app.use('/api/salary-profile', require('./routes/salaryProfiles'));
+app.use('/api/salary-profiles', require('./routes/salaryProfiles'));
+app.use('/api/salary-profile', require('./routes/salaryProfiles')); // backward compatible route
 app.use('/api/social-insurance', require('./routes/socialInsurance'));
 app.use('/api/tax-brackets', require('./routes/taxBrackets'));
 app.use('/api/expenditures', require('./routes/expenditures'));
@@ -59,6 +65,3 @@ if (require.main === module) {
 }
 
 module.exports = app;
-
-
-

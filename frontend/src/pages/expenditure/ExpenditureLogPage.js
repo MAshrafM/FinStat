@@ -322,7 +322,7 @@ const ExpenditureLogPage = () => {
                       })}
                     </div>
                   </td>
-                  <td data-label="Description" style={{ fontSize: '0.9rem', color: '#4b5563', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={log.description}>
+                  <td data-label="Description" style={{ fontSize: '0.9rem', color: '#4b5563', wordBreak: 'break-word', whiteSpace: 'normal', minWidth: '160px' }} title={log.description}>
                     {log.description || '-'}
                   </td>
                   <td data-label="Action" className="action-cell">

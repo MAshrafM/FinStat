@@ -79,15 +79,23 @@
 @media (max-width: 768px) {
   .navbar {
     margin-left: 0;
-    padding: 0.85rem 1rem;
+    padding: 0.85rem 1rem 0.85rem 58px;
   }
   
   .sidebar-toggle {
-    display: block;
+    display: none;
+  }
+
+  .navbar-brand {
+    padding-left: 0;
+    min-width: 0;
   }
 
   .navbar-brand a {
     font-size: 1.05rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .navbar-links .nav-button {

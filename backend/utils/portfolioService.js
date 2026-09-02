@@ -268,16 +268,30 @@ async function getAllHoldings(effectiveUserId, { forceRefresh = false } = {}) {
   // ----------------------------------------------------
   const certificates = await Certificate.find({ user: userObjectId, deletedAt: null });
   const safeCertificates = Array.isArray(certificates) ? certificates : [];
+  const now = new Date();
+
   for (const cert of safeCertificates) {
-    const totalCost = cert.amount;
-    const currentValue = cert.amount; // Book principal value
-    const annualInterest = cert.interest || 0;
-    const periodMonths = cert.period || 12;
+    if (!cert || !cert.amount) continue;
+
+    const startDate = cert.startDate ? new Date(cert.startDate) : new Date();
+    const periodMonths = Number(cert.period) || 12;
+    const maturityDate = new Date(startDate);
+    maturityDate.setMonth(maturityDate.getMonth() + periodMonths);
+
+    // If explicitly marked as redeemed or matured
+    if (cert.status === 'Redeemed' || cert.status === 'Matured') {
+      continue;
+    }
+
+    const totalCost = Number(cert.amount) || 0;
+    const currentValue = totalCost; // Active principal
+    const annualInterest = Number(cert.interest) || 0;
     const expectedReturn = totalCost * (1 + (annualInterest / 100) * (periodMonths / 12));
+    const totalExpectedYield = expectedReturn - totalCost;
 
     holdings.push({
       id: `cert_${cert._id}`,
-      name: `${cert.name} (${cert.interest}% - ${cert.period}m)`,
+      name: `${cert.name} (${annualInterest}% - ${periodMonths}m)`,
       symbol: cert.name,
       assetType: 'Certificate',
       category: 'Fixed Income',
@@ -287,7 +301,7 @@ async function getAllHoldings(effectiveUserId, { forceRefresh = false } = {}) {
       currentPrice: Number(totalCost.toFixed(2)),
       totalCost: Number(totalCost.toFixed(2)),
       currentValue: Number(currentValue.toFixed(2)),
-      unrealizedPnL: Number((expectedReturn - totalCost).toFixed(2)), // Expected maturity yield
+      unrealizedPnL: Number(totalExpectedYield.toFixed(2)), // Expected maturity yield
       unrealizedPnLPercentage: Number(annualInterest.toFixed(2)),
       priceStatus: 'fixed',
       sourceUrl: '/certificates',

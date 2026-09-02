@@ -35,6 +35,19 @@ const UserSchema = new mongoose.Schema({
         type: [String], // bcrypt-hashed backup codes
         select: false,
     },
+    // Personal Information
+    fullName: { type: String, trim: true },
+    dateOfBirth: { type: Date },
+    nationalId: { type: String, trim: true, sparse: true, unique: true },
+    phone: { type: String, trim: true },
+    address: { type: String, trim: true },
+
+    // Professional Information
+    title: { type: String, trim: true },
+    company: { type: String, trim: true },
+    department: { type: String, trim: true },
+    employeeId: { type: String, trim: true, sparse: true, unique: true },
+
     managedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

@@ -1,0 +1,425 @@
+/* frontend/src/pages/salary/PaycheckFormPage.css */
+
+.paycheck-form-header {
+  margin-bottom: 2rem;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 0.75rem;
+  transition: color 0.2s;
+}
+
+.back-btn:hover {
+  color: #009879;
+}
+
+.form-main-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.form-main-subtitle {
+  font-size: 0.95rem;
+  color: #6c757d;
+  margin: 0.25rem 0 0 0;
+}
+
+.paycheck-flow-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.form-step-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+  padding: 1.75rem;
+}
+
+.form-step-card.smart-preview-card {
+  background-color: #f8fafc;
+  border: 2px solid #cbd5e1;
+}
+
+.step-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.step-number-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #2c3e50;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.step-number-badge.preview-badge {
+  background-color: #009879;
+}
+
+.step-card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.2rem 0;
+}
+
+.step-card-desc {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.step-fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.step-fields-grid .full-span {
+  grid-column: span 2;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #34495e;
+}
+
+.form-control,
+.form-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background-color: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: #2c3e50;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.form-control:focus,
+.form-input:focus {
+  outline: none;
+  border-color: #009879;
+  box-shadow: 0 0 0 3px rgba(0, 152, 121, 0.15);
+}
+
+.calculate-action-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.btn-calculate-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  background-color: #2c3e50;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-calculate-preview:hover {
+  background-color: #1a252f;
+}
+
+/* Preview Figures Cards */
+.preview-summary-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.preview-stat-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-stat-card.highlight-card {
+  background-color: #ecfdf5;
+  border-color: #10b981;
+}
+
+.stat-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.stat-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.stat-amount.gross-color {
+  color: #2563eb;
+}
+
+.stat-amount.deduction-color {
+  color: #e11d48;
+}
+
+.stat-amount.net-color {
+  color: #047857;
+}
+
+.stat-subtext {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 0.35rem;
+}
+
+/* Tax Bracket Breakdown Table inside Form */
+.tax-bracket-breakdown-box {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+}
+
+.breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.breakdown-table th {
+  text-align: left;
+  padding: 0.5rem;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.breakdown-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.breakdown-table tr:last-child td {
+  border-bottom: none;
+}
+
+.rate-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+/* Form Actions */
+.form-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-cancel {
+  padding: 0.75rem 1.5rem;
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-cancel:hover {
+  background-color: #e2e8f0;
+}
+
+.btn-submit-paycheck {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background-color: #009879;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-submit-paycheck:hover {
+  background-color: #007a63;
+}
+
+.btn-submit-paycheck:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Paycheck Type Tabs Switcher */
+.paycheck-type-tabs-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.paycheck-type-tab {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  background-color: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.paycheck-type-tab:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.paycheck-type-tab.active {
+  border-color: #009879;
+  background-color: #f0fdf4;
+  box-shadow: 0 4px 12px rgba(0, 152, 121, 0.12);
+}
+
+.type-tab-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(0, 152, 121, 0.12);
+  color: #009879;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.type-tab-icon-wrapper.prepaid-icon {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+}
+
+.type-tab-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.type-tab-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.type-tab-sub {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.15rem;
+}
+
+/* Prepaid Flow Card */
+.prepaid-flow-card {
+  border-left: 4px solid #f59e0b;
+}
+
+.prepaid-notice-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  padding: 0.9rem 1.15rem;
+  color: #065f46;
+  font-size: 0.9rem;
+}
+
+.prepaid-summary-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background-color: #fafafa;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .paycheck-type-tabs-container {
+    grid-template-columns: 1fr;
+  }
+  .step-fields-grid {
+    grid-template-columns: 1fr;
+  }
+  .step-fields-grid .full-span {
+    grid-column: span 1;
+  }
+}
