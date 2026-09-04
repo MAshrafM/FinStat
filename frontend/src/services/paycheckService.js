@@ -19,10 +19,10 @@ export const getPaychecks = async (options = {}) => {
 };
 
 // Get paginated paychecks
-export const getPaychecksLog = async (page = 1, limit = 15, year, options = {}) => {
+export const getPaychecksLog = async (page = 1, limit = 25, year, options = {}) => {
   const yearParam = year && year !== 'all' ? `&year=${encodeURIComponent(year)}` : '';
   const response = await apiClient.get(`${API_URL}?page=${page}&limit=${limit}${yearParam}`, options);
-  return unwrap(response);
+  return response;
 };
 
 // Get a single paycheck by its ID

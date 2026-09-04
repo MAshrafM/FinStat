@@ -18,17 +18,37 @@ const TYPE_COLORS = {
   'Cash': { bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' },
 };
 
+const parsePeriodSortKey = (str) => {
+  if (!str) return '';
+  if (/^\d{4}-\d{2}/.test(str)) {
+    return str.substring(0, 7);
+  }
+  const timestamp = Date.parse(str);
+  if (!isNaN(timestamp)) {
+    const d = new Date(timestamp);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+  return String(str);
+};
+
 const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
   const groupPaychecksByMonth = () => {
     if (!paychecks || paychecks.length === 0) return [];
     const monthlyGroups = paychecks.reduce((acc, p) => {
-      const m = p.month || p.period || 'Unknown';
+      const m = p.period || p.month || 'Unknown';
       (acc[m] = acc[m] || []).push(p);
       return acc;
     }, {});
     const result = Object.entries(monthlyGroups).map(([month, entries]) => ({
       month,
-      entries,
+      entries: entries.sort((a, b) => {
+        const dateA = new Date(a.payDate || a.date || 0).getTime();
+        const dateB = new Date(b.payDate || b.date || 0).getTime();
+        if (dateB !== dateA) return dateB - dateA;
+        const createdA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const createdB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return createdB - createdA;
+      }),
       monthlyTotal: entries.reduce((sum, entry) => {
         const val = Number(entry.amount !== undefined && entry.amount !== null ? entry.amount : (entry.netPay || 0)) || 0;
         return sum + val;
@@ -44,7 +64,7 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
       }, 0),
       rowCount: entries.length,
     }));
-    return result.sort((a, b) => b.month.localeCompare(a.month));
+    return result.sort((a, b) => parsePeriodSortKey(b.month).localeCompare(parsePeriodSortKey(a.month)));
   };
 
   const groupedData = groupPaychecksByMonth();

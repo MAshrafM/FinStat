@@ -247,7 +247,7 @@ router.get('/all', auth, asyncHandler(async (req, res) => {
   const paychecks = await Paycheck.find({
     user: req.effectiveUserId,
     deletedAt: null,
-  }).sort({ payDate: -1, month: -1, createdAt: -1 });
+  }).sort({ period: -1, month: -1, payDate: -1, createdAt: -1 });
 
   res.json(paychecks);
 }));
@@ -267,12 +267,15 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
     ];
   }
   if (period) {
-    query.period = period;
+    query.$or = [
+      { period },
+      { month: period },
+    ];
   }
 
   const total = await Paycheck.countDocuments(query);
   const paychecks = await Paycheck.find(query)
-    .sort({ payDate: -1, month: -1, createdAt: -1 })
+    .sort({ period: -1, month: -1, payDate: -1, createdAt: -1 })
     .skip(skip)
     .limit(limit);
 

@@ -11,6 +11,7 @@ const PaycheckLog = () => {
     const [paychecks, setPaychecks] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
     const [selectedYear, setSelectedYear] = useState('all');
     const [summaryData, setSummaryData] = useState({
         totalCash: 0,
@@ -100,9 +101,12 @@ const PaycheckLog = () => {
     const loadPaychecks = useCallback((page, year = selectedYear) => {
         getPaychecksLog(page, 25, year).then(response => {
             if (response) {
-                const list = Array.isArray(response) ? response : (response.data || []);
+                const list = Array.isArray(response?.data)
+                    ? response.data
+                    : (Array.isArray(response) ? response : []);
                 setPaychecks(list);
-                setTotalPages(response.totalPages || 1);
+                setTotalPages(response?.totalPages || 1);
+                setTotalCount(response?.total !== undefined ? response.total : list.length);
             }
         }).catch(err => {
             console.error('Failed to load paychecks:', err);
@@ -367,7 +371,9 @@ const PaycheckLog = () => {
                 <PaginationControls
                     page={currentPage}
                     totalPages={totalPages}
+                    totalCount={totalCount}
                     onPageChange={setCurrentPage}
+                    showAlways
                 />
             </div>
         </div>

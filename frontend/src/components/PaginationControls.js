@@ -2,25 +2,34 @@
 import React from 'react';
 import './PaginationControls.css'; // We will create this file
 
-const PaginationControls = ({ page, totalPages, onPageChange }) => {
-  if (totalPages <= 1) {
-    return null; // Don't show controls if there's only one page
+const PaginationControls = ({
+  page = 1,
+  currentPage,
+  totalPages = 1,
+  totalCount,
+  onPageChange,
+  showAlways = false,
+}) => {
+  const activePage = page || currentPage || 1;
+  if (totalPages <= 1 && !showAlways) {
+    return null;
   }
 
   return (
     <div className="pagination-container">
       <button
-        onClick={() => onPageChange(page - 1)}
-        disabled={page === 1}
+        onClick={() => onPageChange(activePage - 1)}
+        disabled={activePage <= 1}
       >
         &laquo; Previous
       </button>
       <span>
-        Page {page} of {totalPages}
+        Page {activePage} of {totalPages}
+        {totalCount !== undefined ? ` (${totalCount} total)` : ''}
       </span>
       <button
-        onClick={() => onPageChange(page + 1)}
-        disabled={page === totalPages}
+        onClick={() => onPageChange(activePage + 1)}
+        disabled={activePage >= totalPages}
       >
         Next &raquo;
       </button>

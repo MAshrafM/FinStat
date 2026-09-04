@@ -24,10 +24,11 @@ const PaycheckListPage = () => {
     try {
       setLoading(true);
       const res = await getPaychecksLog(currentPage, 12, year || undefined);
-      if (res && res.data) {
-        setPaychecks(res.data.data || []);
-        setTotalPages(res.data.totalPages || 1);
-        setPage(res.data.page || 1);
+      if (res) {
+        const list = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res) ? res : []));
+        setPaychecks(list);
+        setTotalPages(res.totalPages || res.data?.totalPages || 1);
+        setPage(res.page || res.data?.page || 1);
       }
     } catch (err) {
       addToast(err.response?.data?.message || 'Failed to fetch paychecks', 'error');
