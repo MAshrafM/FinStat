@@ -329,6 +329,31 @@ router.delete(
   })
 );
 
+// @route   PATCH /api/admin/tax-brackets/:id/toggle
+// @desc    Toggle active status of a tax bracket configuration
+// @access  Private (Admin only)
+router.patch(
+  '/tax-brackets/:id/toggle',
+  auth,
+  authorize(['admin']),
+  validate({ params: adminIdParamsSchema }),
+  asyncHandler(async (req, res) => {
+    const { id } = getValidated(req, 'params');
+    const config = await TaxBracket.findById(id);
+    if (!config) {
+      throw new NotFoundError('Tax bracket configuration not found');
+    }
+    config.isActive = !config.isActive;
+    config.lastUpdated = new Date();
+    const updated = await config.save();
+    res.json({
+      success: true,
+      message: `Tax bracket configuration marked as ${updated.isActive ? 'active' : 'inactive'}`,
+      taxBracket: updated,
+    });
+  })
+);
+
 // ==========================================
 // ADMIN SOCIAL INSURANCE CONFIGURATION ROUTES
 // ==========================================
@@ -419,6 +444,30 @@ router.delete(
     res.json({
       success: true,
       message: 'Social insurance configuration deleted successfully',
+    });
+  })
+);
+
+// @route   PATCH /api/admin/social-insurance/:id/toggle
+// @desc    Toggle active status of a social insurance configuration
+// @access  Private (Admin only)
+router.patch(
+  '/social-insurance/:id/toggle',
+  auth,
+  authorize(['admin']),
+  validate({ params: adminIdParamsSchema }),
+  asyncHandler(async (req, res) => {
+    const { id } = getValidated(req, 'params');
+    const config = await SocialInsurance.findOne({ _id: id, user: null });
+    if (!config) {
+      throw new NotFoundError('Social insurance configuration not found');
+    }
+    config.isActive = !config.isActive;
+    const updated = await config.save();
+    res.json({
+      success: true,
+      message: `Social insurance configuration marked as ${updated.isActive ? 'active' : 'inactive'}`,
+      socialInsuranceConfig: updated,
     });
   })
 );

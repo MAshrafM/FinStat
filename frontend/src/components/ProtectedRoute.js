@@ -88,7 +88,7 @@ const ProtectedRoute = () => {
         return <Navigate to="/" replace />;
     }
 
-    // Role-based access control for /admin route
+    // Role-based access control for /admin routes
     const userStr = localStorage.getItem('user');
     let userRole = 'viewer';
     if (userStr) {
@@ -96,6 +96,14 @@ const ProtectedRoute = () => {
         const parsed = JSON.parse(userStr);
         if (parsed.role) userRole = parsed.role;
       } catch (e) {}
+    }
+
+    // Tax Brackets and Social Insurance configs are strictly Admin-only
+    const isAdminOnlyRoute =
+      location.pathname.startsWith('/admin/tax-brackets') ||
+      location.pathname.startsWith('/admin/social-insurance');
+    if (isAdminOnlyRoute && userRole !== 'admin') {
+      return <Navigate to="/dashboard" replace />;
     }
 
     if (location.pathname.startsWith('/admin') && userRole !== 'admin' && userRole !== 'manager') {

@@ -32,9 +32,7 @@ const FiscalAnalysis = React.lazy(() => import('./pages/analysis/FiscalAnalysis'
 
 // Social Insurance & Taxes (User & Admin)
 const SocialInsurancePage = React.lazy(() => import('./pages/insurance/SocialInsurancePage'));
-const ManageInsurancePage = React.lazy(() => import('./pages/insurance/ManageInsurancePage'));
 const TaxesPage = React.lazy(() => import('./pages/taxes/TaxesPage'));
-const ManageTaxBracketsPage = React.lazy(() => import('./pages/taxes/ManageTaxBracketsPage'));
 const TaxConfigPage = React.lazy(() => import('./pages/admin/TaxConfigPage'));
 const InsuranceConfigPage = React.lazy(() => import('./pages/admin/InsuranceConfigPage'));
 
@@ -125,9 +123,7 @@ function App() {
 
                 {/* Social Insurance & Taxes */}
                 <Route path="/social-insurance" element={<SocialInsurancePage />} />
-                <Route path="/social-insurance/manage" element={<ManageInsurancePage />} />
                 <Route path="/taxes" element={<TaxesPage />} />
-                <Route path="/taxes/manage" element={<ManageTaxBracketsPage />} />
 
                 {/* Expenditures */}
                 <Route path="/expenditures" element={<ExpenditureLogPage />} />

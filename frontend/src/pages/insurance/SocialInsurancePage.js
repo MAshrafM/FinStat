@@ -1,10 +1,8 @@
 // frontend/src/pages/insurance/SocialInsurancePage.js
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { getPaychecks } from '../../services/paycheckService';
 import { getRecords } from '../../services/socialInsuranceService';
 import { formatCurrency } from '../../utils/formatters';
-import { FaEdit } from 'react-icons/fa';
 import SummaryRow from '../../components/SummaryRow';
 import '../salary/SalaryProfile.css'; // Reuse styles
 
@@ -42,9 +40,6 @@ const SocialInsurancePage = () => {
     <div className="page-container">
       <div className="page-header">
         <h1>Social Insurance</h1>
-        <Link to="/social-insurance/manage" className="nav-button">
-          <FaEdit /> Manage Yearly Records
-        </Link>
       </div>
 
       {insuranceRecords.length > 0 && (

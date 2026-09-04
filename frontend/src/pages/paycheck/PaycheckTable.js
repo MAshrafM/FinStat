@@ -80,7 +80,7 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
                   const taxVal = Number(entry.taxDeduction || entry.taxDetails?.actualTax || entry.taxDetails?.expectedTax || 0) || 0;
                   const insVal = Number(entry.insuranceDeduction || entry.insuranceDetails?.actualEmployeeShare || entry.insuranceDetails?.expectedEmployeeShare || 0) || 0;
                   const martyrsVal = Number(entry.martyrsFund || 0) || 0;
-                  
+
                   let deductionsVal = Number(entry.totalDeductions !== undefined && entry.totalDeductions !== null ? entry.totalDeductions : (taxVal + insVal + martyrsVal)) || 0;
                   let grossVal = Number(entry.grossSalary || entry.grossAmount || 0) || 0;
 

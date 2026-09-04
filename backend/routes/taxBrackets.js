@@ -10,7 +10,7 @@ const { updateSchema } = require('../validationSchemas/taxSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
 
-// The initial set of tax brackets if none exist in the DB
+// The initial set of tax brackets if none exist in the Db
 const initialBrackets = [
   { level: 1, from: 0, fromInPiastres: 0, to: 30000, toInPiastres: 3000000, rate: 0 },
   { level: 2, from: 30000, fromInPiastres: 3000000, to: 45000, toInPiastres: 4500000, rate: 0.10 },
@@ -30,14 +30,36 @@ const mapBracketsWithPiastres = (brackets) => {
 };
 
 // @route   GET api/tax-brackets
-// @desc    Get the current tax brackets. If none exist, create and return them.
+// @desc    Get the current active tax brackets for the given or current year, or all active if all=true.
 router.get('/', auth, asyncHandler(async (req, res) => {
-  let taxInfo = await TaxBracket.findOne({ identifier: 'singleton' });
+  if (req.query.all === 'true') {
+    const allActive = await TaxBracket.find({ isActive: true }).sort({ year: -1 });
+    return res.json(allActive);
+  }
+
+  const targetYear = req.query.year ? parseInt(req.query.year, 10) : new Date().getFullYear();
+
+  let taxInfo = await TaxBracket.findOne({ year: targetYear, isActive: true });
 
   if (!taxInfo) {
-    taxInfo = new TaxBracket({ brackets: initialBrackets });
+    taxInfo = await TaxBracket.findOne({ isActive: true }).sort({ year: -1 });
+  }
+
+  if (!taxInfo) {
+    taxInfo = await TaxBracket.findOne({ identifier: 'singleton' });
+  }
+
+  if (!taxInfo) {
+    taxInfo = new TaxBracket({
+      country: 'Egypt',
+      year: targetYear,
+      personalExemption: 20000,
+      isActive: true,
+      brackets: initialBrackets,
+    });
     await taxInfo.save();
   }
+
   res.json(taxInfo);
 }));
 

@@ -209,7 +209,7 @@ const Sidebar = () => {
           },
           {
             path: '/admin/tax-brackets',
-            icon: '🏛️',
+            icon: '📊',
             title: 'Tax Brackets',
             description: 'Admin tax configuration',
           },

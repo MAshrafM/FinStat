@@ -15,6 +15,7 @@ import {
   FaShieldAlt,
   FaUsers,
   FaHome,
+  FaChartBar,
 } from 'react-icons/fa';
 import './Dashboard.css';
 
@@ -147,11 +148,25 @@ const Dashboard = () => {
         </Link>
 
         {userRole === 'admin' && (
-          <Link to="/admin" className="dashboard-card" style={{ borderTop: '3px solid #ef4444' }}>
-            <FaUsers size={45} color="#ef4444" />
-            <h2 style={{ color: '#ef4444' }}>User Management</h2>
-            <p>Admin control panel to register users, manage roles, and monitor team access.</p>
-          </Link>
+          <>
+            <Link to="/admin" className="dashboard-card" style={{ borderTop: '3px solid #ef4444' }}>
+              <FaUsers size={45} color="#ef4444" />
+              <h2 style={{ color: '#ef4444' }}>User Management</h2>
+              <p>Admin control panel to register users, manage roles, and monitor team access.</p>
+            </Link>
+
+            <Link to="/admin/tax-brackets" className="dashboard-card" style={{ borderTop: '3px solid #3b82f6' }}>
+              <FaChartBar size={45} color="#3b82f6" />
+              <h2 style={{ color: '#3b82f6' }}>Tax Brackets</h2>
+              <p>Configure progressive income tax bracket levels, exemptions, and legal rates.</p>
+            </Link>
+
+            <Link to="/admin/social-insurance" className="dashboard-card" style={{ borderTop: '3px solid #10b981' }}>
+              <FaShieldAlt size={45} color="#10b981" />
+              <h2 style={{ color: '#10b981' }}>Social Insurance</h2>
+              <p>Manage employee/employer contribution shares, wage floors, and legal caps.</p>
+            </Link>
+          </>
         )}
 
         {userRole === 'manager' && (

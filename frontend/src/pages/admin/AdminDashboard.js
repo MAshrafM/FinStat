@@ -1,5 +1,6 @@
 // frontend/src/pages/admin/AdminDashboard.js
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Users,
   UserPlus,
@@ -18,6 +19,9 @@ import {
   RefreshCw,
   Shield,
   UserCheck,
+  BarChart3,
+  ShieldCheck,
+  ArrowRight,
 } from 'lucide-react';
 import { getUsers, createUser, deleteUser } from '../../services/adminService';
 import { dispatchToast } from '../../services/apiClient';
@@ -216,6 +220,41 @@ const AdminDashboard = () => {
           <span>{isManager ? 'Add New Viewer' : 'Add New User'}</span>
         </button>
       </div>
+
+      {/* Admin Quick Access Configuration Cards */}
+      {isAdmin && (
+        <div className="admin-quick-cards-grid">
+          <Link to="/admin/tax-brackets" className="admin-quick-card">
+            <div className="quick-card-icon-wrapper tax-icon">
+              <BarChart3 size={24} />
+            </div>
+            <div className="quick-card-content">
+              <h3 className="quick-card-title">Tax Brackets</h3>
+              <p className="quick-card-desc">
+                Manage progressive income tax brackets, levels, and personal exemptions
+              </p>
+            </div>
+            <div className="quick-card-arrow">
+              <ArrowRight size={18} />
+            </div>
+          </Link>
+
+          <Link to="/admin/social-insurance" className="admin-quick-card">
+            <div className="quick-card-icon-wrapper insurance-icon">
+              <ShieldCheck size={24} />
+            </div>
+            <div className="quick-card-content">
+              <h3 className="quick-card-title">Social Insurance</h3>
+              <p className="quick-card-desc">
+                Manage employee/employer contribution shares and insurable income caps
+              </p>
+            </div>
+            <div className="quick-card-arrow">
+              <ArrowRight size={18} />
+            </div>
+          </Link>
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="admin-toolbar">

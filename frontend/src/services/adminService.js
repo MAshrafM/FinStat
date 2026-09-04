@@ -60,6 +60,11 @@ export const deleteTaxBracketConfig = async (id, options = {}) => {
   return unwrap(response);
 };
 
+export const toggleTaxBracketConfig = async (id, options = {}) => {
+  const response = await apiClient.patch(`${ADMIN_URL}/tax-brackets/${id}/toggle`, {}, options);
+  return unwrap(response);
+};
+
 // ==========================================
 // ADMIN SOCIAL INSURANCE CONFIGURATIONS
 // ==========================================
@@ -84,10 +89,16 @@ export const deleteSocialInsuranceConfig = async (id, options = {}) => {
   return unwrap(response);
 };
 
+export const toggleSocialInsuranceConfig = async (id, options = {}) => {
+  const response = await apiClient.patch(`${ADMIN_URL}/social-insurance/${id}/toggle`, {}, options);
+  return unwrap(response);
+};
+
 export const getInsuranceConfigs = getSocialInsuranceConfigs;
 export const createInsuranceConfig = createSocialInsuranceConfig;
 export const updateInsuranceConfig = updateSocialInsuranceConfig;
 export const deleteInsuranceConfig = deleteSocialInsuranceConfig;
+export const toggleInsuranceConfig = toggleSocialInsuranceConfig;
 
 const adminService = {
   getUsers,
@@ -97,14 +108,17 @@ const adminService = {
   createTaxBracketConfig,
   updateTaxBracketConfig,
   deleteTaxBracketConfig,
+  toggleTaxBracketConfig,
   getSocialInsuranceConfigs,
   createSocialInsuranceConfig,
   updateSocialInsuranceConfig,
   deleteSocialInsuranceConfig,
+  toggleSocialInsuranceConfig,
   getInsuranceConfigs,
   createInsuranceConfig,
   updateInsuranceConfig,
   deleteInsuranceConfig,
+  toggleInsuranceConfig,
 };
 
 export default adminService;
