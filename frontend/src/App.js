@@ -41,6 +41,9 @@ const ExpenditureLogPage = React.lazy(() => import('./pages/expenditure/Expendit
 const AddExpenditurePage = React.lazy(() => import('./pages/expenditure/AddExpenditurePage'));
 const EditExpenditurePage = React.lazy(() => import('./pages/expenditure/EditExpenditurePage'));
 const ExpenditureAnalysisPage = React.lazy(() => import('./pages/expenditure/ExpenditureAnalysisPage'));
+const RulesPage = React.lazy(() => import('./pages/expenditure/RulesPage'));
+const RecurringSuggestionsPage = React.lazy(() => import('./pages/expenditure/RecurringSuggestionsPage'));
+const BudgetsPage = React.lazy(() => import('./pages/expenditure/BudgetsPage'));
 
 // Trades
 const TradeLogPage = React.lazy(() => import('./pages/trades/TradeLogPage'));
@@ -125,10 +128,13 @@ function App() {
                 <Route path="/social-insurance" element={<SocialInsurancePage />} />
                 <Route path="/taxes" element={<TaxesPage />} />
 
-                {/* Expenditures */}
+                {/* Expenditures & Automation */}
                 <Route path="/expenditures" element={<ExpenditureLogPage />} />
                 <Route path="/expenditures/new" element={<AddExpenditurePage />} />
                 <Route path="/expenditures/edit/:id" element={<EditExpenditurePage />} />
+                <Route path="/expenditures/rules" element={<RulesPage />} />
+                <Route path="/expenditures/budgets" element={<BudgetsPage />} />
+                <Route path="/expenditures/recurring" element={<RecurringSuggestionsPage />} />
                 <Route path="/expenditure-analysis" element={<ExpenditureAnalysisPage />} />
 
                 {/* Investment Asset Classes */}

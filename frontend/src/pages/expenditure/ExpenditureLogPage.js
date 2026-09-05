@@ -119,8 +119,29 @@ const ExpenditureLogPage = () => {
 
   return (
     <div className="page-container">
-      <div className="page-header">
+      {/* Sub-navigation tabs */}
+      <div className="rules-nav-tabs">
+        <Link to="/expenditures" className="rules-nav-link active">
+          Expenditure Log
+        </Link>
+        <Link to="/expenditures/rules" className="rules-nav-link">
+          Auto-Categorization Rules
+        </Link>
+        <Link to="/expenditures/budgets" className="rules-nav-link">
+          Budget Tracker
+        </Link>
+        <Link to="/expenditures/recurring" className="rules-nav-link">
+          Recurring Detection
+        </Link>
+      </div>
+
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <h1>Expenditure Log</h1>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <Link to="/expenditures/new" className="btn-primary" style={{ textDecoration: 'none' }}>
+            + Add Expenditure
+          </Link>
+        </div>
       </div>
 
       {/* Current Holdings Summary Card */}
@@ -307,27 +328,99 @@ const ExpenditureLogPage = () => {
                   </td>
                   <td data-label="Type">{transactionTypeMap[log.transactionType] || log.transactionType}</td>
                   <td data-label="Categories">
-                    <div className="category-badges-list">
-                      {(log.categories && log.categories.length > 0 ? log.categories : ['Other']).map(catName => {
-                        const catConfig = EXPENDITURE_CATEGORIES.find(c => c.name === catName) || { color: '#6B7280' };
-                        return (
-                          <span
-                            key={catName}
-                            className="category-badge"
-                            style={{ backgroundColor: catConfig.color }}
-                          >
-                            {catName}
-                          </span>
-                        );
-                      })}
-                    </div>
+                    {log.splits && log.splits.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb' }}>
+                          ✂ Split ({log.splits.length})
+                        </span>
+                        <div className="category-badges-list">
+                          {log.splits.map((s, idx) => {
+                            const catConfig =
+                              EXPENDITURE_CATEGORIES.find((c) => c.name === s.category) || {
+                                color: '#6B7280',
+                              };
+                            return (
+                              <span
+                                key={idx}
+                                className="category-badge"
+                                style={{
+                                  backgroundColor: catConfig.color,
+                                  fontSize: '0.75rem',
+                                  padding: '0.2rem 0.6rem',
+                                }}
+                                title={`${s.category}: ${formatCurrency(s.amount)}${
+                                  s.description ? ` (${s.description})` : ''
+                                }`}
+                              >
+                                {s.category} ({formatCurrency(s.amount)})
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="category-badges-list">
+                        {(log.categories && log.categories.length > 0
+                          ? log.categories
+                          : ['Other']
+                        ).map((catName) => {
+                          const catConfig =
+                            EXPENDITURE_CATEGORIES.find((c) => c.name === catName) || {
+                              color: '#6B7280',
+                            };
+                          return (
+                            <span
+                              key={catName}
+                              className="category-badge"
+                              style={{ backgroundColor: catConfig.color }}
+                            >
+                              {catName}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
                   </td>
-                  <td data-label="Description" style={{ fontSize: '0.9rem', color: '#4b5563', wordBreak: 'break-word', whiteSpace: 'normal', minWidth: '160px' }} title={log.description}>
+                  <td
+                    data-label="Description"
+                    style={{
+                      fontSize: '0.9rem',
+                      color: '#4b5563',
+                      wordBreak: 'break-word',
+                      whiteSpace: 'normal',
+                      minWidth: '160px',
+                    }}
+                    title={log.description}
+                  >
                     {log.description || '-'}
+                    {log.isRecurring && (
+                      <span
+                        title="Recurring Expense"
+                        style={{
+                          marginLeft: '0.4rem',
+                          background: '#ecfdf5',
+                          color: '#059669',
+                          border: '1px solid #a7f3d0',
+                          padding: '0.15rem 0.4rem',
+                          borderRadius: '4px',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          display: 'inline-block',
+                        }}
+                      >
+                        🔁 Recurring
+                      </span>
+                    )}
                   </td>
                   <td data-label="Action" className="action-cell">
-                    <Link to={`/expenditures/edit/${log._id}`}><FaPencilAlt className="action-icon edit-icon" /></Link>
-                    <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(log._id)} style={{ cursor: 'pointer' }} />
+                    <Link to={`/expenditures/edit/${log._id}`}>
+                      <FaPencilAlt className="action-icon edit-icon" />
+                    </Link>
+                    <FaTrash
+                      className="action-icon delete-icon"
+                      onClick={() => handleDelete(log._id)}
+                      style={{ cursor: 'pointer' }}
+                    />
                   </td>
                 </tr>
               ))

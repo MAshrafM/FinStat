@@ -47,6 +47,9 @@ app.use('/api/credit-cards', require('./routes/creditCards'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/portfolio', require('./routes/portfolio'));
 app.use('/api/real-estates', require('./routes/realEstates'));
+app.use('/api/categorization-rules', require('./routes/categorizationRules'));
+app.use('/api/recurring-suggestions', require('./routes/recurringSuggestions'));
+app.use('/api/budgets', require('./routes/budgets'));
 
 // 404 handler specifically scoped to unmatched /api routes
 app.use('/api', (req, res, next) => {
@@ -58,6 +61,9 @@ app.use(errorHandler);
 
 // Define the port the server will run on (local execution only)
 if (require.main === module) {
+  const { initRecurringCron } = require('./jobs/recurringJob');
+  initRecurringCron();
+
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

@@ -104,17 +104,30 @@ const ExpenditureAnalysisPage = () => {
                 overallTotals.totalWithdrawals += transactionValue;
                 overallTotals.volumeByType.W += transactionValue;
 
-                // Split categories values
-                const itemCats = item.categories && item.categories.length > 0 ? item.categories : ['Other'];
-                const splitVal = transactionValue / itemCats.length;
-                itemCats.forEach(catName => {
-                    if (groupedData[year].categoryVolumes[catName] !== undefined) {
-                        groupedData[year].categoryVolumes[catName] += splitVal;
-                    }
-                    if (overallTotals.categoryVolumes[catName] !== undefined) {
-                        overallTotals.categoryVolumes[catName] += splitVal;
-                    }
-                });
+                // Split categories values (explicit splits or fallback)
+                if (item.splits && Array.isArray(item.splits) && item.splits.length > 0) {
+                    item.splits.forEach(split => {
+                        const catName = split.category || 'Other';
+                        const splitVal = split.amount || 0;
+                        if (groupedData[year].categoryVolumes[catName] !== undefined) {
+                            groupedData[year].categoryVolumes[catName] += splitVal;
+                        }
+                        if (overallTotals.categoryVolumes[catName] !== undefined) {
+                            overallTotals.categoryVolumes[catName] += splitVal;
+                        }
+                    });
+                } else {
+                    const itemCats = item.categories && item.categories.length > 0 ? item.categories : ['Other'];
+                    const splitVal = transactionValue / itemCats.length;
+                    itemCats.forEach(catName => {
+                        if (groupedData[year].categoryVolumes[catName] !== undefined) {
+                            groupedData[year].categoryVolumes[catName] += splitVal;
+                        }
+                        if (overallTotals.categoryVolumes[catName] !== undefined) {
+                            overallTotals.categoryVolumes[catName] += splitVal;
+                        }
+                    });
+                }
             } else if (item.transactionType === 'T') {
                 groupedData[year].byMonth[month].topups += transactionValue;
                 groupedData[year].totalTopups += transactionValue;

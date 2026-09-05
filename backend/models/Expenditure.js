@@ -117,6 +117,34 @@ const ExpenditureSchema = new mongoose.Schema({
       default: 0,
     },
   },
+  isRecurring: {
+    type: Boolean,
+    default: false,
+    index: true,
+  },
+  recurringId: {
+    type: Schema.Types.ObjectId,
+    ref: 'RecurringSuggestion',
+    default: null,
+  },
+  splits: [
+    {
+      category: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      amount: {
+        type: Number,
+        required: true,
+      },
+      description: {
+        type: String,
+        trim: true,
+        default: '',
+      },
+    },
+  ],
 }, {
   timestamps: true,
 });
@@ -127,6 +155,7 @@ ExpenditureSchema.plugin(softDeletePlugin);
 ExpenditureSchema.index({ user: 1, date: -1, _id: 1 });
 ExpenditureSchema.index({ user: 1, date: 1, _id: 1 });
 ExpenditureSchema.index({ user: 1, paymentMethod: 1, date: -1 });
+ExpenditureSchema.index({ user: 1, isRecurring: 1 });
 ExpenditureSchema.index({ user: 1, deletedAt: 1 });
 
 module.exports = mongoose.model('Expenditure', ExpenditureSchema);

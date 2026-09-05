@@ -18,6 +18,9 @@ export const getExpenditureById = (id, options = {}) =>
 export const getLatestExpenditure = (options = {}) =>
   apiClient.get(`${API_URL}/latest`, options);
 
+export const getRecurringExpenditures = (options = {}) =>
+  apiClient.get(`${API_URL}/recurring`, options);
+
 export const createExpenditure = (data, options = {}) =>
   apiClient.post(API_URL, data, options);
 
@@ -26,4 +29,3 @@ export const updateExpenditure = (id, data, options = {}) =>
 
 export const deleteExpenditure = (id, options = {}) =>
   apiClient.delete(`${API_URL}/${id}`, options);
-

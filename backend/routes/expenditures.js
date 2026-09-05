@@ -2,10 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const Expenditure = require('../models/Expenditure');
+const CategorizationRule = require('../models/CategorizationRule');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError, ForbiddenError } = require('../utils/errors');
+const { NotFoundError, ForbiddenError, BadRequestError } = require('../utils/errors');
 const {
   createSchema,
   updateSchema,
@@ -22,6 +23,19 @@ const {
   executeInTransaction,
 } = require('../utils/ledgerHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
+const { evaluateRules } = require('../utils/ruleEngine');
+const { validateSplits } = require('../utils/splitValidator');
+
+// @route   GET api/expenditures/recurring
+// @desc    Get all active expenditures marked as recurring
+router.get('/recurring', auth, asyncHandler(async (req, res) => {
+  const recurringExpenditures = await Expenditure.find({
+    user: req.effectiveUserId,
+    isRecurring: true,
+    deletedAt: null,
+  }).sort({ date: -1, _id: -1 });
+  res.json(recurringExpenditures);
+}));
 
 // @route   GET api/expenditures/all
 // @desc    Get ALL non-deleted expenditure without pagination (for analysis pages)
@@ -40,10 +54,13 @@ router.get('/latest', auth, asyncHandler(async (req, res) => {
 // @route   GET api/expenditures
 // @desc    Get all active expenditure logs, sorted by date descending
 router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req, res) => {
-  const { page, limit, type } = getValidated(req, 'query');
+  const { page, limit, type, isRecurring } = getValidated(req, 'query');
   const skip = (page - 1) * limit;
 
   const query = { user: req.effectiveUserId, deletedAt: null };
+  if (isRecurring !== undefined) {
+    query.isRecurring = isRecurring;
+  }
   if (type && type !== 'all') {
     if (['Prepaid', 'Bank', 'Cash'].includes(type)) {
       query.paymentMethod = type;
@@ -75,6 +92,40 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     throw new ForbiddenError('Viewers have read-only access');
   }
   const validatedBody = getValidated(req, 'body');
+
+  // If splits are provided, validate that sum equals transactionValue
+  if (validatedBody.splits && validatedBody.splits.length > 0) {
+    const splitValidation = validateSplits(validatedBody.transactionValue, validatedBody.splits);
+    if (!splitValidation.isValid) {
+      throw new BadRequestError(splitValidation.error);
+    }
+    // Synchronize categories from splits if not explicitly specified
+    if (
+      !validatedBody.categories ||
+      validatedBody.categories.length === 0 ||
+      (validatedBody.categories.length === 1 && validatedBody.categories[0] === 'Other')
+    ) {
+      validatedBody.categories = Array.from(new Set(validatedBody.splits.map((s) => s.category)));
+    }
+  } else {
+    // Auto-categorize via active rules if category was left as default 'Other'
+    if (
+      !validatedBody.categories ||
+      validatedBody.categories.length === 0 ||
+      (validatedBody.categories.length === 1 && validatedBody.categories[0] === 'Other')
+    ) {
+      const activeRules = await CategorizationRule.find({
+        user: req.effectiveUserId,
+        isActive: true,
+        deletedAt: null,
+      }).sort({ priority: -1, createdAt: -1 });
+
+      const match = evaluateRules(validatedBody, activeRules);
+      if (match) {
+        validatedBody.categories = [match.category];
+      }
+    }
+  }
 
   const createdDoc = await executeInTransaction(async (session) => {
     const newExpenditure = new Expenditure({
@@ -191,6 +242,23 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     if (validatedBody.logPrepaidOp !== undefined) existingExpenditure.logPrepaidOp = validatedBody.logPrepaidOp;
     if (validatedBody.fromAccount !== undefined) existingExpenditure.fromAccount = validatedBody.fromAccount;
     if (validatedBody.toAccount !== undefined) existingExpenditure.toAccount = validatedBody.toAccount;
+    if (validatedBody.isRecurring !== undefined) existingExpenditure.isRecurring = validatedBody.isRecurring;
+    if (validatedBody.recurringId !== undefined) existingExpenditure.recurringId = validatedBody.recurringId;
+
+    if (validatedBody.splits !== undefined) {
+      if (validatedBody.splits && validatedBody.splits.length > 0) {
+        const splitValidation = validateSplits(targetValue, validatedBody.splits);
+        if (!splitValidation.isValid) {
+          throw new BadRequestError(splitValidation.error);
+        }
+        existingExpenditure.splits = validatedBody.splits;
+        if (validatedBody.categories === undefined) {
+          existingExpenditure.categories = Array.from(new Set(validatedBody.splits.map((s) => s.category)));
+        }
+      } else {
+        existingExpenditure.splits = [];
+      }
+    }
 
     existingExpenditure.date = targetDate;
     existingExpenditure.transactionValue = targetValue;
