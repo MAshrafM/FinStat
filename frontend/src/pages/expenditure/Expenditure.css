@@ -270,6 +270,13 @@
   .ex-chart-container {
     height: 300px; /* Slightly reduce height for tablets */
   }
+  .holdings-summary-card {
+    padding: 1rem !important;
+  }
+}
+
+.holdings-summary-card {
+  padding: 1.5rem 2rem;
 }
 
 /* Category tags styles */

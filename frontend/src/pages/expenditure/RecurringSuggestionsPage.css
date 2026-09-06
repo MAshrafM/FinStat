@@ -30,9 +30,18 @@
 
 .recur-tabs {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
   border-bottom: 2px solid #e5e7eb;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.recur-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .recur-tab {
@@ -48,6 +57,8 @@
   border-bottom: 3px solid transparent;
   margin-bottom: -2px;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .recur-tab.active {
@@ -212,4 +223,33 @@
 
 .btn-reject:hover {
   background: #fee2e2;
+}
+
+@media (max-width: 768px) {
+  .recur-page-container {
+    padding: 0.5rem 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .recur-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .recur-header-titles h1 {
+    font-size: 1.5rem;
+  }
+
+  .suggestions-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .recur-tab {
+    padding: 0.55rem 0.85rem;
+    font-size: 0.85rem;
+  }
 }

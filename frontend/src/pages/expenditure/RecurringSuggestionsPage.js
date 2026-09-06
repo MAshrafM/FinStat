@@ -1,6 +1,6 @@
 // frontend/src/pages/expenditure/RecurringSuggestionsPage.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import ExpenditureSubNav from './ExpenditureSubNav';
 import {
   getRecurringSuggestions,
   triggerDetection,
@@ -115,20 +115,7 @@ const RecurringSuggestionsPage = () => {
   return (
     <div className="recur-page-container">
       {/* Sub-navigation tabs */}
-      <div className="rules-nav-tabs">
-        <Link to="/expenditures" className="rules-nav-link">
-          Expenditure Log
-        </Link>
-        <Link to="/expenditures/rules" className="rules-nav-link">
-          Auto-Categorization Rules
-        </Link>
-        <Link to="/expenditures/budgets" className="rules-nav-link">
-          Budget Tracker
-        </Link>
-        <Link to="/expenditures/recurring" className="rules-nav-link active">
-          Recurring Detection
-        </Link>
-      </div>
+      <ExpenditureSubNav />
 
       <div className="recur-header">
         <div className="recur-header-titles">

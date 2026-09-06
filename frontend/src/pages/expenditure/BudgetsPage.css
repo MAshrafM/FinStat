@@ -205,3 +205,49 @@
   color: #991b1b;
   background: #fef2f2;
 }
+
+@media (max-width: 768px) {
+  .budgets-page-container {
+    padding: 0.5rem 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .budgets-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .budgets-header-titles h1 {
+    font-size: 1.5rem;
+  }
+
+  .budget-kpis-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .budgets-filter-bar {
+    padding: 0.85rem 1rem;
+    gap: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .filter-group select {
+    flex: 1;
+    max-width: 60%;
+  }
+
+  .budget-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}

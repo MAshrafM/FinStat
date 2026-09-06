@@ -1,0 +1,137 @@
+/* frontend/src/pages/expenditure/ExpenditureSubNav.css */
+
+.expenditure-subnav-container {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
+}
+
+.expenditure-subnav-track {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f1f5f9;
+  padding: 0.35rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.expenditure-subnav-track::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.expenditure-subnav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex: 1 1 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  text-align: center;
+}
+
+.expenditure-subnav-link:hover {
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.expenditure-subnav-link.active {
+  color: #2563eb;
+  background: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.subnav-icon {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.expenditure-subnav-link.active .subnav-icon {
+  color: #2563eb;
+  transform: scale(1.08);
+}
+
+/* Label visibility switches */
+.subnav-label-short {
+  display: none;
+}
+
+.subnav-label-full {
+  display: inline;
+}
+
+/* Tablet & Mobile responsive behavior */
+@media (max-width: 768px) {
+  .expenditure-subnav-container {
+    margin-bottom: 1.25rem;
+  }
+
+  .subnav-label-full {
+    display: none;
+  }
+
+  .subnav-label-short {
+    display: inline;
+  }
+
+  .expenditure-subnav-track {
+    padding: 0.3rem;
+    gap: 0.25rem;
+    border-radius: 10px;
+  }
+
+  .expenditure-subnav-link {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.82rem;
+    gap: 0.35rem;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .subnav-icon {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .expenditure-subnav-track {
+    padding: 0.25rem;
+    gap: 0.2rem;
+  }
+
+  .expenditure-subnav-link {
+    padding: 0.45rem 0.35rem;
+    font-size: 0.76rem;
+    gap: 0.25rem;
+  }
+
+  .subnav-icon {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 330px) {
+  /* For tiny screens, ensure scrollable track without clipping */
+  .expenditure-subnav-link {
+    flex: 0 0 auto;
+    padding: 0.45rem 0.6rem;
+  }
+}

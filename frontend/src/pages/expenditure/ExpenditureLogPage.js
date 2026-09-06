@@ -8,6 +8,7 @@ import '../../components/Table.css'; // Reuse table styles
 import './Expenditure.css'; // Load expenditure styles
 import PaginationControls from '../../components/PaginationControls';
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
+import ExpenditureSubNav from './ExpenditureSubNav';
 
 const transactionTypeMap = {
   W: 'Withdraw',
@@ -120,20 +121,7 @@ const ExpenditureLogPage = () => {
   return (
     <div className="page-container">
       {/* Sub-navigation tabs */}
-      <div className="rules-nav-tabs">
-        <Link to="/expenditures" className="rules-nav-link active">
-          Expenditure Log
-        </Link>
-        <Link to="/expenditures/rules" className="rules-nav-link">
-          Auto-Categorization Rules
-        </Link>
-        <Link to="/expenditures/budgets" className="rules-nav-link">
-          Budget Tracker
-        </Link>
-        <Link to="/expenditures/recurring" className="rules-nav-link">
-          Recurring Detection
-        </Link>
-      </div>
+      <ExpenditureSubNav />
 
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <h1>Expenditure Log</h1>
@@ -145,7 +133,7 @@ const ExpenditureLogPage = () => {
       </div>
 
       {/* Current Holdings Summary Card */}
-      <div className="tax-card animate-fade-in" style={{ marginBottom: '2rem', padding: '1.5rem 2rem' }}>
+      <div className="tax-card animate-fade-in holdings-summary-card" style={{ marginBottom: '2rem' }}>
         <h3 style={{ margin: '0 0 1.25rem 0', display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1f2937', fontSize: '1.2rem' }}>
           <FaWallet style={{ color: '#3b82f6' }} /> Current Holdings
         </h3>

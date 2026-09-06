@@ -1,6 +1,6 @@
 // frontend/src/pages/expenditure/RulesPage.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import ExpenditureSubNav from './ExpenditureSubNav';
 import {
   getRules,
   createRule,
@@ -142,20 +142,7 @@ const RulesPage = () => {
   return (
     <div className="rules-page-container">
       {/* Navigation tabs */}
-      <div className="rules-nav-tabs">
-        <Link to="/expenditures" className="rules-nav-link">
-          Expenditure Log
-        </Link>
-        <Link to="/expenditures/rules" className="rules-nav-link active">
-          Auto-Categorization Rules
-        </Link>
-        <Link to="/expenditures/budgets" className="rules-nav-link">
-          Budget Tracker
-        </Link>
-        <Link to="/expenditures/recurring" className="rules-nav-link">
-          Recurring Detection
-        </Link>
-      </div>
+      <ExpenditureSubNav />
 
       <div className="rules-header">
         <div className="rules-header-titles">

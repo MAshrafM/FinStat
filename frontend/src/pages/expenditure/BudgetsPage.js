@@ -1,6 +1,6 @@
 // frontend/src/pages/expenditure/BudgetsPage.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import ExpenditureSubNav from './ExpenditureSubNav';
 import {
   createBudget,
   updateBudget,
@@ -143,20 +143,7 @@ const BudgetsPage = () => {
   return (
     <div className="budgets-page-container">
       {/* Sub-navigation tabs */}
-      <div className="rules-nav-tabs">
-        <Link to="/expenditures" className="rules-nav-link">
-          Expenditure Log
-        </Link>
-        <Link to="/expenditures/rules" className="rules-nav-link">
-          Auto-Categorization Rules
-        </Link>
-        <Link to="/expenditures/budgets" className="rules-nav-link active">
-          Budget Tracker
-        </Link>
-        <Link to="/expenditures/recurring" className="rules-nav-link">
-          Recurring Detection
-        </Link>
-      </div>
+      <ExpenditureSubNav />
 
       <div className="budgets-header">
         <div className="budgets-header-titles">
