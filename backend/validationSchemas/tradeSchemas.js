@@ -2,8 +2,8 @@ const { z } = require('zod');
 const { paramsIdSchema, paginationQuerySchema, dateStringSchema, sanitizeQueryParam } = require('./commonSchemas');
 
 const ALLOWED_BROKERS = ['Thndr', 'EFG', 'Telda'];
-const ALLOWED_TRADE_TYPES = ['Buy', 'Sell', 'TopUp', 'Dividend', 'Withdraw'];
-const STOCK_CODE_REQUIRED_TYPES = ['Buy', 'Sell', 'Dividend'];
+const ALLOWED_TRADE_TYPES = ['Buy', 'Sell', 'TopUp', 'Dividend', 'Withdraw', 'Split'];
+const STOCK_CODE_REQUIRED_TYPES = ['Buy', 'Sell', 'Dividend', 'Split'];
 
 /**
  * Trade creation schema with cross-field refinement ensuring stockCode exists for equity trades.
@@ -27,6 +27,10 @@ const createSchema = z.object({
   totalValue: z.coerce.number({
     message: 'Total value is required and must be a valid number',
   }),
+  splitRatio: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    z.coerce.number({ message: 'Split ratio must be a valid number' }).positive().optional()
+  ),
   iteration: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? undefined : val),
     z.coerce.number({ message: 'Iteration must be an integer' }).int().optional()
@@ -41,7 +45,7 @@ const createSchema = z.object({
       return true;
     },
     {
-      message: 'Stock code is required for Buy, Sell, and Dividend transactions',
+      message: 'Stock code is required for Buy, Sell, Dividend, and Split transactions',
       path: ['stockCode'],
     }
   );
@@ -68,6 +72,10 @@ const updateSchema = z.object({
   shares: z.coerce.number({ message: 'Shares must be a valid number' }).optional(),
   fees: z.coerce.number({ message: 'Fees must be a valid number' }).optional(),
   totalValue: z.coerce.number({ message: 'Total value must be a valid number' }).optional(),
+  splitRatio: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    z.coerce.number({ message: 'Split ratio must be a valid number' }).positive().optional()
+  ),
   iteration: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? undefined : val),
     z.coerce.number({ message: 'Iteration must be an integer' }).int().optional()

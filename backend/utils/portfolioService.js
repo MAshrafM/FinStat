@@ -6,7 +6,13 @@ const Gold = require('../models/Gold');
 const Certificate = require('../models/Certificate');
 const Currency = require('../models/Currency');
 const RealEstate = require('../models/RealEstate');
+const Expenditure = require('../models/Expenditure');
 
+const User = require('../models/User');
+const CorporateAction = require('../models/CorporateAction');
+const { calculateCostBasis } = require('./costBasisEngine');
+const { applyCorporateActions } = require('./corporateActionEngine');
+const { to24kEquivalentGrams } = require('./goldStandardizer');
 const marketPriceService = require('./marketPriceService');
 const { calculateXIRR, calculateROI } = require('./performanceCalculator');
 const { currencyMap } = require('./currencyMapHelper');
@@ -20,7 +26,12 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
  */
 function invalidatePortfolioCache(userId = null) {
   if (userId) {
-    userPortfolioCache.delete(userId.toString());
+    const prefix = userId.toString();
+    for (const key of userPortfolioCache.keys()) {
+      if (key === prefix || key.startsWith(`${prefix}_`)) {
+        userPortfolioCache.delete(key);
+      }
+    }
   } else {
     userPortfolioCache.clear();
   }
@@ -38,7 +49,7 @@ function getNormalizedCurrencyCode(name) {
 /**
  * Gathers and normalizes all open holdings across all asset classes for a user.
  */
-async function getAllHoldings(effectiveUserId, { forceRefresh = false } = {}) {
+async function getAllHoldings(effectiveUserId, { forceRefresh = false, costBasisMethod: methodOverride = null } = {}) {
   const userObjectId = new mongoose.Types.ObjectId(effectiveUserId);
   const holdings = [];
 
@@ -70,39 +81,36 @@ async function getAllHoldings(effectiveUserId, { forceRefresh = false } = {}) {
   const currencyRates = Array.isArray(currencyRatesRes.data) ? currencyRatesRes.data : [];
 
   // ----------------------------------------------------
-  // 1. STOCKS (Equities)
+  // 1. STOCKS (Equities) - with Cost-Basis & Corporate Actions Engine
   // ----------------------------------------------------
-  const stockSummary = await Trade.aggregate([
-    { $match: { user: userObjectId, deletedAt: null } },
-    {
-      $group: {
-        _id: { broker: '$broker', stockCode: '$stockCode', iteration: '$iteration' },
-        totalBuyValue: { $sum: { $cond: [{ $eq: ['$type', 'Buy'] }, '$totalValue', 0] } },
-        totalSellValue: { $sum: { $cond: [{ $eq: ['$type', 'Sell'] }, '$totalValue', 0] } },
-        totalSharesBought: { $sum: { $cond: [{ $eq: ['$type', 'Buy'] }, '$shares', 0] } },
-        totalSharesSold: { $sum: { $cond: [{ $eq: ['$type', 'Sell'] }, '$shares', 0] } },
-        totalSharesDividend: { $sum: { $cond: [{ $eq: ['$type', 'Dividend'] }, '$shares', 0] } },
-        totalFees: { $sum: '$fees' },
-      },
-    },
-    {
-      $addFields: {
-        currentShares: {
-          $subtract: [{ $add: ['$totalSharesBought', '$totalSharesDividend'] }, '$totalSharesSold'],
-        },
-        avgBuyPrice: {
-          $cond: [{ $gt: ['$totalSharesBought', 0] }, { $divide: ['$totalBuyValue', '$totalSharesBought'] }, 0],
-        },
-      },
-    },
-    { $match: { currentShares: { $gt: 0 }, '_id.stockCode': { $ne: null } } },
-  ]);
+  const userDoc = await User.findById(userObjectId).select('costBasisMethod');
+  const costBasisMethod = methodOverride || userDoc?.costBasisMethod || 'average';
 
-  for (const item of stockSummary) {
-    const symbol = item._id.stockCode;
-    const shares = item.currentShares;
-    const avgBuyPrice = item.avgBuyPrice;
-    const totalCost = shares * avgBuyPrice;
+  const corporateActions = await CorporateAction.find({ user: userObjectId, deletedAt: null });
+  const rawTrades = await Trade.find({ user: userObjectId, deletedAt: null }).sort({ date: 1, createdAt: 1 });
+  const adjustedTrades = typeof applyCorporateActions === 'function'
+    ? applyCorporateActions(rawTrades, corporateActions)
+    : rawTrades;
+
+  const stockGroupMap = new Map();
+  for (const t of adjustedTrades) {
+    if (!t.stockCode) continue;
+    const iter = t.iteration !== undefined && t.iteration !== null ? t.iteration : 0;
+    const key = `${t.broker}_${t.stockCode}_${iter}`;
+    if (!stockGroupMap.has(key)) {
+      stockGroupMap.set(key, { broker: t.broker, stockCode: t.stockCode, iteration: iter, trades: [] });
+    }
+    stockGroupMap.get(key).trades.push(t);
+  }
+
+  for (const group of stockGroupMap.values()) {
+    const costResult = calculateCostBasis(group.trades, costBasisMethod);
+    if (costResult.currentShares <= 0) continue;
+
+    const symbol = group.stockCode;
+    const shares = costResult.currentShares;
+    const avgBuyPrice = costResult.averageBuyPrice;
+    const totalCost = costResult.remainingCostBasis;
 
     let currentPrice = stockPrices[symbol];
     let priceStatus = 'live';
@@ -119,8 +127,8 @@ async function getAllHoldings(effectiveUserId, { forceRefresh = false } = {}) {
     const unrealizedPnLPercentage = totalCost > 0 ? (unrealizedPnL / totalCost) * 100 : 0;
 
     holdings.push({
-      id: `stock_${symbol}_${item._id.broker}_${item._id.iteration || 0}`,
-      name: `${symbol} (${item._id.broker})`,
+      id: `stock_${symbol}_${group.broker}_${group.iteration || 0}`,
+      name: `${symbol} (${group.broker})`,
       symbol,
       assetType: 'Stock',
       category: 'Equities',
@@ -133,6 +141,7 @@ async function getAllHoldings(effectiveUserId, { forceRefresh = false } = {}) {
       unrealizedPnL: Number(unrealizedPnL.toFixed(2)),
       unrealizedPnLPercentage: Number(unrealizedPnLPercentage.toFixed(2)),
       priceStatus,
+      costBasisMethod,
       sourceUrl: '/trade-summary',
       updatedAt: new Date(stockPricesRes.timestamp),
     });
@@ -243,18 +252,26 @@ async function getAllHoldings(effectiveUserId, { forceRefresh = false } = {}) {
     const unrealizedPnL = currentValue - totalCost;
     const unrealizedPnLPercentage = totalCost > 0 ? (unrealizedPnL / totalCost) * 100 : 0;
 
+    const spotPrice24k = Number(goldPrices['24'] || goldPrices['24K'] || 0);
+    const equivalentGrams24k = to24kEquivalentGrams(weight, karat);
+    const standardizedValue = Number((equivalentGrams24k * spotPrice24k).toFixed(2));
+
     holdings.push({
       id: `gold_${karat}k`,
       name: `Gold ${karat}K`,
       symbol: `${karat}K Gold`,
       assetType: 'Gold',
       category: 'Precious Metals',
+      karat,
       quantity: weight,
       unitLabel: 'Grams',
       avgBuyPrice: Number(avgBuyPrice.toFixed(2)),
       currentPrice: Number(currentPricePerGram.toFixed(2)),
       totalCost: Number(totalCost.toFixed(2)),
       currentValue: Number(currentValue.toFixed(2)),
+      equivalentGrams24k,
+      spotPrice24k,
+      standardizedValue,
       unrealizedPnL: Number(unrealizedPnL.toFixed(2)),
       unrealizedPnLPercentage: Number(unrealizedPnLPercentage.toFixed(2)),
       priceStatus,
@@ -280,6 +297,13 @@ async function getAllHoldings(effectiveUserId, { forceRefresh = false } = {}) {
 
     // If explicitly marked as redeemed or matured
     if (cert.status === 'Redeemed' || cert.status === 'Matured') {
+      continue;
+    }
+
+    // Only consider active certificates (started and not yet matured/expired)
+    const isExpired = now > maturityDate;
+    const isActive = now >= startDate && !isExpired;
+    if (!isActive) {
       continue;
     }
 
@@ -403,6 +427,80 @@ async function getAllHoldings(effectiveUserId, { forceRefresh = false } = {}) {
     });
   }
 
+  // ----------------------------------------------------
+  // 7. LIQUID CASH & BANK BALANCES (Expenditure Ledger)
+  // ----------------------------------------------------
+  const latestExpenditure = await Expenditure.findOne({ user: userObjectId, deletedAt: null }).sort({ date: -1, _id: -1 });
+  if (latestExpenditure) {
+    const liquidBank = Number(latestExpenditure.runningBalances?.bank ?? latestExpenditure.bank ?? 0);
+    const liquidCash = Number(latestExpenditure.runningBalances?.cash ?? latestExpenditure.cash ?? 0);
+    const liquidPrepaid = Number(latestExpenditure.runningBalances?.prepaid ?? latestExpenditure.prepaid ?? 0);
+    const expDate = latestExpenditure.updatedAt || latestExpenditure.date || new Date();
+
+    if (liquidBank > 0) {
+      holdings.push({
+        id: 'cash_bank',
+        name: 'Bank Account Balance',
+        symbol: 'EGP (Bank)',
+        assetType: 'Cash',
+        category: 'Cash & Equivalents',
+        quantity: liquidBank,
+        unitLabel: 'EGP',
+        avgBuyPrice: 1,
+        currentPrice: 1,
+        totalCost: Number(liquidBank.toFixed(2)),
+        currentValue: Number(liquidBank.toFixed(2)),
+        unrealizedPnL: 0,
+        unrealizedPnLPercentage: 0,
+        priceStatus: 'fixed',
+        sourceUrl: '/expenditures',
+        updatedAt: expDate,
+      });
+    }
+
+    if (liquidCash > 0) {
+      holdings.push({
+        id: 'cash_physical',
+        name: 'Cash in Hand',
+        symbol: 'EGP (Cash)',
+        assetType: 'Cash',
+        category: 'Cash & Equivalents',
+        quantity: liquidCash,
+        unitLabel: 'EGP',
+        avgBuyPrice: 1,
+        currentPrice: 1,
+        totalCost: Number(liquidCash.toFixed(2)),
+        currentValue: Number(liquidCash.toFixed(2)),
+        unrealizedPnL: 0,
+        unrealizedPnLPercentage: 0,
+        priceStatus: 'fixed',
+        sourceUrl: '/expenditures',
+        updatedAt: expDate,
+      });
+    }
+
+    if (liquidPrepaid > 0) {
+      holdings.push({
+        id: 'cash_prepaid',
+        name: 'Prepaid Wallet / Card',
+        symbol: 'EGP (Prepaid)',
+        assetType: 'Cash',
+        category: 'Cash & Equivalents',
+        quantity: liquidPrepaid,
+        unitLabel: 'EGP',
+        avgBuyPrice: 1,
+        currentPrice: 1,
+        totalCost: Number(liquidPrepaid.toFixed(2)),
+        currentValue: Number(liquidPrepaid.toFixed(2)),
+        unrealizedPnL: 0,
+        unrealizedPnLPercentage: 0,
+        priceStatus: 'fixed',
+        sourceUrl: '/expenditures',
+        updatedAt: expDate,
+      });
+    }
+  }
+
   return holdings;
 }
 
@@ -489,42 +587,33 @@ async function getPortfolioCashFlows(effectiveUserId, totalTerminalValue = 0) {
 /**
  * Calculates Realized P&L from historical closed trades, sold gold, and sold real estate
  */
-async function getRealizedPnL(effectiveUserId) {
+async function getRealizedPnL(effectiveUserId, { costBasisMethod: methodOverride = null } = {}) {
   const userObjectId = new mongoose.Types.ObjectId(effectiveUserId);
 
-  // Closed stock positions
-  const stockSummary = await Trade.aggregate([
-    { $match: { user: userObjectId, deletedAt: null } },
-    {
-      $group: {
-        _id: { broker: '$broker', stockCode: '$stockCode', iteration: '$iteration' },
-        totalBuyValue: { $sum: { $cond: [{ $eq: ['$type', 'Buy'] }, '$totalValue', 0] } },
-        totalSellValue: { $sum: { $cond: [{ $eq: ['$type', 'Sell'] }, '$totalValue', 0] } },
-        totalDividendValue: { $sum: { $cond: [{ $eq: ['$type', 'Dividend'] }, '$totalValue', 0] } },
-        totalFees: { $sum: '$fees' },
-        totalSharesBought: { $sum: { $cond: [{ $eq: ['$type', 'Buy'] }, '$shares', 0] } },
-        totalSharesSold: { $sum: { $cond: [{ $eq: ['$type', 'Sell'] }, '$shares', 0] } },
-        totalSharesDividend: { $sum: { $cond: [{ $eq: ['$type', 'Dividend'] }, '$shares', 0] } },
-      },
-    },
-    {
-      $addFields: {
-        currentShares: {
-          $subtract: [{ $add: ['$totalSharesBought', '$totalSharesDividend'] }, '$totalSharesSold'],
-        },
-        avgBuyPrice: {
-          $cond: [{ $gt: ['$totalSharesBought', 0] }, { $divide: ['$totalBuyValue', '$totalSharesBought'] }, 0],
-        },
-      },
-    },
-  ]);
+  // Closed & partially sold stock positions (evaluated using user's costBasisMethod)
+  const userDoc = await User.findById(userObjectId).select('costBasisMethod');
+  const costBasisMethod = methodOverride || userDoc?.costBasisMethod || 'average';
+
+  const corporateActions = await CorporateAction.find({ user: userObjectId, deletedAt: null });
+  const rawTrades = await Trade.find({ user: userObjectId, deletedAt: null }).sort({ date: 1, createdAt: 1 });
+  const adjustedTrades = applyCorporateActions(rawTrades, corporateActions);
+
+  const stockGroupMap = new Map();
+  for (const t of adjustedTrades) {
+    if (!t.stockCode) continue;
+    const iter = t.iteration !== undefined && t.iteration !== null ? t.iteration : 0;
+    const key = `${t.broker}_${t.stockCode}_${iter}`;
+    if (!stockGroupMap.has(key)) {
+      stockGroupMap.set(key, []);
+    }
+    stockGroupMap.get(key).push(t);
+  }
 
   let stockRealizedPnL = 0;
-  for (const item of (stockSummary || [])) {
-    if (item.totalSharesSold > 0) {
-      const costOfSharesSold = item.totalSharesSold * item.avgBuyPrice;
-      const realized = item.totalSellValue + item.totalDividendValue - costOfSharesSold - item.totalFees;
-      stockRealizedPnL += realized;
+  for (const groupTrades of stockGroupMap.values()) {
+    const costResult = calculateCostBasis(groupTrades, costBasisMethod);
+    if (costResult.totalSharesSold > 0) {
+      stockRealizedPnL += costResult.totalRealizedReturn;
     }
   }
 
@@ -652,16 +741,18 @@ function calculateAssetAllocation(holdings, { stockTopUps = 0 } = {}) {
 /**
  * High-level unified portfolio summary with caching.
  */
-async function getPortfolioSummary(effectiveUserId, { forceRefresh = false } = {}) {
-  const cacheKey = effectiveUserId.toString();
+async function getPortfolioSummary(effectiveUserId, { forceRefresh = false, costBasisMethod = null } = {}) {
+  const cacheKey = costBasisMethod
+    ? `${effectiveUserId.toString()}_${costBasisMethod}`
+    : effectiveUserId.toString();
   const cached = userPortfolioCache.get(cacheKey);
 
   if (!forceRefresh && cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
     return { ...cached.data, isCached: true };
   }
 
-  const holdings = await getAllHoldings(effectiveUserId, { forceRefresh });
-  const realizedPnL = await getRealizedPnL(effectiveUserId);
+  const holdings = await getAllHoldings(effectiveUserId, { forceRefresh, costBasisMethod });
+  const realizedPnL = await getRealizedPnL(effectiveUserId, { costBasisMethod });
   const stockTopUps = await getStockNetTopUps(effectiveUserId);
   const allocationData = calculateAssetAllocation(holdings, { stockTopUps });
 

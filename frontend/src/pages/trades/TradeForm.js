@@ -138,7 +138,7 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         onFormSubmit(payload);
     };
 
-    const isStockTrade = ['Buy', 'Sell', 'Dividend'].includes(formData.type);
+    const isStockTrade = ['Buy', 'Sell', 'Dividend', 'Split'].includes(formData.type);
     const isCashTrade = ['TopUp', 'Withdraw'].includes(formData.type);
     const isSellTransaction = formData.type === 'Sell';
 
@@ -164,6 +164,7 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                     <option value="TopUp">Top-up (Cash Deposit)</option>
                     <option value="Withdraw">Withdraw (Cash)</option>
                     <option value="Dividend">Dividend</option>
+                    <option value="Split">Stock Split</option>
                 </select>
             </div>
 
@@ -222,6 +223,22 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                     <input type="number" step="0.01" name="totalValue" placeholder="Enter total dividend received" value={formData.totalValue} onChange={handleCashChange} required />
                     <label>Dividend Amount Shares</label>
                     <input type="number" name="shares" placeholder="Enter total dividend received" value={formData.shares} onChange={handleChange} required />
+                </div>
+            )}
+
+            {formData.type === 'Split' && (
+                <div className="form-group">
+                    <label>Split Ratio (e.g. 2 for 2:1 Split)</label>
+                    <input
+                        type="number"
+                        step="any"
+                        min="0.0001"
+                        name="splitRatio"
+                        placeholder="e.g. 2 for 2:1 split"
+                        value={formData.splitRatio || ''}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
             )}
 

@@ -38,6 +38,7 @@ app.use('/api/social-insurance', require('./routes/socialInsurance'));
 app.use('/api/tax-brackets', require('./routes/taxBrackets'));
 app.use('/api/expenditures', require('./routes/expenditures'));
 app.use('/api/trades', require('./routes/trade'));
+app.use('/api/corporate-actions', require('./routes/corporateActions'));
 app.use('/api/mutual-funds', require('./routes/mutualFundTrades'));
 app.use('/api/golds', require('./routes/golds'));
 app.use('/api/certificates', require('./routes/certificates'));

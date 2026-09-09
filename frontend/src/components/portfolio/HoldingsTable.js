@@ -17,6 +17,7 @@ const ASSET_CATEGORIES = [
   'Gold',
   'Certificate',
   'Currency',
+  'Cash',
   'Real Estate',
 ];
 

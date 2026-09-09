@@ -83,6 +83,12 @@ const CreditCardPage = React.lazy(() => import('./pages/credit-cards/CreditCardP
 
 // Security & Access Control
 const SecuritySettingsPage = React.lazy(() => import('./pages/security/SecuritySettingsPage'));
+const SettingsPage = React.lazy(() => import('./pages/profile/SettingsPage'));
+
+// Advanced Portfolio & Corporate Actions
+const CorporateActionWizard = React.lazy(() => import('./pages/trades/CorporateActionWizard'));
+const CorporateActionsList = React.lazy(() => import('./pages/trades/CorporateActionsList'));
+const RebalancingPage = React.lazy(() => import('./pages/portfolio/RebalancingPage'));
 
 // Admin User Management
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
@@ -98,9 +104,13 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/portfolio" element={<Portfolio />} />
+                <Route path="/portfolio/rebalancing" element={<RebalancingPage />} />
                 <Route path="/summary" element={<Summary />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/security" element={<SecuritySettingsPage />} />
+                <Route path="/corporate-actions" element={<CorporateActionsList />} />
+                <Route path="/corporate-actions/wizard" element={<CorporateActionWizard />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/tax-brackets" element={<TaxConfigPage />} />
                 <Route path="/admin/social-insurance" element={<InsuranceConfigPage />} />

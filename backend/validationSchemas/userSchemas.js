@@ -18,6 +18,9 @@ const updateProfileSchema = z.object({
   employeeId: z.preprocess(emptyToNull, z.string().trim().max(50, 'Employee ID too long').optional().nullable()),
   email: z.preprocess(emptyToNull, z.string().email('Invalid email address').trim().toLowerCase().optional().nullable()),
   username: z.string().min(3, 'Username must be at least 3 characters').trim().optional(),
+  costBasisMethod: z.enum(['fifo', 'lifo', 'average'], {
+    message: 'Cost basis method must be one of: fifo, lifo, average',
+  }).optional(),
 }).passthrough();
 
 const userParamsSchema = z.object({

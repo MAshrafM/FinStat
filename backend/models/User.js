@@ -23,6 +23,11 @@ const UserSchema = new mongoose.Schema({
         enum: ['admin', 'manager', 'viewer'],
         default: 'viewer',
     },
+    costBasisMethod: {
+        type: String,
+        enum: ['fifo', 'lifo', 'average'],
+        default: 'average',
+    },
     totpSecret: {
         type: String,   // encrypted (AES-256) TOTP secret
         select: false,  // never returned in queries by default

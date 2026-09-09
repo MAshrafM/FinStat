@@ -69,6 +69,12 @@ const Sidebar = () => {
       description: 'Unified investments & performance',
     },
     {
+      path: '/portfolio/rebalancing',
+      icon: '⚖️',
+      title: 'Rebalancing',
+      description: 'Target weights & suggestions',
+    },
+    {
       path: '/salary-profile',
       icon: '👔',
       title: 'Salary Profile',
@@ -141,6 +147,12 @@ const Sidebar = () => {
       description: 'Trading results',
     },
     {
+      path: '/corporate-actions',
+      icon: '🪄',
+      title: 'Corporate Actions',
+      description: 'Splits & bonus issues',
+    },
+    {
       path: '/mutual-funds',
       icon: '🏢',
       title: 'Mutual Funds',
@@ -193,6 +205,12 @@ const Sidebar = () => {
       icon: '👤',
       title: 'User Profile',
       description: 'Personal & account profile',
+    },
+    {
+      path: '/settings',
+      icon: '⚙️',
+      title: 'Settings',
+      description: 'Cost-basis & preferences',
     },
     {
       path: '/security',

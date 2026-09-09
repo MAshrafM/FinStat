@@ -16,6 +16,11 @@ const {
 } = require('../validationSchemas/tradeSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
+const User = require('../models/User');
+const CorporateAction = require('../models/CorporateAction');
+const { calculateCostBasis } = require('../utils/costBasisEngine');
+const { applyCorporateActions, createSplitWizard } = require('../utils/corporateActionEngine');
+const { wizardCorporateActionSchema } = require('../validationSchemas/corporateActionSchemas');
 const marketPriceService = require('../utils/marketPriceService');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
 
@@ -53,144 +58,114 @@ router.get('/all', auth, asyncHandler(async (req, res) => {
 }));
 
 // @route   GET api/trades/summary
-// @desc    Get a summary of trades grouped by broker, stock, and iteration
+// @desc    Get a summary of trades grouped by broker, stock, and iteration with cost-basis and corporate actions
 router.get('/summary', auth, asyncHandler(async (req, res) => {
-  const summary = await Trade.aggregate([
-    // --- Stage 0: Match user and active records ---
-    {
-      $match: { user: new mongoose.Types.ObjectId(req.effectiveUserId), deletedAt: null }
-    },
-    // --- Stage 1: Grouping ---
-    {
-      $group: {
-        _id: {
-          broker: "$broker",
-          stockCode: "$stockCode",
-          iteration: "$iteration"
-        },
-        totalBuyValue: {
-          $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$totalValue", 0] }
-        },
-        totalSellValue: {
-          $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$totalValue", 0] }
-        },
-        totalDividendValue: {
-          $sum: { $cond: [{ $eq: ["$type", "Dividend"] }, "$totalValue", 0] }
-        },
-        totalSharesBought: {
-          $sum: { $cond: [{ $eq: ["$type", "Buy"] }, "$shares", 0] }
-        },
-        totalSharesSold: {
-          $sum: { $cond: [{ $eq: ["$type", "Sell"] }, "$shares", 0] }
-        },
-        totalSharesDividend: {
-          $sum: { $cond: [{ $eq: ["$type", "Dividend"] }, "$shares", 0] }
-        },
-        totalFees: { $sum: "$fees" },
-        tradeCount: { $sum: 1 },
-        firstTradeDate: { $min: "$date" },
-        lastTradeDate: { $max: "$date" }
-      }
-    },
-    // --- Stage 2: Calculate Averages & Current Holdings ---
-    {
-      $addFields: {
-        currentShares: {
-          $subtract: [
-            { $add: ["$totalSharesBought", "$totalSharesDividend"] },
-            "$totalSharesSold"
-          ]
-        },
-        averageBuyPrice: {
-          $cond: [
-            { $gt: ["$totalSharesBought", 0] },
-            { $divide: ["$totalBuyValue", "$totalSharesBought"] },
-            0
-          ]
-        },
-        averageSellPrice: {
-          $cond: [
-            { $gt: ["$totalSharesSold", 0] },
-            { $divide: ["$totalSellValue", "$totalSharesSold"] },
-            0
-          ]
-        },
-        adjustedAvgPrice: {
-          $cond: [
-            { $eq: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, 0] },
-            0,
-            {
-              $divide: [
-                "$totalBuyValue",
-                { $add: ["$totalSharesBought", "$totalSharesDividend"] }
-              ]
-            }
-          ]
-        }
-      }
-    },
-    // --- Stage 3: Calculate Cost of Goods Sold (COGS) & Net Break Even ---
-    {
-      $addFields: {
-        costOfSoldShares: {
-          $multiply: ["$totalSharesSold", "$averageBuyPrice"]
-        },
-        netBreakEvenPrice: {
-          $cond: [
-            { $lte: [{ $subtract: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, "$totalSharesSold"] }, 0] },
-            0,
-            {
-              $divide: [
-                {
-                  $subtract: [
-                    "$totalBuyValue",
-                    { $add: ["$totalSellValue", "$totalDividendValue"] }
-                  ]
-                },
-                { $subtract: [{ $add: ["$totalSharesBought", "$totalSharesDividend"] }, "$totalSharesSold"] }
-              ]
-            }
-          ]
-        }
-      }
-    },
-    // --- Stage 4: Final P/L Calculation & Tot Deals ---
-    {
-      $addFields: {
-        tradingPL: {
-          $subtract: ["$totalSellValue", "$costOfSoldShares"]
-        },
-        dividendIncome: "$totalDividendValue",
-        totalRealizedReturn: {
-          $add: [
-            { $subtract: ["$totalSellValue", "$costOfSoldShares"] },
-            "$totalDividendValue"
-          ]
-        },
-        totDeals: {
-          $subtract: [
-            "$totalBuyValue",
-            { $add: ["$totalSellValue", "$totalDividendValue"] }
-          ]
-        },
-        investedAmountRemaining: {
-          $multiply: ["$currentShares", "$averageBuyPrice"]
-        },
-        status: {
-          $cond: [{ $eq: ["$currentShares", 0] }, "Closed", "Open"]
-        }
-      }
-    },
-    // --- Stage 5: Sorting ---
-    {
-      $sort: {
-        "_id.stockCode": 1,
-        "lastTradeDate": -1
-      }
-    }
+  const userObjectId = new mongoose.Types.ObjectId(req.effectiveUserId);
+  const userDoc = await User.findById(userObjectId).select('costBasisMethod');
+  const costBasisMethod = userDoc?.costBasisMethod || 'average';
 
+  const [corporateActions, rawTrades] = await Promise.all([
+    CorporateAction.find({ user: userObjectId, deletedAt: null }),
+    Trade.find({ user: userObjectId, deletedAt: null }).sort({ date: 1, createdAt: 1 }),
   ]);
+
+  const adjustedTrades = applyCorporateActions(rawTrades, corporateActions);
+
+  // Group by broker, stockCode, iteration
+  const groupMap = new Map();
+  for (const t of adjustedTrades) {
+    if (!t.stockCode) continue;
+    const iter = t.iteration !== undefined && t.iteration !== null ? t.iteration : 0;
+    const key = `${t.broker}_${t.stockCode}_${iter}`;
+    if (!groupMap.has(key)) {
+      groupMap.set(key, {
+        broker: t.broker,
+        stockCode: t.stockCode,
+        iteration: iter,
+        trades: [],
+      });
+    }
+    groupMap.get(key).trades.push(t);
+  }
+
+  const summary = [];
+  for (const group of groupMap.values()) {
+    const iterTrades = group.trades;
+    const costResult = calculateCostBasis(iterTrades, costBasisMethod);
+
+    const firstTradeDate = iterTrades[0]?.date || null;
+    const lastTradeDate = iterTrades[iterTrades.length - 1]?.date || null;
+    const tradeCount = iterTrades.length;
+
+    summary.push({
+      _id: {
+        broker: group.broker,
+        stockCode: group.stockCode,
+        iteration: group.iteration,
+      },
+      costBasisMethod,
+      totalBuyValue: costResult.totalBuyValue,
+      totalSellValue: costResult.totalSellValue,
+      totalDividendValue: costResult.totalDividendValue,
+      totalSharesBought: costResult.totalSharesBought,
+      totalSharesSold: costResult.totalSharesSold,
+      totalSharesDividend: costResult.totalSharesDividend,
+      totalFees: costResult.totalFees,
+      tradeCount,
+      firstTradeDate,
+      lastTradeDate,
+      currentShares: costResult.currentShares,
+      averageBuyPrice: costResult.averageBuyPrice,
+      adjustedAvgPrice: costResult.adjustedAvgPrice,
+      costOfSoldShares: costResult.costOfSoldShares,
+      netBreakEvenPrice: costResult.netBreakEvenPrice,
+      tradingPL: costResult.tradingPL,
+      dividendIncome: costResult.totalDividendValue,
+      totalRealizedReturn: costResult.totalRealizedReturn,
+      totDeals: Number((costResult.totalBuyValue - (costResult.totalSellValue + costResult.totalDividendValue)).toFixed(2)),
+      investedAmountRemaining: costResult.remainingCostBasis,
+      status: costResult.currentShares === 0 ? 'Closed' : 'Open',
+    });
+  }
+
+  // Sort summary
+  summary.sort((a, b) => {
+    if (a._id.stockCode < b._id.stockCode) return -1;
+    if (a._id.stockCode > b._id.stockCode) return 1;
+    return new Date(b.lastTradeDate) - new Date(a.lastTradeDate);
+  });
+
   res.json(summary);
+}));
+
+// @route   POST api/trades/split
+// @desc    Log a stock split trade + corporate action record
+router.post('/split', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const body = getValidated(req, 'body');
+  const result = await createSplitWizard(req.effectiveUserId, {
+    stockCode: body.stockCode,
+    broker: body.broker,
+    type: 'split',
+    ratio: body.splitRatio || 1,
+    effectiveDate: body.date,
+    notes: 'Logged via Trade Split entry',
+    logTrade: true,
+  });
+  res.status(201).json(result);
+}));
+
+// @route   POST api/trades/corporate-action/wizard
+// @desc    Wizard endpoint to apply split or bonus issue retroactively
+router.post('/corporate-action/wizard', auth, validate({ body: wizardCorporateActionSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const body = getValidated(req, 'body');
+  const result = await createSplitWizard(req.effectiveUserId, body);
+  res.status(201).json(result);
 }));
 
 router.get('/market-prices', auth, asyncHandler(async (req, res) => {

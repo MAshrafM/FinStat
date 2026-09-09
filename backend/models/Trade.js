@@ -21,12 +21,16 @@ const TradeSchema = new mongoose.Schema({
   stockCode: {
     type: String,
     // Not required for cash transactions like TopUp/Withdraw
-    required: function () { return ['Buy', 'Sell', 'Dividend'].includes(this.type); },
+    required: function () { return ['Buy', 'Sell', 'Dividend', 'Split'].includes(this.type); },
   },
   type: {
     type: String,
     required: true,
-    enum: ['Buy', 'Sell', 'TopUp', 'Dividend', 'Withdraw'],
+    enum: ['Buy', 'Sell', 'TopUp', 'Dividend', 'Withdraw', 'Split'],
+  },
+  splitRatio: {
+    type: Number,
+    default: null,
   },
   price: { // Price per share (EGP)
     type: Number,

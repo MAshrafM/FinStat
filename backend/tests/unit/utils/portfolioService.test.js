@@ -1,4 +1,3 @@
-// backend/tests/unit/utils/portfolioService.test.js
 const portfolioService = require('../../../utils/portfolioService');
 const marketPriceService = require('../../../utils/marketPriceService');
 const Trade = require('../../../models/Trade');
@@ -7,6 +6,9 @@ const Gold = require('../../../models/Gold');
 const Certificate = require('../../../models/Certificate');
 const Currency = require('../../../models/Currency');
 const RealEstate = require('../../../models/RealEstate');
+const User = require('../../../models/User');
+const CorporateAction = require('../../../models/CorporateAction');
+const Expenditure = require('../../../models/Expenditure');
 
 jest.mock('../../../utils/marketPriceService');
 jest.mock('../../../models/Trade');
@@ -15,6 +17,9 @@ jest.mock('../../../models/Gold');
 jest.mock('../../../models/Certificate');
 jest.mock('../../../models/Currency');
 jest.mock('../../../models/RealEstate');
+jest.mock('../../../models/User');
+jest.mock('../../../models/CorporateAction');
+jest.mock('../../../models/Expenditure');
 
 describe('PortfolioService (Multi-Asset Aggregation & Caching)', () => {
   const mockUserId = '507f1f77bcf86cd799439011';
@@ -22,6 +27,19 @@ describe('PortfolioService (Multi-Asset Aggregation & Caching)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     portfolioService.invalidatePortfolioCache();
+
+    // Default mocks for User, CorporateAction, and Expenditure
+    User.findById.mockReturnValue({
+      select: jest.fn().mockResolvedValue({ costBasisMethod: 'average' }),
+    });
+    CorporateAction.find.mockResolvedValue([]);
+    Trade.find.mockReturnValue({
+      sort: jest.fn().mockResolvedValue([]),
+      select: jest.fn().mockResolvedValue([]),
+    });
+    Expenditure.findOne.mockReturnValue({
+      sort: jest.fn().mockResolvedValue(null),
+    });
 
     // Default mocks for models
     RealEstate.find.mockReturnValue({
@@ -78,19 +96,21 @@ describe('PortfolioService (Multi-Asset Aggregation & Caching)', () => {
 
   describe('getAllHoldings', () => {
     it('should aggregate holdings across multiple asset classes with live status', async () => {
-      Trade.aggregate.mockResolvedValueOnce([
-        {
-          _id: { broker: 'Thndr', stockCode: 'COMI', iteration: 1 },
-          totalSharesBought: 100,
-          totalSharesSold: 0,
-          totalSharesDividend: 0,
-          currentShares: 100,
-          avgBuyPrice: 80.0,
-          totalBuyValue: 8000,
-          totalSellValue: 0,
-          totalFees: 50,
-        },
-      ]);
+      Trade.find.mockReturnValue({
+        sort: jest.fn().mockResolvedValueOnce([
+          {
+            date: new Date('2024-01-01'),
+            stockCode: 'COMI',
+            broker: 'Thndr',
+            type: 'Buy',
+            shares: 100,
+            price: 80.0,
+            fees: 50,
+            totalValue: 8000,
+            iteration: 1,
+          },
+        ]),
+      });
 
       MutualFundTrade.aggregate.mockResolvedValueOnce([
         {
@@ -108,6 +128,9 @@ describe('PortfolioService (Multi-Asset Aggregation & Caching)', () => {
         },
       ]);
 
+      const activeCertStartDate = new Date();
+      activeCertStartDate.setMonth(activeCertStartDate.getMonth() - 6);
+
       Certificate.find.mockResolvedValueOnce([
         {
           _id: 'cert1',
@@ -115,7 +138,7 @@ describe('PortfolioService (Multi-Asset Aggregation & Caching)', () => {
           amount: 50000,
           interest: 19.0,
           period: 36,
-          startDate: new Date('2023-01-01'),
+          startDate: activeCertStartDate,
         },
       ]);
 
@@ -159,6 +182,63 @@ describe('PortfolioService (Multi-Asset Aggregation & Caching)', () => {
       const reHolding = holdings.find((h) => h.assetType === 'Real Estate');
       expect(reHolding.priceStatus).toBe('manual');
     });
+
+    it('should exclude expired certificates from active holdings', async () => {
+      Trade.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
+      MutualFundTrade.aggregate.mockResolvedValueOnce([]);
+      Gold.aggregate.mockResolvedValueOnce([]);
+      Currency.aggregate.mockResolvedValueOnce([]);
+      RealEstate.find.mockReturnValue({ select: jest.fn().mockResolvedValue([]) });
+
+      // Certificate started 3 years ago with a 12-month period (expired 2 years ago)
+      const expiredStartDate = new Date();
+      expiredStartDate.setMonth(expiredStartDate.getMonth() - 36);
+
+      Certificate.find.mockResolvedValueOnce([
+        {
+          _id: 'cert_expired',
+          name: 'Expired 1Y Certificate',
+          amount: 25000,
+          interest: 15.0,
+          period: 12,
+          startDate: expiredStartDate,
+        },
+      ]);
+
+      const holdings = await portfolioService.getAllHoldings(mockUserId);
+      const certHolding = holdings.find((h) => h.assetType === 'Certificate');
+      expect(certHolding).toBeUndefined();
+    });
+
+    it('should include liquid bank, physical cash, and prepaid balances from Expenditure in holdings', async () => {
+      Trade.find.mockReturnValue({ sort: jest.fn().mockResolvedValue([]) });
+      MutualFundTrade.aggregate.mockResolvedValueOnce([]);
+      Gold.aggregate.mockResolvedValueOnce([]);
+      Certificate.find.mockResolvedValueOnce([]);
+      Currency.aggregate.mockResolvedValueOnce([]);
+      RealEstate.find.mockReturnValue({ select: jest.fn().mockResolvedValue([]) });
+
+      Expenditure.findOne.mockReturnValue({
+        sort: jest.fn().mockResolvedValue({
+          bank: 150000,
+          cash: 25000,
+          prepaid: 5000,
+          runningBalances: { bank: 150000, cash: 25000, prepaid: 5000 },
+          date: new Date(),
+        }),
+      });
+
+      const holdings = await portfolioService.getAllHoldings(mockUserId);
+      const cashHoldings = holdings.filter((h) => h.assetType === 'Cash');
+
+      expect(cashHoldings).toHaveLength(3);
+      const bankHolding = cashHoldings.find((h) => h.id === 'cash_bank');
+      expect(bankHolding.currentValue).toBe(150000);
+      const physicalCashHolding = cashHoldings.find((h) => h.id === 'cash_physical');
+      expect(physicalCashHolding.currentValue).toBe(25000);
+      const prepaidHolding = cashHoldings.find((h) => h.id === 'cash_prepaid');
+      expect(prepaidHolding.currentValue).toBe(5000);
+    });
   });
 
   describe('getPortfolioSummary & Invalidation', () => {
@@ -172,7 +252,10 @@ describe('PortfolioService (Multi-Asset Aggregation & Caching)', () => {
         return query;
       });
       Currency.aggregate.mockResolvedValue([]);
-      Trade.find.mockReturnValue({ select: jest.fn().mockResolvedValue([]) });
+      Trade.find.mockReturnValue({
+        sort: jest.fn().mockResolvedValue([]),
+        select: jest.fn().mockResolvedValue([]),
+      });
       MutualFundTrade.find.mockReturnValue({ select: jest.fn().mockResolvedValue([]) });
       Gold.find.mockReturnValue({ select: jest.fn().mockResolvedValue([]) });
       Currency.find.mockReturnValue({ select: jest.fn().mockResolvedValue([]) });

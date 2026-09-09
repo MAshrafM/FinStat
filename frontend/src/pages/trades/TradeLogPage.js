@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getTrades, deleteTrade } from '../../services/tradeService';
 import { formatDate, formatCurrency } from '../../utils/formatters';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaBolt } from 'react-icons/fa';
 import PaginationControls from '../../components/PaginationControls';
 import '../../components/Table.css';
 import './Trades.css';
@@ -73,8 +73,31 @@ const TradeLogPage = () => {
 
   return (
     <div className="page-container">
-      <div className="page-header">
-        <h1>Stock Trade Log</h1>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h1>Stock Trade Log</h1>
+          <p style={{ margin: 0, color: '#6b7280', fontSize: '0.95rem' }}>
+            Historical trade logs, purchases, sales, cash deposits, and dividends.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Link
+            to="/corporate-actions"
+            className="btn btn-secondary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            title="View & apply corporate actions (stock splits and bonus shares)"
+          >
+            <FaBolt size={13} color="#f59e0b" /> Corporate Actions
+          </Link>
+          <Link
+            to="/trades/add"
+            className="btn btn-primary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            title="Record a new trade or cash transaction"
+          >
+            <FaPlus size={13} /> Add Trade
+          </Link>
+        </div>
       </div>
 
       <div className="filter-controls">

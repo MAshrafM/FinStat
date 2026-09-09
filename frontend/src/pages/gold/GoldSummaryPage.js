@@ -21,6 +21,10 @@ const GoldSummaryPage = () => {
 
     const overallSoldValue = soldSummary.reduce((acc, item) => acc + item.totalSellingPrice, 0);
 
+    const spotPrice24k = Number(marketPrices['24'] || marketPrices['24K'] || 0);
+    const totalEquivalentGrams = holdSummary.reduce((acc, item) => acc + (item.totalWeight * ((item.karat || 24) / 24)), 0);
+    const totalStandardizedValue = totalEquivalentGrams * spotPrice24k;
+
     if (isLoading) {
         return <p className="page-container">Loading gold summary and market prices...</p>;
     }
@@ -41,6 +45,14 @@ const GoldSummaryPage = () => {
                     <span>Current Value (Holdings)</span>
                     <strong>{formatCurrency(goldtotalNow)}</strong>
                 </div>
+                <div className="summary-item">
+                    <span>24K Equiv. Weight</span>
+                    <strong style={{ color: '#f39c12' }}>{totalEquivalentGrams.toFixed(3)}g</strong>
+                </div>
+                <div className="summary-item">
+                    <span>24K Standardized Value</span>
+                    <strong>{formatCurrency(totalStandardizedValue)}</strong>
+                </div>
                 <div className="summary-item highlight">
                     <span>P/L (Holdings)</span>
                     <strong>{(((goldtotalNow / overallTotalPaid) - 1) * 100).toFixed(2)}%</strong>
@@ -57,27 +69,33 @@ const GoldSummaryPage = () => {
                         <tr>
                             <th>Karat</th>
                             <th>Total Weight (g)</th>
+                            <th>24K Equiv. Weight</th>
                             <th>Total Paid</th>
                             <th>Current Price/g</th>
                             <th>Current Market Value</th>
+                            <th>24K Std. Value</th>
                             <th>P/L & Rate of Change</th>
                         </tr>
                     </thead>
                     <tbody>
                         {holdSummary.map((item) => {
-                            const karat = item.karat;
+                            const karat = item.karat || 24;
                             const currentPricePerGram = marketPrices[karat] || 0;
                             const currentValue = item.totalWeight * currentPricePerGram;
                             const profitLoss = currentValue - item.totalPaid;
                             const rateOfChange = item.totalPaid > 0 ? (profitLoss / item.totalPaid) * 100 : 0;
+                            const equivGrams = item.totalWeight * (karat / 24);
+                            const stdVal = equivGrams * spotPrice24k;
 
                             return (
                                 <tr key={`hold-${karat}`}>
                                     <td data-label="Karat" style={{ fontWeight: 'bold' }}>{karat}K</td>
                                     <td data-label="Weight">{item.totalWeight.toFixed(4)}g</td>
+                                    <td data-label="24K Weight" style={{ fontWeight: 'bold', color: '#f39c12' }}>{equivGrams.toFixed(4)}g</td>
                                     <td data-label="Paid">{formatCurrency(item.totalPaid)}</td>
                                     <td data-label="Curr. Price">{currentPricePerGram}</td>
                                     <td data-label="Value" className="total-value">{formatCurrency(currentValue)}</td>
+                                    <td data-label="24K Std. Value">{formatCurrency(stdVal)}</td>
                                     <td data-label="Change" style={{ color: profitLoss >= 0 ? '#27ae60' : '#c0392b' }}>
                                         <p style={{ fontWeight: 'bold', margin: 0 }}>{formatCurrency(profitLoss)}</p>
                                         <p style={{ margin: 0, fontSize: '0.9em' }}>({rateOfChange.toFixed(2)}%)</p>

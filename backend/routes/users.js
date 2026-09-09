@@ -13,6 +13,7 @@ const {
   updateProfileSchema,
   userParamsSchema,
 } = require('../validationSchemas/userSchemas');
+const { invalidatePortfolioCache } = require('../utils/portfolioService');
 
 const getClientIp = (req) => {
   const forwarded = req.headers['x-forwarded-for'];
@@ -71,6 +72,8 @@ router.put(
       { $set: updateData },
       { new: true, runValidators: true }
     ).select('-password -totpSecret -backupCodes');
+
+    invalidatePortfolioCache(req.user.id);
 
     logAudit({
       userId: req.user.id,
@@ -145,6 +148,8 @@ router.put(
       { $set: updateData },
       { new: true, runValidators: true }
     ).select('-password -totpSecret -backupCodes');
+
+    invalidatePortfolioCache(id);
 
     logAudit({
       userId: req.user.id,
