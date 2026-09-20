@@ -1,7 +1,6 @@
 // frontend/src/pages/expenditure/ExpenditureAnalysisPage.js
 import React, { useState, useEffect } from 'react';
 import { getAllExpendituresForAnalysis } from '../../services/expenditureService';
-import { getPaychecks } from '../../services/paycheckService';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
@@ -9,6 +8,25 @@ import './Expenditure.css'; // Reuse styles
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
+
+const parseDateParts = (dateInput) => {
+    if (!dateInput) return { year: null, month: null };
+    if (typeof dateInput === 'string') {
+        const match = dateInput.match(/^(\d{4})-(\d{2})/);
+        if (match) {
+            return {
+                year: match[1],
+                month: parseInt(match[2], 10) - 1, // 0-indexed (0 = Jan, 8 = Sep)
+            };
+        }
+    }
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return { year: null, month: null };
+    return {
+        year: d.getUTCFullYear().toString(),
+        month: d.getUTCMonth(),
+    };
+};
 
 const ExpenditureAnalysisPage = () => {
     const [yearlyData, setYearlyData] = useState({});
@@ -20,27 +38,24 @@ const ExpenditureAnalysisPage = () => {
     });
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
     const [allExpenditures, setAllExpenditures] = useState([]);
-    const [allPaychecks, setAllPaychecks] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchTotal, setSearchTotal] = useState(null);
 
     useEffect(() => {
-        Promise.all([
-            getAllExpendituresForAnalysis(),
-            getPaychecks()
-        ]).then(([expenditures, paychecks]) => {
-            setAllExpenditures(expenditures);
-            setAllPaychecks(paychecks);
-        }).catch(err => console.error("Failed to load analysis data:", err));
+        getAllExpendituresForAnalysis()
+            .then(expenditures => {
+                setAllExpenditures(Array.isArray(expenditures) ? expenditures : []);
+            })
+            .catch(err => console.error("Failed to load analysis data:", err));
     }, []);
 
     useEffect(() => {
         if (allExpenditures.length > 0) {
-            processData(allExpenditures, allPaychecks, searchTerm);
+            processData(allExpenditures, searchTerm);
         }
-    }, [allExpenditures, allPaychecks, searchTerm]);
+    }, [allExpenditures, searchTerm]);
 
-    const processData = (expenditures, paychecks, currentSearchTerm) => {
+    const processData = (expenditures, currentSearchTerm) => {
         // Filter data based on search term first
         let filteredExpenditures = expenditures;
         let currentSearchTotal = null;
@@ -54,7 +69,7 @@ const ExpenditureAnalysisPage = () => {
             });
 
             currentSearchTotal = filteredExpenditures.reduce((sum, item) => {
-                return sum + item.transactionValue;
+                return sum + (Math.abs(Number(item.transactionValue) || 0));
             }, 0);
         }
         setSearchTotal(currentSearchTotal);
@@ -91,11 +106,11 @@ const ExpenditureAnalysisPage = () => {
         };
 
         expenditures.forEach((item) => {
-            const year = new Date(item.date).getFullYear().toString();
+            const { year, month } = parseDateParts(item.date);
+            if (!year || month === null || month < 0 || month > 11) return;
             initializeYear(year);
 
-            const month = new Date(item.date).getMonth();
-            const transactionValue = item.transactionValue;
+            const transactionValue = Math.abs(Number(item.transactionValue) || 0);
 
             if (item.transactionType === 'W') {
                 groupedData[year].byMonth[month].withdrawals += transactionValue;
@@ -108,7 +123,7 @@ const ExpenditureAnalysisPage = () => {
                 if (item.splits && Array.isArray(item.splits) && item.splits.length > 0) {
                     item.splits.forEach(split => {
                         const catName = split.category || 'Other';
-                        const splitVal = split.amount || 0;
+                        const splitVal = Math.abs(Number(split.amount) || 0);
                         if (groupedData[year].categoryVolumes[catName] !== undefined) {
                             groupedData[year].categoryVolumes[catName] += splitVal;
                         }
@@ -142,28 +157,8 @@ const ExpenditureAnalysisPage = () => {
                 overallTotals.volumeByType.S += transactionValue;
             }
 
-            groupedData[year].byType[item.transactionType]++;
-        });
-
-        // Process Paychecks and merge into the data
-        paychecks.forEach(p => {
-            if (p.type === 'Prepaid') {
-                const year = p.month.substring(0, 4);
-                initializeYear(year);
-
-                const month = parseInt(p.month.substring(5, 7), 10) - 1;
-
-                groupedData[year].byMonth[month].topups += p.amount || 0;
-                groupedData[year].totalTopups += p.amount || 0;
-                groupedData[year].volumeByType.T += p.amount || 0;
-                overallTotals.totalTopups += p.amount || 0;
-                overallTotals.volumeByType.T += p.amount || 0;
-
-                groupedData[year].byMonth[month].withdrawals += p.amount || 0;
-                groupedData[year].totalWithdrawals += p.amount || 0;
-                groupedData[year].volumeByType.W += p.amount || 0;
-                overallTotals.totalWithdrawals += p.amount || 0;
-                overallTotals.volumeByType.W += p.amount || 0;
+            if (groupedData[year].byType[item.transactionType] !== undefined) {
+                groupedData[year].byType[item.transactionType]++;
             }
         });
 
@@ -171,17 +166,16 @@ const ExpenditureAnalysisPage = () => {
         const monthlyBankRecords = {};
 
         expenditures.forEach(item => {
-            const date = new Date(item.date);
-            const year = date.getFullYear().toString();
-            const month = date.getMonth();
+            const { year, month } = parseDateParts(item.date);
+            if (!year || month === null || month < 0 || month > 11) return;
             const key = `${year}-${month}`;
 
             if (!monthlyBankRecords[key]) {
                 monthlyBankRecords[key] = [];
             }
             monthlyBankRecords[key].push({
-                date: date,
-                bank: item.bank
+                date: new Date(item.date),
+                bank: item.runningBalances?.bank ?? item.bank ?? 0
             });
         });
 
@@ -197,11 +191,13 @@ const ExpenditureAnalysisPage = () => {
             if (bankChange > 0) {
                 const [year, month] = key.split('-');
                 const monthIndex = parseInt(month, 10);
-                groupedData[year].byMonth[monthIndex].savings += bankChange;
-                groupedData[year].totalSavings += bankChange;
-                groupedData[year].volumeByType.S += bankChange;
-                overallTotals.totalSavings += bankChange;
-                overallTotals.volumeByType.S += bankChange;
+                if (groupedData[year] && groupedData[year].byMonth[monthIndex]) {
+                    groupedData[year].byMonth[monthIndex].savings += bankChange;
+                    groupedData[year].totalSavings += bankChange;
+                    groupedData[year].volumeByType.S += bankChange;
+                    overallTotals.totalSavings += bankChange;
+                    overallTotals.volumeByType.S += bankChange;
+                }
             }
         }
 
