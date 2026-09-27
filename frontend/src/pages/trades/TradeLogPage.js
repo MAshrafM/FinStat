@@ -80,19 +80,17 @@ const TradeLogPage = () => {
             Historical trade logs, purchases, sales, cash deposits, and dividends.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="page-header-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           <Link
             to="/corporate-actions"
             className="btn btn-secondary"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             title="View & apply corporate actions (stock splits and bonus shares)"
           >
             <FaBolt size={13} color="#f59e0b" /> Corporate Actions
           </Link>
           <Link
-            to="/trades/add"
+            to="/trades/new"
             className="btn btn-primary"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             title="Record a new trade or cash transaction"
           >
             <FaPlus size={13} /> Add Trade

@@ -150,6 +150,7 @@ function App() {
                 {/* Investment Asset Classes */}
                 <Route path="/trades" element={<TradeLogPage />} />
                 <Route path="/trades/new" element={<AddTradePage />} />
+                <Route path="/trades/add" element={<AddTradePage />} />
                 <Route path="/trades/edit/:id" element={<EditTradePage />} />
                 <Route path="/trade-summary" element={<TradeSummaryPage />} />
                 <Route path="/mutual-funds" element={<MutualFundLogPage />} />

@@ -3,10 +3,24 @@ import { getAllTrades, getTradeSummary, getMarketData } from '../services/tradeS
 import { safeDivision } from '../utils/helper';
 import isEqual from 'lodash/isEqual';
 
-const DataContext = createContext();
+const defaultDataContext = {
+    stSummaryData: [],
+    openPosData: [],
+    endPosData: [],
+    stMarketPrices: {},
+    summaryMetrics: {},
+    tradesData: [],
+    isLoading: false,
+    isMobile: false,
+    error: null,
+    loadingProgress: 0,
+};
+
+const DataContext = createContext(defaultDataContext);
 
 export const useData = () => {
-    return useContext(DataContext);
+    const context = useContext(DataContext);
+    return context || defaultDataContext;
 };
 
 export const DataProvider = ({ children }) => {
