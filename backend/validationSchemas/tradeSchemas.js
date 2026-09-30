@@ -13,11 +13,10 @@ const createSchema = z.object({
   broker: z.enum(ALLOWED_BROKERS, {
     message: `Broker must be one of: ${ALLOWED_BROKERS.join(', ')}`,
   }),
-  stockCode: z
-    .string({ message: 'Stock code must be a string' })
-    .trim()
-    .min(1, 'Stock code cannot be empty')
-    .optional(),
+  stockCode: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    z.string({ message: 'Stock code must be a string' }).trim().min(1, 'Stock code cannot be empty').optional()
+  ),
   type: z.enum(ALLOWED_TRADE_TYPES, {
     message: `Type must be one of: ${ALLOWED_TRADE_TYPES.join(', ')}`,
   }),

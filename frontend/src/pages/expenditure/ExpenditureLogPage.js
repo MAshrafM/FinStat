@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getExpenditures, deleteExpenditure, getLatestExpenditure } from '../../services/expenditureService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { FaPencilAlt, FaTrash, FaUniversity, FaMoneyBillWave, FaCreditCard, FaWallet } from 'react-icons/fa';
+import { FaPencilAlt, FaTrash, FaUniversity, FaMoneyBillWave, FaCreditCard, FaWallet, FaPlus } from 'react-icons/fa';
 import '../../components/Table.css'; // Reuse table styles
 import './Expenditure.css'; // Load expenditure styles
 import PaginationControls from '../../components/PaginationControls';
@@ -126,8 +126,8 @@ const ExpenditureLogPage = () => {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <h1>Expenditure Log</h1>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link to="/expenditures/new" className="btn-primary" style={{ textDecoration: 'none' }}>
-            + Add Expenditure
+          <Link to="/expenditures/new" className="btn btn-primary" title="Record a new expenditure">
+            <FaPlus size={13} /> Add Expenditure
           </Link>
         </div>
       </div>

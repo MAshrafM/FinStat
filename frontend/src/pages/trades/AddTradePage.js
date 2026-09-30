@@ -12,7 +12,7 @@ const AddTradePage = () => {
       navigate('/trades');
     } catch (err) {
       console.error("Failed to create trade:", err);
-      alert('Error creating trade. See console for details.');
+      alert(err.response?.data?.message || err.message || 'Error creating trade. See console for details.');
     }
   };
   return (

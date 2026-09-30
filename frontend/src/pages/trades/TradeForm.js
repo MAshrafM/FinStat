@@ -112,6 +112,10 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         setFormData(prev => ({ ...prev, totalValue: e.target.value }));
     };
 
+    const isStockTrade = ['Buy', 'Sell', 'Dividend', 'Split'].includes(formData.type);
+    const isCashTrade = ['TopUp', 'Withdraw'].includes(formData.type);
+    const isSellTransaction = formData.type === 'Sell';
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -132,15 +136,18 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             price: parseFloat(formData.price) || 0,
             fees: parseFloat(formData.fees) || 0,
             totalValue: parseFloat(formData.totalValue) || 0,
-            iteration: formData.iteration !== '' && formData.iteration !== undefined ? parseInt(formData.iteration, 10) : undefined,
+            iteration: isStockTrade && formData.iteration !== '' && formData.iteration !== undefined ? parseInt(formData.iteration, 10) : undefined,
         };
+
+        if (isCashTrade) {
+            delete payload.stockCode;
+            delete payload.iteration;
+            delete payload.shares;
+            delete payload.price;
+        }
 
         onFormSubmit(payload);
     };
-
-    const isStockTrade = ['Buy', 'Sell', 'Dividend', 'Split'].includes(formData.type);
-    const isCashTrade = ['TopUp', 'Withdraw'].includes(formData.type);
-    const isSellTransaction = formData.type === 'Sell';
 
     return (
         <form onSubmit={handleSubmit} className="standard-form">
@@ -273,10 +280,12 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                 <label>Fees</label>
                 <input type="number" step="any" name="fees" value={formData.fees} onChange={handleChange} />
             </div>
-            <div className="form-group">
-                <label>Iteration</label>
-                <input type="number" name="iteration" value={formData.iteration} onChange={handleChange} required />
-            </div>
+            {isStockTrade && (
+                <div className="form-group">
+                    <label>Iteration</label>
+                    <input type="number" name="iteration" value={formData.iteration} onChange={handleChange} required />
+                </div>
+            )}
 
             <div className="form-group">
                 <label>Total Value</label>

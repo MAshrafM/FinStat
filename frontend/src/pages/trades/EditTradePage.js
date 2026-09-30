@@ -21,7 +21,7 @@ const EditTradePage = () => {
       navigate('/trades');
     } catch (err) {
       console.error("Failed to update trade:", err);
-      alert('Error updating trade. See console for details.');
+      alert(err.response?.data?.message || err.message || 'Error updating trade. See console for details.');
     }
   };
 
