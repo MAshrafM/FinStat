@@ -206,4 +206,35 @@ a.btn:visited {
 .btn-danger:active:not(:disabled) {
   transform: translateY(0);
 }
+
+/* ====================================================
+   Universal Table Wrapping & Numeric Alignment Rules
+   Ensures numbers, currencies, dates, and cells across 
+   all tables in the app never awkwardly wrap to new lines.
+   ==================================================== */
+table th,
+table td {
+  white-space: nowrap;
+}
+
+/* Ensure currency, numeric codes, amounts, and weights do not wrap */
+.font-mono,
+.text-right,
+.currency-value,
+.amount-value,
+.balance-value,
+td strong {
+  white-space: nowrap;
+}
+
+/* Ensure all table wrappers scroll horizontally when content is wide */
+.table-container,
+.table-responsive,
+.paycheck-table-container,
+.admin-table-container,
+.card-table-wrapper {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
 

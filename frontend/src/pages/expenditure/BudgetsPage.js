@@ -9,7 +9,7 @@ import {
 } from '../../services/budgetService';
 import { formatCurrency } from '../../utils/formatters';
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
-import { FaPlus, FaPencilAlt, FaTrash, FaChartPie } from 'react-icons/fa';
+import { FaPlus, FaPencilAlt, FaTrash, FaChartPie, FaHistory, FaCalendarAlt } from 'react-icons/fa';
 import './BudgetsPage.css';
 import './RulesPage.css';
 
@@ -26,7 +26,9 @@ const BudgetsPage = () => {
   const [selectedQuarter, setSelectedQuarter] = useState(Math.floor(currentDate.getMonth() / 3) + 1);
 
   const [budgetsProgress, setBudgetsProgress] = useState([]);
+  const [prevBudgetsProgress, setPrevBudgetsProgress] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPrev, setIsLoadingPrev] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
 
@@ -58,6 +60,25 @@ const BudgetsPage = () => {
         setBudgetsProgress([]);
       })
       .finally(() => setIsLoading(false));
+
+    // When viewing monthly budgets, also fetch previous month's final outcome
+    if (selectedPeriod === 'monthly') {
+      setIsLoadingPrev(true);
+      const pm = selectedMonth === 1 ? 12 : selectedMonth - 1;
+      const py = selectedMonth === 1 ? selectedYear - 1 : selectedYear;
+
+      getBudgetProgress({ period: 'monthly', year: py, month: pm })
+        .then((res) => {
+          setPrevBudgetsProgress(Array.isArray(res) ? res : res?.data || []);
+        })
+        .catch((err) => {
+          console.error('Failed to load previous month budget progress:', err);
+          setPrevBudgetsProgress([]);
+        })
+        .finally(() => setIsLoadingPrev(false));
+    } else {
+      setPrevBudgetsProgress([]);
+    }
   }, [selectedPeriod, selectedYear, selectedMonth, selectedQuarter]);
 
   useEffect(() => {
@@ -134,6 +155,29 @@ const BudgetsPage = () => {
   const totalSpent = budgetsProgress.reduce((sum, b) => sum + (b.spentAmount || 0), 0);
   const totalRemaining = totalBudgeted - totalSpent;
   const overallBurnRate = totalBudgeted > 0 ? Math.round((totalSpent / totalBudgeted) * 1000) / 10 : 0;
+
+  // Previous Month Date & KPIs
+  const prevMonth = selectedMonth === 1 ? 12 : selectedMonth - 1;
+  const prevYear = selectedMonth === 1 ? selectedYear - 1 : selectedYear;
+  const prevTotalBudgeted = prevBudgetsProgress.reduce((sum, b) => sum + (b.budgetedAmount || 0), 0);
+  const prevTotalSpent = prevBudgetsProgress.reduce((sum, b) => sum + (b.spentAmount || 0), 0);
+  const prevTotalRemaining = prevTotalBudgeted - prevTotalSpent;
+  const prevOverallBurnRate =
+    prevTotalBudgeted > 0 ? Math.round((prevTotalSpent / prevTotalBudgeted) * 1000) / 10 : 0;
+
+  const handleOpenCreateForMonth = (year, month) => {
+    setEditingBudget(null);
+    setFormData({
+      category: EXPENDITURE_CATEGORIES[0]?.name || 'Groceries',
+      period: 'monthly',
+      year,
+      month,
+      quarter: Math.floor((month - 1) / 3) + 1,
+      amount: '',
+      alertThreshold: 80,
+    });
+    setIsModalOpen(true);
+  };
 
   const getCategoryColor = (catName) => {
     const found = EXPENDITURE_CATEGORIES.find((c) => c.name === catName);
@@ -249,113 +293,307 @@ const BudgetsPage = () => {
         )}
       </div>
 
-      {/* Budget Cards */}
-      {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Loading budget progress...</div>
-      ) : budgetsProgress.length === 0 ? (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '3.5rem',
-            background: 'white',
-            borderRadius: '12px',
-            border: '1px dashed #d1d5db',
-            color: '#6b7280',
-          }}
-        >
-          <FaChartPie style={{ fontSize: '2.5rem', color: '#9ca3af', marginBottom: '1rem' }} />
-          <h3>No budgets found for this period</h3>
-          <p style={{ margin: '0.5rem 0 1.5rem 0' }}>
-            Set a spending limit for categories like Groceries, Dining, or Utilities to track progress.
-          </p>
-          <button className="btn-primary" onClick={handleOpenCreate}>
-            <FaPlus /> Set New Budget
-          </button>
+      {/* Current Month / Selected Period Budget Cards */}
+      <div className="budget-section">
+        <div className="budget-section-header">
+          <h2 className="budget-section-title">
+            <FaCalendarAlt style={{ color: '#3b82f6', marginRight: '8px' }} />
+            {selectedPeriod === 'monthly'
+              ? `Current Month Targets (${MONTH_NAMES[selectedMonth - 1]} ${selectedYear})`
+              : selectedPeriod === 'quarterly'
+              ? `Quarter Targets (Q${selectedQuarter} ${selectedYear})`
+              : `Annual Targets (${selectedYear})`}
+          </h2>
+          <span className="budget-section-sub">
+            {selectedPeriod === 'monthly' ? 'Active month spending targets & live progress' : 'Target allocations'}
+          </span>
         </div>
-      ) : (
-        <div className="budget-cards-grid">
-          {budgetsProgress.map((bp) => {
-            const catColor = getCategoryColor(bp.category);
-            const statusClass = `status-${bp.alertStatus}`;
-            const barWidth = Math.min(100, Math.max(0, bp.percentageUsed));
 
-            return (
-              <div key={bp.budgetId} className={`budget-card ${statusClass}`}>
-                <div>
-                  <div className="budget-card-header">
-                    <div>
-                      <h3 className="budget-category-title">{bp.category}</h3>
-                      <span className="cat-pill" style={{ backgroundColor: catColor, marginTop: '0.35rem' }}>
-                        {bp.category}
+        {isLoading ? (
+          <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Loading budget progress...</div>
+        ) : budgetsProgress.length === 0 ? (
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '3.5rem',
+              background: 'white',
+              borderRadius: '12px',
+              border: '1px dashed #d1d5db',
+              color: '#6b7280',
+            }}
+          >
+            <FaChartPie style={{ fontSize: '2.5rem', color: '#9ca3af', marginBottom: '1rem' }} />
+            <h3>No budgets found for this period</h3>
+            <p style={{ margin: '0.5rem 0 1.5rem 0' }}>
+              Set a spending limit for categories like Groceries, Dining, or Utilities to track progress.
+            </p>
+            <button className="btn-primary" onClick={handleOpenCreate}>
+              <FaPlus /> Set New Budget
+            </button>
+          </div>
+        ) : (
+          <div className="budget-cards-grid">
+            {budgetsProgress.map((bp) => {
+              const catColor = getCategoryColor(bp.category);
+              const statusClass = `status-${bp.alertStatus}`;
+              const barWidth = Math.min(100, Math.max(0, bp.percentageUsed));
+
+              return (
+                <div key={bp.budgetId} className={`budget-card ${statusClass}`}>
+                  <div>
+                    <div className="budget-card-header">
+                      <div>
+                        <h3 className="budget-category-title">{bp.category}</h3>
+                        <span className="cat-pill" style={{ backgroundColor: catColor, marginTop: '0.35rem' }}>
+                          {bp.category}
+                        </span>
+                      </div>
+                      <span className="budget-period-badge">
+                        {bp.period === 'monthly'
+                          ? `${MONTH_NAMES[(bp.month || 1) - 1]} ${bp.year}`
+                          : bp.period === 'quarterly'
+                          ? `Q${bp.quarter} ${bp.year}`
+                          : `Year ${bp.year}`}
                       </span>
                     </div>
-                    <span className="budget-period-badge">
-                      {bp.period === 'monthly'
-                        ? `${MONTH_NAMES[(bp.month || 1) - 1]} ${bp.year}`
-                        : bp.period === 'quarterly'
-                        ? `Q${bp.quarter} ${bp.year}`
-                        : `Year ${bp.year}`}
-                    </span>
-                  </div>
 
-                  <div className="progress-track">
-                    <div
-                      className={`progress-bar ${bp.alertStatus}`}
-                      style={{ width: `${barWidth}%` }}
-                    ></div>
-                  </div>
-
-                  <div className="budget-financials-row">
-                    <div>
-                      <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Spent</span>
-                      <span className="budget-spent-val">{formatCurrency(bp.spentAmount)}</span>
+                    <div className="progress-track">
+                      <div
+                        className={`progress-bar ${bp.alertStatus}`}
+                        style={{ width: `${barWidth}%` }}
+                      ></div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Limit</span>
-                      <strong style={{ fontSize: '1.1rem', color: '#374151' }}>
-                        {formatCurrency(bp.budgetedAmount)}
-                      </strong>
+
+                    <div className="budget-financials-row">
+                      <div>
+                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Spent</span>
+                        <span className="budget-spent-val">{formatCurrency(bp.spentAmount)}</span>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Limit</span>
+                        <strong style={{ fontSize: '1.1rem', color: '#374151' }}>
+                          {formatCurrency(bp.budgetedAmount)}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span
+                        className={`budget-remaining-tag ${bp.remainingAmount >= 0 ? 'safe' : 'danger'}`}
+                      >
+                        {bp.remainingAmount >= 0
+                          ? `${formatCurrency(bp.remainingAmount)} remaining`
+                          : `${formatCurrency(Math.abs(bp.remainingAmount))} over limit`}
+                      </span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>
+                        {bp.percentageUsed}% used
+                      </span>
                     </div>
                   </div>
 
-                  <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span
-                      className={`budget-remaining-tag ${bp.remainingAmount >= 0 ? 'safe' : 'danger'}`}
-                    >
-                      {bp.remainingAmount >= 0
-                        ? `${formatCurrency(bp.remainingAmount)} remaining`
-                        : `${formatCurrency(Math.abs(bp.remainingAmount))} over limit`}
-                    </span>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>
-                      {bp.percentageUsed}% used
-                    </span>
+                  <div className="rule-card-footer" style={{ marginTop: '1.25rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                      Alert at {bp.alertThreshold}%
+                    </div>
+                    <div className="rule-actions">
+                      <button
+                        className="rule-action-btn"
+                        title="Edit budget"
+                        onClick={() => handleOpenEdit(bp)}
+                      >
+                        <FaPencilAlt />
+                      </button>
+                      <button
+                        className="rule-action-btn delete"
+                        title="Delete budget"
+                        onClick={() => handleDelete(bp.budgetId)}
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-                <div className="rule-card-footer" style={{ marginTop: '1.25rem' }}>
-                  <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                    Alert at {bp.alertThreshold}%
-                  </div>
-                  <div className="rule-actions">
-                    <button
-                      className="rule-action-btn"
-                      title="Edit budget"
-                      onClick={() => handleOpenEdit(bp)}
-                    >
-                      <FaPencilAlt />
-                    </button>
-                    <button
-                      className="rule-action-btn delete"
-                      title="Delete budget"
-                      onClick={() => handleDelete(bp.budgetId)}
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                </div>
+      {/* Previous Month Performance & Final Outcome Section (Table) */}
+      {selectedPeriod === 'monthly' && (
+        <div className="budget-section previous-month-section">
+          <div className="budget-section-header">
+            <div className="previous-month-header-content">
+              <div>
+                <h2 className="budget-section-title">
+                  <FaHistory style={{ color: '#8b5cf6', marginRight: '8px' }} />
+                  Previous Month Final Outcome ({MONTH_NAMES[prevMonth - 1]} {prevYear})
+                </h2>
+                <span className="budget-section-sub">
+                  Historical spending comparison, variance, and final settled outcome
+                </span>
               </div>
-            );
-          })}
+              {prevBudgetsProgress.length > 0 && (
+                <div className={`budget-outcome-summary-tag ${prevTotalRemaining >= 0 ? 'safe' : 'danger'}`}>
+                  Overall Result: {prevTotalRemaining >= 0 ? `Net Saved ${formatCurrency(prevTotalRemaining)}` : `Net Over ${formatCurrency(Math.abs(prevTotalRemaining))}`} ({prevOverallBurnRate}% burn rate)
+                </div>
+              )}
+            </div>
+          </div>
+
+          {isLoadingPrev ? (
+            <div style={{ textAlign: 'center', padding: '2.5rem', color: '#6b7280' }}>
+              Loading previous month final outcome...
+            </div>
+          ) : prevBudgetsProgress.length === 0 ? (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '2.5rem',
+                background: 'white',
+                borderRadius: '12px',
+                border: '1px dashed #d1d5db',
+                color: '#6b7280',
+              }}
+            >
+              <FaHistory style={{ fontSize: '2rem', color: '#9ca3af', marginBottom: '0.75rem' }} />
+              <h4 style={{ margin: '0 0 0.5rem 0', color: '#374151' }}>
+                No budget entries found for {MONTH_NAMES[prevMonth - 1]} {prevYear}
+              </h4>
+              <p style={{ margin: '0 0 1.25rem 0', fontSize: '0.9rem' }}>
+                You can retroactively record budget allocations for previous months to track historical performance.
+              </p>
+              <button
+                className="btn-secondary"
+                onClick={() => handleOpenCreateForMonth(prevYear, prevMonth)}
+              >
+                <FaPlus /> Set Budget for {MONTH_NAMES[prevMonth - 1]} {prevYear}
+              </button>
+            </div>
+          ) : (
+            <div className="table-container">
+              <table className="styled-table budget-outcome-table">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th style={{ textAlign: 'right' }}>Budget Target</th>
+                    <th style={{ textAlign: 'right' }}>Actual Spent</th>
+                    <th style={{ textAlign: 'right' }}>Variance / Diff</th>
+                    <th style={{ textAlign: 'center' }}>% Used</th>
+                    <th style={{ textAlign: 'center' }}>Final Outcome</th>
+                    <th style={{ textAlign: 'center' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {prevBudgetsProgress.map((bp) => {
+                    const catColor = getCategoryColor(bp.category);
+                    const isUnderBudget = bp.remainingAmount >= 0;
+                    return (
+                      <tr key={bp.budgetId}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span
+                              style={{
+                                width: '10px',
+                                height: '10px',
+                                borderRadius: '50%',
+                                backgroundColor: catColor,
+                                display: 'inline-block',
+                                flexShrink: 0,
+                              }}
+                            />
+                            <strong>{bp.category}</strong>
+                          </div>
+                        </td>
+                        <td style={{ textAlign: 'right', fontWeight: 600 }}>
+                          {formatCurrency(bp.budgetedAmount)}
+                        </td>
+                        <td style={{ textAlign: 'right', fontWeight: 600, color: '#374151' }}>
+                          {formatCurrency(bp.spentAmount)}
+                        </td>
+                        <td style={{ textAlign: 'right', fontWeight: 700 }}>
+                          <span style={{ color: isUnderBudget ? '#059669' : '#dc2626' }}>
+                            {isUnderBudget
+                              ? `+${formatCurrency(bp.remainingAmount)}`
+                              : `-${formatCurrency(Math.abs(bp.remainingAmount))}`}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'center', fontWeight: 600 }}>
+                          <span
+                            style={{
+                              color: bp.alertStatus === 'red' ? '#dc2626' : bp.alertStatus === 'yellow' ? '#d97706' : '#059669',
+                            }}
+                          >
+                            {bp.percentageUsed}%
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span
+                            className={`budget-outcome-pill ${isUnderBudget ? 'safe' : 'danger'}`}
+                          >
+                            {isUnderBudget ? 'Within Budget' : 'Over Budget'}
+                          </span>
+                        </td>
+                        <td className="action-cell">
+                          <button
+                            className="rule-action-btn"
+                            title="Edit budget"
+                            onClick={() => handleOpenEdit(bp)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              color: '#2563eb',
+                              marginRight: '8px',
+                            }}
+                          >
+                            <FaPencilAlt />
+                          </button>
+                          <button
+                            className="rule-action-btn delete"
+                            title="Delete budget"
+                            onClick={() => handleDelete(bp.budgetId)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              color: '#ef4444',
+                            }}
+                          >
+                            <FaTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr style={{ background: '#f8fafc', fontWeight: 700 }}>
+                    <td>Total</td>
+                    <td style={{ textAlign: 'right' }}>{formatCurrency(prevTotalBudgeted)}</td>
+                    <td style={{ textAlign: 'right' }}>{formatCurrency(prevTotalSpent)}</td>
+                    <td
+                      style={{
+                        textAlign: 'right',
+                        color: prevTotalRemaining >= 0 ? '#059669' : '#dc2626',
+                      }}
+                    >
+                      {prevTotalRemaining >= 0
+                        ? `+${formatCurrency(prevTotalRemaining)}`
+                        : `-${formatCurrency(Math.abs(prevTotalRemaining))}`}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>{prevOverallBurnRate}%</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span className={`budget-outcome-pill ${prevTotalRemaining >= 0 ? 'safe' : 'danger'}`}>
+                        {prevTotalRemaining >= 0 ? 'Net Surplus' : 'Net Deficit'}
+                      </span>
+                    </td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

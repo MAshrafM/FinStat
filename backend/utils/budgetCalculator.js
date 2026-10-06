@@ -128,7 +128,7 @@ async function calculateAllBudgetsProgress(userId, filters = {}) {
   if (filters.quarter) query.quarter = Number(filters.quarter);
   if (filters.category) query.category = filters.category;
 
-  const budgets = await Budget.find(query).lean();
+  const budgets = await Budget.find(query).sort({ category: 1 }).lean();
   const results = [];
 
   for (const budget of budgets) {

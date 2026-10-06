@@ -367,10 +367,12 @@
   color: #64748b;
   padding: 0.5rem;
   border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
 }
 
 .split-table td {
   padding: 0.5rem;
+  white-space: nowrap;
 }
 
 .split-input {

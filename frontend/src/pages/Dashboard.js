@@ -42,11 +42,15 @@ const Dashboard = () => {
       }
     }
 
-    // Load top budgets and recurring pending count
-    getBudgetProgress({ period: 'monthly' })
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1;
+
+    // Load current month budgets and recurring pending count
+    getBudgetProgress({ period: 'monthly', year: currentYear, month: currentMonth })
       .then((res) => {
         const list = Array.isArray(res) ? res : res?.data || [];
-        setBudgetProgressList(list.slice(0, 4));
+        setBudgetProgressList(list);
       })
       .catch(() => setBudgetProgressList([]));
 
@@ -146,7 +150,7 @@ const Dashboard = () => {
             }}
           >
             <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#111827', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <FaChartPie style={{ color: '#3b82f6' }} /> Monthly Budget Progress
+              <FaChartPie style={{ color: '#3b82f6' }} /> Current Month Budget ({new Date().toLocaleString('default', { month: 'long', year: 'numeric' })})
             </h3>
             <Link
               to="/expenditures/budgets"

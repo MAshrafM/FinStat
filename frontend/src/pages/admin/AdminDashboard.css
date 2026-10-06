@@ -140,12 +140,14 @@
   font-weight: 600;
   border-bottom: 1px solid #1e293b;
   background: #0f172a;
+  white-space: nowrap;
 }
 
 .admin-table td {
   padding: 14px 16px;
   color: #e2e8f0;
   border-bottom: 1px solid #1e293b;
+  white-space: nowrap;
 }
 
 .admin-table tr:hover td {

@@ -1,9 +1,10 @@
 /* frontend/src/components/Table.css */
 .table-container {
   width: 100%;
-  max-width: 100vw; /* Ensures the table does not exceed viewport width */
-  margin: 20px auto; /* Centers the table container */
-  overflow-x: auto; /* For responsiveness on small screens */
+  max-width: 100%;
+  margin: 20px auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .styled-table {
@@ -23,10 +24,21 @@
 
 .styled-table th,
 .styled-table td {
-  padding: 12px 6px;
+  padding: 12px 14px;
   border: 1px solid #dddddd;
-  word-break: break-word; /* Ensures long text wraps within the cell */
-  white-space: normal; /* Prevents text from overflowing */
+  white-space: nowrap; /* Prevents numbers and values from wrapping onto next line */
+}
+
+/* Allow text wrapping only for designated description or note columns */
+.styled-table td.cell-wrap,
+.styled-table td.description-cell,
+.styled-table td[data-label="Description"],
+.styled-table td[data-label="Notes"],
+.styled-table td[data-label="Note"] {
+  white-space: normal;
+  min-width: 160px;
+  max-width: 320px;
+  word-break: break-word;
 }
 
 .styled-table tbody tr {
@@ -106,20 +118,19 @@
   }
   .styled-table th,
   .styled-table td {
-    padding: 8px 6px; /* Reduced padding for smaller screens */
-    min-width: 80px; /* Reduced minimum width for smaller screens */
+    padding: 10px 10px;
+    white-space: nowrap;
   }
 }
 
 @media (max-width: 600px) {
   .styled-table {
-    font-size: 0.8rem; /* Further reduce font size on very small screens */
-    min-width: 400px;
+    font-size: 0.85rem;
   }
   .styled-table th,
   .styled-table td {
-    padding: 6px 4px; /* Further reduced padding */
-    min-width: 60px; /* Further reduced minimum width */
+    padding: 8px 8px;
+    white-space: nowrap;
   }
 }
 

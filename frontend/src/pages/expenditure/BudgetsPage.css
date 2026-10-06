@@ -251,3 +251,109 @@
     gap: 1rem;
   }
 }
+
+/* Budget Section Headers */
+.budget-section {
+  margin-bottom: 2.5rem;
+}
+
+.budget-section-header {
+  margin-bottom: 1.25rem;
+}
+
+.budget-section-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.25rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.budget-section-sub {
+  font-size: 0.88rem;
+  color: #6b7280;
+}
+
+.previous-month-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.budget-outcome-summary-tag {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.budget-outcome-summary-tag.safe {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.budget-outcome-summary-tag.danger {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* Outcome Pills inside Table */
+.budget-outcome-pill {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.budget-outcome-pill.safe {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.budget-outcome-pill.danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Outcome Table Overrides */
+.budget-outcome-table {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.budget-outcome-table thead tr {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+.budget-outcome-table th {
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.budget-outcome-table td {
+  padding: 12px 16px;
+  font-size: 0.92rem;
+  white-space: nowrap;
+}
+
+.budget-outcome-table tfoot td {
+  border-top: 2px solid #cbd5e1;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}

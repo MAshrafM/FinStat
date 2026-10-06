@@ -256,7 +256,8 @@
   background: rgba(11, 15, 25, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin-bottom: 1rem;
 }
 
@@ -276,12 +277,14 @@
   padding: 0.65rem 0.9rem;
   text-align: left;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  white-space: nowrap;
 }
 
 .admin-data-table td {
   padding: 0.65rem 0.9rem;
   color: #e2e8f0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  white-space: nowrap;
 }
 
 .admin-data-table tr:last-child td {
@@ -640,7 +643,8 @@
   background: rgba(11, 15, 25, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-editable-table {
@@ -659,11 +663,13 @@
   padding: 0.6rem 0.75rem;
   text-align: left;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
 }
 
 .admin-editable-table td {
   padding: 0.5rem 0.6rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  white-space: nowrap;
 }
 
 .tier-cell {
