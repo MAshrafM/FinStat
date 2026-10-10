@@ -70,15 +70,23 @@ export const CertProvider = ({ children }) => {
             const interest = Number(cert.interest) || 0;
             const period = Number(cert.period) || 0;
 
+            if (cert.status === 'withdrawn' || cert.displayStatus === 'withdrawn') {
+                return;
+            }
+
+            const now = new Date();
+            const isFuture = cert.displayStatus === 'future' || (cert.startDate && now < new Date(cert.startDate));
+            const isMatured = cert.displayStatus === 'matured' || cert.status === 'matured';
+
             const { isExpired, isActive } = calculateProgress(cert.startDate, period);
             const years = period / 12;
             const totalReturn = amount * (1 + (interest / 100) * years);
 
-            if (isActive) {
+            if (!isFuture && !isMatured && (isActive || cert.displayStatus === 'active' || cert.displayStatus === 'maturing_soon')) {
                 activeCertificates++;
                 totalActiveAmount += amount;
                 totalExpectedReturns += totalReturn;
-            } else if (isExpired) {
+            } else if (isExpired || isMatured) {
                 expiredCertificates++;
             } else {
                 futureCertificates++;

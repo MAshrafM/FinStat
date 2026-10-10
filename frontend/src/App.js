@@ -65,11 +65,13 @@ const GoldSummaryPage = React.lazy(() => import('./pages/gold/GoldSummaryPage'))
 
 // Certificates
 const CertificateLogPage = React.lazy(() => import('./pages/certificates/CertificateLogPage'));
+const CertificateDetailPage = React.lazy(() => import('./pages/certificates/CertificateDetailPage'));
 const AddCertificatePage = React.lazy(() => import('./pages/certificates/AddCertificatePage'));
 const EditCertificatePage = React.lazy(() => import('./pages/certificates/EditCertificatePage'));
 
 // Currency
 const CurrencyLogPage = React.lazy(() => import('./pages/currency/CurrencyLogPage'));
+const CurrencyDetailPage = React.lazy(() => import('./pages/currency/CurrencyDetailPage'));
 const AddCurrencyPage = React.lazy(() => import('./pages/currency/AddCurrencyPage'));
 const EditCurrencyPage = React.lazy(() => import('./pages/currency/EditCurrencyPage'));
 
@@ -162,9 +164,11 @@ function App() {
                 <Route path="/gold-wallet/edit/:id" element={<EditGoldPage />} />
                 <Route path="/gold-wallet/summary" element={<GoldSummaryPage />} />
                 <Route path="/certificates" element={<CertificateLogPage />} />
+                <Route path="/certificates/:id" element={<CertificateDetailPage />} />
                 <Route path="/certificates/new" element={<AddCertificatePage />} />
                 <Route path="/certificates/edit/:id" element={<EditCertificatePage />} />
                 <Route path="/currency" element={<CurrencyLogPage />} />
+                <Route path="/currency/:id" element={<CurrencyDetailPage />} />
                 <Route path="/currency/new" element={<AddCurrencyPage />} />
                 <Route path="/currency/edit/:id" element={<EditCurrencyPage />} />
                 <Route path="/real-estate" element={<RealEstateLogPage />} />

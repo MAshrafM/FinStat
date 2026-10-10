@@ -295,8 +295,8 @@ async function getAllHoldings(effectiveUserId, { forceRefresh = false, costBasis
     const maturityDate = new Date(startDate);
     maturityDate.setMonth(maturityDate.getMonth() + periodMonths);
 
-    // If explicitly marked as redeemed or matured
-    if (cert.status === 'Redeemed' || cert.status === 'Matured') {
+    // If explicitly marked as redeemed, matured, or withdrawn
+    if (['redeemed', 'matured', 'withdrawn'].includes(String(cert.status || '').toLowerCase())) {
       continue;
     }
 

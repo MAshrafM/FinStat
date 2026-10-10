@@ -16,18 +16,14 @@ import {
   FaUsers,
   FaHome,
   FaChartBar,
-  FaChartPie,
   FaRedo,
 } from 'react-icons/fa';
 import './Dashboard.css';
-import { getBudgetProgress } from '../services/budgetService';
 import { getRecurringSuggestions } from '../services/recurringSuggestionService';
-import { formatCurrency } from '../utils/formatters';
 
 const Dashboard = () => {
   const [userRole, setUserRole] = useState('viewer');
   const [parentUsername, setParentUsername] = useState(null);
-  const [budgetProgressList, setBudgetProgressList] = useState([]);
   const [pendingRecurCount, setPendingRecurCount] = useState(0);
 
   useEffect(() => {
@@ -41,18 +37,6 @@ const Dashboard = () => {
         // Fallback
       }
     }
-
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
-
-    // Load current month budgets and recurring pending count
-    getBudgetProgress({ period: 'monthly', year: currentYear, month: currentMonth })
-      .then((res) => {
-        const list = Array.isArray(res) ? res : res?.data || [];
-        setBudgetProgressList(list);
-      })
-      .catch(() => setBudgetProgressList([]));
 
     getRecurringSuggestions(1, 10, { isAccepted: false, isRejected: false })
       .then((res) => {
@@ -129,84 +113,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Budget Progress Preview Widget */}
-      {budgetProgressList.length > 0 && (
-        <div
-          style={{
-            background: 'white',
-            borderRadius: '12px',
-            border: '1px solid #e5e7eb',
-            padding: '1.25rem 1.5rem',
-            marginBottom: '2rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '1rem',
-            }}
-          >
-            <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#111827', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <FaChartPie style={{ color: '#3b82f6' }} /> Current Month Budget ({new Date().toLocaleString('default', { month: 'long', year: 'numeric' })})
-            </h3>
-            <Link
-              to="/expenditures/budgets"
-              style={{ fontSize: '0.85rem', color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}
-            >
-              View All Budgets &rarr;
-            </Link>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-            {budgetProgressList.map((bp) => {
-              const barColor =
-                bp.alertStatus === 'red' ? '#ef4444' : bp.alertStatus === 'yellow' ? '#f59e0b' : '#10b981';
-              return (
-                <div
-                  key={bp.budgetId}
-                  style={{
-                    background: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    padding: '0.85rem 1rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                    <strong style={{ fontSize: '0.9rem', color: '#1e293b' }}>{bp.category}</strong>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: barColor }}>
-                      {bp.percentageUsed}%
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      height: '6px',
-                      background: '#e2e8f0',
-                      borderRadius: '9999px',
-                      overflow: 'hidden',
-                      marginBottom: '0.35rem',
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: '100%',
-                        width: `${Math.min(100, bp.percentageUsed)}%`,
-                        background: barColor,
-                        borderRadius: '9999px',
-                      }}
-                    ></div>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#64748b' }}>
-                    <span>Spent: {formatCurrency(bp.spentAmount)}</span>
-                    <span>Limit: {formatCurrency(bp.budgetedAmount)}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+
 
       <div className="dashboard-summary" style={{ justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
         <Link to="/portfolio" className="dashboard-card" style={{ flex: '1', minWidth: '280px', maxWidth: '420px', borderTop: '4px solid #38bdf8' }}>

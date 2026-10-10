@@ -6,6 +6,10 @@ const createSchema = z.object({
   amount: z.coerce.number({ message: 'Amount is required and must be a valid number' }).positive('Amount must be positive'),
   price: z.coerce.number({ message: 'Price is required and must be a valid number' }).positive('Price must be positive'),
   date: dateStringSchema,
+  currencyCode: optionalString('Currency code'),
+  purchaseRate: z.coerce.number({ message: 'Purchase rate must be a valid number' }).positive('Purchase rate must be positive').optional(),
+  currentRate: z.coerce.number().min(0).optional(),
+  rateSource: z.enum(['CIB', 'fallback', 'manual']).optional(),
 }).strict();
 
 const updateSchema = z.object({
@@ -16,11 +20,20 @@ const updateSchema = z.object({
     (val) => (val === '' || val === null || val === undefined ? undefined : val),
     dateStringSchema.optional()
   ),
+  currencyCode: optionalString('Currency code'),
+  purchaseRate: z.coerce.number({ message: 'Purchase rate must be a valid number' }).positive('Purchase rate must be positive').optional(),
+  currentRate: z.coerce.number().min(0).optional(),
+  rateSource: z.enum(['CIB', 'fallback', 'manual']).optional(),
+}).strict();
+
+const revalueSchema = z.object({
+  saveSnapshot: z.boolean().optional(),
 }).strict();
 
 module.exports = {
   createSchema,
   updateSchema,
+  revalueSchema,
   paramsSchema: paramsIdSchema,
   querySchema: paginationQuerySchema,
 };

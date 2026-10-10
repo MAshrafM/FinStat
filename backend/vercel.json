@@ -10,6 +10,10 @@
     {
       "path": "/api/recurring-suggestions/detect",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/jobs/forex-revaluation",
+      "schedule": "0 18 * * *"
     }
   ],
   "routes": [

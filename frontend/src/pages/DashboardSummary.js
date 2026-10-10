@@ -19,6 +19,9 @@ import { useCurrData } from '../context/CurrContext';
 import { useBankData } from '../context/BankContext';
 import { useCreditData } from '../context/CreditContext';
 import { getRealEstates } from '../services/realEstateService';
+import { getBudgetProgress } from '../services/budgetService';
+import { getCertificates } from '../services/certificateService';
+import { getCurrency } from '../services/currencyService';
 
 import { formatCurrency } from '../utils/formatters'; // Utility to format currency }
 import { safePercentage, normDiv } from '../utils/helper'; // Import safe division and percentage functions }
@@ -44,6 +47,15 @@ const Summary = () => {
     // Local loading and error states
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [budgetProgressList, setBudgetProgressList] = useState([]);
+    const [savingsForexSummary, setSavingsForexSummary] = useState({
+        totalCertValue: 0,
+        activeCertCount: 0,
+        totalForexValue: 0,
+        totalForexGainLoss: 0,
+        forexHoldingCount: 0,
+    });
+
     // Fetch and cache dashboard data
     const { summaryMetrics = {} } = useData(); // Access any global data if needed
     const { overallTotalPaid = 0, goldtotalNow = 0 } = useGoldData();
@@ -58,6 +70,59 @@ const Summary = () => {
         getRealEstates({ status: 'Owned' })
             .then((data) => setRealEstates(data || []))
             .catch((err) => console.error('Failed to load real estate for summary:', err));
+
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1;
+
+        getBudgetProgress({ period: 'monthly', year: currentYear, month: currentMonth })
+            .then((res) => {
+                const list = Array.isArray(res) ? res : res?.data || [];
+                setBudgetProgressList(list);
+            })
+            .catch(() => setBudgetProgressList([]));
+
+        Promise.all([
+            getCertificates().catch(() => []),
+            getCurrency().catch(() => []),
+        ]).then(([certsRes, currRes]) => {
+            const certs = Array.isArray(certsRes) ? certsRes : certsRes?.data || [];
+            const currs = Array.isArray(currRes) ? currRes : currRes?.data || [];
+
+            const now = new Date();
+            const activeCerts = certs.filter((c) => {
+                if (c.status === 'withdrawn' || c.status === 'matured') return false;
+                if (c.displayStatus === 'withdrawn' || c.displayStatus === 'matured' || c.displayStatus === 'future') return false;
+
+                const start = c.startDate ? new Date(c.startDate) : null;
+                if (start && now < start) return false;
+
+                let mat = c.maturityDate ? new Date(c.maturityDate) : null;
+                if (!mat && start && c.period) {
+                    mat = new Date(start);
+                    mat.setMonth(mat.getMonth() + Number(c.period));
+                }
+                if (mat && now > mat) return false;
+
+                return true;
+            });
+            const totalCertValue = activeCerts.reduce((acc, c) => acc + Number(c.amount || 0), 0);
+
+            const totalForexValue = currs.reduce(
+                (acc, c) => acc + Number(c.currentValue || c.amount * (c.currentRate || c.purchaseRate || 0) || 0),
+                0
+            );
+            const totalForexCost = currs.reduce((acc, c) => acc + Number(c.costBasis || c.price || 0), 0);
+            const totalForexGainLoss = totalForexValue - totalForexCost;
+
+            setSavingsForexSummary({
+                totalCertValue,
+                activeCertCount: activeCerts.length,
+                totalForexValue,
+                totalForexGainLoss,
+                forexHoldingCount: currs.length,
+            });
+        }).catch(() => {});
     }, []);
 
     // Safely process currency data
@@ -278,12 +343,158 @@ const Summary = () => {
 
     return (
         <div className="page-container">
-            <h1>Welcome to Your Dashboard</h1>
-            <p>Select a feature to get started.</p>
+            <h1>Profile Summary</h1>
+            <p>Comprehensive overview of your complete financial portfolio and holdings.</p>
             <div className="dashboard-summary">
                 <h2>Total Current Holdings</h2>
                 <h2>{formatCurrency(displayData.calculations.totalCurrent)}</h2>
             </div>
+
+            {/* Savings & Forex Summary Card Widget */}
+            <div
+                style={{
+                    background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+                    borderRadius: '16px',
+                    border: '1px solid #4338ca',
+                    padding: '1.5rem',
+                    marginBottom: '2rem',
+                    color: 'white',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                }}
+            >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '8px' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px', color: '#ffffff' }}>
+                        <span>🏛️</span> Savings, Fixed Income &amp; Foreign Currency
+                    </h3>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <Link to="/certificates" style={{ color: '#a5b4fc', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '600' }}>
+                            Certificates &rarr;
+                        </Link>
+                        <Link to="/currency" style={{ color: '#38bdf8', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '600' }}>
+                            Currency Wallet &rarr;
+                        </Link>
+                    </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '0.8rem', opacity: 0.85, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Certificate Value</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: '700', margin: '4px 0', color: '#c7d2fe' }}>
+                            {formatCurrency(savingsForexSummary.totalCertValue)}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', opacity: 0.75 }}>
+                            {savingsForexSummary.activeCertCount} active bank certificate(s)
+                        </div>
+                    </div>
+
+                    <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '0.8rem', opacity: 0.85, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Foreign Currency Value</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: '700', margin: '4px 0', color: '#7dd3fc' }}>
+                            {formatCurrency(savingsForexSummary.totalForexValue)}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', opacity: 0.75 }}>
+                            EGP equivalent ({savingsForexSummary.forexHoldingCount} holdings)
+                        </div>
+                    </div>
+
+                    <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '0.8rem', opacity: 0.85, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Unrealized Forex Gain / Loss</div>
+                        <div
+                            style={{
+                                fontSize: '1.5rem',
+                                fontWeight: '700',
+                                margin: '4px 0',
+                                color: savingsForexSummary.totalForexGainLoss >= 0 ? '#4ade80' : '#f87171',
+                            }}
+                        >
+                            {savingsForexSummary.totalForexGainLoss >= 0 ? '+' : ''}
+                            {formatCurrency(savingsForexSummary.totalForexGainLoss)}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', opacity: 0.75 }}>
+                            calculated via daily CIB rates
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Budget Progress Preview Widget */}
+            {budgetProgressList.length > 0 && (
+                <div
+                    style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        border: '1px solid #e5e7eb',
+                        padding: '1.25rem 1.5rem',
+                        marginBottom: '2rem',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '1rem',
+                        }}
+                    >
+                        <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#111827', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <FaChartPie style={{ color: '#3b82f6' }} /> Current Month Budget ({new Date().toLocaleString('default', { month: 'long', year: 'numeric' })})
+                        </h3>
+                        <Link
+                            to="/expenditures/budgets"
+                            style={{ fontSize: '0.85rem', color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}
+                        >
+                            View All Budgets &rarr;
+                        </Link>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                        {budgetProgressList.map((bp) => {
+                            const barColor =
+                                bp.alertStatus === 'red' ? '#ef4444' : bp.alertStatus === 'yellow' ? '#f59e0b' : '#10b981';
+                            return (
+                                <div
+                                    key={bp.budgetId}
+                                    style={{
+                                        background: '#f8fafc',
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: '8px',
+                                        padding: '0.85rem 1rem',
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                                        <strong style={{ fontSize: '0.9rem', color: '#1e293b' }}>{bp.category}</strong>
+                                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: barColor }}>
+                                            {bp.percentageUsed}%
+                                        </span>
+                                    </div>
+                                    <div
+                                        style={{
+                                            height: '6px',
+                                            background: '#e2e8f0',
+                                            borderRadius: '9999px',
+                                            overflow: 'hidden',
+                                            marginBottom: '0.35rem',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                height: '100%',
+                                                width: `${Math.min(100, bp.percentageUsed)}%`,
+                                                background: barColor,
+                                                borderRadius: '9999px',
+                                            }}
+                                        ></div>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#64748b' }}>
+                                        <span>Spent: {formatCurrency(bp.spentAmount)}</span>
+                                        <span>Limit: {formatCurrency(bp.budgetedAmount)}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             <div className="dashboard-summary dashboard-charts">
                 <div className="sum-chart-container">

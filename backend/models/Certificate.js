@@ -34,14 +34,56 @@ const CertificateSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  payoutInterval: {
+    type: String,
+    enum: ['monthly', 'quarterly', 'annually'],
+    default: 'monthly',
+  },
+  lastPayoutDate: {
+    type: Date,
+    default: null,
+  },
+  totalInterestPaidInPiastres: {
+    type: Number,
+    default: 0,
+  },
+  status: {
+    type: String,
+    enum: ['active', 'matured', 'withdrawn'],
+    default: 'active',
+    index: true,
+  },
+  maturityDate: {
+    type: Date,
+    default: null,
+  },
+  withdrawalDate: {
+    type: Date,
+    default: null,
+  },
+  withdrawalReason: {
+    type: String,
+    default: null,
+    trim: true,
+  },
 }, {
   timestamps: true,
+});
+
+CertificateSchema.pre('save', function (next) {
+  if (this.startDate && this.period && !this.maturityDate) {
+    const mat = new Date(this.startDate);
+    mat.setMonth(mat.getMonth() + Number(this.period));
+    this.maturityDate = mat;
+  }
+  next();
 });
 
 CertificateSchema.plugin(softDeletePlugin);
 
 // Compound indexes
 CertificateSchema.index({ user: 1, startDate: -1 });
+CertificateSchema.index({ user: 1, maturityDate: 1, status: 1 });
 CertificateSchema.index({ user: 1, deletedAt: 1 });
 
 module.exports = mongoose.model('Certificate', CertificateSchema);
