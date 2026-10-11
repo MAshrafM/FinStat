@@ -82,6 +82,9 @@ const EditRealEstatePage = React.lazy(() => import('./pages/real-estate/EditReal
 
 // Credit Cards
 const CreditCardPage = React.lazy(() => import('./pages/credit-cards/CreditCardPage'));
+const StatementCyclePage = React.lazy(() => import('./pages/credit-cards/StatementCyclePage'));
+const DebtPayoffPage = React.lazy(() => import('./pages/credit-cards/DebtPayoffPage'));
+const ReconciliationPage = React.lazy(() => import('./pages/credit-cards/ReconciliationPage'));
 
 // Security & Access Control
 const SecuritySettingsPage = React.lazy(() => import('./pages/security/SecuritySettingsPage'));
@@ -175,6 +178,9 @@ function App() {
                 <Route path="/real-estate/new" element={<AddRealEstatePage />} />
                 <Route path="/real-estate/edit/:id" element={<EditRealEstatePage />} />
                 <Route path="/credit-cards" element={<CreditCardPage />} />
+                <Route path="/credit-cards/statements" element={<StatementCyclePage />} />
+                <Route path="/credit-cards/debt-payoff" element={<DebtPayoffPage />} />
+                <Route path="/credit-cards/reconcile" element={<ReconciliationPage />} />
               </Route>
             </Routes>
           </React.Suspense>

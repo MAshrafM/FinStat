@@ -1,0 +1,193 @@
+/* frontend/src/components/creditCards/UtilizationWidget.css */
+
+.utilization-widget-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 2rem;
+}
+
+.utilization-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.utilization-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.utilization-icon-shield {
+  font-size: 1.8rem;
+  color: #3b82f6;
+}
+
+.utilization-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.utilization-subtitle {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.utilization-overall-badge {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.utilization-meter-container {
+  margin-bottom: 1.25rem;
+}
+
+.utilization-meter-track {
+  position: relative;
+  height: 14px;
+  background: #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.utilization-meter-fill {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.threshold-marker-30 {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 30%;
+  width: 2px;
+  background: #1f2937;
+  opacity: 0.4;
+  z-index: 2;
+}
+
+.utilization-meter-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.utilization-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #fffbeb;
+  border-left: 4px solid #f59e0b;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.25rem;
+  color: #92400e;
+  font-size: 0.88rem;
+}
+
+.alert-icon {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+
+.utilization-cards-grid {
+  display: grid;
+  grid-templateColumns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.card-utilization-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.9rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-utilization-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.card-utilization-item.item-alert {
+  border-color: #fca5a5;
+  background: #fffafa;
+}
+
+.card-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.card-item-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.card-item-pct {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.mini-meter-track {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.mini-meter-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.card-item-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.card-item-limit {
+  color: #9ca3af;
+}
+
+.card-alert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #b91c1c;
+  background: #fee2e2;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+}

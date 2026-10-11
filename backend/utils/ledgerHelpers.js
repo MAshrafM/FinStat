@@ -56,6 +56,10 @@ const calculateSignedDeltas = (tx) => {
   const absPiastres = toPiastres(absValue);
   const deltas = [];
 
+  if (paymentMethod && paymentMethod.trim().toLowerCase() === 'credit card') {
+    return deltas; // Credit Card purchases are liabilities, no ledger delta
+  }
+
   if (transactionType === 'T') {
     const acc = normalizeAccount(paymentMethod || 'Bank');
     deltas.push({ account: acc, delta: absValue, deltaInPiastres: absPiastres });
@@ -196,6 +200,10 @@ const propagateBalanceChange = async (
   session = null
 ) => {
   if (!changeAmount || changeAmount === 0) {
+    return { modifiedCount: 0 };
+  }
+
+  if (!account || account.trim().toLowerCase() === 'credit card' || account.trim().toLowerCase() === 'creditcard') {
     return { modifiedCount: 0 };
   }
 

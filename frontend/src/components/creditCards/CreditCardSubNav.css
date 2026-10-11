@@ -1,0 +1,102 @@
+/* frontend/src/components/creditCards/CreditCardSubNav.css */
+
+.cc-subnav-container {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 1.5rem;
+  box-sizing: border-box;
+}
+
+.cc-subnav-track {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f1f5f9;
+  padding: 0.35rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.cc-subnav-track::-webkit-scrollbar {
+  display: none;
+}
+
+.cc-subnav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex: 1 1 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  text-align: center;
+}
+
+.cc-subnav-link:hover {
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.cc-subnav-link.active {
+  color: #2563eb;
+  background: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.cc-subnav-icon {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.cc-subnav-link.active .cc-subnav-icon {
+  color: #2563eb;
+  transform: scale(1.1);
+}
+
+.cc-subnav-label-short {
+  display: none;
+}
+
+.cc-subnav-label-full {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .cc-subnav-container {
+    margin-bottom: 1.25rem;
+  }
+
+  .cc-subnav-label-full {
+    display: none;
+  }
+
+  .cc-subnav-label-short {
+    display: inline;
+  }
+
+  .cc-subnav-track {
+    padding: 0.3rem;
+    gap: 0.25rem;
+  }
+
+  .cc-subnav-link {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.85rem;
+    gap: 0.35rem;
+  }
+}

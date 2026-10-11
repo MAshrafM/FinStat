@@ -51,6 +51,7 @@ app.use('/api/real-estates', require('./routes/realEstates'));
 app.use('/api/categorization-rules', require('./routes/categorizationRules'));
 app.use('/api/recurring-suggestions', require('./routes/recurringSuggestions'));
 app.use('/api/budgets', require('./routes/budgets'));
+app.use('/api/debt-payoff', require('./routes/debtPayoff'));
 app.use('/api/jobs', require('./routes/jobs'));
 
 // 404 handler specifically scoped to unmatched /api routes

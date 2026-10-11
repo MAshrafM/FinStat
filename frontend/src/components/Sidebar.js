@@ -197,8 +197,8 @@ const Sidebar = () => {
     {
       path: '/credit-cards',
       icon: '💳',
-      title: 'Credit Cards',
-      description: 'Manage credit cards',
+      title: 'Credit Cards & Debt',
+      description: 'Cycles, payoff & alerts',
     },
     {
       path: '/profile',

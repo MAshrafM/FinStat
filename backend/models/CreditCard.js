@@ -10,6 +10,11 @@ const CreditCardSchema = new Schema({
   limit: { type: Number, required: true },
   limitInPiastres: { type: Number, default: 0 },
   billingCycleDay: { type: Number, required: true, min: 1, max: 31 },
+  statementCloseDay: { type: Number, min: 1, max: 31, default: 25 },
+  paymentDueDay: { type: Number, min: 1, max: 31, default: 15 },
+  utilizationAlertThreshold: { type: Number, min: 0, max: 100, default: 30 },
+  minimumPaymentPercent: { type: Number, min: 0, max: 100, default: 5 },
+  apr: { type: Number, min: 0, default: 0 },
 }, { timestamps: true });
 
 CreditCardSchema.plugin(softDeletePlugin);

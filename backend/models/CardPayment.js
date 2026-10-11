@@ -9,6 +9,9 @@ const CardPaymentSchema = new Schema({
   amount: { type: Number, required: true },
   amountInPiastres: { type: Number, default: 0 },
   date: { type: Date, required: true },
+  paymentSource: { type: String, enum: ['Bank', 'Cash', 'Prepaid'], default: 'Bank' },
+  createExpenditure: { type: Boolean, default: true },
+  linkedExpenditureId: { type: Schema.Types.ObjectId, ref: 'Expenditure', default: null, index: true },
 }, { timestamps: true });
 
 CardPaymentSchema.plugin(softDeletePlugin);

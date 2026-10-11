@@ -184,10 +184,10 @@ const Dashboard = () => {
           <p>Track property investments, purchases, and estimated market valuations.</p>
         </Link>
 
-        <Link to="/credit-cards" className="dashboard-card">
-          <FaCreditCard size={45} />
-          <h2>Credit Cards</h2>
-          <p>Manage credit card transactions and payments.</p>
+        <Link to="/credit-cards" className="dashboard-card" style={{ borderTop: '4px solid #6366f1' }}>
+          <FaCreditCard size={45} color="#6366f1" />
+          <h2 style={{ color: '#6366f1' }}>Credit Cards &amp; Debt</h2>
+          <p>Statement cycles, Debt Payoff Planner (Snowball / Avalanche), and utilization alerts.</p>
         </Link>
 
         <Link to="/security" className="dashboard-card" style={{ borderTop: '3px solid #a855f7' }}>

@@ -9,7 +9,7 @@ const {
 } = require('./commonSchemas');
 
 const ALLOWED_TRANSACTION_TYPES = ['W', 'T', 'S', 'na'];
-const ALLOWED_PAYMENT_METHODS = ['Bank', 'Cash', 'Prepaid'];
+const ALLOWED_PAYMENT_METHODS = ['Bank', 'Cash', 'Prepaid', 'Credit Card'];
 
 const splitItemSchema = z
   .object({

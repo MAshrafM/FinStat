@@ -3,6 +3,7 @@ const { mongoIdSchema, paramsIdSchema, dateStringSchema, optionalString } = requ
 
 const ALLOWED_TX_TYPES = ['Purchase', 'Installment'];
 const ALLOWED_TX_STATUS = ['Due', 'Paid', 'Partial'];
+const ALLOWED_PAYMENT_SOURCES = ['Bank', 'Cash', 'Prepaid'];
 
 const createCardSchema = z.object({
   name: z.string({ message: 'Card name is required' }).trim().min(1, 'Card name cannot be empty'),
@@ -13,6 +14,11 @@ const createCardSchema = z.object({
     .int('Billing cycle day must be an integer')
     .min(1, 'Billing cycle day must be between 1 and 31')
     .max(31, 'Billing cycle day must be between 1 and 31'),
+  statementCloseDay: z.number().int().min(1).max(31).optional(),
+  paymentDueDay: z.number().int().min(1).max(31).optional(),
+  utilizationAlertThreshold: z.number().min(0).max(100).optional(),
+  minimumPaymentPercent: z.number().min(0).max(100).optional(),
+  apr: z.number().min(0).optional(),
 }).strict();
 
 const updateCardSchema = z.object({
@@ -25,16 +31,23 @@ const updateCardSchema = z.object({
     .min(1, 'Billing cycle day must be between 1 and 31')
     .max(31, 'Billing cycle day must be between 1 and 31')
     .optional(),
+  statementCloseDay: z.number().int().min(1).max(31).optional(),
+  paymentDueDay: z.number().int().min(1).max(31).optional(),
+  utilizationAlertThreshold: z.number().min(0).max(100).optional(),
+  minimumPaymentPercent: z.number().min(0).max(100).optional(),
+  apr: z.number().min(0).optional(),
 }).strict();
 
 const createTransactionSchema = z.object({
   card: mongoIdSchema,
   description: z.string({ message: 'Description is required' }).trim().min(1, 'Description cannot be empty'),
+  category: z.string().trim().optional(),
   amount: z.number({ message: 'Amount is required and must be a valid number' }).positive('Amount must be positive'),
   date: dateStringSchema,
   type: z.enum(ALLOWED_TX_TYPES, {
     message: `Type must be one of: ${ALLOWED_TX_TYPES.join(', ')}`,
   }),
+  createExpenditure: z.boolean().optional(),
   installmentDetails: z
     .object({
       months: z.number({ message: 'Months must be an integer' }).int().positive().optional(),
@@ -49,9 +62,11 @@ const createTransactionSchema = z.object({
 
 const updateTransactionSchema = z.object({
   description: optionalString('Description'),
+  category: optionalString('Category'),
   amount: z.number({ message: 'Amount must be a valid number' }).positive('Amount must be positive').optional(),
   date: dateStringSchema.optional(),
   type: z.enum(ALLOWED_TX_TYPES).optional(),
+  createExpenditure: z.boolean().optional(),
   installmentDetails: z
     .object({
       months: z.number().int().positive().optional(),
@@ -68,19 +83,38 @@ const createPaymentSchema = z.object({
   card: mongoIdSchema,
   amount: z.number({ message: 'Amount is required and must be a valid number' }).positive('Amount must be positive'),
   date: dateStringSchema,
+  paymentSource: z.enum(ALLOWED_PAYMENT_SOURCES).optional(),
+  createExpenditure: z.boolean().optional(),
 }).strict();
 
 const updatePaymentSchema = z.object({
   amount: z.number({ message: 'Amount must be a valid number' }).positive('Amount must be positive').optional(),
   date: dateStringSchema.optional(),
+  paymentSource: z.enum(ALLOWED_PAYMENT_SOURCES).optional(),
+  createExpenditure: z.boolean().optional(),
 }).strict();
 
 const payInFullSchema = z.object({
   transactionId: mongoIdSchema,
+  paymentSource: z.enum(ALLOWED_PAYMENT_SOURCES).optional(),
+  createExpenditure: z.boolean().optional(),
+}).strict();
+
+const partialPaymentSchema = z.object({
+  transactionId: mongoIdSchema,
+  amount: z.number().positive('Payment amount must be positive'),
+  paymentSource: z.enum(ALLOWED_PAYMENT_SOURCES).optional(),
+  createExpenditure: z.boolean().optional(),
 }).strict();
 
 const cardIdParamsSchema = z.object({
   cardId: mongoIdSchema,
+}).strict();
+
+const reconcileSchema = z.object({
+  cycleStart: dateStringSchema,
+  cycleEnd: dateStringSchema,
+  actualStatementBalance: z.number({ message: 'Actual statement balance is required' }),
 }).strict();
 
 module.exports = {
@@ -91,7 +125,9 @@ module.exports = {
   createPaymentSchema,
   updatePaymentSchema,
   payInFullSchema,
+  partialPaymentSchema,
   cardIdParamsSchema,
+  reconcileSchema,
   paramsSchema: paramsIdSchema,
   querySchema: undefined,
   createSchema: createCardSchema,

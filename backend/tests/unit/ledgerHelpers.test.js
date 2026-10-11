@@ -76,5 +76,19 @@ describe('Ledger Helpers (Unit Tests)', () => {
       });
       expect(result).toEqual([{ account: 'bank', delta: 1000, deltaInPiastres: 100000 }]);
     });
+
+    it('should return empty deltas for Credit Card purchases', () => {
+      const result = calculateSignedDeltas({
+        transactionType: 'W',
+        paymentMethod: 'Credit Card',
+        transactionValue: 750,
+      });
+      expect(result).toEqual([]);
+
+      const singleDelta = calculateSignedDelta('Credit Card', 'W', 750);
+      expect(singleDelta.delta).toBe(0);
+      expect(singleDelta.value).toBe(750);
+    });
   });
 });
+

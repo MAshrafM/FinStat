@@ -17,11 +17,21 @@ const {
   createPaymentSchema,
   updatePaymentSchema,
   payInFullSchema,
+  partialPaymentSchema,
   cardIdParamsSchema,
+  reconcileSchema,
   paramsSchema,
 } = require('../validationSchemas/creditCardSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
+const {
+  createExpenditureFromCardTransaction,
+  createExpenditureFromCardPayment,
+  unlinkExpenditure,
+} = require('../utils/cardPaymentBridge');
+const { getStatementPeriod, getStatementCycles } = require('../utils/statementCycle');
+const { checkPortfolioUtilization, checkUtilizationAlert } = require('../utils/utilizationMonitor');
+const { reconcileCycle } = require('../utils/reconciliationEngine');
 
 // =============================================
 // --- Credit Card Management (The Cards Themselves) ---
@@ -126,6 +136,7 @@ router.post('/transactions', auth, validate({ body: createTransactionSchema }), 
 
   const newTransaction = new CardTransaction(transactionData);
   await newTransaction.save();
+  await createExpenditureFromCardTransaction(newTransaction, card, req.effectiveUserId);
   res.status(201).json(newTransaction);
 }));
 
@@ -182,6 +193,7 @@ router.delete('/transactions/:id', auth, validate({ params: paramsSchema }), asy
     throw new ForbiddenError('User not authorized');
   }
 
+  await unlinkExpenditure(transaction, req.effectiveUserId);
   await transaction.softDelete();
   res.json({ msg: 'Transaction deleted successfully' });
 }));
@@ -244,13 +256,24 @@ router.get('/transactions/due/:cardId', auth, validate({ params: cardIdParamsSch
   });
 
   activeInstallments.forEach(i => {
-    dueItems.push({
-      _id: i._id,
-      description: `${i.description} (Installment)`,
-      amountDue: i.installmentDetails?.monthlyPrincipal || 0,
-      type: 'Installment',
-      date: i.date
-    });
+    const monthlyPrincipal = i.installmentDetails?.monthlyPrincipal || 0;
+    const cyclePaid = i.installmentDetails?.cyclePaidInPiastres ? i.installmentDetails.cyclePaidInPiastres / 100 : 0;
+    const amountDue = Math.max(0, Math.round((monthlyPrincipal - cyclePaid) * 100) / 100);
+    const remainingTotal = Math.max(0, (i.amount || 0) - (i.paidAmount || 0));
+    const effectiveDue = Math.min(amountDue, remainingTotal);
+
+    if (effectiveDue > 0) {
+      dueItems.push({
+        _id: i._id,
+        description: `${i.description} (Installment)`,
+        amountDue: effectiveDue,
+        monthlyPrincipal,
+        cyclePaid,
+        remainingTotal,
+        type: 'Installment',
+        date: i.date,
+      });
+    }
   });
 
   dueItems.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -277,6 +300,7 @@ router.post('/payments', auth, validate({ body: createPaymentSchema }), asyncHan
     amountInPiastres: toPiastres(validatedBody.amount),
   });
   await newPayment.save();
+  await createExpenditureFromCardPayment(newPayment, card, req.effectiveUserId);
   res.status(201).json(newPayment);
 }));
 
@@ -325,6 +349,7 @@ router.delete('/payments/:id', auth, validate({ params: paramsSchema }), asyncHa
     throw new ForbiddenError('User not authorized');
   }
 
+  await unlinkExpenditure(payment, req.effectiveUserId);
   await payment.softDelete();
   res.json({ msg: 'Payment log deleted successfully' });
 }));
@@ -344,12 +369,15 @@ router.post('/payments/full', auth, validate({ body: payInFullSchema }), asyncHa
   if (!req.canModify) {
     throw new ForbiddenError('Viewers have read-only access');
   }
-  const { transactionId } = getValidated(req, 'body');
+  const { transactionId, paymentSource, createExpenditure } = getValidated(req, 'body');
   const transaction = await CardTransaction.findOne({ _id: transactionId, deletedAt: null });
 
   if (!transaction || transaction.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
+
+  const card = await CreditCard.findOne({ _id: transaction.card, deletedAt: null });
+  if (!card) throw new NotFoundError('Card not found');
 
   let paymentAmount = 0;
   let isFullyPaid = false;
@@ -358,7 +386,9 @@ router.post('/payments/full', auth, validate({ body: payInFullSchema }), asyncHa
     paymentAmount = transaction.amount - transaction.paidAmount;
     isFullyPaid = true;
   } else if (transaction.type === 'Installment') {
-    paymentAmount = transaction.installmentDetails?.monthlyPrincipal || 0;
+    const monthlyPrincipal = transaction.installmentDetails?.monthlyPrincipal || 0;
+    const cyclePaid = transaction.installmentDetails?.cyclePaidInPiastres ? transaction.installmentDetails.cyclePaidInPiastres / 100 : 0;
+    paymentAmount = Math.max(0, monthlyPrincipal - cyclePaid);
     if (transaction.paidAmount + paymentAmount >= transaction.amount) {
       isFullyPaid = true;
       paymentAmount = transaction.amount - transaction.paidAmount;
@@ -375,31 +405,45 @@ router.post('/payments/full', auth, validate({ body: payInFullSchema }), asyncHa
     amount: paymentAmount,
     amountInPiastres: toPiastres(paymentAmount),
     date: new Date(),
+    paymentSource: paymentSource || 'Bank',
+    createExpenditure: createExpenditure !== false,
   });
   await payment.save();
 
   transaction.paidAmount += paymentAmount;
   transaction.paidAmountInPiastres = toPiastres(transaction.paidAmount);
-  if (isFullyPaid) {
+
+  if (transaction.type === 'Installment') {
+    transaction.installmentDetails = transaction.installmentDetails || {};
+    transaction.installmentDetails.cyclePaidInPiastres =
+      (transaction.installmentDetails.cyclePaidInPiastres || 0) + toPiastres(paymentAmount);
+  }
+
+  if (isFullyPaid || transaction.paidAmount >= transaction.amount) {
     transaction.status = 'Paid';
   } else {
     transaction.status = 'Partial';
   }
   await transaction.save();
-  res.json({ msg: 'Transaction marked as fully paid.' });
+
+  await createExpenditureFromCardPayment(payment, card, req.effectiveUserId);
+  res.json({ msg: 'Transaction marked as paid for current cycle.', payment });
 }));
 
-router.post('/payments/partial', auth, asyncHandler(async (req, res) => {
+router.post('/payments/partial', auth, validate({ body: partialPaymentSchema }), asyncHandler(async (req, res) => {
   if (!req.canModify) {
     throw new ForbiddenError('Viewers have read-only access');
   }
-  const { transactionId, amount } = req.body;
-  const paymentAmount = parseFloat(amount);
+  const { transactionId, amount, paymentSource, createExpenditure } = getValidated(req, 'body');
+  const paymentAmount = Number(amount);
   const transaction = await CardTransaction.findOne({ _id: transactionId, deletedAt: null });
 
   if (!transaction || transaction.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
+
+  const card = await CreditCard.findOne({ _id: transaction.card, deletedAt: null });
+  if (!card) throw new NotFoundError('Card not found');
 
   const payment = new CardPayment({
     user: req.effectiveUserId,
@@ -407,6 +451,8 @@ router.post('/payments/partial', auth, asyncHandler(async (req, res) => {
     amount: paymentAmount,
     amountInPiastres: toPiastres(paymentAmount),
     date: new Date(),
+    paymentSource: paymentSource || 'Bank',
+    createExpenditure: createExpenditure !== false,
   });
   await payment.save();
 
@@ -414,11 +460,21 @@ router.post('/payments/partial', auth, asyncHandler(async (req, res) => {
   if (transaction.paidAmount >= transaction.amount) {
     transaction.status = 'Paid';
     transaction.paidAmount = transaction.amount;
+  } else {
+    transaction.status = 'Partial';
   }
   transaction.paidAmountInPiastres = toPiastres(transaction.paidAmount);
-  
+
+  if (transaction.type === 'Installment') {
+    transaction.installmentDetails = transaction.installmentDetails || {};
+    transaction.installmentDetails.cyclePaidInPiastres =
+      (transaction.installmentDetails.cyclePaidInPiastres || 0) + toPiastres(paymentAmount);
+  }
+
   await transaction.save();
-  res.json({ msg: 'Partial payment logged successfully.' });
+  await createExpenditureFromCardPayment(payment, card, req.effectiveUserId);
+
+  res.json({ msg: 'Partial payment logged successfully.', payment });
 }));
 
 // =============================================
@@ -635,6 +691,116 @@ router.get('/overall-summary', auth, asyncHandler(async (req, res) => {
     totalAvailable,
     totalDueThisMonth,
   });
+}));
+
+// =============================================
+// --- Phase 8: Statement Cycle Visualization ---
+// =============================================
+router.get('/statement-cycles/:cardId', auth, validate({ params: cardIdParamsSchema }), asyncHandler(async (req, res) => {
+  const { cardId } = getValidated(req, 'params');
+  const card = await CreditCard.findOne({ _id: cardId, deletedAt: null });
+  if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
+    throw new ForbiddenError('User not authorized for this card');
+  }
+
+  const months = parseInt(req.query.months, 10) || 6;
+  const cycles = getStatementCycles(card, { months });
+  const currentPeriod = getStatementPeriod(card);
+
+  const transactions = await CardTransaction.find({
+    card: card._id,
+    user: req.effectiveUserId,
+    date: { $gte: currentPeriod.startDate, $lte: currentPeriod.endDate },
+    deletedAt: null,
+  }).sort({ date: 1 }).lean();
+
+  const payments = await CardPayment.find({
+    card: card._id,
+    user: req.effectiveUserId,
+    date: { $gte: currentPeriod.startDate, $lte: currentPeriod.endDate },
+    deletedAt: null,
+  }).sort({ date: 1 }).lean();
+
+  const totalCharges = transactions.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
+  const totalPayments = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+  res.json({
+    card,
+    currentPeriod,
+    cycles,
+    currentCycleData: {
+      totalCharges: Math.round(totalCharges * 100) / 100,
+      totalPayments: Math.round(totalPayments * 100) / 100,
+      netCycleChange: Math.round((totalCharges - totalPayments) * 100) / 100,
+      transactions,
+      payments,
+    },
+  });
+}));
+
+// =============================================
+// --- Phase 8: Credit Utilization Alerts ---
+// =============================================
+router.get('/utilization', auth, asyncHandler(async (req, res) => {
+  const userId = new mongoose.Types.ObjectId(req.effectiveUserId);
+  const cards = await CreditCard.find({ user: userId, deletedAt: null }).lean();
+
+  if (cards.length === 0) {
+    return res.json({
+      totalLimit: 0,
+      totalBalance: 0,
+      overallUtilization: 0,
+      hasAlerts: false,
+      cards: [],
+    });
+  }
+
+  const cardBalances = [];
+  for (const card of cards) {
+    const pRes = await CardTransaction.aggregate([
+      { $match: { card: card._id, user: userId, type: 'Purchase', status: { $in: ['Due', 'Partial'] }, deletedAt: null } },
+      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
+    ]);
+    const purchaseBal = pRes.length > 0 ? pRes[0].total : 0;
+
+    const iRes = await CardTransaction.aggregate([
+      { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] }, deletedAt: null } },
+      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
+    ]);
+    const installBal = iRes.length > 0 ? iRes[0].total : 0;
+    const outstanding = purchaseBal + installBal;
+
+    cardBalances.push({
+      card,
+      balance: outstanding,
+    });
+  }
+
+  const portfolio = checkPortfolioUtilization(cardBalances);
+  res.json(portfolio);
+}));
+
+// =============================================
+// --- Phase 8: Cycle Reconciliation ---
+// =============================================
+router.post('/reconcile/:cardId', auth, validate({ params: cardIdParamsSchema, body: reconcileSchema }), asyncHandler(async (req, res) => {
+  const { cardId } = getValidated(req, 'params');
+  const { cycleStart, cycleEnd, actualStatementBalance } = getValidated(req, 'body');
+
+  const card = await CreditCard.findOne({ _id: cardId, deletedAt: null });
+  if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
+    throw new ForbiddenError('User not authorized for this card');
+  }
+
+  const report = await reconcileCycle(
+    card,
+    cycleStart,
+    cycleEnd,
+    actualStatementBalance,
+    req.effectiveUserId
+  );
+
+  res.json(report);
 }));
 
 module.exports = router;

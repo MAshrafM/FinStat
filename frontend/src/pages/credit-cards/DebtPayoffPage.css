@@ -1,0 +1,180 @@
+/* frontend/src/pages/credit-cards/DebtPayoffPage.css */
+
+.payoff-control-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.strategy-buttons-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.strategy-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.1rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.strategy-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.strategy-btn.active-snowball {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+.strategy-btn.active-avalanche {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+}
+
+.strategy-btn-icon {
+  font-size: 1.6rem;
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.active-snowball .strategy-btn-icon {
+  color: #2563eb;
+}
+
+.active-avalanche .strategy-btn-icon {
+  color: #d97706;
+}
+
+.strategy-btn strong {
+  display: block;
+  font-size: 1rem;
+  color: #1e293b;
+  margin-bottom: 0.2rem;
+}
+
+.strategy-btn span {
+  display: block;
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.budget-input-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.budget-input {
+  padding: 0.6rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  width: 220px;
+}
+
+.payoff-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.payoff-metric-box {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.metric-box-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.box-label {
+  display: block;
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.box-val {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0.2rem 0;
+}
+
+.box-val.highlight-green {
+  color: #16a34a;
+}
+
+.box-sub {
+  display: block;
+  font-size: 0.76rem;
+  color: #94a3b8;
+}
+
+.comparison-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+}
+
+.comparison-card h3 {
+  margin: 0 0 1.25rem 0;
+  color: #1e293b;
+  font-size: 1.15rem;
+}
+
+.comparison-table tr.row-selected {
+  background: #f0fdf4 !important;
+}
+
+.active-tag {
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.76rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.schedule-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+}

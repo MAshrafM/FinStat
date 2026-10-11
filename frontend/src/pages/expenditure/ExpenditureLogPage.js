@@ -381,6 +381,78 @@ const ExpenditureLogPage = () => {
                     title={log.description}
                   >
                     {log.description || '-'}
+                    {log.paidWithCreditCard && !log.settledFromBank && (log.settledAmountInPiastres || 0) === 0 && (
+                      <span
+                        title="Charged to credit card. Bank balance has not been debited."
+                        style={{
+                          marginLeft: '0.4rem',
+                          background: '#fef3c7',
+                          color: '#b45309',
+                          border: '1px solid #fde68a',
+                          padding: '0.15rem 0.45rem',
+                          borderRadius: '4px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          display: 'inline-block',
+                        }}
+                      >
+                        💳 Credit Purchase
+                      </span>
+                    )}
+                    {log.paidWithCreditCard && !log.settledFromBank && (log.settledAmountInPiastres || 0) > 0 && (
+                      <span
+                        title={`Partially settled: ${formatCurrency((log.settledAmountInPiastres || 0) / 100)} of ${formatCurrency(log.transactionValue)}`}
+                        style={{
+                          marginLeft: '0.4rem',
+                          background: '#fffbeb',
+                          color: '#d97706',
+                          border: '1px solid #fcd34d',
+                          padding: '0.15rem 0.45rem',
+                          borderRadius: '4px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          display: 'inline-block',
+                        }}
+                      >
+                        💳🟡 Partial ({formatCurrency((log.settledAmountInPiastres || 0) / 100)})
+                      </span>
+                    )}
+                    {log.paidWithCreditCard && log.settledFromBank && (
+                      <span
+                        title={log.settlementDate ? `Fully settled from bank on ${formatDate(log.settlementDate)}` : 'Fully settled from bank'}
+                        style={{
+                          marginLeft: '0.4rem',
+                          background: '#eff6ff',
+                          color: '#1d4ed8',
+                          border: '1px solid #bfdbfe',
+                          padding: '0.15rem 0.45rem',
+                          borderRadius: '4px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          display: 'inline-block',
+                        }}
+                      >
+                        💳✅ Settled
+                      </span>
+                    )}
+                    {log.categories && log.categories.includes('Credit Card Settlement') && (
+                      <span
+                        title="Credit card settlement payment debited from bank balance."
+                        style={{
+                          marginLeft: '0.4rem',
+                          background: '#f1f5f9',
+                          color: '#475569',
+                          border: '1px solid #cbd5e1',
+                          padding: '0.15rem 0.45rem',
+                          borderRadius: '4px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          display: 'inline-block',
+                        }}
+                      >
+                        🔄 Settlement Outflow
+                      </span>
+                    )}
                     {log.isRecurring && (
                       <span
                         title="Recurring Expense"

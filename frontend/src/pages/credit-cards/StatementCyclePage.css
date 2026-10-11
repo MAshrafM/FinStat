@@ -1,0 +1,163 @@
+/* frontend/src/pages/credit-cards/StatementCyclePage.css */
+
+.cycle-summary-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.cycle-metric-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cycle-metric-card.metric-card-danger {
+  border-color: #fca5a5;
+  background: #fffafa;
+}
+
+.metric-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.metric-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #64748b;
+  margin-bottom: 0.2rem;
+}
+
+.metric-value {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.metric-hint {
+  display: block;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  margin-top: 0.2rem;
+}
+
+/* Timeline card */
+.timeline-container-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 2rem;
+}
+
+.timeline-container-card h3 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.cycle-timeline-track {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  padding: 1rem 1.5rem;
+}
+
+.cycle-timeline-track::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 2rem;
+  right: 2rem;
+  height: 4px;
+  background: #e2e8f0;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.timeline-milestone {
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 120px;
+}
+
+.milestone-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #3b82f6;
+  margin-bottom: 0.4rem;
+}
+
+.milestone-dot.dot-close {
+  background: #f59e0b;
+}
+
+.milestone-dot.dot-due {
+  background: #10b981;
+}
+
+.milestone-dot.dot-overdue {
+  background: #ef4444;
+}
+
+.milestone-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.milestone-date {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 0.15rem;
+}
+
+.milestone-days {
+  font-size: 0.72rem;
+  color: #d97706;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+.milestone-badge {
+  font-size: 0.72rem;
+  color: #059669;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+.category-pill {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.78rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 12px;
+  font-weight: 500;
+}

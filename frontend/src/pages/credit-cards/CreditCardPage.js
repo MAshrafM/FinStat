@@ -9,6 +9,8 @@ import PartialPaymentModal from './PartialPaymentModal';
 import AddCardModal from './AddCardModal';
 import EditCardModal from './EditCardModal';
 import EditTransactionModal from './EditTransactionModal';
+import CreditCardSubNav from '../../components/creditCards/CreditCardSubNav';
+import UtilizationWidget from '../../components/creditCards/UtilizationWidget';
 import { formatCurrency } from '../../utils/formatters';
 import '../trades/Trades.css'; // Reuse styles
 import './CreditCardPage.css'; // Custom styles for this page
@@ -126,7 +128,7 @@ const CreditCardPage = () => {
 
   const handleFullPayment = async (transactionId) => {
     if (window.confirm('Are you sure you want to mark this as fully paid?')) {
-      await makeFullPayment(transactionId);
+      await makeFullPayment({ transactionId, paymentSource: 'Bank', createExpenditure: true });
       // Refresh data based on current selection
       if (selectedCardId === 'all') {
         aggregateAllCardsData();
@@ -217,6 +219,12 @@ const totalPartial = transactionHistory.reduce((sum, tx) => {
 
   return (
     <div className="page-container">
+      {/* Sub Navigation */}
+      <CreditCardSubNav />
+
+      {/* Credit Utilization Alert Widget */}
+      <UtilizationWidget />
+
       <div className="page-header">
         <h1>Credit Card Center</h1>
         <div className="header-actions">

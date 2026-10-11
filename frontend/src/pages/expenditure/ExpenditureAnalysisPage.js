@@ -40,6 +40,7 @@ const ExpenditureAnalysisPage = () => {
     const [allExpenditures, setAllExpenditures] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchTotal, setSearchTotal] = useState(null);
+    const [includeSettlements, setIncludeSettlements] = useState(false);
 
     useEffect(() => {
         getAllExpendituresForAnalysis()
@@ -51,13 +52,21 @@ const ExpenditureAnalysisPage = () => {
 
     useEffect(() => {
         if (allExpenditures.length > 0) {
-            processData(allExpenditures, searchTerm);
+            processData(allExpenditures, searchTerm, includeSettlements);
         }
-    }, [allExpenditures, searchTerm]);
+    }, [allExpenditures, searchTerm, includeSettlements]);
 
-    const processData = (expenditures, currentSearchTerm) => {
-        // Filter data based on search term first
-        let filteredExpenditures = expenditures;
+    const processData = (expenditures, currentSearchTerm, shouldIncludeSettlements) => {
+        // Exclude credit card settlement expenditures by default to avoid double-counting
+        let workingExpenditures = expenditures;
+        if (!shouldIncludeSettlements) {
+            workingExpenditures = workingExpenditures.filter(item =>
+                !(item.categories && item.categories.includes('Credit Card Settlement'))
+            );
+        }
+
+        // Filter data based on search term
+        let filteredExpenditures = workingExpenditures;
         let currentSearchTotal = null;
 
         if (currentSearchTerm && currentSearchTerm.trim() !== '') {
@@ -419,6 +428,21 @@ const ExpenditureAnalysisPage = () => {
                             )}
                         </select>
                     </div>
+                </div>
+
+                <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
+                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.88rem', color: '#4b5563', fontWeight: 500 }}>
+                        <input
+                            type="checkbox"
+                            checked={includeSettlements}
+                            onChange={(e) => setIncludeSettlements(e.target.checked)}
+                            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                        />
+                        Include Credit Card Settlements (Gross Outflow View)
+                    </label>
+                    <span style={{ display: 'block', fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.2rem' }}>
+                        Settlements are excluded by default to avoid double-counting card purchases and bank payoff debits.
+                    </span>
                 </div>
             </div>
 
