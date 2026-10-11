@@ -1,4 +1,3 @@
-// frontend/src/pages/credit-cards/StatementCyclePage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import CreditCardSubNav from '../../components/creditCards/CreditCardSubNav';
 import { getCards, getStatementCycles } from '../../services/creditCardService';
