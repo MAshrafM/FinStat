@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import CreditCardSubNav from '../../components/creditCards/CreditCardSubNav';
 import { getCards, getStatementCycles } from '../../services/creditCardService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { FaCalendarAlt, FaClock, FaReceipt, FaMoneyCheckAlt, FaArrowRight } from 'react-icons/fa';
+import { FaCalendarAlt, FaClock, FaReceipt, FaMoneyCheckAlt } from 'react-icons/fa';
 import './StatementCyclePage.css';
 
 const StatementCyclePage = () => {

@@ -225,27 +225,27 @@ const Sidebar = () => {
     ...baseMenuItems,
     ...(userRole === 'admin'
       ? [
-          {
-            path: '/admin',
-            icon: '👥',
-            title: 'Admin Users',
-            description: 'User management',
-          },
-          {
-            path: '/admin/tax-brackets',
-            icon: '📊',
-            title: 'Tax Brackets',
-            description: 'Admin tax configuration',
-          },
-          {
-            path: '/admin/social-insurance',
-            icon: '🛡️',
-            title: 'Social Insurance',
-            description: 'Admin insurance rules',
-          },
-        ]
+        {
+          path: '/admin',
+          icon: '👥',
+          title: 'Admin Users',
+          description: 'User management',
+        },
+        {
+          path: '/admin/tax-brackets',
+          icon: '📊',
+          title: 'Tax Brackets',
+          description: 'Admin tax configuration',
+        },
+        {
+          path: '/admin/social-insurance',
+          icon: '🛡️',
+          title: 'Social Insurance',
+          description: 'Admin insurance rules',
+        },
+      ]
       : userRole === 'manager'
-      ? [
+        ? [
           {
             path: '/admin',
             icon: '👥',
@@ -253,7 +253,7 @@ const Sidebar = () => {
             description: 'Viewer management',
           },
         ]
-      : []),
+        : []),
   ];
 
   return (

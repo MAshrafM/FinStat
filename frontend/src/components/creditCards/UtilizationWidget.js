@@ -1,6 +1,6 @@
 // frontend/src/components/creditCards/UtilizationWidget.js
 import React, { useState, useEffect } from 'react';
-import { FaExclamationTriangle, FaCheckCircle, FaShieldAlt } from 'react-icons/fa';
+import { FaExclamationTriangle, FaShieldAlt } from 'react-icons/fa';
 import { getUtilization } from '../../services/creditCardService';
 import { formatCurrency } from '../../utils/formatters';
 import './UtilizationWidget.css';

@@ -4,7 +4,7 @@ import CreditCardSubNav from '../../components/creditCards/CreditCardSubNav';
 import { calculatePayoff, savePlan, getSavedPlans } from '../../services/debtPayoffService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
-import { FaSnowflake, FaBolt, FaSlidersH, FaPiggyBank, FaCalendarCheck, FaBookmark } from 'react-icons/fa';
+import { FaSnowflake, FaBolt, FaPiggyBank, FaCalendarCheck, FaBookmark } from 'react-icons/fa';
 import './DebtPayoffPage.css';
 
 const DebtPayoffPage = () => {
@@ -51,6 +51,7 @@ const DebtPayoffPage = () => {
 
   useEffect(() => {
     handleSimulate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [strategy]);
 
   const handleSaveActivePlan = async () => {
