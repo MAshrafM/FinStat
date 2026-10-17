@@ -263,6 +263,7 @@ router.post(
 // @access  Public (reads HTTP-only cookie)
 router.post(
   '/refresh',
+  authRateLimiter,
   asyncHandler(async (req, res) => {
     const rawRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
@@ -440,6 +441,7 @@ router.post(
 router.post(
   '/2fa/disable',
   auth,
+  authRateLimiter,
   validate({ body: disable2FASchema }),
   asyncHandler(async (req, res) => {
     const { password, code } = getValidated(req, 'body');
