@@ -8,13 +8,11 @@ const errorHandler = require('./middleware/errorHandler');
 const { NotFoundError } = require('./utils/errors');
 const { seedDefaultTaxAndInsurance } = require('./utils/seedTaxAndInsurance');
 
-// Connect to Database and auto-seed defaults
-connectDB().then(() => {
-  seedDefaultTaxAndInsurance();
-}).catch(() => {});
-
 // Create an instance of an Express application
 const app = express();
+
+// Trust reverse proxy (Vercel / Nginx) for accurate client IP resolution in rate limiting
+app.set('trust proxy', 1);
 
 // This enables CORS for all routes, allowing our frontend to make requests
 app.use(cors({
@@ -62,15 +60,33 @@ app.use('/api', (req, res, next) => {
 // Centralized error handling middleware (must be registered after all routes)
 app.use(errorHandler);
 
-// Define the port the server will run on (local execution only)
-if (require.main === module) {
-  const { initRecurringCron } = require('./jobs/recurringJob');
-  initRecurringCron();
+// Server startup orchestration with fail-fast database connection
+async function startServer() {
+  try {
+    await connectDB();
+    await seedDefaultTaxAndInsurance();
 
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-  });
+    if (require.main === module) {
+      const { initRecurringCron } = require('./jobs/recurringJob');
+      initRecurringCron();
+
+      const PORT = process.env.PORT || 5000;
+      app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+      });
+    }
+  } catch (err) {
+    console.error('FATAL: Database connection failed during startup:', err);
+    if (process.env.NODE_ENV !== 'test') {
+      process.exit(1);
+    }
+    throw err;
+  }
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  startServer();
 }
 
 module.exports = app;
+module.exports.startServer = startServer;
