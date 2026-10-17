@@ -1,4 +1,10 @@
 // backend/server.js
+const { validateEnv } = require('./config/envValidator');
+// Validate startup environment variables
+if (process.env.NODE_ENV !== 'test') {
+  validateEnv();
+}
+
 // Import the Express library
 const express = require('express');
 const cors = require('cors');
