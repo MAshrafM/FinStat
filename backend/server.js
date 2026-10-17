@@ -41,7 +41,11 @@ app.get('/', (req, res) => res.send('API Running'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/paychecks', require('./routes/paychecks'));
 app.use('/api/salary-profiles', require('./routes/salaryProfiles'));
-app.use('/api/salary-profile', require('./routes/salaryProfiles')); // backward compatible route
+// Permanent 308 redirect from legacy singular route to canonical plural route
+app.use('/api/salary-profile', (req, res) => {
+  const targetPath = req.url === '/' ? '' : req.url;
+  res.redirect(308, `/api/salary-profiles${targetPath}`);
+});
 app.use('/api/social-insurance', require('./routes/socialInsurance'));
 app.use('/api/tax-brackets', require('./routes/taxBrackets'));
 app.use('/api/expenditures', require('./routes/expenditures'));

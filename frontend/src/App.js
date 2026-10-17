@@ -1,6 +1,6 @@
 // frontend/src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute'; // Keep standard import for immediate auth evaluation
 import { ToastProvider } from './context/ToastContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -120,19 +120,19 @@ function App() {
                 <Route path="/admin/tax-brackets" element={<TaxConfigPage />} />
                 <Route path="/admin/social-insurance" element={<InsuranceConfigPage />} />
                 
-                {/* Salary & Paycheck Routes */}
-                <Route path="/salary-profile" element={<SalaryProfilePage />} />
+                {/* Salary & Paycheck Routes (Canonical & Legacy Redirects) */}
+                <Route path="/salary-profile" element={<Navigate to="/salary/profiles" replace />} />
                 <Route path="/salary/profiles" element={<SalaryProfilePage />} />
                 <Route path="/salary-profile/history" element={<SalaryHistory />} />
                 <Route path="/salary-profile/edit" element={<EditProfilePage />} />
                 <Route path="/salary-profile/history/edit/:historyId" element={<EditHistoryRecord />} />
                 <Route path="/salary-profile/update" element={<UpdateSalary />} />
 
-                <Route path="/paycheck-log" element={<PaycheckLog />} />
+                <Route path="/paycheck-log" element={<Navigate to="/salary/paychecks" replace />} />
                 <Route path="/salary/paychecks" element={<PaycheckLog />} />
-                <Route path="/paycheck-log/new" element={<PaycheckFormPage />} />
+                <Route path="/paycheck-log/new" element={<Navigate to="/salary/paychecks/new" replace />} />
                 <Route path="/salary/paychecks/new" element={<PaycheckFormPage />} />
-                <Route path="/paycheck-log/edit/:id" element={<PaycheckFormPage />} />
+                <Route path="/paycheck-log/edit/:id" element={<Navigate to="/salary/paychecks" replace />} />
                 <Route path="/salary/paychecks/edit/:id" element={<PaycheckFormPage />} />
 
                 {/* Analytics */}
@@ -152,9 +152,9 @@ function App() {
                 <Route path="/expenditures/recurring" element={<RecurringSuggestionsPage />} />
                 <Route path="/expenditure-analysis" element={<ExpenditureAnalysisPage />} />
 
-                {/* Investment Asset Classes */}
+                {/* Investment Asset Classes (Canonical & Legacy Redirects) */}
                 <Route path="/trades" element={<TradeLogPage />} />
-                <Route path="/trades/new" element={<AddTradePage />} />
+                <Route path="/trades/new" element={<Navigate to="/trades/add" replace />} />
                 <Route path="/trades/add" element={<AddTradePage />} />
                 <Route path="/trades/edit/:id" element={<EditTradePage />} />
                 <Route path="/trade-summary" element={<TradeSummaryPage />} />
