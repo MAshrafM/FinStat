@@ -19,9 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Step 1.3: [AUD-OPS-004] Implemented fail-fast startup environment schema validation via Zod in `backend/config/envValidator.js` validating `NODE_ENV`, `PORT` (with safe number coercion and 5000 fallback), `MONGO_URI`, `JWT_SECRET` (>=32 chars prod / >=8 dev), `CRON_SECRET` (>=16 chars), and `ENCRYPTION_KEY` (32-byte base64 string for AES-256 TOTP).
 - Step 1.4: [AUD-PERF-002] Realigned Expenditure compound index sort direction to `{ user: 1, date: -1, _id: -1 }` in `backend/models/Expenditure.js` and applied idempotent migration `backend/migrations/20261015_210000_aud_perf_002_realign_expenditure_index.js` after verifying database backup snapshot.
 - Step 1.5: [AUD-SEC-002] Eliminated hardcoded cron fallback secret in `backend/middleware/cronAuth.js`, enforced constant-time comparison via `crypto.timingSafeEqual`, and added dual-header support for `x-cron-secret` and Vercel Cron `Authorization: Bearer <token>`.
+- Step 1.6: [AUD-SEC-007] Installed and mounted Helmet middleware in `backend/server.js` (`crossOriginResourcePolicy: false`) enforcing modern HTTP security headers (`nosniff`, `SAMEORIGIN`, `Referrer-Policy: no-referrer`).
 
 ### Planned (Phase 1: Operational Stability, Startup Integrity & Immediate Security Quick Wins)
-- Step 1.6: [AUD-SEC-007] Security headers mounting via Helmet (`backend/server.js`).
 - Step 1.7: [AUD-SEC-009] Rate limiting on refresh & 2FA management (`backend/routes/auth.js`).
 - Step 1.8: [SIMP-001] Purge abandoned legacy paycheck CRUD subsystem.
 - Step 1.9: [SIMP-005] Eliminate duplicate route aliases across frontend & backend.

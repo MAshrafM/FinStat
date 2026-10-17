@@ -7,6 +7,7 @@ if (process.env.NODE_ENV !== 'test') {
 
 // Import the Express library
 const express = require('express');
+const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db'); // Import the DB connection function
@@ -19,6 +20,9 @@ const app = express();
 
 // Trust reverse proxy (Vercel / Nginx) for accurate client IP resolution in rate limiting
 app.set('trust proxy', 1);
+
+// Mount Helmet security headers (disabling CORP to permit cross-origin assets if needed)
+app.use(helmet({ crossOriginResourcePolicy: false }));
 
 // This enables CORS for all routes, allowing our frontend to make requests
 app.use(cors({
