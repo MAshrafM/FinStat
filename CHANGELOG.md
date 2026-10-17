@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Step 1.5: [AUD-SEC-002] Eliminated hardcoded cron fallback secret in `backend/middleware/cronAuth.js`, enforced constant-time comparison via `crypto.timingSafeEqual`, and added dual-header support for `x-cron-secret` and Vercel Cron `Authorization: Bearer <token>`.
 - Step 1.6: [AUD-SEC-007] Installed and mounted Helmet middleware in `backend/server.js` (`crossOriginResourcePolicy: false`) enforcing modern HTTP security headers (`nosniff`, `SAMEORIGIN`, `Referrer-Policy: no-referrer`).
 - Step 1.7: [AUD-SEC-009] Mounted `authRateLimiter` middleware on `POST /api/auth/refresh` and `POST /api/auth/2fa/disable` in `backend/routes/auth.js` enforcing rate limits (HTTP 429 on 11th request/min).
+- Step 1.8: [SIMP-001] Purged abandoned legacy paycheck CRUD subsystem files (`AddPaycheck.js`, `EditPaycheck.js`, `PaycheckForm.js`, `PaycheckListPage.js`) after verifying zero imports, zero route bindings in `App.js`, and clean production build.
 
 ### Planned (Phase 1: Operational Stability, Startup Integrity & Immediate Security Quick Wins)
-- Step 1.8: [SIMP-001] Purge abandoned legacy paycheck CRUD subsystem.
 - Step 1.9: [SIMP-005] Eliminate duplicate route aliases across frontend & backend.
