@@ -77,6 +77,7 @@ router.get('/', auth, asyncHandler(async (req, res) => {
   }
 
   res.json({
+    ...mainProfile,
     success: true,
     profiles: enrichedProfiles,
     mainProfile,

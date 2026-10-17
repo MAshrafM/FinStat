@@ -5,8 +5,19 @@ import apiClient from './apiClient';
 const API_URL = `${BASE_API_URL}/salary-profile`;
 
 // Gets the one and only profile
-export const getProfile = (options = {}) =>
-  apiClient.get(API_URL, options);
+export const getProfile = async (options = {}) => {
+  const res = await apiClient.get(API_URL, options);
+  const data = res && res.data !== undefined ? res.data : res;
+  if (!data) return null;
+  if (data.mainProfile) {
+    return { ...data.mainProfile, ...data };
+  }
+  if (Array.isArray(data.profiles) && data.profiles.length > 0) {
+    const main = data.profiles.find((p) => p.isDefault) || data.profiles[0];
+    return { ...main, ...data };
+  }
+  return data;
+};
 
 // Creates or updates the profile
 export const saveProfile = (profileData, options = {}) =>
