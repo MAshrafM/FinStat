@@ -186,7 +186,7 @@ const ExpenditureSchema = new mongoose.Schema({
 ExpenditureSchema.plugin(softDeletePlugin);
 
 // Compound indexes for query performance and tie-breakers
-ExpenditureSchema.index({ user: 1, date: -1, _id: 1 });
+ExpenditureSchema.index({ user: 1, date: -1, _id: -1 });
 ExpenditureSchema.index({ user: 1, date: 1, _id: 1 });
 ExpenditureSchema.index({ user: 1, paymentMethod: 1, date: -1 });
 ExpenditureSchema.index({ user: 1, isRecurring: 1 });
