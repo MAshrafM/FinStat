@@ -7,7 +7,7 @@ const { runDailyForexRevaluation } = require('../jobs/forexRevaluationJob');
 
 // @route   GET api/jobs/forex-revaluation
 // @desc    Trigger automated forex revaluation for all users (Vercel Cron)
-// @access  Cron Authenticated (x-cron-secret)
+// @access  Cron Authenticated (x-cron-secret or Authorization: Bearer <secret>)
 router.get('/forex-revaluation', cronAuth, asyncHandler(async (req, res) => {
   const result = await runDailyForexRevaluation();
   res.json({
