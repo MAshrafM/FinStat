@@ -21,7 +21,7 @@ const updateProfileSchema = z.object({
   costBasisMethod: z.enum(['fifo', 'lifo', 'average'], {
     message: 'Cost basis method must be one of: fifo, lifo, average',
   }).optional(),
-}).passthrough();
+}).strict();
 
 const userParamsSchema = z.object({
   id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid user ID'),

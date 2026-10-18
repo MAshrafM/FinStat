@@ -29,6 +29,31 @@ const sanitizeUserProfile = (user) => {
   return obj;
 };
 
+const ALLOWED_PROFILE_FIELDS = [
+  'fullName',
+  'dateOfBirth',
+  'nationalId',
+  'phone',
+  'address',
+  'title',
+  'company',
+  'department',
+  'employeeId',
+  'email',
+  'username',
+  'costBasisMethod',
+];
+
+const filterAllowedProfileFields = (data) => {
+  const safe = {};
+  for (const key of ALLOWED_PROFILE_FIELDS) {
+    if (data[key] !== undefined) {
+      safe[key] = data[key];
+    }
+  }
+  return safe;
+};
+
 // @route   GET /api/users/profile
 // @desc    Get current user's full profile
 // @access  Private
@@ -53,7 +78,11 @@ router.put(
   asyncHandler(async (req, res) => {
     const updateData = getValidated(req, 'body');
 
-    // Check unique constraints for email, nationalId, employeeId if changed
+    // Check unique constraints for username, email, nationalId, employeeId if changed
+    if (updateData.username) {
+      const existing = await User.findOne({ username: updateData.username, _id: { $ne: req.user.id } });
+      if (existing) throw new ConflictError('Username is already taken');
+    }
     if (updateData.email) {
       const existing = await User.findOne({ email: updateData.email, _id: { $ne: req.user.id } });
       if (existing) throw new ConflictError('Email is already in use');
@@ -67,9 +96,11 @@ router.put(
       if (existing) throw new ConflictError('Employee ID is already registered to another user');
     }
 
+    const safeUpdateData = filterAllowedProfileFields(updateData);
+
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
-      { $set: updateData },
+      { $set: safeUpdateData },
       { new: true, runValidators: true }
     ).select('-password -totpSecret -backupCodes');
 
@@ -130,6 +161,10 @@ router.put(
       throw new NotFoundError('User not found');
     }
 
+    if (updateData.username) {
+      const existing = await User.findOne({ username: updateData.username, _id: { $ne: id } });
+      if (existing) throw new ConflictError('Username is already taken');
+    }
     if (updateData.email) {
       const existing = await User.findOne({ email: updateData.email, _id: { $ne: id } });
       if (existing) throw new ConflictError('Email is already in use');
@@ -143,9 +178,11 @@ router.put(
       if (existing) throw new ConflictError('Employee ID is already registered');
     }
 
+    const safeUpdateData = filterAllowedProfileFields(updateData);
+
     const updatedUser = await User.findByIdAndUpdate(
       id,
-      { $set: updateData },
+      { $set: safeUpdateData },
       { new: true, runValidators: true }
     ).select('-password -totpSecret -backupCodes');
 

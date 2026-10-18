@@ -365,4 +365,54 @@ describe('Auth Hardening & Scalability Suite', () => {
       expect(res.body.page).toBe(1);
     });
   });
+
+  describe('6. Profile Mass Assignment & Uniqueness Protection (AUD-SEC-003)', () => {
+    it('should reject privilege escalation payload with role: admin via 400 Bad Request and preserve viewer role', async () => {
+      const viewerToken = jwt.sign(
+        { user: { id: testUser._id.toString(), role: 'viewer' } },
+        process.env.JWT_SECRET
+      );
+
+      const res = await request(app)
+        .put('/api/users/profile')
+        .set('Authorization', `Bearer ${viewerToken}`)
+        .send({ role: 'admin', totpEnabled: false });
+
+      expect([400, 422]).toContain(res.statusCode);
+
+      const user = await User.findById(testUser._id);
+      expect(user.role).toBe('viewer');
+    });
+
+    it('should allow valid profile updates for whitelisted fields', async () => {
+      const viewerToken = jwt.sign(
+        { user: { id: testUser._id.toString(), role: 'viewer' } },
+        process.env.JWT_SECRET
+      );
+
+      const res = await request(app)
+        .put('/api/users/profile')
+        .set('Authorization', `Bearer ${viewerToken}`)
+        .send({ fullName: 'Updated Test User', title: 'Senior Analyst' });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.user.fullName).toBe('Updated Test User');
+    });
+
+    it('should return 409 Conflict when attempting to take an existing username', async () => {
+      const viewerToken = jwt.sign(
+        { user: { id: testUser._id.toString(), role: 'viewer' } },
+        process.env.JWT_SECRET
+      );
+
+      const res = await request(app)
+        .put('/api/users/profile')
+        .set('Authorization', `Bearer ${viewerToken}`)
+        .send({ username: 'test_admin_user' });
+
+      expect(res.statusCode).toBe(409);
+      expect(res.body.message).toContain('Username is already taken');
+    });
+  });
 });

@@ -26,3 +26,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security & Hardening - Phase 2A: Auth & Session Hardening
 - Step 2A.1: [AUD-SEC-001] Enforced Role-Based Access Control on singleton tax brackets by mounting `authorize(['admin'])` on `PUT /api/tax-brackets` in `backend/routes/taxBrackets.js`, blocking non-admin (`manager`/`viewer`) privilege escalation and unauthorized modification of global system tax configuration.
+- Step 2A.2: [AUD-SEC-003] Eliminated privilege escalation and mass assignment vulnerabilities on profile updates by making `updateProfileSchema` `.strict()` in `backend/validationSchemas/userSchemas.js`, enforcing an explicit field whitelist in `backend/routes/users.js` (`PUT /api/users/profile` and `PUT /api/users/:id/profile`), and adding upfront uniqueness checks returning HTTP 409 Conflict for `username`, `email`, `nationalId`, and `employeeId`.
