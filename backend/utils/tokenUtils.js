@@ -5,8 +5,16 @@ const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const ACCESS_TOKEN_EXPIRY = process.env.JWT_EXPIRES_IN || '30d';
-const REFRESH_TOKEN_DAYS = 90;
+const REFRESH_TOKEN_DAYS = 7;
 const TEMP_2FA_TOKEN_EXPIRY = '5m';
+
+/**
+ * Hashes a raw refresh token using SHA-256 for fast indexed O(1) lookup.
+ */
+const hashToken = (rawToken) => {
+  if (!rawToken || typeof rawToken !== 'string') return '';
+  return crypto.createHash('sha256').update(rawToken).digest('hex');
+};
 
 /**
  * Generates a short-lived (15m) JWT access token.
@@ -57,6 +65,7 @@ module.exports = {
   generateRefreshToken,
   generateTemp2FAToken,
   getRefreshTokenExpiresAt,
+  hashToken,
   ACCESS_TOKEN_EXPIRY,
   REFRESH_TOKEN_DAYS,
 };

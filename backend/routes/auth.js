@@ -28,6 +28,7 @@ const {
   generateRefreshToken,
   generateTemp2FAToken,
   getRefreshTokenExpiresAt,
+  hashToken,
 } = require('../utils/tokenUtils');
 
 const { logAudit } = require('../utils/auditLogger');
@@ -124,11 +125,11 @@ router.post(
     // 4. Issue standard tokens when 2FA is not enabled
     const token = generateAccessToken(user);
     const rawRefreshToken = generateRefreshToken();
-    const hashedRefreshToken = await bcrypt.hash(rawRefreshToken, 10);
+    const tokenHash = hashToken(rawRefreshToken);
 
     await RefreshToken.create({
       userId: user._id,
-      token: hashedRefreshToken,
+      tokenHash,
       expiresAt: getRefreshTokenExpiresAt(),
     });
 
@@ -145,7 +146,6 @@ router.post(
     res.json({
       success: true,
       token,
-      refreshToken: rawRefreshToken,
       user: await formatUserResponse(user),
     });
   })
@@ -228,11 +228,11 @@ router.post(
     // 4. Verification successful: Issue access token + refresh token
     const token = generateAccessToken(user);
     const rawRefreshToken = generateRefreshToken();
-    const hashedRefreshToken = await bcrypt.hash(rawRefreshToken, 10);
+    const tokenHash = hashToken(rawRefreshToken);
 
     await RefreshToken.create({
       userId: user._id,
-      token: hashedRefreshToken,
+      tokenHash,
       expiresAt: getRefreshTokenExpiresAt(),
     });
 
@@ -249,7 +249,6 @@ router.post(
     res.json({
       success: true,
       token,
-      refreshToken: rawRefreshToken,
       user: await formatUserResponse(user),
     });
   })
@@ -262,61 +261,72 @@ router.post(
   '/refresh',
   authRateLimiter,
   asyncHandler(async (req, res) => {
-    const rawRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    // Strictly cookie-only: ignore any body-supplied refresh tokens
+    const rawRefreshToken = req.cookies?.refreshToken;
 
     if (!rawRefreshToken) {
-      throw new UnauthorizedError('No refresh token provided');
+      throw new UnauthorizedError('No refresh token cookie provided');
     }
 
-    // Find all unexpired refresh tokens
-    const unexpiredTokens = await RefreshToken.find({
+    const incomingHash = hashToken(rawRefreshToken);
+
+    // O(1) indexed lookup via tokenHash
+    const tokenRecord = await RefreshToken.findOne({
+      tokenHash: incomingHash,
       expiresAt: { $gt: new Date() },
     });
 
-    let matchedTokenRecord = null;
-    for (const record of unexpiredTokens) {
-      const isMatch = await bcrypt.compare(rawRefreshToken, record.token);
-      if (isMatch) {
-        matchedTokenRecord = record;
-        break;
-      }
-    }
-
-    // If not found or expired
-    if (!matchedTokenRecord) {
+    if (!tokenRecord) {
       res.clearCookie('refreshToken', getCookieOptions());
       throw new UnauthorizedError('Invalid or expired refresh token');
     }
 
-    // Reuse detection: If token was already revoked, revoke ALL sessions for this user
-    if (matchedTokenRecord.revoked) {
+    // Delayed Rotation Grace Window Handling:
+    // If the token was already rotated (revoked: true), check if it is within the 30-second concurrency window.
+    if (tokenRecord.revoked) {
+      const isWithinGraceWindow = tokenRecord.rotatedAt && (Date.now() - tokenRecord.rotatedAt.getTime() < 30000);
+      if (isWithinGraceWindow) {
+        // DELAYED ROTATION: Do NOT issue a new refresh token or rotate cookie.
+        // Issue ONLY a new access token to the caller so concurrent browser tabs succeed.
+        const user = await User.findById(tokenRecord.userId);
+        if (!user) {
+          res.clearCookie('refreshToken', getCookieOptions());
+          throw new UnauthorizedError('User no longer exists');
+        }
+        const newAccessToken = generateAccessToken(user);
+        return res.json({
+          success: true,
+          token: newAccessToken,
+          user: await formatUserResponse(user),
+        });
+      }
+
+      // Outside grace window: Genuine token reuse / breach detected
       await RefreshToken.updateMany(
-        { userId: matchedTokenRecord.userId },
+        { userId: tokenRecord.userId },
         { $set: { revoked: true } }
       );
       res.clearCookie('refreshToken', getCookieOptions());
       throw new UnauthorizedError('Security alert: Revoked refresh token reused. All sessions terminated.');
     }
 
-    // Revoke old token
-    matchedTokenRecord.revoked = true;
-    await matchedTokenRecord.save();
+    // Normal Rotation (token not revoked yet):
+    tokenRecord.revoked = true;
+    tokenRecord.rotatedAt = new Date();
+    await tokenRecord.save();
 
-    // Fetch user
-    const user = await User.findById(matchedTokenRecord.userId);
+    const user = await User.findById(tokenRecord.userId);
     if (!user) {
       res.clearCookie('refreshToken', getCookieOptions());
       throw new UnauthorizedError('User no longer exists');
     }
 
-    // Rotate: Issue new refresh token & access token
     const newAccessToken = generateAccessToken(user);
     const newRawRefreshToken = generateRefreshToken();
-    const newHashed = await bcrypt.hash(newRawRefreshToken, 10);
 
     await RefreshToken.create({
       userId: user._id,
-      token: newHashed,
+      tokenHash: hashToken(newRawRefreshToken),
       expiresAt: getRefreshTokenExpiresAt(),
     });
 
@@ -325,7 +335,6 @@ router.post(
     res.json({
       success: true,
       token: newAccessToken,
-      refreshToken: newRawRefreshToken,
       user: await formatUserResponse(user),
     });
   })
@@ -338,18 +347,14 @@ router.post(
   '/logout',
   auth,
   asyncHandler(async (req, res) => {
-    const rawRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    const rawRefreshToken = req.cookies?.refreshToken;
 
     if (rawRefreshToken) {
-      const tokens = await RefreshToken.find({ userId: req.user.id, revoked: false });
-      for (const rec of tokens) {
-        const isMatch = await bcrypt.compare(rawRefreshToken, rec.token);
-        if (isMatch) {
-          rec.revoked = true;
-          await rec.save();
-          break;
-        }
-      }
+      const incomingHash = hashToken(rawRefreshToken);
+      await RefreshToken.updateOne(
+        { tokenHash: incomingHash, userId: req.user.id },
+        { $set: { revoked: true, rotatedAt: new Date() } }
+      );
     }
 
     res.clearCookie('refreshToken', getCookieOptions());

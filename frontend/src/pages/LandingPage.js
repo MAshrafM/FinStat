@@ -48,9 +48,6 @@ const LandingPage = () => {
         setIsLoading(false);
       } else if (data.token) {
         localStorage.setItem('token', data.token);
-        if (data.refreshToken) {
-          localStorage.setItem('refreshToken', data.refreshToken);
-        }
         if (data.user) {
           localStorage.setItem('user', JSON.stringify(data.user));
         }
@@ -87,9 +84,6 @@ const LandingPage = () => {
       const data = await login2FA(payload, { suppressToast: true });
       if (data.token) {
         localStorage.setItem('token', data.token);
-        if (data.refreshToken) {
-          localStorage.setItem('refreshToken', data.refreshToken);
-        }
         if (data.user) {
           localStorage.setItem('user', JSON.stringify(data.user));
         }

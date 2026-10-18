@@ -94,18 +94,36 @@ describe('Auth Hardening & Scalability Suite', () => {
       const newRefreshTokenCookie = newCookies.find((c) => c.startsWith('refreshToken='));
       expect(newRefreshTokenCookie).toBeDefined();
 
-      // Check that old cookie now points to a revoked token
+      // Grace Window (Delayed Rotation): Old cookie presented within 30s receives new access token without session destruction
+      const concurrentGraceAttempt = await request(app)
+        .post('/api/auth/refresh')
+        .set('Cookie', [refreshTokenCookie]);
+
+      expect(concurrentGraceAttempt.statusCode).toBe(200);
+      expect(concurrentGraceAttempt.body.token).toBeDefined();
+
+      // Outside Grace Window (>30s): Simulate aged token to trigger reuse breach protection
+      await RefreshToken.updateMany({ revoked: true }, { $set: { rotatedAt: new Date(Date.now() - 35000) } });
+
       const oldRevokedAttempt = await request(app)
         .post('/api/auth/refresh')
         .set('Cookie', [refreshTokenCookie]);
 
-      // Reuse detection should trigger
       expect(oldRevokedAttempt.statusCode).toBe(401);
       expect(oldRevokedAttempt.body.message).toContain('Revoked refresh token reused');
 
       // All user tokens should now be revoked
       const allTokens = await RefreshToken.find({ userId: testUser._id, revoked: false });
       expect(allTokens.length).toBe(0);
+    });
+
+    it('should reject POST /refresh if refresh token is provided only in body (cookie-only enforcement)', async () => {
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken: 'some_body_token_value' });
+
+      expect(res.statusCode).toBe(401);
+      expect(res.body.message).toContain('No refresh token cookie provided');
     });
   });
 

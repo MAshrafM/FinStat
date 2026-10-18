@@ -7,10 +7,11 @@ const refreshTokenSchema = new mongoose.Schema({
     ref: 'User', 
     required: true 
   },
-  token: { 
+  tokenHash: { 
     type: String, 
-    required: true 
-  }, // hashed (bcrypt) refresh token
+    required: true,
+    unique: true,
+  }, // SHA-256 hash of raw refresh token
   expiresAt: { 
     type: Date, 
     required: true 
@@ -19,12 +20,16 @@ const refreshTokenSchema = new mongoose.Schema({
     type: Boolean, 
     default: false 
   },
+  rotatedAt: {
+    type: Date,
+  },
   createdAt: { 
     type: Date, 
     default: Date.now 
   }
 });
 
+refreshTokenSchema.index({ tokenHash: 1 }, { unique: true });
 refreshTokenSchema.index({ userId: 1, revoked: 1 });
 refreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index
 
