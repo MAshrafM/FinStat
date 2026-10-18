@@ -14,7 +14,7 @@ const {
   paramsSchema,
   querySchema,
 } = require('../validationSchemas/tradeSchemas');
-const { getValidated } = require('../utils/requestHelpers');
+const { getValidated, escapeRegex } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
 const User = require('../models/User');
 const CorporateAction = require('../models/CorporateAction');
@@ -37,8 +37,9 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
     query.type = 'TopUp';
   }
 
-  if (search) {
-    query.stockCode = { $regex: search, $options: 'i' };
+  if (search && search.trim()) {
+    const safeSearch = escapeRegex(search).slice(0, 100);
+    query.stockCode = { $regex: safeSearch, $options: 'i' };
   }
 
   const trades = await Trade.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);

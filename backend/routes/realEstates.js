@@ -13,7 +13,7 @@ const {
   paramsSchema,
   querySchema,
 } = require('../validationSchemas/realEstateSchemas');
-const { getValidated } = require('../utils/requestHelpers');
+const { getValidated, escapeRegex } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
 
@@ -30,9 +30,10 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
     query.type = type;
   }
   if (search && search.trim() !== '') {
+    const safeSearch = escapeRegex(search).slice(0, 100);
     query.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { location: { $regex: search, $options: 'i' } },
+      { name: { $regex: safeSearch, $options: 'i' } },
+      { location: { $regex: safeSearch, $options: 'i' } },
     ];
   }
 
