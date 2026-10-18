@@ -462,5 +462,20 @@ describe('Auth Hardening & Scalability Suite', () => {
       expect(decoded).toBeDefined();
       expect(decoded.exp - decoded.iat).toBe(900);
     });
+
+    it('should sanitize and resolve token expiry correctly across edge cases', () => {
+      const { resolveTokenExpiry } = require('../../utils/tokenUtils');
+
+      expect(resolveTokenExpiry('15m')).toBe('15m');
+      expect(resolveTokenExpiry('30d')).toBe('30d');
+      expect(resolveTokenExpiry('"30d"')).toBe('30d');
+      expect(resolveTokenExpiry("'15m'")).toBe('15m');
+      expect(resolveTokenExpiry('  15m  ')).toBe('15m');
+      expect(resolveTokenExpiry('900')).toBe(900);
+      expect(resolveTokenExpiry('invalid-unsupported-string')).toBe('15m');
+      expect(resolveTokenExpiry('')).toBe('15m');
+      expect(resolveTokenExpiry(null)).toBe('15m');
+      expect(resolveTokenExpiry(undefined)).toBe('15m');
+    });
   });
 });

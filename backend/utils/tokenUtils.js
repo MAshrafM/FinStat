@@ -4,7 +4,34 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
-const ACCESS_TOKEN_EXPIRY = process.env.JWT_EXPIRES_IN || '15m';
+/**
+ * Safely resolves and sanitizes JWT access token expiry.
+ * Strips accidental wrapping quotes ("...", '...'), trims whitespace, parses numeric
+ * seconds, and validates against jsonwebtoken's timespan parser, safely falling back to '15m'.
+ */
+const resolveTokenExpiry = (rawVal) => {
+  const fallback = '15m';
+  if (!rawVal || typeof rawVal !== 'string') return fallback;
+
+  const cleaned = rawVal.replace(/^["']|["']$/g, '').trim();
+  if (!cleaned) return fallback;
+
+  // Pure integer in string format -> integer seconds
+  if (/^\d+$/.test(cleaned)) {
+    const num = parseInt(cleaned, 10);
+    return !isNaN(num) && num > 0 ? num : fallback;
+  }
+
+  // Validate that jwt.sign accepts this timespan string without throwing
+  try {
+    jwt.sign({ test: true }, 'validation-secret-at-least-32-chars-long', { expiresIn: cleaned });
+    return cleaned;
+  } catch {
+    return fallback;
+  }
+};
+
+const ACCESS_TOKEN_EXPIRY = resolveTokenExpiry(process.env.JWT_EXPIRES_IN);
 const REFRESH_TOKEN_DAYS = 7;
 const TEMP_2FA_TOKEN_EXPIRY = '5m';
 
@@ -66,6 +93,7 @@ module.exports = {
   generateTemp2FAToken,
   getRefreshTokenExpiresAt,
   hashToken,
+  resolveTokenExpiry,
   ACCESS_TOKEN_EXPIRY,
   REFRESH_TOKEN_DAYS,
 };

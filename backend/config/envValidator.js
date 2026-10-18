@@ -22,6 +22,7 @@ const envSchema = z.object({
     }
   }, { message: 'ENCRYPTION_KEY must be a valid 32-byte base64-encoded string for AES-256' }),
   REFRESH_TOKEN_SECRET: z.string().optional(),
+  JWT_EXPIRES_IN: z.string().optional(),
 });
 
 const validateEnv = (customEnv = process.env) => {

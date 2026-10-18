@@ -47,10 +47,6 @@ router.get('/', auth, asyncHandler(async (req, res) => {
   }
 
   if (!taxInfo) {
-    taxInfo = await TaxBracket.findOne({ identifier: 'singleton' });
-  }
-
-  if (!taxInfo) {
     taxInfo = new TaxBracket({
       country: 'Egypt',
       year: targetYear,
@@ -73,12 +69,24 @@ router.put('/', auth, authorize(['admin']), validate({ body: updateSchema }), as
   const { brackets } = getValidated(req, 'body');
   const processedBrackets = mapBracketsWithPiastres(brackets);
 
-  const updatedTaxInfo = await TaxBracket.findOneAndUpdate(
-    { identifier: 'singleton' },
-    { $set: { brackets: processedBrackets, lastUpdated: new Date() } },
-    { new: true, upsert: true }
-  );
-  res.json(updatedTaxInfo);
+  const targetYear = new Date().getFullYear();
+  let taxInfo = await TaxBracket.findOne({ isActive: true }).sort({ year: -1 });
+
+  if (taxInfo) {
+    taxInfo.brackets = processedBrackets;
+    taxInfo.lastUpdated = new Date();
+    await taxInfo.save();
+  } else {
+    taxInfo = await TaxBracket.create({
+      country: 'Egypt',
+      year: targetYear,
+      personalExemption: 20000,
+      isActive: true,
+      brackets: processedBrackets,
+      lastUpdated: new Date(),
+    });
+  }
+  res.json(taxInfo);
 }));
 
 module.exports = router;

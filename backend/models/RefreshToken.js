@@ -10,7 +10,6 @@ const refreshTokenSchema = new mongoose.Schema({
   tokenHash: { 
     type: String, 
     required: true,
-    unique: true,
   }, // SHA-256 hash of raw refresh token
   expiresAt: { 
     type: Date, 
