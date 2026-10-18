@@ -153,12 +153,9 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  let log = await Gold.findOne({ _id: id, deletedAt: null });
+  let log = await Gold.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!log) {
     throw new NotFoundError('Gold log not found');
-  }
-  if (log.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
   }
 
   const updateData = { ...validatedBody };
@@ -172,7 +169,11 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     updateData.sellingPriceInPiastres = toPiastres(validatedBody.sellingPrice);
   }
 
-  log = await Gold.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  log = await Gold.findOneAndUpdate(
+    { _id: id, user: req.effectiveUserId, deletedAt: null },
+    updateData,
+    { new: true, runValidators: true }
+  );
   invalidatePortfolioCache(req.effectiveUserId);
   res.json(log);
 }));
@@ -184,12 +185,9 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  let log = await Gold.findOne({ _id: id, deletedAt: null });
+  const log = await Gold.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!log) {
     throw new NotFoundError('Gold log not found');
-  }
-  if (log.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
   }
   await log.softDelete();
   invalidatePortfolioCache(req.effectiveUserId);

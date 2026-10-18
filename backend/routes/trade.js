@@ -214,12 +214,9 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  let trade = await Trade.findOne({ _id: id, deletedAt: null });
+  let trade = await Trade.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!trade) {
     throw new NotFoundError('Trade not found');
-  }
-  if (trade.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
   }
 
   const updateData = { ...validatedBody };
@@ -233,7 +230,11 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     updateData.totalValueInPiastres = toPiastres(validatedBody.totalValue);
   }
 
-  trade = await Trade.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  trade = await Trade.findOneAndUpdate(
+    { _id: id, user: req.effectiveUserId, deletedAt: null },
+    updateData,
+    { new: true, runValidators: true }
+  );
   invalidatePortfolioCache(req.effectiveUserId);
   res.json(trade);
 }));
@@ -245,12 +246,9 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  let trade = await Trade.findOne({ _id: id, deletedAt: null });
+  const trade = await Trade.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!trade) {
     throw new NotFoundError('Trade not found');
-  }
-  if (trade.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
   }
   await trade.softDelete();
   invalidatePortfolioCache(req.effectiveUserId);

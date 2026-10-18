@@ -164,12 +164,9 @@ router.post('/:id/withdraw', auth, validate({ params: paramsSchema, body: withdr
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  const certificate = await Certificate.findOne({ _id: id, deletedAt: null });
+  const certificate = await Certificate.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!certificate) {
     throw new NotFoundError('Certificate not found');
-  }
-  if (certificate.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
   }
 
   const withdrawalDate = validatedBody.withdrawalDate ? new Date(validatedBody.withdrawalDate) : new Date();
@@ -200,12 +197,9 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  let certificate = await Certificate.findOne({ _id: id, deletedAt: null });
+  let certificate = await Certificate.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!certificate) {
     throw new NotFoundError('Certificate not found');
-  }
-  if (certificate.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
   }
 
   const updateData = { ...validatedBody };
@@ -213,7 +207,11 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     updateData.amountInPiastres = toPiastres(validatedBody.amount);
   }
 
-  certificate = await Certificate.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  certificate = await Certificate.findOneAndUpdate(
+    { _id: id, user: req.effectiveUserId, deletedAt: null },
+    updateData,
+    { new: true, runValidators: true }
+  );
   invalidatePortfolioCache(req.effectiveUserId);
   res.json(enrichCertificate(certificate));
 }));
@@ -225,12 +223,9 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  const certificate = await Certificate.findOne({ _id: id, deletedAt: null });
+  const certificate = await Certificate.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!certificate) {
     throw new NotFoundError('Certificate not found');
-  }
-  if (certificate.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
   }
   await certificate.softDelete();
   invalidatePortfolioCache(req.effectiveUserId);
