@@ -33,4 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security & Hardening - Phase 2B: Input & Query Defense
 - Step 2B.2: [AUD-SEC-006] Eliminated MongoDB `$regex` injection and query crash vulnerabilities by implementing a centralized `escapeRegex` utility in `backend/utils/requestHelpers.js`, sanitizing user search inputs in `backend/routes/trade.js` and `backend/routes/realEstates.js`, and truncating search queries to 100 characters to prevent payload-size amplification.
+- Step 2B.1: [AUD-SEC-005] ReDoS mitigation in Categorization Rule Engine & testing endpoint by adding pinned dependency `safe-regex@2.1.1` in `backend/package.json`, enforcing 150-char pattern cap and parser-hardened `safeRegex` validation inside Zod schemas (`createRuleSchema`, `updateRuleSchema`, `testRuleSchema`), capping `sampleText` at 1,000 characters, and protecting the interactive testing endpoint (`testRule`) with a 100ms `vm` timeout guard while leaving hot-path `matchesRule` overhead-free.
+
 
