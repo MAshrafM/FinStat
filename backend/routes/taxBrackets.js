@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const TaxBracket = require('../models/TaxBracket');
 const auth = require('../middleware/auth');
+const authorize = require('../middleware/authorize');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const { ForbiddenError } = require('../utils/errors');
@@ -65,7 +66,7 @@ router.get('/', auth, asyncHandler(async (req, res) => {
 
 // @route   PUT api/tax-brackets
 // @desc    Update the entire set of tax brackets
-router.put('/', auth, validate({ body: updateSchema }), asyncHandler(async (req, res) => {
+router.put('/', auth, authorize(['admin']), validate({ body: updateSchema }), asyncHandler(async (req, res) => {
   if (!req.canModify) {
     throw new ForbiddenError('Viewers have read-only access');
   }

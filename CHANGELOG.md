@@ -23,3 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Step 1.7: [AUD-SEC-009] Mounted `authRateLimiter` middleware on `POST /api/auth/refresh` and `POST /api/auth/2fa/disable` in `backend/routes/auth.js` enforcing rate limits (HTTP 429 on 11th request/min).
 - Step 1.8: [SIMP-001] Purged abandoned legacy paycheck CRUD subsystem files (`AddPaycheck.js`, `EditPaycheck.js`, `PaycheckForm.js`, `PaycheckListPage.js`) after verifying zero imports, zero route bindings in `App.js`, and clean production build.
 - Step 1.9: [SIMP-005] Standardized duplicate route aliases: added permanent HTTP 308 redirect from `/api/salary-profile` to `/api/salary-profiles` in `backend/server.js` and standardized frontend legacy aliases (`/salary-profile`, `/paycheck-log`, `/trades/new`) to canonical paths via `<Navigate replace />` in `frontend/src/App.js`.
+
+### Security & Hardening - Phase 2A: Auth & Session Hardening
+- Step 2A.1: [AUD-SEC-001] Enforced Role-Based Access Control on singleton tax brackets by mounting `authorize(['admin'])` on `PUT /api/tax-brackets` in `backend/routes/taxBrackets.js`, blocking non-admin (`manager`/`viewer`) privilege escalation and unauthorized modification of global system tax configuration.

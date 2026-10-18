@@ -306,6 +306,46 @@ describe('Auth Hardening & Scalability Suite', () => {
       expect(res.statusCode).toBe(200);
       expect(res.body.secret).toBe(42);
     });
+
+    it('should block non-admin users from PUT /api/tax-brackets with 403', async () => {
+      const viewerToken = jwt.sign(
+        { user: { id: testUser._id.toString(), role: 'viewer' } },
+        process.env.JWT_SECRET
+      );
+
+      const res = await request(app)
+        .put('/api/tax-brackets')
+        .set('Authorization', `Bearer ${viewerToken}`)
+        .send({
+          brackets: [
+            { level: 1, from: 0, to: 50000, rate: 0 },
+            { level: 2, from: 50000, to: 100000, rate: 0.1 },
+          ],
+        });
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.message).toContain('Forbidden');
+    });
+
+    it('should allow admin users on PUT /api/tax-brackets with 200', async () => {
+      const adminToken = jwt.sign(
+        { user: { id: adminUser._id.toString(), role: 'admin' } },
+        process.env.JWT_SECRET
+      );
+
+      const res = await request(app)
+        .put('/api/tax-brackets')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          brackets: [
+            { level: 1, from: 0, to: 30000, rate: 0 },
+            { level: 2, from: 30000, to: 45000, rate: 0.1 },
+          ],
+        });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.brackets).toBeDefined();
+    });
   });
 
   describe('5. Audit Logs Endpoint', () => {
