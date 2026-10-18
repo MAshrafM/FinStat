@@ -452,4 +452,15 @@ describe('Auth Hardening & Scalability Suite', () => {
       expect(res.headers['access-control-allow-credentials']).toBe('true');
     });
   });
+
+  describe('8. JWT Access Token Expiry Reduction (AUD-SEC-008)', () => {
+    it('should generate an access token that expires in 15 minutes (exp - iat === 900)', () => {
+      const { generateAccessToken } = require('../../utils/tokenUtils');
+      const token = generateAccessToken({ _id: testUser._id, role: 'viewer', username: 'test_auth_user' });
+      const decoded = jwt.decode(token);
+
+      expect(decoded).toBeDefined();
+      expect(decoded.exp - decoded.iat).toBe(900);
+    });
+  });
 });
