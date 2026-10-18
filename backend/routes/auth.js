@@ -49,16 +49,13 @@ const getClientIp = (req) => {
   return req.ip || req.socket?.remoteAddress || 'unknown';
 };
 
-const getCookieOptions = () => {
-  const isProd = process.env.NODE_ENV === 'production';
-  return {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    maxAge: 90 * 24 * 60 * 60 * 1000, // 90 days
-    path: '/',
-  };
-};
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  path: '/',
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+});
 
 const formatUserResponse = async (user) => {
   let parentUsername = null;

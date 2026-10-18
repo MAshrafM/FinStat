@@ -24,10 +24,27 @@ app.set('trust proxy', 1);
 // Mount Helmet security headers (disabling CORP to permit cross-origin assets if needed)
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
-// This enables CORS for all routes, allowing our frontend to make requests
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+if (process.env.NODE_ENV !== 'production') {
+  ['http://localhost:3000', 'http://127.0.0.1:3000'].forEach((devOrigin) => {
+    if (!allowedOrigins.includes(devOrigin)) allowedOrigins.push(devOrigin);
+  });
+}
+
+// Strict CORS: restrict origins from dynamic reflection with credentials to authorized domains
 app.use(cors({
-  origin: true,
-  credentials: true
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: true,
 }));
 // This allows us to accept JSON data in the body of requests
 app.use(express.json());

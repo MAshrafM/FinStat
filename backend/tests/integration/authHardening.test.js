@@ -415,4 +415,23 @@ describe('Auth Hardening & Scalability Suite', () => {
       expect(res.body.message).toContain('Username is already taken');
     });
   });
+
+  describe('7. CORS Dynamic Origin Reflection Restriction (AUD-SEC-004)', () => {
+    it('should not reflect unauthorized origin in Access-Control-Allow-Origin header', async () => {
+      const res = await request(app)
+        .get('/')
+        .set('Origin', 'https://malicious-hacker-site.com');
+
+      expect(res.headers['access-control-allow-origin']).toBeUndefined();
+    });
+
+    it('should grant CORS to legitimate allowed origin', async () => {
+      const res = await request(app)
+        .get('/')
+        .set('Origin', 'http://localhost:3000');
+
+      expect(res.headers['access-control-allow-origin']).toBe('http://localhost:3000');
+      expect(res.headers['access-control-allow-credentials']).toBe('true');
+    });
+  });
 });
