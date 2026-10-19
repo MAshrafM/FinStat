@@ -134,14 +134,6 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  let property = await RealEstate.findOne({ _id: id, deletedAt: null });
-  if (!property) {
-    throw new NotFoundError('Property not found');
-  }
-  if (property.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
-  }
-
   const updateData = { ...validatedBody };
   if (validatedBody.purchasePrice !== undefined) {
     updateData.purchasePriceInPiastres = toPiastres(validatedBody.purchasePrice);
@@ -153,7 +145,14 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     updateData.sellingPriceInPiastres = toPiastres(validatedBody.sellingPrice);
   }
 
-  property = await RealEstate.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  const property = await RealEstate.findOneAndUpdate(
+    { _id: id, user: req.effectiveUserId, deletedAt: null },
+    { $set: updateData },
+    { new: true, runValidators: true }
+  );
+  if (!property) {
+    throw new NotFoundError('Property not found');
+  }
   invalidatePortfolioCache(req.effectiveUserId);
   res.json(property);
 }));
@@ -165,12 +164,9 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  const property = await RealEstate.findOne({ _id: id, deletedAt: null });
+  const property = await RealEstate.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!property) {
     throw new NotFoundError('Property not found');
-  }
-  if (property.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
   }
   await property.softDelete();
   invalidatePortfolioCache(req.effectiveUserId);

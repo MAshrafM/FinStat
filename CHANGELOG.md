@@ -36,5 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Step 2B.1: [AUD-SEC-005] ReDoS mitigation in Categorization Rule Engine & testing endpoint by adding pinned dependency `safe-regex@2.1.1` in `backend/package.json`, enforcing 150-char pattern cap and parser-hardened `safeRegex` validation inside Zod schemas (`createRuleSchema`, `updateRuleSchema`, `testRuleSchema`), capping `sampleText` at 1,000 characters, and protecting the interactive testing endpoint (`testRule`) with a 100ms `vm` timeout guard while leaving hot-path `matchesRule` overhead-free.
 - Step 2B.3: [MF-SEC-002] Enforced atomic multi-tenant scoping and eliminated IDOR / 403 ID enumeration oracles on asset mutations and liquidations in `backend/routes/certificates.js` (`POST /:id/withdraw`, `PUT /:id`, `DELETE /:id`), `backend/routes/golds.js` (`PUT /:id`, `DELETE /:id`), and `backend/routes/trade.js` (`PUT /:id`, `DELETE /:id`), ensuring cross-tenant asset requests return clean HTTP 404 Not Found and eliminating unscoped `findByIdAndUpdate` operations.
 
+### Security & Hardening - Phase 2C: File, Export & Backup Surface Defense
+- Step 2C.0: [MF-SEC-002] Remediated deferred multi-tenant IDOR vulnerabilities across `backend/routes/realEstates.js` (`PUT /:id`, `DELETE /:id`) and `backend/routes/creditCards.js` (`PUT /cards/:id`, `DELETE /cards/:id`, `POST /transactions`, `GET /transactions/:cardId`, `PUT /transactions/:id`, `DELETE /transactions/:id`, `GET /transactions/due/:cardId`, `POST /payments`, `GET /payments/:cardId`, `PUT /payments/:id`, `DELETE /payments/:id`, `POST /payments/full`, `POST /payments/partial`, `GET /statement-cycles/:cardId`, `POST /reconcile/:cardId`), eliminating `403 Forbidden` vs `404 Not Found` resource enumeration oracles and replacing unscoped `findByIdAndUpdate` calls with atomic tenant-scoped queries returning clean `404 Not Found`.
+
+
 
 

@@ -62,22 +62,17 @@ router.put('/cards/:id', auth, validate({ params: paramsSchema, body: updateCard
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  let card = await CreditCard.findOne({ _id: id, deletedAt: null });
-  if (!card) throw new NotFoundError('Card not found');
-  if (card.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
-  }
-
   const updateData = { ...validatedBody };
   if (validatedBody.limit !== undefined) {
     updateData.limitInPiastres = toPiastres(validatedBody.limit);
   }
 
-  card = await CreditCard.findByIdAndUpdate(
-    id,
+  const card = await CreditCard.findOneAndUpdate(
+    { _id: id, user: req.effectiveUserId, deletedAt: null },
     { $set: updateData },
     { new: true, runValidators: true }
   );
+  if (!card) throw new NotFoundError('Card not found');
   res.json(card);
 }));
 
@@ -86,11 +81,8 @@ router.delete('/cards/:id', auth, validate({ params: paramsSchema }), asyncHandl
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  let card = await CreditCard.findOne({ _id: id, deletedAt: null });
-  if (!card) throw new NotFoundError('Credit Card not found');
-  if (card.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
-  }
+  const card = await CreditCard.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
+  if (!card) throw new NotFoundError('Card not found');
   await card.softDelete();
   res.json({ msg: 'Credit Card deleted successfully' });
 }));
@@ -115,9 +107,9 @@ router.post('/transactions', auth, validate({ body: createTransactionSchema }), 
   }
   const validatedBody = getValidated(req, 'body');
 
-  const card = await CreditCard.findOne({ _id: validatedBody.card, deletedAt: null });
-  if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized for this card');
+  const card = await CreditCard.findOne({ _id: validatedBody.card, user: req.effectiveUserId, deletedAt: null });
+  if (!card) {
+    throw new NotFoundError('Card not found');
   }
 
   const transactionData = {
@@ -143,9 +135,9 @@ router.post('/transactions', auth, validate({ body: createTransactionSchema }), 
 router.get('/transactions/:cardId', auth, validate({ params: cardIdParamsSchema }), asyncHandler(async (req, res) => {
   const { cardId } = getValidated(req, 'params');
 
-  const card = await CreditCard.findOne({ _id: cardId, deletedAt: null });
-  if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized for this card');
+  const card = await CreditCard.findOne({ _id: cardId, user: req.effectiveUserId, deletedAt: null });
+  if (!card) {
+    throw new NotFoundError('Card not found');
   }
 
   const transactions = await CardTransaction.find({ card: cardId, deletedAt: null }).sort({ date: -1 });
@@ -159,13 +151,6 @@ router.put('/transactions/:id', auth, validate({ params: paramsSchema, body: upd
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  let transaction = await CardTransaction.findOne({ _id: id, deletedAt: null });
-  if (!transaction) throw new NotFoundError('Transaction not found');
-
-  if (transaction.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
-  }
-
   const updateData = { ...validatedBody };
   if (validatedBody.amount !== undefined) {
     updateData.amountInPiastres = toPiastres(validatedBody.amount);
@@ -177,7 +162,12 @@ router.put('/transactions/:id', auth, validate({ params: paramsSchema, body: upd
     updateData['installmentDetails.monthlyPrincipalInPiastres'] = toPiastres(validatedBody.installmentDetails.monthlyPrincipal);
   }
 
-  transaction = await CardTransaction.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true });
+  const transaction = await CardTransaction.findOneAndUpdate(
+    { _id: id, user: req.effectiveUserId, deletedAt: null },
+    { $set: updateData },
+    { new: true, runValidators: true }
+  );
+  if (!transaction) throw new NotFoundError('Transaction not found');
   res.json(transaction);
 }));
 
@@ -186,12 +176,8 @@ router.delete('/transactions/:id', auth, validate({ params: paramsSchema }), asy
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  const transaction = await CardTransaction.findOne({ _id: id, deletedAt: null });
+  const transaction = await CardTransaction.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!transaction) throw new NotFoundError('Transaction not found');
-
-  if (transaction.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
-  }
 
   await unlinkExpenditure(transaction, req.effectiveUserId);
   await transaction.softDelete();
@@ -213,9 +199,9 @@ router.get('/transactions/due/:cardId', auth, validate({ params: cardIdParamsSch
   const { cardId } = getValidated(req, 'params');
   const userId = req.effectiveUserId;
 
-  const card = await CreditCard.findOne({ _id: cardId, deletedAt: null });
-  if (!card || card.user.toString() !== userId.toString()) {
-    throw new ForbiddenError('User not authorized for this card');
+  const card = await CreditCard.findOne({ _id: cardId, user: userId, deletedAt: null });
+  if (!card) {
+    throw new NotFoundError('Card not found');
   }
 
   const now = new Date();
@@ -289,9 +275,9 @@ router.post('/payments', auth, validate({ body: createPaymentSchema }), asyncHan
   }
   const validatedBody = getValidated(req, 'body');
 
-  const card = await CreditCard.findOne({ _id: validatedBody.card, deletedAt: null });
-  if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized for this card');
+  const card = await CreditCard.findOne({ _id: validatedBody.card, user: req.effectiveUserId, deletedAt: null });
+  if (!card) {
+    throw new NotFoundError('Card not found');
   }
 
   const newPayment = new CardPayment({
@@ -306,9 +292,9 @@ router.post('/payments', auth, validate({ body: createPaymentSchema }), asyncHan
 
 router.get('/payments/:cardId', auth, validate({ params: cardIdParamsSchema }), asyncHandler(async (req, res) => {
   const { cardId } = getValidated(req, 'params');
-  const card = await CreditCard.findOne({ _id: cardId, deletedAt: null });
-  if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized for this card');
+  const card = await CreditCard.findOne({ _id: cardId, user: req.effectiveUserId, deletedAt: null });
+  if (!card) {
+    throw new NotFoundError('Card not found');
   }
   const payments = await CardPayment.find({ card: cardId, deletedAt: null }).sort({ date: -1 });
   res.json(payments);
@@ -321,19 +307,17 @@ router.put('/payments/:id', auth, validate({ params: paramsSchema, body: updateP
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  let payment = await CardPayment.findOne({ _id: id, deletedAt: null });
-  if (!payment) throw new NotFoundError('Payment log not found');
-
-  if (payment.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
-  }
-
   const updateData = { ...validatedBody };
   if (validatedBody.amount !== undefined) {
     updateData.amountInPiastres = toPiastres(validatedBody.amount);
   }
 
-  payment = await CardPayment.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true });
+  const payment = await CardPayment.findOneAndUpdate(
+    { _id: id, user: req.effectiveUserId, deletedAt: null },
+    { $set: updateData },
+    { new: true, runValidators: true }
+  );
+  if (!payment) throw new NotFoundError('Payment log not found');
   res.json(payment);
 }));
 
@@ -342,12 +326,8 @@ router.delete('/payments/:id', auth, validate({ params: paramsSchema }), asyncHa
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  const payment = await CardPayment.findOne({ _id: id, deletedAt: null });
+  const payment = await CardPayment.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!payment) throw new NotFoundError('Payment log not found');
-
-  if (payment.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
-  }
 
   await unlinkExpenditure(payment, req.effectiveUserId);
   await payment.softDelete();
@@ -370,13 +350,12 @@ router.post('/payments/full', auth, validate({ body: payInFullSchema }), asyncHa
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { transactionId, paymentSource, createExpenditure } = getValidated(req, 'body');
-  const transaction = await CardTransaction.findOne({ _id: transactionId, deletedAt: null });
-
-  if (!transaction || transaction.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
+  const transaction = await CardTransaction.findOne({ _id: transactionId, user: req.effectiveUserId, deletedAt: null });
+  if (!transaction) {
+    throw new NotFoundError('Transaction not found');
   }
 
-  const card = await CreditCard.findOne({ _id: transaction.card, deletedAt: null });
+  const card = await CreditCard.findOne({ _id: transaction.card, user: req.effectiveUserId, deletedAt: null });
   if (!card) throw new NotFoundError('Card not found');
 
   let paymentAmount = 0;
@@ -436,13 +415,12 @@ router.post('/payments/partial', auth, validate({ body: partialPaymentSchema }),
   }
   const { transactionId, amount, paymentSource, createExpenditure } = getValidated(req, 'body');
   const paymentAmount = Number(amount);
-  const transaction = await CardTransaction.findOne({ _id: transactionId, deletedAt: null });
-
-  if (!transaction || transaction.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
+  const transaction = await CardTransaction.findOne({ _id: transactionId, user: req.effectiveUserId, deletedAt: null });
+  if (!transaction) {
+    throw new NotFoundError('Transaction not found');
   }
 
-  const card = await CreditCard.findOne({ _id: transaction.card, deletedAt: null });
+  const card = await CreditCard.findOne({ _id: transaction.card, user: req.effectiveUserId, deletedAt: null });
   if (!card) throw new NotFoundError('Card not found');
 
   const payment = new CardPayment({
@@ -698,9 +676,9 @@ router.get('/overall-summary', auth, asyncHandler(async (req, res) => {
 // =============================================
 router.get('/statement-cycles/:cardId', auth, validate({ params: cardIdParamsSchema }), asyncHandler(async (req, res) => {
   const { cardId } = getValidated(req, 'params');
-  const card = await CreditCard.findOne({ _id: cardId, deletedAt: null });
-  if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized for this card');
+  const card = await CreditCard.findOne({ _id: cardId, user: req.effectiveUserId, deletedAt: null });
+  if (!card) {
+    throw new NotFoundError('Card not found');
   }
 
   const months = parseInt(req.query.months, 10) || 6;
@@ -787,9 +765,9 @@ router.post('/reconcile/:cardId', auth, validate({ params: cardIdParamsSchema, b
   const { cardId } = getValidated(req, 'params');
   const { cycleStart, cycleEnd, actualStatementBalance } = getValidated(req, 'body');
 
-  const card = await CreditCard.findOne({ _id: cardId, deletedAt: null });
-  if (!card || card.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized for this card');
+  const card = await CreditCard.findOne({ _id: cardId, user: req.effectiveUserId, deletedAt: null });
+  if (!card) {
+    throw new NotFoundError('Card not found');
   }
 
   const report = await reconcileCycle(
