@@ -9,9 +9,6 @@ import {
   RefreshCw,
   FileText,
   ShieldAlert,
-  Info,
-  Check,
-  X,
 } from 'lucide-react';
 import { getBackupStatus, exportBackup, importBackup } from '../../services/backupService';
 import { dispatchToast } from '../../services/apiClient';
