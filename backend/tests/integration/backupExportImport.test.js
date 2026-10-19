@@ -19,6 +19,10 @@ jest.mock('../../middleware/auth', () => (req, res, next) => {
   next();
 });
 
+jest.mock('../../utils/auditLogger', () => ({
+  logAudit: jest.fn(),
+}));
+
 const backupRouter = require('../../routes/backup');
 
 const createTestApp = () => {

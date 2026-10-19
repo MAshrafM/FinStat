@@ -72,6 +72,7 @@ app.use('/api/currency', require('./routes/currency'));
 app.use('/api/credit-cards', require('./routes/creditCards'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/admin/backup', require('./routes/backup'));
+app.use('/api/export', require('./routes/export'));
 app.use('/api/portfolio', require('./routes/portfolio'));
 app.use('/api/real-estates', require('./routes/realEstates'));
 app.use('/api/categorization-rules', require('./routes/categorizationRules'));
