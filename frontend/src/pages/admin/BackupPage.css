@@ -1,0 +1,438 @@
+/* frontend/src/pages/admin/BackupPage.css */
+
+.backup-page-container {
+  padding: 32px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #f8fafc;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.backup-header {
+  margin-bottom: 32px;
+}
+
+.backup-title-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.backup-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+}
+
+.backup-page-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.backup-subtitle {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  margin: 6px 0 0;
+}
+
+/* Environment Status Banner */
+.backup-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 28px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.backup-status-banner.dev {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #6ee7b7;
+}
+
+.backup-status-banner.prod {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fcd34d;
+}
+
+/* Cards Grid */
+.backup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 768px) {
+  .backup-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.backup-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+
+.backup-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #334155;
+}
+
+.backup-card-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: #f1f5f9;
+}
+
+.backup-card-desc {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Radio / Format Selector */
+.backup-format-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.backup-format-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backup-format-option:hover {
+  border-color: #475569;
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.backup-format-option.selected {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.12);
+}
+
+.backup-format-option input[type="radio"] {
+  margin-top: 3px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+.backup-format-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.backup-format-title {
+  font-weight: 600;
+  color: #f8fafc;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-pill {
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.badge-recommended {
+  background: rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+}
+
+.backup-format-sub {
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+/* Buttons */
+.backup-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.backup-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.backup-btn-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+}
+
+.backup-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+  transform: translateY(-1px);
+}
+
+.backup-btn-danger {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+}
+
+.backup-btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+}
+
+.backup-btn-secondary {
+  background: #334155;
+  color: #f1f5f9;
+  border: 1px solid #475569;
+}
+
+.backup-btn-secondary:hover:not(:disabled) {
+  background: #475569;
+}
+
+/* File Upload Drop Zone */
+.backup-upload-box {
+  border: 2px dashed #475569;
+  border-radius: 10px;
+  padding: 24px;
+  text-align: center;
+  background: rgba(15, 23, 42, 0.4);
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backup-upload-box:hover {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.backup-upload-box.has-file {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.backup-upload-icon {
+  margin-bottom: 8px;
+  color: #94a3b8;
+}
+
+.backup-upload-text {
+  font-size: 0.92rem;
+  color: #cbd5e1;
+}
+
+.backup-upload-file-name {
+  font-weight: 600;
+  color: #6ee7b7;
+  margin-top: 6px;
+  word-break: break-all;
+}
+
+/* Import Options Checklist */
+.backup-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.backup-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.backup-checkbox-label input[type="checkbox"] {
+  margin-top: 3px;
+  accent-color: #6366f1;
+}
+
+.backup-danger-alert {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.backup-actions-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+/* Results Card / Table */
+.backup-results-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 24px;
+  margin-top: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.backup-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.backup-table-wrapper {
+  overflow-x: auto;
+}
+
+.backup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  text-align: left;
+}
+
+.backup-table th {
+  background: rgba(15, 23, 42, 0.7);
+  color: #94a3b8;
+  padding: 10px 14px;
+  font-weight: 600;
+  border-bottom: 1px solid #334155;
+}
+
+.backup-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #273549;
+  color: #e2e8f0;
+}
+
+.backup-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.count-badge-delete {
+  color: #f87171;
+}
+
+.count-badge-insert {
+  color: #4ade80;
+}
+
+/* Modal styles for Destructive Restore confirmation */
+.restore-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+
+.restore-modal-content {
+  background: #1e293b;
+  border: 1px solid #ef4444;
+  border-radius: 14px;
+  padding: 28px;
+  max-width: 520px;
+  width: 100%;
+  color: #f8fafc;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.restore-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ef4444;
+  font-size: 1.35rem;
+  margin: 0 0 12px;
+}
+
+.restore-modal-body {
+  font-size: 0.92rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.restore-modal-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1rem;
+  margin: 12px 0 20px;
+  outline: none;
+}
+
+.restore-modal-input:focus {
+  border-color: #ef4444;
+}
+
+.restore-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

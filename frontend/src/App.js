@@ -35,6 +35,7 @@ const SocialInsurancePage = React.lazy(() => import('./pages/insurance/SocialIns
 const TaxesPage = React.lazy(() => import('./pages/taxes/TaxesPage'));
 const TaxConfigPage = React.lazy(() => import('./pages/admin/TaxConfigPage'));
 const InsuranceConfigPage = React.lazy(() => import('./pages/admin/InsuranceConfigPage'));
+const BackupPage = React.lazy(() => import('./pages/admin/BackupPage'));
 
 // Expenditures
 const ExpenditureLogPage = React.lazy(() => import('./pages/expenditure/ExpenditureLogPage'));
@@ -119,6 +120,7 @@ function App() {
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/tax-brackets" element={<TaxConfigPage />} />
                 <Route path="/admin/social-insurance" element={<InsuranceConfigPage />} />
+                <Route path="/admin/backup" element={<BackupPage />} />
                 
                 {/* Salary & Paycheck Routes (Canonical & Legacy Redirects) */}
                 <Route path="/salary-profile" element={<Navigate to="/salary/profiles" replace />} />

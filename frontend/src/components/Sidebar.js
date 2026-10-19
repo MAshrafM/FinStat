@@ -243,6 +243,12 @@ const Sidebar = () => {
           title: 'Social Insurance',
           description: 'Admin insurance rules',
         },
+        {
+          path: '/admin/backup',
+          icon: '💾',
+          title: 'Database Backup',
+          description: 'Export & dev import',
+        },
       ]
       : userRole === 'manager'
         ? [
