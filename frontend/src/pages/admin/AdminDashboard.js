@@ -313,15 +313,15 @@ const AdminDashboard = () => {
                   ? 'No matching viewers found'
                   : 'No matching users found'
                 : isManager
-                ? "You don't have any Viewers yet"
-                : 'No other users registered yet'}
+                  ? "You don't have any Viewers yet"
+                  : 'No other users registered yet'}
             </h3>
             <p className="admin-empty-desc">
               {searchTerm
                 ? `No accounts matched "${searchTerm}". Try a different search term or clear the filter.`
                 : isManager
-                ? "You don't have any Viewers yet. Click 'Add New Viewer' to invite someone."
-                : "Click 'Add New User' to invite someone to your FinStat workspace."}
+                  ? "You don't have any Viewers yet. Click 'Add New Viewer' to invite someone."
+                  : "Click 'Add New User' to invite someone to your FinStat workspace."}
             </p>
             {searchTerm ? (
               <button onClick={() => setSearchInput('')} className="admin-pagination-btn">

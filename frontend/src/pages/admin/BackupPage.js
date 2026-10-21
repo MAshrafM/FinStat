@@ -1,5 +1,5 @@
 // frontend/src/pages/admin/BackupPage.js
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Database,
   Download,
@@ -16,7 +16,7 @@ import { useAuth } from '../../context/AuthContext';
 import './BackupPage.css';
 
 const BackupPage = () => {
-  const { user: currentUser, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const [status, setStatus] = useState(null);
   const [statusLoading, setStatusLoading] = useState(true);
 

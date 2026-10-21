@@ -73,7 +73,7 @@ const ProviderWrapper = ({ providers, children }) => {
 };
 
 const ProtectedRoute = () => {
-  const { token, role, isAdmin, isManager } = useAuth();
+  const { token, isAdmin, isManager } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const handleSidebarToggle = () => setSidebarOpen(prev => !prev);

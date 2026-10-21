@@ -21,6 +21,7 @@ import {
   FaRulerCombined,
   FaCalendarAlt,
   FaChartLine,
+} from 'react-icons/fa';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { useCanModify } from '../../context/AuthContext';
 import './RealEstate.css';
