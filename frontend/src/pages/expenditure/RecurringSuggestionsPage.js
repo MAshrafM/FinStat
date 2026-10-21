@@ -11,10 +11,13 @@ import { getRecurringExpenditures } from '../../services/expenditureService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import { FaSyncAlt, FaCalendarAlt, FaCheck, FaTimes, FaRedoAlt } from 'react-icons/fa';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import './RecurringSuggestionsPage.css';
 import './RulesPage.css'; // For common subnav and modal styles
 
 const RecurringSuggestionsPage = () => {
+  const canModify = useCanModify();
   const [activeTab, setActiveTab] = useState('pending'); // 'pending' | 'accepted' | 'history'
   const [pendingSuggestions, setPendingSuggestions] = useState([]);
   const [acceptedSuggestions, setAcceptedSuggestions] = useState([]);
@@ -53,6 +56,7 @@ const RecurringSuggestionsPage = () => {
   }, [loadData]);
 
   const handleTriggerScan = async () => {
+    if (!canModify) return;
     setIsScanning(true);
     try {
       const res = await triggerDetection();
@@ -66,6 +70,7 @@ const RecurringSuggestionsPage = () => {
   };
 
   const handleOpenAcceptModal = (item) => {
+    if (!canModify) return;
     setAcceptingItem(item);
     setAcceptForm({
       category: item.category,
@@ -76,6 +81,7 @@ const RecurringSuggestionsPage = () => {
 
   const handleConfirmAccept = async (e) => {
     e.preventDefault();
+    if (!canModify) return;
     if (!acceptingItem) return;
     try {
       await acceptSuggestion(acceptingItem._id, {
@@ -91,6 +97,7 @@ const RecurringSuggestionsPage = () => {
   };
 
   const handleReject = async (id) => {
+    if (!canModify) return;
     if (window.confirm('Dismiss this recurring suggestion?')) {
       try {
         await rejectSuggestion(id);
@@ -125,15 +132,17 @@ const RecurringSuggestionsPage = () => {
             from your expenditure history.
           </p>
         </div>
-        <button
-          className="btn-primary"
-          onClick={handleTriggerScan}
-          disabled={isScanning}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <FaSyncAlt className={isScanning ? 'animate-spin' : ''} />
-          {isScanning ? 'Scanning History...' : 'Scan Patterns Now'}
-        </button>
+        <ProtectedAction tooltip="View-only access">
+          <button
+            className="btn-primary"
+            onClick={handleTriggerScan}
+            disabled={isScanning}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <FaSyncAlt className={isScanning ? 'animate-spin' : ''} />
+            {isScanning ? 'Scanning History...' : 'Scan Patterns Now'}
+          </button>
+        </ProtectedAction>
       </div>
 
       {/* Internal Tabs */}
@@ -227,12 +236,16 @@ const RecurringSuggestionsPage = () => {
                   </div>
 
                   <div className="suggestion-card-actions">
-                    <button className="btn-accept" onClick={() => handleOpenAcceptModal(sug)}>
-                      <FaCheck /> Confirm &amp; Accept
-                    </button>
-                    <button className="btn-reject" onClick={() => handleReject(sug._id)}>
-                      <FaTimes /> Dismiss
-                    </button>
+                    <ProtectedAction tooltip="View-only access">
+                      <button className="btn-accept" onClick={() => handleOpenAcceptModal(sug)}>
+                        <FaCheck /> Confirm &amp; Accept
+                      </button>
+                    </ProtectedAction>
+                    <ProtectedAction tooltip="View-only access">
+                      <button className="btn-reject" onClick={() => handleReject(sug._id)}>
+                        <FaTimes /> Dismiss
+                      </button>
+                    </ProtectedAction>
                   </div>
                 </div>
               );
@@ -387,9 +400,11 @@ const RecurringSuggestionsPage = () => {
                 <button type="button" className="btn-secondary" onClick={() => setAcceptingItem(null)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
-                  Confirm Recurrence
-                </button>
+                <ProtectedAction tooltip="View-only access">
+                  <button type="submit" className="btn-primary">
+                    Confirm Recurrence
+                  </button>
+                </ProtectedAction>
               </div>
             </form>
           </div>

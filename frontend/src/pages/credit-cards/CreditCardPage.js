@@ -11,12 +11,15 @@ import EditCardModal from './EditCardModal';
 import EditTransactionModal from './EditTransactionModal';
 import CreditCardSubNav from '../../components/creditCards/CreditCardSubNav';
 import UtilizationWidget from '../../components/creditCards/UtilizationWidget';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
 import '../trades/Trades.css'; // Reuse styles
 import './CreditCardPage.css'; // Custom styles for this page
 import '../../components/Table.css';
 
 const CreditCardPage = () => {
+  const canModify = useCanModify();
   const { creditCardsSummary, refetchCreditSummary } = useCreditData();
   const [cards, setCards] = useState([]);
   const [selectedCardId, setSelectedCardId] =  useState('all');
@@ -127,6 +130,7 @@ const CreditCardPage = () => {
 
 
   const handleFullPayment = async (transactionId) => {
+    if (!canModify) return;
     if (window.confirm('Are you sure you want to mark this as fully paid?')) {
       await makeFullPayment({ transactionId, paymentSource: 'Bank', createExpenditure: true });
       // Refresh data based on current selection
@@ -140,16 +144,19 @@ const CreditCardPage = () => {
 
   // Placeholder for opening partial payment modal
   const handlePartialPayment = (transaction) => {
+    if (!canModify) return;
     setSelectedTransaction(transaction); // Set the transaction to be paid
     setIsPaymentModalOpen(true); // Open the modal
   };
 
   const handleEdit = (transaction) => {
-  setSelectedTransaction(transaction); // Set the transaction to be edited
-  setIsEditModalOpen(true); // Open the edit modal
-};
+    if (!canModify) return;
+    setSelectedTransaction(transaction); // Set the transaction to be edited
+    setIsEditModalOpen(true); // Open the edit modal
+  };
 
 const handleDelete = async (transactionId) => {
+  if (!canModify) return;
   if (window.confirm('Are you sure you want to permanently delete this transaction?')) {
     try {
       await deleteTransaction(transactionId);
@@ -238,29 +245,35 @@ const totalPartial = transactionHistory.reduce((sum, tx) => {
             </select>
           </div>
           <div className="card-btn-group">
-            <button
-              className="card-action-btn btn-add"
-              onClick={() => setIsCardModalOpen(true)}
-              title="Add a new credit card"
-            >
-              <FaPlus style={{ marginRight: '6px' }} /> Add New Card
-            </button>
-            <button
-              className="card-action-btn btn-edit"
-              onClick={handleOpenEditCard}
-              disabled={selectedCardId === 'all'}
-              title={selectedCardId === 'all' ? "Select a card to edit" : "Edit card details"}
-            >
-              <FaEdit style={{ marginRight: '6px' }} /> Edit Card
-            </button>
-            <button
-              className="card-action-btn btn-transaction"
-              onClick={() => setIsTransactionModalOpen(true)}
-              disabled={selectedCardId === 'all'}
-              title={selectedCardId === 'all' ? "Select a card to log transaction" : "Log a new transaction"}
-            >
-              <FaReceipt style={{ marginRight: '6px' }} /> Log Transaction
-            </button>
+            <ProtectedAction tooltip="View-only access">
+              <button
+                className="card-action-btn btn-add"
+                onClick={() => setIsCardModalOpen(true)}
+                title="Add a new credit card"
+              >
+                <FaPlus style={{ marginRight: '6px' }} /> Add New Card
+              </button>
+            </ProtectedAction>
+            <ProtectedAction tooltip="View-only access">
+              <button
+                className="card-action-btn btn-edit"
+                onClick={handleOpenEditCard}
+                disabled={selectedCardId === 'all'}
+                title={selectedCardId === 'all' ? "Select a card to edit" : "Edit card details"}
+              >
+                <FaEdit style={{ marginRight: '6px' }} /> Edit Card
+              </button>
+            </ProtectedAction>
+            <ProtectedAction tooltip="View-only access">
+              <button
+                className="card-action-btn btn-transaction"
+                onClick={() => setIsTransactionModalOpen(true)}
+                disabled={selectedCardId === 'all'}
+                title={selectedCardId === 'all' ? "Select a card to log transaction" : "Log a new transaction"}
+              >
+                <FaReceipt style={{ marginRight: '6px' }} /> Log Transaction
+              </button>
+            </ProtectedAction>
           </div>
         </div>
       </div>
@@ -341,16 +354,20 @@ const totalPartial = transactionHistory.reduce((sum, tx) => {
                     <td data-label="Action" className="actions-cell">
                     {tx.status !== 'Paid' && (
                       <>
-                        <FaCheckCircle
-                          className="action-icon pay-full"
-                          title="Pay in Full"
-                          onClick={() => handleFullPayment(tx._id)}
-                        />
-                        <FaRegMoneyBillAlt
-                          className="action-icon pay-partial"
-                          title="Make Partial Payment"
-                          onClick={() => handlePartialPayment(tx)}
-                        />
+                        <ProtectedAction tooltip="View-only access">
+                          <FaCheckCircle
+                            className="action-icon pay-full"
+                            title="Pay in Full"
+                            onClick={() => handleFullPayment(tx._id)}
+                          />
+                        </ProtectedAction>
+                        <ProtectedAction tooltip="View-only access">
+                          <FaRegMoneyBillAlt
+                            className="action-icon pay-partial"
+                            title="Make Partial Payment"
+                            onClick={() => handlePartialPayment(tx)}
+                          />
+                        </ProtectedAction>
                       </>
                     )}
                     </td>
@@ -402,28 +419,36 @@ const totalPartial = transactionHistory.reduce((sum, tx) => {
                 {/* Show payment icons only if the transaction is not fully paid */}
                 {tx.status !== 'Paid' && (
                   <>
-                    <FaCheckCircle
-                      className="action-icon pay-full"
-                      title="Pay in Full"
-                      onClick={() => handleFullPayment(tx._id)}
-                    />
-                    <FaRegMoneyBillAlt
-                      className="action-icon pay-partial"
-                      title="Make Partial Payment"
-                      onClick={() => handlePartialPayment(tx)}
-                    />
+                    <ProtectedAction tooltip="View-only access">
+                      <FaCheckCircle
+                        className="action-icon pay-full"
+                        title="Pay in Full"
+                        onClick={() => handleFullPayment(tx._id)}
+                      />
+                    </ProtectedAction>
+                    <ProtectedAction tooltip="View-only access">
+                      <FaRegMoneyBillAlt
+                        className="action-icon pay-partial"
+                        title="Make Partial Payment"
+                        onClick={() => handlePartialPayment(tx)}
+                      />
+                    </ProtectedAction>
                   </>
                 )}
-                <FaEdit
-                  className="action-icon edit"
-                  title="Edit Transaction"
-                  onClick={() => { handleEdit(tx) }}
-                />
+                <ProtectedAction tooltip="View-only access">
+                  <FaEdit
+                    className="action-icon edit"
+                    title="Edit Transaction"
+                    onClick={() => { handleEdit(tx) }}
+                  />
+                </ProtectedAction>
+                <ProtectedAction tooltip="View-only access">
                   <FaTrash
-                className="action-icon delete"
-                title="Delete Transaction"
-                onClick={() => { handleDelete(tx._id) }}
-              />
+                    className="action-icon delete"
+                    title="Delete Transaction"
+                    onClick={() => { handleDelete(tx._id) }}
+                  />
+                </ProtectedAction>
               </td>
             </tr>
           ))}

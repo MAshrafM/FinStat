@@ -5,6 +5,7 @@ import { getGoldLogs, deleteGoldLog } from '../../services/goldService';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { FaEdit, FaTrash, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import PaginationControls from '../../components/PaginationControls';
+import ProtectedAction from '../../components/common/ProtectedAction';
 import '../trades/Trades.css'; // Reuse styles
 
 const GoldLogPage = () => {
@@ -62,8 +63,13 @@ const GoldLogPage = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header">
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <h1>Gold Wallet Log</h1>
+                <ProtectedAction tooltip="View-only access">
+                    <Link to="/gold-wallet/new" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none' }}>
+                        + Add Gold Entry
+                    </Link>
+                </ProtectedAction>
             </div>
             <div className="filter-controls">
                 <button onClick={() => handleFilterChange('all')} className={filterStatus === 'all' ? 'active' : ''}>All</button>
@@ -123,8 +129,19 @@ const GoldLogPage = () => {
                                     </td>
                                     <td data-label="Status"><span className={statusClass}></span></td>
                                     <td data-label="Actions" className="action-icons">
-                                        <Link className="action-icon edit-icon" to={`/gold-wallet/edit/${log._id}`}><FaEdit /></Link>
-                                        <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(log._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
+                                        <ProtectedAction tooltip="View-only access">
+                                            <Link className="action-icon edit-icon" to={`/gold-wallet/edit/${log._id}`}><FaEdit /></Link>
+                                        </ProtectedAction>
+                                        <ProtectedAction tooltip="View-only access">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDelete(log._id)}
+                                                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                                                title="Delete gold log"
+                                            >
+                                                <FaTrash className="action-icon delete-icon" style={{ color: '#c0392b' }} />
+                                            </button>
+                                        </ProtectedAction>
                                     </td>
                                 </tr>
                             );

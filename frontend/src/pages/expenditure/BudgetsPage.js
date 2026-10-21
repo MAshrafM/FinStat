@@ -10,6 +10,8 @@ import {
 import { formatCurrency } from '../../utils/formatters';
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import { FaPlus, FaPencilAlt, FaTrash, FaChartPie, FaHistory, FaCalendarAlt } from 'react-icons/fa';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import './BudgetsPage.css';
 import './RulesPage.css';
 
@@ -19,6 +21,7 @@ const MONTH_NAMES = [
 ];
 
 const BudgetsPage = () => {
+  const canModify = useCanModify();
   const currentDate = new Date();
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
@@ -116,6 +119,7 @@ const BudgetsPage = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!canModify) return;
     const payload = {
       category: formData.category,
       period: formData.period,
@@ -140,6 +144,7 @@ const BudgetsPage = () => {
   };
 
   const handleDelete = async (budgetId) => {
+    if (!canModify) return;
     if (window.confirm('Are you sure you want to delete this budget allocation?')) {
       try {
         await deleteBudget(budgetId);
@@ -197,9 +202,11 @@ const BudgetsPage = () => {
             alerts.
           </p>
         </div>
-        <button className="btn-primary" onClick={handleOpenCreate}>
-          <FaPlus /> Set New Budget
-        </button>
+        <ProtectedAction tooltip="View-only access">
+          <button className="btn-primary" onClick={handleOpenCreate}>
+            <FaPlus /> Set New Budget
+          </button>
+        </ProtectedAction>
       </div>
 
       {/* KPI Cards */}
@@ -327,9 +334,11 @@ const BudgetsPage = () => {
             <p style={{ margin: '0.5rem 0 1.5rem 0' }}>
               Set a spending limit for categories like Groceries, Dining, or Utilities to track progress.
             </p>
-            <button className="btn-primary" onClick={handleOpenCreate}>
-              <FaPlus /> Set New Budget
-            </button>
+            <ProtectedAction tooltip="View-only access">
+              <button className="btn-primary" onClick={handleOpenCreate}>
+                <FaPlus /> Set New Budget
+              </button>
+            </ProtectedAction>
           </div>
         ) : (
           <div className="budget-cards-grid">
@@ -393,23 +402,27 @@ const BudgetsPage = () => {
 
                   <div className="rule-card-footer" style={{ marginTop: '1.25rem' }}>
                     <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                      Alert at {bp.alertThreshold}%
+                       Alert at {bp.alertThreshold}%
                     </div>
                     <div className="rule-actions">
-                      <button
-                        className="rule-action-btn"
-                        title="Edit budget"
-                        onClick={() => handleOpenEdit(bp)}
-                      >
-                        <FaPencilAlt />
-                      </button>
-                      <button
-                        className="rule-action-btn delete"
-                        title="Delete budget"
-                        onClick={() => handleDelete(bp.budgetId)}
-                      >
-                        <FaTrash />
-                      </button>
+                      <ProtectedAction tooltip="View-only access">
+                        <button
+                          className="rule-action-btn"
+                          title="Edit budget"
+                          onClick={() => handleOpenEdit(bp)}
+                        >
+                          <FaPencilAlt />
+                        </button>
+                      </ProtectedAction>
+                      <ProtectedAction tooltip="View-only access">
+                        <button
+                          className="rule-action-btn delete"
+                          title="Delete budget"
+                          onClick={() => handleDelete(bp.budgetId)}
+                        >
+                          <FaTrash />
+                        </button>
+                      </ProtectedAction>
                     </div>
                   </div>
                 </div>
@@ -707,9 +720,11 @@ const BudgetsPage = () => {
                 <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
-                  {editingBudget ? 'Update Budget' : 'Save Budget'}
-                </button>
+                <ProtectedAction tooltip="View-only access">
+                  <button type="submit" className="btn-primary">
+                    {editingBudget ? 'Update Budget' : 'Save Budget'}
+                  </button>
+                </ProtectedAction>
               </div>
             </form>
           </div>

@@ -21,13 +21,15 @@ import {
   FaRulerCombined,
   FaCalendarAlt,
   FaChartLine,
-} from 'react-icons/fa';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import './RealEstate.css';
 
 const PROPERTY_TYPES = ['all', 'Residential', 'Commercial', 'Villa', 'Land', 'Other'];
 
 const RealEstateLogPage = () => {
   const navigate = useNavigate();
+  const canModify = useCanModify();
   const [properties, setProperties] = useState([]);
   const [summary, setSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,19 +38,6 @@ const RealEstateLogPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
   const [sortBy, setSortBy] = useState('valuation'); // 'valuation' | 'gain' | 'date' | 'name'
-
-  // Check viewer role
-  const [canModify, setCanModify] = useState(true);
-
-  useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const parsed = JSON.parse(userStr);
-        if (parsed.role === 'viewer') setCanModify(false);
-      } catch (e) {}
-    }
-  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -165,11 +154,11 @@ const RealEstateLogPage = () => {
           <button className="btn-refresh" onClick={fetchData} disabled={isLoading} title="Refresh real estate data">
             <FaSyncAlt className={isLoading ? 'fa-spin' : ''} /> {isLoading ? 'Refreshing...' : 'Refresh'}
           </button>
-          {canModify && (
+          <ProtectedAction tooltip="View-only access">
             <Link to="/real-estate/new" className="btn-primary-add">
               <FaPlus /> Add Property
             </Link>
-          )}
+          </ProtectedAction>
         </div>
       </div>
 
@@ -407,8 +396,8 @@ const RealEstateLogPage = () => {
                       Acquired {formatDate(p.purchaseDate)}
                     </div>
 
-                    {canModify && (
-                      <div className="prop-card-actions">
+                    <div className="prop-card-actions">
+                      <ProtectedAction tooltip="View-only access">
                         <button
                           onClick={() => navigate(`/real-estate/edit/${p._id}`)}
                           className="btn-icon-action"
@@ -416,6 +405,8 @@ const RealEstateLogPage = () => {
                         >
                           <FaEdit />
                         </button>
+                      </ProtectedAction>
+                      <ProtectedAction tooltip="View-only access">
                         <button
                           onClick={() => handleDelete(p._id, p.name)}
                           className="btn-icon-action delete"
@@ -423,8 +414,8 @@ const RealEstateLogPage = () => {
                         >
                           <FaTrash />
                         </button>
-                      </div>
-                    )}
+                      </ProtectedAction>
+                    </div>
                   </div>
                 </div>
               );
@@ -445,7 +436,7 @@ const RealEstateLogPage = () => {
                     <th>Capital Gain</th>
                     <th>Acquisition Date</th>
                     <th>Status</th>
-                    {canModify && <th>Actions</th>}
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -487,9 +478,9 @@ const RealEstateLogPage = () => {
                             {p.status}
                           </span>
                         </td>
-                        {canModify && (
-                          <td>
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                        <td>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <ProtectedAction tooltip="View-only access">
                               <button
                                 onClick={() => navigate(`/real-estate/edit/${p._id}`)}
                                 className="holding-link-btn"
@@ -497,6 +488,8 @@ const RealEstateLogPage = () => {
                               >
                                 <FaEdit />
                               </button>
+                            </ProtectedAction>
+                            <ProtectedAction tooltip="View-only access">
                               <button
                                 onClick={() => handleDelete(p._id, p.name)}
                                 className="holding-link-btn"
@@ -505,9 +498,9 @@ const RealEstateLogPage = () => {
                               >
                                 <FaTrash />
                               </button>
-                            </div>
-                          </td>
-                        )}
+                            </ProtectedAction>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })}
@@ -526,11 +519,11 @@ const RealEstateLogPage = () => {
               ? 'No property records match your current filters. Try resetting the filters or search term.'
               : 'You have not recorded any real estate properties yet. Start tracking your properties, market valuations, and capital gains.'}
           </p>
-          {canModify && (
+          <ProtectedAction tooltip="View-only access">
             <Link to="/real-estate/new" className="btn-primary-add">
               <FaPlus /> Add Your First Property
             </Link>
-          )}
+          </ProtectedAction>
         </div>
       )}
       </div>

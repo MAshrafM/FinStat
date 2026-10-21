@@ -9,6 +9,7 @@ import './Expenditure.css'; // Load expenditure styles
 import PaginationControls from '../../components/PaginationControls';
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import ExpenditureSubNav from './ExpenditureSubNav';
+import ProtectedAction from '../../components/common/ProtectedAction';
 
 const transactionTypeMap = {
   W: 'Withdraw',
@@ -126,9 +127,11 @@ const ExpenditureLogPage = () => {
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <h1>Expenditure Log</h1>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link to="/expenditures/new" className="btn btn-primary" title="Record a new expenditure">
-            <FaPlus size={13} /> Add Expenditure
-          </Link>
+          <ProtectedAction tooltip="View-only access">
+            <Link to="/expenditures/new" className="btn btn-primary" title="Record a new expenditure">
+              <FaPlus size={13} /> Add Expenditure
+            </Link>
+          </ProtectedAction>
         </div>
       </div>
 
@@ -473,14 +476,21 @@ const ExpenditureLogPage = () => {
                     )}
                   </td>
                   <td data-label="Action" className="action-cell">
-                    <Link to={`/expenditures/edit/${log._id}`}>
-                      <FaPencilAlt className="action-icon edit-icon" />
-                    </Link>
-                    <FaTrash
-                      className="action-icon delete-icon"
-                      onClick={() => handleDelete(log._id)}
-                      style={{ cursor: 'pointer' }}
-                    />
+                    <ProtectedAction tooltip="View-only access">
+                      <Link to={`/expenditures/edit/${log._id}`}>
+                        <FaPencilAlt className="action-icon edit-icon" />
+                      </Link>
+                    </ProtectedAction>
+                    <ProtectedAction tooltip="View-only access">
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(log._id)}
+                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                        title="Delete expenditure"
+                      >
+                        <FaTrash className="action-icon delete-icon" />
+                      </button>
+                    </ProtectedAction>
                   </td>
                 </tr>
               ))

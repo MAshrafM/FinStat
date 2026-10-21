@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { RefreshCw, ExternalLink } from 'lucide-react';
 import { getRebalancingData, updateRebalancingTarget } from '../../services/portfolioService';
 import { useToast } from '../../context/ToastContext';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
 import './RebalancingPage.css';
 
@@ -24,6 +26,7 @@ const ASSET_COLORS = {
 };
 
 const RebalancingPage = () => {
+  const canModify = useCanModify();
   const navigate = useNavigate();
   const { addToast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -87,6 +90,7 @@ const RebalancingPage = () => {
 
   const handleSaveTarget = async (e) => {
     e.preventDefault();
+    if (!canModify) return;
     if (!isSumValid) {
       addToast(`Target allocation must sum to exactly 100% (currently ${targetSum.toFixed(1)}%)`, 'error');
       return;
@@ -114,6 +118,7 @@ const RebalancingPage = () => {
   };
 
   const handleApplyTrade = (suggestion) => {
+    if (!canModify) return;
     // Advisory shortcut: opens relevant trade logging form pre-filled
     const cat = suggestion.assetType;
     if (cat === 'stocks') {
@@ -275,14 +280,16 @@ const RebalancingPage = () => {
               </label>
             </div>
 
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={saving || !isSumValid}
-              style={{ width: '100%', marginTop: '20px', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
-            >
-              {saving ? 'Saving...' : 'Update & Recalculate Target'}
-            </button>
+            <ProtectedAction tooltip="View-only access">
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={saving || !isSumValid}
+                style={{ width: '100%', marginTop: '20px', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+              >
+                {saving ? 'Saving...' : 'Update & Recalculate Target'}
+              </button>
+            </ProtectedAction>
           </form>
         </div>
       </div>
@@ -341,14 +348,16 @@ const RebalancingPage = () => {
                 </td>
                 <td data-label="Log Trade" style={{ textAlign: 'right' }}>
                   {sug.action !== 'Hold' ? (
-                    <button
-                      type="button"
-                      onClick={() => handleApplyTrade(sug)}
-                      className="btn btn-secondary"
-                      style={{ padding: '6px 12px', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      Log {sug.action} <ExternalLink size={12} />
-                    </button>
+                    <ProtectedAction tooltip="View-only access">
+                      <button
+                        type="button"
+                        onClick={() => handleApplyTrade(sug)}
+                        className="btn btn-secondary"
+                        style={{ padding: '6px 12px', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        Log {sug.action} <ExternalLink size={12} />
+                      </button>
+                    </ProtectedAction>
                   ) : (
                     <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Balanced</span>
                   )}

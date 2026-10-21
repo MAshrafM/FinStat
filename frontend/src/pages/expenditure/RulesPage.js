@@ -10,9 +10,12 @@ import {
 } from '../../services/categorizationRuleService';
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import { FaPlus, FaFlask, FaPencilAlt, FaTrash, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import './RulesPage.css';
 
 const RulesPage = () => {
+  const canModify = useCanModify();
   const [rules, setRules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -86,6 +89,7 @@ const RulesPage = () => {
 
   const handleSaveRule = async (e) => {
     e.preventDefault();
+    if (!canModify) return;
     try {
       if (editingRule) {
         await updateRule(editingRule._id, formData);
@@ -100,6 +104,7 @@ const RulesPage = () => {
   };
 
   const handleDeleteRule = async (id) => {
+    if (!canModify) return;
     if (window.confirm('Are you sure you want to delete this rule?')) {
       try {
         await deleteRule(id);
@@ -111,6 +116,7 @@ const RulesPage = () => {
   };
 
   const handleToggleActive = async (rule) => {
+    if (!canModify) return;
     try {
       await updateRule(rule._id, { isActive: !rule.isActive });
       fetchRules();
@@ -160,9 +166,11 @@ const RulesPage = () => {
           >
             <FaFlask /> Test Simulator
           </button>
-          <button className="btn-primary" onClick={handleOpenCreate}>
-            <FaPlus /> New Rule
-          </button>
+          <ProtectedAction tooltip="View-only access">
+            <button className="btn-primary" onClick={handleOpenCreate}>
+              <FaPlus /> New Rule
+            </button>
+          </ProtectedAction>
         </div>
       </div>
 
@@ -180,9 +188,11 @@ const RulesPage = () => {
           }}
         >
           <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>No categorization rules configured yet.</p>
-          <button className="btn-primary" onClick={handleOpenCreate}>
-            <FaPlus /> Create Your First Rule
-          </button>
+          <ProtectedAction tooltip="View-only access">
+            <button className="btn-primary" onClick={handleOpenCreate}>
+              <FaPlus /> Create Your First Rule
+            </button>
+          </ProtectedAction>
         </div>
       ) : (
         <div className="rules-grid">
@@ -210,14 +220,16 @@ const RulesPage = () => {
                 </div>
 
                 <div className="rule-card-footer">
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem' }}>
-                    <input
-                      type="checkbox"
-                      checked={rule.isActive !== false}
-                      onChange={() => handleToggleActive(rule)}
-                    />
-                    {rule.isActive !== false ? 'Active' : 'Disabled'}
-                  </label>
+                  <ProtectedAction tooltip="View-only access">
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem' }}>
+                      <input
+                        type="checkbox"
+                        checked={rule.isActive !== false}
+                        onChange={() => handleToggleActive(rule)}
+                      />
+                      {rule.isActive !== false ? 'Active' : 'Disabled'}
+                    </label>
+                  </ProtectedAction>
 
                   <div className="rule-actions">
                     <button
@@ -236,16 +248,20 @@ const RulesPage = () => {
                     >
                       <FaFlask />
                     </button>
-                    <button className="rule-action-btn" title="Edit rule" onClick={() => handleOpenEdit(rule)}>
-                      <FaPencilAlt />
-                    </button>
-                    <button
-                      className="rule-action-btn delete"
-                      title="Delete rule"
-                      onClick={() => handleDeleteRule(rule._id)}
-                    >
-                      <FaTrash />
-                    </button>
+                    <ProtectedAction tooltip="View-only access">
+                      <button className="rule-action-btn" title="Edit rule" onClick={() => handleOpenEdit(rule)}>
+                        <FaPencilAlt />
+                      </button>
+                    </ProtectedAction>
+                    <ProtectedAction tooltip="View-only access">
+                      <button
+                        className="rule-action-btn delete"
+                        title="Delete rule"
+                        onClick={() => handleDeleteRule(rule._id)}
+                      >
+                        <FaTrash />
+                      </button>
+                    </ProtectedAction>
                   </div>
                 </div>
               </div>
@@ -345,9 +361,11 @@ const RulesPage = () => {
                 <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
-                  {editingRule ? 'Update Rule' : 'Create Rule'}
-                </button>
+                <ProtectedAction tooltip="View-only access">
+                  <button type="submit" className="btn-primary">
+                    {editingRule ? 'Update Rule' : 'Create Rule'}
+                  </button>
+                </ProtectedAction>
               </div>
             </form>
           </div>

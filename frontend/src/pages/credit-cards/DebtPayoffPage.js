@@ -5,9 +5,12 @@ import { calculatePayoff, savePlan, getSavedPlans } from '../../services/debtPay
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
 import { FaSnowflake, FaBolt, FaPiggyBank, FaCalendarCheck, FaBookmark } from 'react-icons/fa';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import './DebtPayoffPage.css';
 
 const DebtPayoffPage = () => {
+  const canModify = useCanModify();
   const { showToast } = useToast();
   const [strategy, setStrategy] = useState('snowball');
   const [monthlyBudget, setMonthlyBudget] = useState('2000');
@@ -55,6 +58,7 @@ const DebtPayoffPage = () => {
   }, [strategy]);
 
   const handleSaveActivePlan = async () => {
+    if (!canModify) return;
     if (!planResult || !planResult.cards || planResult.cards.length === 0) return;
     setIsSaving(true);
     try {
@@ -255,15 +259,17 @@ const DebtPayoffPage = () => {
               </div>
 
               <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleSaveActivePlan}
-                  disabled={isSaving}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
-                >
-                  <FaBookmark /> {isSaving ? 'Saving...' : 'Save As Active Plan'}
-                </button>
+                <ProtectedAction tooltip="View-only access">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleSaveActivePlan}
+                    disabled={isSaving}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                  >
+                    <FaBookmark /> {isSaving ? 'Saving...' : 'Save As Active Plan'}
+                  </button>
+                </ProtectedAction>
               </div>
             </div>
           )}

@@ -5,6 +5,7 @@ import { FaPlus, FaCalculator } from 'react-icons/fa';
 import PaycheckTable from './PaycheckTable';
 import { getPaychecksLog, deletePaycheck, getPaychecks } from '../../services/paycheckService';
 import PaginationControls from '../../components/PaginationControls';
+import ProtectedAction from '../../components/common/ProtectedAction';
 import { formatCurrency } from '../../utils/formatters';
 
 const PaycheckLog = () => {
@@ -164,23 +165,25 @@ const PaycheckLog = () => {
                     }}>
                         <FaCalculator style={{ color: '#009879' }} /> Salary Profile & Components
                     </Link>
-                    <Link to="/paycheck-log/new" style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        padding: '0.65rem 1.35rem',
-                        background: 'linear-gradient(135deg, #009879 0%, #059669 100%)',
-                        color: '#ffffff',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontWeight: 700,
-                        fontSize: '0.92rem',
-                        textDecoration: 'none',
-                        boxShadow: '0 4px 10px rgba(0, 152, 121, 0.3)',
-                        transition: 'all 0.15s ease',
-                    }}>
-                        <FaPlus /> Log Paycheck
-                    </Link>
+                    <ProtectedAction tooltip="View-only access">
+                        <Link to="/paycheck-log/new" style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.65rem 1.35rem',
+                            background: 'linear-gradient(135deg, #009879 0%, #059669 100%)',
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontWeight: 700,
+                            fontSize: '0.92rem',
+                            textDecoration: 'none',
+                            boxShadow: '0 4px 10px rgba(0, 152, 121, 0.3)',
+                            transition: 'all 0.15s ease',
+                        }}>
+                            <FaPlus /> Log Paycheck
+                        </Link>
+                    </ProtectedAction>
                 </div>
             </div>
 

@@ -8,9 +8,12 @@ import { formatCurrency } from '../../utils/formatters';
 import SalaryForm from '../../components/SalaryForm';
 import ComponentTable from '../../components/salary/ComponentTable';
 import { useToast } from '../../context/ToastContext';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import './SalaryProfile.css';
 
 const SalaryProfilePage = () => {
+  const canModify = useCanModify();
   const isMobile = window.innerWidth <= 768;
   const { addToast } = useToast();
 
@@ -47,6 +50,7 @@ const SalaryProfilePage = () => {
   }, [loadData]);
 
   const handleFormSubmit = async (formData) => {
+    if (!canModify) return;
     try {
       await saveProfile(formData);
       setIsEditing(false);
@@ -58,6 +62,7 @@ const SalaryProfilePage = () => {
   };
 
   const handleSetDefault = async (profileId) => {
+    if (!canModify) return;
     try {
       await setDefaultSalaryProfile(profileId);
       addToast('Default salary profile updated', 'success');
@@ -68,6 +73,7 @@ const SalaryProfilePage = () => {
   };
 
   const handleDeleteProfile = async (profileId) => {
+    if (!canModify) return;
     if (!window.confirm('Are you sure you want to delete this salary profile?')) return;
     try {
       await deleteSalaryProfile(profileId);
@@ -144,17 +150,21 @@ const SalaryProfilePage = () => {
               </p>
             </div>
             {!isMobile && (
-              <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
-                <FaUserEdit />
-              </Link>
+              <ProtectedAction tooltip="View-only access">
+                <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
+                  <FaUserEdit />
+                </Link>
+              </ProtectedAction>
             )}
           </div>
           <div className="card-body">
             <h4>No Salary Details Found</h4>
             <p>This profile doesn't have any salary history yet. Add the first set of salary details to get started.</p>
-            <Link to="/salary-profile/update" className="submit-button" style={{ marginTop: '1rem', textDecoration: 'none', display: 'inline-block' }}>
-              Add Initial Salary Details
-            </Link>
+            <ProtectedAction tooltip="View-only access">
+              <Link to="/salary-profile/update" className="submit-button" style={{ marginTop: '1rem', textDecoration: 'none', display: 'inline-block' }}>
+                Add Initial Salary Details
+              </Link>
+            </ProtectedAction>
           </div>
         </div>
       </div>
@@ -178,9 +188,11 @@ const SalaryProfilePage = () => {
           <Link to="/salary/paychecks/new" className="nav-button" style={{ backgroundColor: '#2c3e50' }}>
             <FaCalculator /> Paycheck Calculator
           </Link>
-          <Link to="/salary-profile/update" className="nav-button">
-            <FaPlus /> Update Structure
-          </Link>
+          <ProtectedAction tooltip="View-only access">
+            <Link to="/salary-profile/update" className="nav-button">
+              <FaPlus /> Update Structure
+            </Link>
+          </ProtectedAction>
         </div>
       </div>
 
@@ -195,9 +207,11 @@ const SalaryProfilePage = () => {
               {profile.position ? `${profile.position} • ` : ''}{profile.year || new Date().getFullYear()}
             </p>
           </div>
-          <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
-            <FaUserEdit />
-          </Link>
+          <ProtectedAction tooltip="View-only access">
+            <Link to="/salary-profile/edit" className="header-action-icon" title="Edit Profile Details">
+              <FaUserEdit />
+            </Link>
+          </ProtectedAction>
         </div>
 
         <div className="card-body">
@@ -243,9 +257,11 @@ const SalaryProfilePage = () => {
             </div>
           )}
           <div className="card-actions" style={{ marginLeft: 'auto', display: 'flex', gap: '0.75rem' }}>
-            <Link to="/salary-profile/update" className="action-button" title="Update Salary">
-              <FaEdit /> Update
-            </Link>
+            <ProtectedAction tooltip="View-only access">
+              <Link to="/salary-profile/update" className="action-button" title="Update Salary">
+                <FaEdit /> Update
+              </Link>
+            </ProtectedAction>
             <Link to="/salary-profile/history" className="action-button" style={{ backgroundColor: '#2c3e50', color: '#fff' }} title="View History">
               <FaHistory /> History
             </Link>
@@ -281,21 +297,25 @@ const SalaryProfilePage = () => {
                   </div>
                   <div className="card-footer" style={{ padding: '0.75rem 1rem' }}>
                     {!isDefault && (
-                      <button
-                        onClick={() => handleSetDefault(p._id)}
-                        className="action-button"
-                        style={{ backgroundColor: '#009879', color: '#fff', fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
-                      >
-                        <FaCheck /> Set Default
-                      </button>
+                      <ProtectedAction tooltip="View-only access">
+                        <button
+                          onClick={() => handleSetDefault(p._id)}
+                          className="action-button"
+                          style={{ backgroundColor: '#009879', color: '#fff', fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
+                        >
+                          <FaCheck /> Set Default
+                        </button>
+                      </ProtectedAction>
                     )}
-                    <button
-                      onClick={() => handleDeleteProfile(p._id)}
-                      className="action-button"
-                      style={{ backgroundColor: '#e74c3c', color: '#fff', fontSize: '0.8rem', padding: '0.4rem 0.8rem', marginLeft: 'auto' }}
-                    >
-                      <FaTrash />
-                    </button>
+                    <ProtectedAction tooltip="View-only access">
+                      <button
+                        onClick={() => handleDeleteProfile(p._id)}
+                        className="action-button"
+                        style={{ backgroundColor: '#e74c3c', color: '#fff', fontSize: '0.8rem', padding: '0.4rem 0.8rem', marginLeft: 'auto' }}
+                      >
+                        <FaTrash />
+                      </button>
+                    </ProtectedAction>
                   </div>
                 </div>
               );

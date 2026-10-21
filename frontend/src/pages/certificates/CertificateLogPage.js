@@ -6,9 +6,12 @@ import { formatDate, formatCurrency } from '../../utils/formatters';
 import { useCertData } from '../../context/CertContext';
 import { useToast } from '../../context/ToastContext';
 import { FaEdit, FaTrash, FaEye, FaHandHoldingUsd, FaPlus, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import '../trades/Trades.css';
 
 const CertificateLogPage = () => {
+    const canModify = useCanModify();
     const { certificates = [], certificateSummary = {}, isLoading, refreshCertificates } = useCertData();
     const { showToast } = useToast();
 
@@ -19,6 +22,7 @@ const CertificateLogPage = () => {
     const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
 
     const handleDelete = async (id) => {
+        if (!canModify) return;
         if (window.confirm('Are you sure you want to delete this certificate?')) {
             try {
                 await deleteCertificate(id);
@@ -46,6 +50,7 @@ const CertificateLogPage = () => {
     };
 
     const handleConfirmWithdraw = async () => {
+        if (!canModify) return;
         if (!withdrawingCert || !confirmedCheckbox) return;
 
         try {
@@ -101,23 +106,25 @@ const CertificateLogPage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h1 style={{ margin: 0 }}>Bank Certificates</h1>
-                <Link
-                    to="/certificates/new"
-                    className="action-button"
-                    style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        background: '#4f46e5',
-                        color: 'white',
-                        padding: '8px 16px',
-                        borderRadius: '8px',
-                        textDecoration: 'none',
-                        fontWeight: '600'
-                    }}
-                >
-                    <FaPlus size={12} /> Add Certificate
-                </Link>
+                <ProtectedAction tooltip="View-only access">
+                    <Link
+                        to="/certificates/new"
+                        className="action-button"
+                        style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: '#4f46e5',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            textDecoration: 'none',
+                            fontWeight: '600'
+                        }}
+                    >
+                        <FaPlus size={12} /> Add Certificate
+                    </Link>
+                </ProtectedAction>
             </div>
 
             {/* Portfolio Summary Card */}
@@ -286,32 +293,38 @@ const CertificateLogPage = () => {
                                             <Link className="action-icon view-icon" to={`/certificates/${cert._id}`} title="View Details" style={{ color: '#3b82f6', marginRight: '8px' }}>
                                                 <FaEye />
                                             </Link>
-                                            <Link className="action-icon edit-icon" to={`/certificates/edit/${cert._id}`} title="Edit Certificate" style={{ marginRight: '8px' }}>
-                                                <FaEdit />
-                                            </Link>
+                                            <ProtectedAction tooltip="View-only access">
+                                                <Link className="action-icon edit-icon" to={`/certificates/edit/${cert._id}`} title="Edit Certificate" style={{ marginRight: '8px' }}>
+                                                    <FaEdit />
+                                                </Link>
+                                            </ProtectedAction>
                                             {!isWithdrawn && (
-                                                <button
-                                                    onClick={() => handleOpenWithdrawModal(cert)}
-                                                    title="Withdraw Certificate"
-                                                    style={{
-                                                        background: 'none',
-                                                        border: 'none',
-                                                        cursor: 'pointer',
-                                                        color: '#f59e0b',
-                                                        padding: 0,
-                                                        marginRight: '8px',
-                                                        fontSize: '14px',
-                                                    }}
-                                                >
-                                                    <FaHandHoldingUsd />
-                                                </button>
+                                                <ProtectedAction tooltip="View-only access">
+                                                    <button
+                                                        onClick={() => handleOpenWithdrawModal(cert)}
+                                                        title="Withdraw Certificate"
+                                                        style={{
+                                                            background: 'none',
+                                                            border: 'none',
+                                                            cursor: 'pointer',
+                                                            color: '#f59e0b',
+                                                            padding: 0,
+                                                            marginRight: '8px',
+                                                            fontSize: '14px',
+                                                        }}
+                                                    >
+                                                        <FaHandHoldingUsd />
+                                                    </button>
+                                                </ProtectedAction>
                                             )}
-                                            <FaTrash
-                                                className="action-icon delete-icon"
-                                                onClick={() => handleDelete(cert._id)}
-                                                title="Delete"
-                                                style={{ cursor: 'pointer', color: '#ef4444' }}
-                                            />
+                                            <ProtectedAction tooltip="View-only access">
+                                                <FaTrash
+                                                    className="action-icon delete-icon"
+                                                    onClick={() => handleDelete(cert._id)}
+                                                    title="Delete"
+                                                    style={{ cursor: 'pointer', color: '#ef4444' }}
+                                                />
+                                            </ProtectedAction>
                                         </td>
                                     </tr>
                                 );
@@ -445,21 +458,23 @@ const CertificateLogPage = () => {
                             >
                                 Cancel
                             </button>
-                            <button
-                                onClick={handleConfirmWithdraw}
-                                disabled={!confirmedCheckbox || isSubmittingWithdraw}
-                                style={{
-                                    padding: '8px 16px',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    background: confirmedCheckbox ? '#ef4444' : '#9ca3af',
-                                    color: 'white',
-                                    cursor: confirmedCheckbox ? 'pointer' : 'not-allowed',
-                                    fontWeight: '600'
-                                }}
-                            >
-                                {isSubmittingWithdraw ? 'Processing...' : 'Confirm Withdrawal'}
-                            </button>
+                            <ProtectedAction tooltip="View-only access">
+                                <button
+                                    onClick={handleConfirmWithdraw}
+                                    disabled={!confirmedCheckbox || isSubmittingWithdraw}
+                                    style={{
+                                        padding: '8px 16px',
+                                        borderRadius: '6px',
+                                        border: 'none',
+                                        background: confirmedCheckbox ? '#ef4444' : '#9ca3af',
+                                        color: 'white',
+                                        cursor: confirmedCheckbox ? 'pointer' : 'not-allowed',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    {isSubmittingWithdraw ? 'Processing...' : 'Confirm Withdrawal'}
+                                </button>
+                            </ProtectedAction>
                         </div>
                     </div>
                 </div>

@@ -1,13 +1,15 @@
-// frontend/src/pages/currency/CurrencyLogPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getCurrency, deleteCurrency, revalueCurrency } from '../../services/currencyService';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
 import { FaEdit, FaTrash, FaEye, FaSync, FaPlus, FaCheckCircle, FaExclamationCircle, FaUserEdit } from 'react-icons/fa';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import '../trades/Trades.css';
 
 const CurrencyLogPage = () => {
+    const canModify = useCanModify();
     const { showToast } = useToast();
     const [currencyList, setCurrencyList] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -31,6 +33,7 @@ const CurrencyLogPage = () => {
     }, [fetchCurrencyData]);
 
     const handleRevalueNow = async () => {
+        if (!canModify) return;
         try {
             setIsRevaluing(true);
             const res = await revalueCurrency();
@@ -49,6 +52,7 @@ const CurrencyLogPage = () => {
     };
 
     const handleDelete = async (id) => {
+        if (!canModify) return;
         if (window.confirm('Are you sure you want to delete this currency holding?')) {
             try {
                 await deleteCurrency(id);
@@ -99,43 +103,47 @@ const CurrencyLogPage = () => {
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
                 <h1 style={{ margin: 0 }}>Foreign Currency Wallet</h1>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    <button
-                        onClick={handleRevalueNow}
-                        disabled={isRevaluing}
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            background: '#059669',
-                            color: 'white',
-                            padding: '8px 16px',
-                            borderRadius: '8px',
-                            border: 'none',
-                            fontWeight: '600',
-                            cursor: isRevaluing ? 'not-allowed' : 'pointer',
-                            opacity: isRevaluing ? 0.75 : 1,
-                        }}
-                    >
-                        <FaSync className={isRevaluing ? 'spin' : ''} size={12} />
-                        {isRevaluing ? 'Revaluing...' : 'Revalue Now'}
-                    </button>
-                    <Link
-                        to="/currency/new"
-                        className="action-button"
-                        style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            background: '#2563eb',
-                            color: 'white',
-                            padding: '8px 16px',
-                            borderRadius: '8px',
-                            textDecoration: 'none',
-                            fontWeight: '600'
-                        }}
-                    >
-                        <FaPlus size={12} /> Add Currency
-                    </Link>
+                    <ProtectedAction tooltip="View-only access">
+                        <button
+                            onClick={handleRevalueNow}
+                            disabled={isRevaluing}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                background: '#059669',
+                                color: 'white',
+                                padding: '8px 16px',
+                                borderRadius: '8px',
+                                border: 'none',
+                                fontWeight: '600',
+                                cursor: isRevaluing ? 'not-allowed' : 'pointer',
+                                opacity: isRevaluing ? 0.75 : 1,
+                            }}
+                        >
+                            <FaSync className={isRevaluing ? 'spin' : ''} size={12} />
+                            {isRevaluing ? 'Revaluing...' : 'Revalue Now'}
+                        </button>
+                    </ProtectedAction>
+                    <ProtectedAction tooltip="View-only access">
+                        <Link
+                            to="/currency/new"
+                            className="action-button"
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: '#2563eb',
+                                color: 'white',
+                                padding: '8px 16px',
+                                borderRadius: '8px',
+                                textDecoration: 'none',
+                                fontWeight: '600'
+                            }}
+                        >
+                            <FaPlus size={12} /> Add Currency
+                        </Link>
+                    </ProtectedAction>
                 </div>
             </div>
 
@@ -265,10 +273,14 @@ const CurrencyLogPage = () => {
                                             <Link className="action-icon view-icon" to={`/currency/${curr._id}`} title="View Details" style={{ color: '#0284c7', marginRight: '8px' }}>
                                                 <FaEye />
                                             </Link>
-                                            <Link className="action-icon edit-icon" to={`/currency/edit/${curr._id}`} title="Edit" style={{ marginRight: '8px' }}>
-                                                <FaEdit />
-                                            </Link>
-                                            <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(curr._id)} title="Delete" style={{ cursor: 'pointer', color: '#ef4444' }} />
+                                            <ProtectedAction tooltip="View-only access">
+                                                <Link className="action-icon edit-icon" to={`/currency/edit/${curr._id}`} title="Edit" style={{ marginRight: '8px' }}>
+                                                    <FaEdit />
+                                                </Link>
+                                            </ProtectedAction>
+                                            <ProtectedAction tooltip="View-only access">
+                                                <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(curr._id)} title="Delete" style={{ cursor: 'pointer', color: '#ef4444' }} />
+                                            </ProtectedAction>
                                         </td>
                                     </tr>
                                 );

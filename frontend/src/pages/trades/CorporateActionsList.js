@@ -5,11 +5,14 @@ import { Plus, Trash2, RefreshCw, Layers } from 'lucide-react';
 import { getCorporateActions, deleteCorporateAction } from '../../services/corporateActionService';
 import { useToast } from '../../context/ToastContext';
 import { formatDate } from '../../utils/formatters';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import '../../components/Table.css';
 import '../trades/Trades.css';
 import './CorporateActionsList.css';
 
 const CorporateActionsList = () => {
+  const canModify = useCanModify();
   const { addToast } = useToast();
   const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,11 +37,13 @@ const CorporateActionsList = () => {
   }, [fetchActions]);
 
   const handleDeleteClick = (action) => {
+    if (!canModify) return;
     setSelectedAction(action);
     setShowConfirmModal(true);
   };
 
   const handleConfirmDelete = async () => {
+    if (!canModify) return;
     if (!selectedAction) return;
     try {
       setDeletingId(selectedAction._id);
@@ -72,13 +77,15 @@ const CorporateActionsList = () => {
           >
             <RefreshCw size={16} /> Refresh
           </button>
-          <Link
-            to="/corporate-actions/wizard"
-            className="btn btn-primary ca-btn ca-btn-primary"
-            title="Launch Action Wizard"
-          >
-            <Plus size={16} /> Launch Action Wizard
-          </Link>
+          <ProtectedAction tooltip="View-only access">
+            <Link
+              to="/corporate-actions/wizard"
+              className="btn btn-primary ca-btn ca-btn-primary"
+              title="Launch Action Wizard"
+            >
+              <Plus size={16} /> Launch Action Wizard
+            </Link>
+          </ProtectedAction>
         </div>
       </div>
 
@@ -96,9 +103,11 @@ const CorporateActionsList = () => {
           <p>
             Record stock splits and bonus distributions to automatically adjust share quantities and prices for pre-event trades.
           </p>
-          <Link to="/corporate-actions/wizard" className="btn btn-primary ca-btn ca-btn-primary ca-btn-lg">
-            <Plus size={18} /> Apply First Corporate Action
-          </Link>
+          <ProtectedAction tooltip="View-only access">
+            <Link to="/corporate-actions/wizard" className="btn btn-primary ca-btn ca-btn-primary ca-btn-lg">
+              <Plus size={18} /> Apply First Corporate Action
+            </Link>
+          </ProtectedAction>
         </div>
       ) : (
         <div className="table-container" style={{ marginTop: '20px' }}>
@@ -134,14 +143,16 @@ const CorporateActionsList = () => {
                     {act.notes || '-'}
                   </td>
                   <td data-label="Actions" style={{ textAlign: 'right' }}>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteClick(act)}
-                      className="ca-btn-table-delete"
-                      title="Remove corporate action"
-                    >
-                      <Trash2 size={14} /> Remove
-                    </button>
+                    <ProtectedAction tooltip="View-only access">
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteClick(act)}
+                        className="ca-btn-table-delete"
+                        title="Remove corporate action"
+                      >
+                        <Trash2 size={14} /> Remove
+                      </button>
+                    </ProtectedAction>
                   </td>
                 </tr>
               ))}
@@ -167,14 +178,16 @@ const CorporateActionsList = () => {
               >
                 Cancel
               </button>
-              <button
-                type="button"
-                className="btn btn-danger ca-btn ca-btn-danger"
-                onClick={handleConfirmDelete}
-                disabled={deletingId !== null}
-              >
-                {deletingId ? 'Removing...' : 'Confirm Remove'}
-              </button>
+              <ProtectedAction tooltip="View-only access">
+                <button
+                  type="button"
+                  className="btn btn-danger ca-btn ca-btn-danger"
+                  onClick={handleConfirmDelete}
+                  disabled={deletingId !== null}
+                >
+                  {deletingId ? 'Removing...' : 'Confirm Remove'}
+                </button>
+              </ProtectedAction>
             </div>
           </div>
         </div>

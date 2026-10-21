@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { formatCurrency } from '../../utils/formatters';
+import ProtectedAction from '../../components/common/ProtectedAction';
 import '../../components/Table.css';
 
 const TYPE_COLORS = {
@@ -146,13 +147,21 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
                         </td>
                       )}
                       <td data-label="Action" className="action-cell">
-                        <Link to={`/paycheck-log/edit/${entry._id}`}>
-                          <FaPencilAlt className="action-icon edit-icon" />
-                        </Link>
-                        <FaTrash
-                          className="action-icon"
-                          onClick={() => onPaycheckDeleted(entry._id)}
-                        />
+                        <ProtectedAction tooltip="View-only access">
+                          <Link to={`/paycheck-log/edit/${entry._id}`}>
+                            <FaPencilAlt className="action-icon edit-icon" />
+                          </Link>
+                        </ProtectedAction>
+                        <ProtectedAction tooltip="View-only access">
+                          <button
+                            type="button"
+                            onClick={() => onPaycheckDeleted(entry._id)}
+                            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                            title="Delete paycheck entry"
+                          >
+                            <FaTrash className="action-icon" />
+                          </button>
+                        </ProtectedAction>
                       </td>
                     </tr>
                   );

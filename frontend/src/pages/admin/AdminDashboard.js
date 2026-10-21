@@ -25,27 +25,17 @@ import {
 } from 'lucide-react';
 import { getUsers, createUser, deleteUser } from '../../services/adminService';
 import { dispatchToast } from '../../services/apiClient';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useAuth } from '../../context/AuthContext';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
+  const { user: currentUser, isManager, isAdmin, isViewer } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
-
-  // Current user role from localStorage
-  const currentUser = useMemo(() => {
-    try {
-      const userStr = localStorage.getItem('user');
-      return userStr ? JSON.parse(userStr) : { role: 'viewer' };
-    } catch {
-      return { role: 'viewer' };
-    }
-  }, []);
-
-  const isManager = currentUser.role === 'manager';
-  const isAdmin = currentUser.role === 'admin';
 
   // Search State with 300ms debounce
   const [searchInput, setSearchInput] = useState('');
@@ -124,6 +114,7 @@ const AdminDashboard = () => {
   // Handle Add User Form Submission
   const handleCreateUser = async (e) => {
     e.preventDefault();
+    if (isViewer) return;
     setFormError('');
 
     if (!formData.username.trim() || formData.username.trim().length < 3) {
@@ -171,6 +162,7 @@ const AdminDashboard = () => {
 
   // Handle User Deletion
   const handleConfirmDelete = async () => {
+    if (isViewer) return;
     if (!userToDelete) return;
     setDeleteLoading(true);
 
@@ -215,10 +207,12 @@ const AdminDashboard = () => {
           </p>
         </div>
 
-        <button onClick={() => setAddModalOpen(true)} className="add-user-btn">
-          <UserPlus size={18} />
-          <span>{isManager ? 'Add New Viewer' : 'Add New User'}</span>
-        </button>
+        <ProtectedAction tooltip="View-only access">
+          <button onClick={() => setAddModalOpen(true)} className="add-user-btn">
+            <UserPlus size={18} />
+            <span>{isManager ? 'Add New Viewer' : 'Add New User'}</span>
+          </button>
+        </ProtectedAction>
       </div>
 
       {/* Admin Quick Access Configuration Cards */}
@@ -334,10 +328,12 @@ const AdminDashboard = () => {
                 Clear Search Filter
               </button>
             ) : (
-              <button onClick={() => setAddModalOpen(true)} className="add-user-btn">
-                <UserPlus size={16} />
-                <span>{isManager ? 'Add New Viewer' : 'Add New User'}</span>
-              </button>
+              <ProtectedAction tooltip="View-only access">
+                <button onClick={() => setAddModalOpen(true)} className="add-user-btn">
+                  <UserPlus size={16} />
+                  <span>{isManager ? 'Add New Viewer' : 'Add New User'}</span>
+                </button>
+              </ProtectedAction>
             )}
           </div>
         ) : (
@@ -428,17 +424,19 @@ const AdminDashboard = () => {
                           </span>
                         </td>
                         <td style={{ textAlign: 'right' }}>
-                          <button
-                            onClick={() => {
-                              setUserToDelete(u);
-                              setDeleteModalOpen(true);
-                            }}
-                            className="delete-action-btn"
-                            title={`Delete ${u.username}`}
-                          >
-                            <Trash2 size={15} />
-                            <span>Delete</span>
-                          </button>
+                          <ProtectedAction tooltip="View-only access">
+                            <button
+                              onClick={() => {
+                                setUserToDelete(u);
+                                setDeleteModalOpen(true);
+                              }}
+                              className="delete-action-btn"
+                              title={`Delete ${u.username}`}
+                            >
+                              <Trash2 size={15} />
+                              <span>Delete</span>
+                            </button>
+                          </ProtectedAction>
                         </td>
                       </tr>
                     );
@@ -614,13 +612,15 @@ const AdminDashboard = () => {
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={formLoading}
-                  className="add-user-btn"
-                >
-                  {formLoading ? 'Creating User...' : 'Create Account'}
-                </button>
+                <ProtectedAction tooltip="View-only access">
+                  <button
+                    type="submit"
+                    disabled={formLoading}
+                    className="add-user-btn"
+                  >
+                    {formLoading ? 'Creating User...' : 'Create Account'}
+                  </button>
+                </ProtectedAction>
               </div>
             </form>
           </div>
@@ -676,15 +676,17 @@ const AdminDashboard = () => {
               >
                 Cancel
               </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                disabled={deleteLoading}
-                className="delete-action-btn"
-                style={{ padding: '8px 18px', fontSize: '0.9rem' }}
-              >
-                {deleteLoading ? 'Deleting...' : 'Delete User'}
-              </button>
+              <ProtectedAction tooltip="View-only access">
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  disabled={deleteLoading}
+                  className="delete-action-btn"
+                  style={{ padding: '8px 18px', fontSize: '0.9rem' }}
+                >
+                  {deleteLoading ? 'Deleting...' : 'Delete User'}
+                </button>
+              </ProtectedAction>
             </div>
           </div>
         </div>

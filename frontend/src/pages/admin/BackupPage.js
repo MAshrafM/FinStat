@@ -12,9 +12,11 @@ import {
 } from 'lucide-react';
 import { getBackupStatus, exportBackup, importBackup } from '../../services/backupService';
 import { dispatchToast } from '../../services/apiClient';
+import { useAuth } from '../../context/AuthContext';
 import './BackupPage.css';
 
 const BackupPage = () => {
+  const { user: currentUser, isAdmin } = useAuth();
   const [status, setStatus] = useState(null);
   const [statusLoading, setStatusLoading] = useState(true);
 
@@ -34,18 +36,6 @@ const BackupPage = () => {
   const [confirmInput, setConfirmInput] = useState('');
 
   const fileInputRef = useRef(null);
-
-  // Role validation
-  const currentUser = useMemo(() => {
-    try {
-      const userStr = localStorage.getItem('user');
-      return userStr ? JSON.parse(userStr) : { role: 'viewer' };
-    } catch {
-      return { role: 'viewer' };
-    }
-  }, []);
-
-  const isAdmin = currentUser.role === 'admin';
 
   // Load status on mount
   useEffect(() => {

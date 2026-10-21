@@ -1,13 +1,15 @@
-// frontend/src/pages/mutual-funds/MutualFundLogPage.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getMutualFundTrades, deleteTrade } from '../../services/mutualFundService';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import PaginationControls from '../../components/PaginationControls';
+import ProtectedAction from '../../components/common/ProtectedAction';
+import { useCanModify } from '../../context/AuthContext';
 import '../trades/Trades.css'; // Reuse the same CSS as the stock trades page
 
 const MutualFundLogPage = () => {
+    const canModify = useCanModify();
     const [trades, setTrades] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -28,6 +30,7 @@ const MutualFundLogPage = () => {
     }, [currentPage, selectType]);
 
     const handleDelete = async (id) => {
+        if (!canModify) return;
         if (window.confirm('Are you sure you want to delete this transaction?')) {
             try {
                 await deleteTrade(id);
@@ -49,6 +52,9 @@ const MutualFundLogPage = () => {
         <div className="page-container">
             <div className="page-header">
                 <h1>Mutual Fund Log</h1>
+                <ProtectedAction tooltip="View-only access">
+                    <Link to="/mutual-funds/new" className="action-button primary">Add Fund Trade</Link>
+                </ProtectedAction>
             </div>
 
             {/* Filter Section */}
@@ -134,8 +140,12 @@ const MutualFundLogPage = () => {
                                 <td data-label="Fees">{formatCurrency(trade.fees)}</td>
                                 <td data-label="Value" className="total-value">{formatCurrency(trade.totalValue)}</td>
                                 <td data-label="Actions" className="action-icons">
-                                    <Link className="action-icon edit-icon" to={`/mutual-funds/edit/${trade._id}`}><FaEdit /></Link>
-                                    <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(trade._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
+                                    <ProtectedAction tooltip="View-only access">
+                                        <Link className="action-icon edit-icon" to={`/mutual-funds/edit/${trade._id}`}><FaEdit /></Link>
+                                    </ProtectedAction>
+                                    <ProtectedAction tooltip="View-only access">
+                                        <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(trade._id)} style={{ cursor: 'pointer', color: '#c0392b' }} />
+                                    </ProtectedAction>
                                 </td>
                             </tr>
                         ))}

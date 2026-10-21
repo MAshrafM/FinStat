@@ -5,6 +5,7 @@ import { getTrades, deleteTrade } from '../../services/tradeService';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { FaEdit, FaTrash, FaPlus, FaBolt } from 'react-icons/fa';
 import PaginationControls from '../../components/PaginationControls';
+import ProtectedAction from '../../components/common/ProtectedAction';
 import '../../components/Table.css';
 import './Trades.css';
 
@@ -88,13 +89,15 @@ const TradeLogPage = () => {
           >
             <FaBolt size={13} color="#f59e0b" /> Corporate Actions
           </Link>
-          <Link
-            to="/trades/new"
-            className="btn btn-primary"
-            title="Record a new trade or cash transaction"
-          >
-            <FaPlus size={13} /> Add Trade
-          </Link>
+          <ProtectedAction tooltip="View-only access">
+            <Link
+              to="/trades/new"
+              className="btn btn-primary"
+              title="Record a new trade or cash transaction"
+            >
+              <FaPlus size={13} /> Add Trade
+            </Link>
+          </ProtectedAction>
         </div>
       </div>
 
@@ -153,8 +156,19 @@ const TradeLogPage = () => {
                     <td data-label="Fees">{formatCurrency(trade.fees || 0)}</td>
                     <td data-label="Value" className="total-value">{formatCurrency(trade.totalValue || 0)}</td>
                     <td data-label="Actions" className="action-cell">
-                      <Link to={`/trades/edit/${trade._id}`}><FaEdit className="action-icon edit-icon" /></Link>
-                      <FaTrash className="action-icon delete-icon" onClick={() => handleDelete(trade._id)} style={{ cursor: 'pointer' }} />
+                      <ProtectedAction tooltip="View-only access">
+                        <Link to={`/trades/edit/${trade._id}`}><FaEdit className="action-icon edit-icon" /></Link>
+                      </ProtectedAction>
+                      <ProtectedAction tooltip="View-only access">
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(trade._id)}
+                          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                          title="Delete trade"
+                        >
+                          <FaTrash className="action-icon delete-icon" />
+                        </button>
+                      </ProtectedAction>
                     </td>
                   </tr>
                 );
