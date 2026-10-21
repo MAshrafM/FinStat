@@ -1,0 +1,26 @@
+/* frontend/src/components/common/ViewOnlyBanner.css */
+.view-only-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(234, 179, 8, 0.12);
+  border-bottom: 1px solid rgba(234, 179, 8, 0.3);
+  color: #fef08a;
+  font-size: 0.875rem;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 40;
+  margin-bottom: 8px;
+}
+
+.view-only-banner .view-only-icon {
+  font-size: 1.1rem;
+}
+
+.view-only-banner strong {
+  color: #facc15;
+  font-weight: 600;
+}

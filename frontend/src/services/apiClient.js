@@ -75,6 +75,9 @@ const refreshAccessToken = async () => {
     localStorage.setItem('token', data.token);
     if (data.user) {
       localStorage.setItem('user', JSON.stringify(data.user));
+      if (typeof window !== 'undefined' && window.dispatchEvent) {
+        window.dispatchEvent(new CustomEvent('app:auth-change', { detail: { user: data.user } }));
+      }
     }
     return data.token;
   }
@@ -188,6 +191,9 @@ export const apiRequest = async (url, options = {}) => {
           isRefreshing = false;
           refreshSubscribers = [];
           clearStaleToken();
+          if (typeof window !== 'undefined' && window.dispatchEvent) {
+            window.dispatchEvent(new CustomEvent('app:auth-change', { detail: { user: null } }));
+          }
           const userFriendlyMessage = 'Your session has expired. Please log in again.';
           if (!suppressToast) {
             dispatchToast(userFriendlyMessage, 'warning');

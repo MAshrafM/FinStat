@@ -1,0 +1,19 @@
+/* frontend/src/components/common/ProtectedAction.css */
+.protected-action-wrapper {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  position: relative;
+  cursor: not-allowed !important;
+}
+
+.protected-action-wrapper > * {
+  pointer-events: none !important;
+  opacity: 0.55 !important;
+  user-select: none !important;
+  cursor: not-allowed !important;
+}
+
+.protected-action-wrapper[aria-disabled="true"] {
+  outline: none;
+}

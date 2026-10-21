@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute'; // Keep standard import for immediate auth evaluation
 import { ToastProvider } from './context/ToastContext';
+import { AuthProvider } from './context/AuthContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import './App.css';
 import './components/Table.css';
@@ -103,8 +104,9 @@ function App() {
   return (
     <ErrorBoundary>
       <ToastProvider>
-        <Router>
-          <React.Suspense fallback={<div className="loading-spinner">Loading...</div>}>
+        <AuthProvider>
+          <Router>
+            <React.Suspense fallback={<div className="loading-spinner">Loading...</div>}>
             <Routes>
               <Route path="*" element={<LandingPage />} />
               <Route element={<ProtectedRoute />}>
@@ -187,8 +189,9 @@ function App() {
             </Routes>
           </React.Suspense>
         </Router>
-      </ToastProvider>
-    </ErrorBoundary>
+      </AuthProvider>
+    </ToastProvider>
+  </ErrorBoundary>
   );
 }
 

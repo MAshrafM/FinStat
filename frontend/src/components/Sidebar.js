@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
-import { logoutUser } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
 
 const Sidebar = () => {
@@ -12,23 +12,11 @@ const Sidebar = () => {
   const isCurrentlyExpanded = isMobile ? mobileOpen : isExpanded;
   const navigate = useNavigate();
 
-  // Read user role from localStorage
-  const [userRole, setUserRole] = useState('viewer');
+  const { role: userRole, logout } = useAuth();
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
-
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const parsed = JSON.parse(userStr);
-        if (parsed.role) setUserRole(parsed.role);
-      } catch (e) {
-        // Fallback
-      }
-    }
-
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -51,7 +39,7 @@ const Sidebar = () => {
   };
 
   const handleLogout = async () => {
-    await logoutUser();
+    await logout();
     navigate('/');
   };
 

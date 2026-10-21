@@ -1,8 +1,10 @@
 // frontend/src/components/ProtectedRoute.js
-import React, {useState, useMemo} from 'react';
+import React, { useState, useMemo } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import { useAuth } from '../context/AuthContext';
+import ViewOnlyBanner from './common/ViewOnlyBanner';
 // Lazy import contexts to reduce initial bundle size
 const DataProvider = React.lazy(() => import('../context/DataContext').then(m => ({ default: m.DataProvider })));
 const GoldProvider = React.lazy(() => import('../context/GoldContext').then(m => ({ default: m.GoldProvider })));
@@ -71,70 +73,59 @@ const ProviderWrapper = ({ providers, children }) => {
 };
 
 const ProtectedRoute = () => {
-    const token = localStorage.getItem('token');
-    const location = useLocation();
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const handleSidebarToggle = () => setSidebarOpen(prev => !prev);
+  const { token, role, isAdmin, isManager } = useAuth();
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const handleSidebarToggle = () => setSidebarOpen(prev => !prev);
 
-    // Memoize required providers to avoid recalculation on every render
-    const requiredProviders = useMemo(() => 
-        getRequiredProviders(location.pathname), 
-        [location.pathname]
-    );
+  // Memoize required providers to avoid recalculation on every render
+  const requiredProviders = useMemo(() => 
+    getRequiredProviders(location.pathname), 
+    [location.pathname]
+  );
 
-    const needsDataLoader = requiredProviders.length > 0;
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
 
-    if (!token) {
-        return <Navigate to="/" replace />;
-    }
+  // Tax Brackets and Social Insurance configs are strictly Admin-only
+  const isAdminOnlyRoute =
+    location.pathname.startsWith('/admin/tax-brackets') ||
+    location.pathname.startsWith('/admin/social-insurance');
+  if (isAdminOnlyRoute && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
-    // Role-based access control for /admin routes
-    const userStr = localStorage.getItem('user');
-    let userRole = 'viewer';
-    if (userStr) {
-      try {
-        const parsed = JSON.parse(userStr);
-        if (parsed.role) userRole = parsed.role;
-      } catch (e) {}
-    }
+  if (location.pathname.startsWith('/admin') && !isAdmin && !isManager) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
-    // Tax Brackets and Social Insurance configs are strictly Admin-only
-    const isAdminOnlyRoute =
-      location.pathname.startsWith('/admin/tax-brackets') ||
-      location.pathname.startsWith('/admin/social-insurance');
-    if (isAdminOnlyRoute && userRole !== 'admin') {
-      return <Navigate to="/dashboard" replace />;
-    }
+  const isFullBleedPage =
+    location.pathname.startsWith('/portfolio') ||
+    location.pathname.startsWith('/real-estate');
 
-    if (location.pathname.startsWith('/admin') && userRole !== 'admin' && userRole !== 'manager') {
-      return <Navigate to="/dashboard" replace />;
-    }
-
-    const isFullBleedPage =
-      location.pathname.startsWith('/portfolio') ||
-      location.pathname.startsWith('/real-estate');
-
-    return (
-      <div className="App">
-        <Navbar onSidebarToggle={handleSidebarToggle} />
-        <Sidebar />
-        <main
-          className={`main-content ${sidebarOpen ? 'sidebar-open' : ''} ${
-            isFullBleedPage ? 'full-bleed' : ''
-          }`}
-        >
-          <React.Suspense fallback={<div>Loading...</div>}>
-            {requiredProviders.length > 0 ? (
-              <ProviderWrapper providers={requiredProviders}>
-                {needsDataLoader ? <Outlet /> : <Outlet />}
-              </ProviderWrapper>
-            ) : (
+  return (
+    <div className="App">
+      <Navbar onSidebarToggle={handleSidebarToggle} />
+      <Sidebar />
+      <main
+        className={`main-content ${sidebarOpen ? 'sidebar-open' : ''} ${
+          isFullBleedPage ? 'full-bleed' : ''
+        }`}
+      >
+        <ViewOnlyBanner />
+        <React.Suspense fallback={<div>Loading...</div>}>
+          {requiredProviders.length > 0 ? (
+            <ProviderWrapper providers={requiredProviders}>
               <Outlet />
-            )}
-          </React.Suspense>
-        </main>
-      </div>
-    );
-  };
+            </ProviderWrapper>
+          ) : (
+            <Outlet />
+          )}
+        </React.Suspense>
+      </main>
+    </div>
+  );
+};
 
 export default ProtectedRoute;
