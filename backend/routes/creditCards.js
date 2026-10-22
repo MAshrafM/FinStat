@@ -280,14 +280,22 @@ router.post('/payments', auth, validate({ body: createPaymentSchema }), asyncHan
     throw new NotFoundError('Card not found');
   }
 
-  const newPayment = new CardPayment({
-    ...validatedBody,
-    user: req.effectiveUserId,
-    amountInPiastres: toPiastres(validatedBody.amount),
-  });
-  await newPayment.save();
-  await createExpenditureFromCardPayment(newPayment, card, req.effectiveUserId);
-  res.status(201).json(newPayment);
+  const session = await mongoose.startSession();
+  let newPayment;
+  try {
+    await session.withTransaction(async () => {
+      newPayment = new CardPayment({
+        ...validatedBody,
+        user: req.effectiveUserId,
+        amountInPiastres: toPiastres(validatedBody.amount),
+      });
+      await newPayment.save({ session });
+      await createExpenditureFromCardPayment(newPayment, card, req.effectiveUserId, session);
+    });
+    res.status(201).json(newPayment);
+  } finally {
+    await session.endSession();
+  }
 }));
 
 router.get('/payments/:cardId', auth, validate({ params: cardIdParamsSchema }), asyncHandler(async (req, res) => {
@@ -350,63 +358,71 @@ router.post('/payments/full', auth, validate({ body: payInFullSchema }), asyncHa
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { transactionId, paymentSource, createExpenditure } = getValidated(req, 'body');
-  const transaction = await CardTransaction.findOne({ _id: transactionId, user: req.effectiveUserId, deletedAt: null });
-  if (!transaction) {
-    throw new NotFoundError('Transaction not found');
+  const session = await mongoose.startSession();
+  let payment;
+  try {
+    await session.withTransaction(async () => {
+      const transaction = await CardTransaction.findOne({ _id: transactionId, user: req.effectiveUserId, deletedAt: null }).session(session);
+      if (!transaction) {
+        throw new NotFoundError('Transaction not found');
+      }
+
+      const card = await CreditCard.findOne({ _id: transaction.card, user: req.effectiveUserId, deletedAt: null }).session(session);
+      if (!card) throw new NotFoundError('Card not found');
+
+      let paymentAmount = 0;
+      let isFullyPaid = false;
+
+      if (transaction.type === 'Purchase') {
+        paymentAmount = transaction.amount - transaction.paidAmount;
+        isFullyPaid = true;
+      } else if (transaction.type === 'Installment') {
+        const monthlyPrincipal = transaction.installmentDetails?.monthlyPrincipal || 0;
+        const cyclePaid = transaction.installmentDetails?.cyclePaidInPiastres ? transaction.installmentDetails.cyclePaidInPiastres / 100 : 0;
+        paymentAmount = Math.max(0, monthlyPrincipal - cyclePaid);
+        if (transaction.paidAmount + paymentAmount >= transaction.amount) {
+          isFullyPaid = true;
+          paymentAmount = transaction.amount - transaction.paidAmount;
+        }
+      }
+
+      if (paymentAmount <= 0) {
+        throw new BadRequestError('No payment needed or transaction already paid');
+      }
+
+      payment = new CardPayment({
+        user: req.effectiveUserId,
+        card: transaction.card,
+        amount: paymentAmount,
+        amountInPiastres: toPiastres(paymentAmount),
+        date: new Date(),
+        paymentSource: paymentSource || 'Bank',
+        createExpenditure: createExpenditure !== false,
+      });
+      await payment.save({ session });
+
+      transaction.paidAmount += paymentAmount;
+      transaction.paidAmountInPiastres = toPiastres(transaction.paidAmount);
+
+      if (transaction.type === 'Installment') {
+        transaction.installmentDetails = transaction.installmentDetails || {};
+        transaction.installmentDetails.cyclePaidInPiastres =
+          (transaction.installmentDetails.cyclePaidInPiastres || 0) + toPiastres(paymentAmount);
+      }
+
+      if (isFullyPaid || transaction.paidAmount >= transaction.amount) {
+        transaction.status = 'Paid';
+      } else {
+        transaction.status = 'Partial';
+      }
+      await transaction.save({ session });
+
+      await createExpenditureFromCardPayment(payment, card, req.effectiveUserId, session);
+    });
+    res.json({ msg: 'Transaction marked as paid for current cycle.', payment });
+  } finally {
+    await session.endSession();
   }
-
-  const card = await CreditCard.findOne({ _id: transaction.card, user: req.effectiveUserId, deletedAt: null });
-  if (!card) throw new NotFoundError('Card not found');
-
-  let paymentAmount = 0;
-  let isFullyPaid = false;
-
-  if (transaction.type === 'Purchase') {
-    paymentAmount = transaction.amount - transaction.paidAmount;
-    isFullyPaid = true;
-  } else if (transaction.type === 'Installment') {
-    const monthlyPrincipal = transaction.installmentDetails?.monthlyPrincipal || 0;
-    const cyclePaid = transaction.installmentDetails?.cyclePaidInPiastres ? transaction.installmentDetails.cyclePaidInPiastres / 100 : 0;
-    paymentAmount = Math.max(0, monthlyPrincipal - cyclePaid);
-    if (transaction.paidAmount + paymentAmount >= transaction.amount) {
-      isFullyPaid = true;
-      paymentAmount = transaction.amount - transaction.paidAmount;
-    }
-  }
-
-  if (paymentAmount <= 0) {
-    throw new BadRequestError('No payment needed or transaction already paid');
-  }
-
-  const payment = new CardPayment({
-    user: req.effectiveUserId,
-    card: transaction.card,
-    amount: paymentAmount,
-    amountInPiastres: toPiastres(paymentAmount),
-    date: new Date(),
-    paymentSource: paymentSource || 'Bank',
-    createExpenditure: createExpenditure !== false,
-  });
-  await payment.save();
-
-  transaction.paidAmount += paymentAmount;
-  transaction.paidAmountInPiastres = toPiastres(transaction.paidAmount);
-
-  if (transaction.type === 'Installment') {
-    transaction.installmentDetails = transaction.installmentDetails || {};
-    transaction.installmentDetails.cyclePaidInPiastres =
-      (transaction.installmentDetails.cyclePaidInPiastres || 0) + toPiastres(paymentAmount);
-  }
-
-  if (isFullyPaid || transaction.paidAmount >= transaction.amount) {
-    transaction.status = 'Paid';
-  } else {
-    transaction.status = 'Partial';
-  }
-  await transaction.save();
-
-  await createExpenditureFromCardPayment(payment, card, req.effectiveUserId);
-  res.json({ msg: 'Transaction marked as paid for current cycle.', payment });
 }));
 
 router.post('/payments/partial', auth, validate({ body: partialPaymentSchema }), asyncHandler(async (req, res) => {
@@ -415,44 +431,51 @@ router.post('/payments/partial', auth, validate({ body: partialPaymentSchema }),
   }
   const { transactionId, amount, paymentSource, createExpenditure } = getValidated(req, 'body');
   const paymentAmount = Number(amount);
-  const transaction = await CardTransaction.findOne({ _id: transactionId, user: req.effectiveUserId, deletedAt: null });
-  if (!transaction) {
-    throw new NotFoundError('Transaction not found');
+  const session = await mongoose.startSession();
+  let payment;
+  try {
+    await session.withTransaction(async () => {
+      const transaction = await CardTransaction.findOne({ _id: transactionId, user: req.effectiveUserId, deletedAt: null }).session(session);
+      if (!transaction) {
+        throw new NotFoundError('Transaction not found');
+      }
+
+      const card = await CreditCard.findOne({ _id: transaction.card, user: req.effectiveUserId, deletedAt: null }).session(session);
+      if (!card) throw new NotFoundError('Card not found');
+
+      payment = new CardPayment({
+        user: req.effectiveUserId,
+        card: transaction.card,
+        amount: paymentAmount,
+        amountInPiastres: toPiastres(paymentAmount),
+        date: new Date(),
+        paymentSource: paymentSource || 'Bank',
+        createExpenditure: createExpenditure !== false,
+      });
+      await payment.save({ session });
+
+      transaction.paidAmount = (transaction.paidAmount || 0) + paymentAmount;
+      if (transaction.paidAmount >= transaction.amount) {
+        transaction.status = 'Paid';
+        transaction.paidAmount = transaction.amount;
+      } else {
+        transaction.status = 'Partial';
+      }
+      transaction.paidAmountInPiastres = toPiastres(transaction.paidAmount);
+
+      if (transaction.type === 'Installment') {
+        transaction.installmentDetails = transaction.installmentDetails || {};
+        transaction.installmentDetails.cyclePaidInPiastres =
+          (transaction.installmentDetails.cyclePaidInPiastres || 0) + toPiastres(paymentAmount);
+      }
+
+      await transaction.save({ session });
+      await createExpenditureFromCardPayment(payment, card, req.effectiveUserId, session);
+    });
+    res.json({ msg: 'Partial payment logged successfully.', payment });
+  } finally {
+    await session.endSession();
   }
-
-  const card = await CreditCard.findOne({ _id: transaction.card, user: req.effectiveUserId, deletedAt: null });
-  if (!card) throw new NotFoundError('Card not found');
-
-  const payment = new CardPayment({
-    user: req.effectiveUserId,
-    card: transaction.card,
-    amount: paymentAmount,
-    amountInPiastres: toPiastres(paymentAmount),
-    date: new Date(),
-    paymentSource: paymentSource || 'Bank',
-    createExpenditure: createExpenditure !== false,
-  });
-  await payment.save();
-
-  transaction.paidAmount = (transaction.paidAmount || 0) + paymentAmount;
-  if (transaction.paidAmount >= transaction.amount) {
-    transaction.status = 'Paid';
-    transaction.paidAmount = transaction.amount;
-  } else {
-    transaction.status = 'Partial';
-  }
-  transaction.paidAmountInPiastres = toPiastres(transaction.paidAmount);
-
-  if (transaction.type === 'Installment') {
-    transaction.installmentDetails = transaction.installmentDetails || {};
-    transaction.installmentDetails.cyclePaidInPiastres =
-      (transaction.installmentDetails.cyclePaidInPiastres || 0) + toPiastres(paymentAmount);
-  }
-
-  await transaction.save();
-  await createExpenditureFromCardPayment(payment, card, req.effectiveUserId);
-
-  res.json({ msg: 'Partial payment logged successfully.', payment });
 }));
 
 // =============================================

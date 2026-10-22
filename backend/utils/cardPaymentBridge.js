@@ -27,7 +27,9 @@ const createExpenditureFromCardTransaction = async (transaction, card, userId, s
 
   // Check if an expenditure is already linked
   if (transaction.linkedExpenditureId) {
-    const existing = await Expenditure.findOne({ _id: transaction.linkedExpenditureId, user: userId });
+    const existingQuery = Expenditure.findOne({ _id: transaction.linkedExpenditureId, user: userId });
+    if (session) existingQuery.session(session);
+    const existing = await existingQuery;
     if (existing) return existing;
   }
 
@@ -95,7 +97,9 @@ const createExpenditureFromCardPayment = async (payment, card, userId, session =
   }
 
   if (payment.linkedExpenditureId) {
-    const existing = await Expenditure.findOne({ _id: payment.linkedExpenditureId, user: userId });
+    const existingQuery = Expenditure.findOne({ _id: payment.linkedExpenditureId, user: userId });
+    if (session) existingQuery.session(session);
+    const existing = await existingQuery;
     if (existing) return existing;
   }
 
@@ -155,7 +159,11 @@ const createExpenditureFromCardPayment = async (payment, card, userId, session =
   await propagateBalanceChanges(userId, deltas, newExpenditure.date, newExpenditure._id, session);
 
   payment.linkedExpenditureId = newExpenditure._id;
-  await payment.save({ session });
+  await CardPayment.updateOne(
+    { _id: payment._id },
+    { $set: { linkedExpenditureId: newExpenditure._id } },
+    { session }
+  );
 
   // Mark prior purchases as settled via FIFO
   await markPurchasesAsSettled(card, payment, userId, session);
@@ -173,18 +181,20 @@ const createExpenditureFromCardPayment = async (payment, card, userId, session =
  * @param {ClientSession|null} session
  */
 const markPurchasesAsSettled = async (card, payment, userId, session = null) => {
-  const cardTransactions = await CardTransaction.find({
+  const cardTxQuery = CardTransaction.find({
     card: card._id,
     user: userId,
     deletedAt: null,
   }).select('_id');
+  if (session) cardTxQuery.session(session);
+  const cardTransactions = await cardTxQuery;
 
   if (!cardTransactions || cardTransactions.length === 0) return;
 
   const txIds = cardTransactions.map((tx) => tx._id);
   const paymentDate = new Date(payment.date);
 
-  const unpaidExpenditures = await Expenditure.find({
+  const unpaidExpQuery = Expenditure.find({
     user: userId,
     paidWithCreditCard: true,
     settledFromBank: false,
@@ -192,6 +202,8 @@ const markPurchasesAsSettled = async (card, payment, userId, session = null) => 
     linkedCardTransactionId: { $in: txIds },
     deletedAt: null,
   }).sort({ date: 1, _id: 1 });
+  if (session) unpaidExpQuery.session(session);
+  const unpaidExpenditures = await unpaidExpQuery;
 
   let remainingPaymentInPiastres = payment.amountInPiastres || toPiastres(payment.amount);
 
@@ -246,7 +258,9 @@ const unlinkExpenditure = async (cardEvent, userId, session = null) => {
     ];
   }
 
-  const expenditure = await Expenditure.findOne(query);
+  const expQuery = Expenditure.findOne(query);
+  if (session) expQuery.session(session);
+  const expenditure = await expQuery;
   if (!expenditure) return null;
 
   if (expenditure.linkedCardTransactionId && expenditure.linkedCardTransactionId.toString() === cardEvent._id.toString()) {
