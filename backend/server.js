@@ -11,6 +11,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db'); // Import the DB connection function
+const { verifyTransactionSupport } = require('./config/verifyTransactionSupport');
 const errorHandler = require('./middleware/errorHandler');
 const { NotFoundError } = require('./utils/errors');
 const { seedDefaultTaxAndInsurance } = require('./utils/seedTaxAndInsurance');
@@ -93,6 +94,7 @@ app.use(errorHandler);
 async function startServer() {
   try {
     await connectDB();
+    await verifyTransactionSupport();
     await seedDefaultTaxAndInsurance();
 
     if (require.main === module) {
