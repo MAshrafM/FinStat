@@ -40,14 +40,22 @@ function applyCorporateActions(trades = [], corporateActions = []) {
     return trades.map(cloneTrade);
   }
 
-  // Feature Flag: ENABLE_DYNAMIC_SPLITS (Default: true)
+  /**
+   * Precedence & Emergency Incident Response:
+   * 1. ENABLE_DYNAMIC_SPLITS is a global kill switch (Default: true). When set to 'false' in process.env,
+   *    applyCorporateActions returns early without applying ANY multipliers, regardless of per-action
+   *    appliedDynamically flags. Intended strictly for emergency incident rollback.
+   * 2. When ENABLE_DYNAMIC_SPLITS !== 'false', the per-action appliedDynamically flag is the sole authority:
+   *    only actions with appliedDynamically === true are dynamically applied. Actions with false or undefined
+   *    are safely skipped to prevent double-multiplication on top of already mutated trades.
+   */
   const enableDynamicSplits = process.env.ENABLE_DYNAMIC_SPLITS !== 'false';
   if (!enableDynamicSplits) {
     return trades.map(cloneTrade);
   }
 
-  // Filter corporate actions to only those that should be applied dynamically (skip explicit appliedDynamically: false)
-  const dynamicActions = corporateActions.filter((a) => a.appliedDynamically !== false);
+  // Filter corporate actions to strictly those explicitly marked for dynamic application (fail-safe)
+  const dynamicActions = corporateActions.filter((a) => a.appliedDynamically === true);
   if (dynamicActions.length === 0) {
     return trades.map(cloneTrade);
   }

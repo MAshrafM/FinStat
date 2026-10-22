@@ -49,6 +49,7 @@ describe('Corporate Action Engine (Retroactive, Non-Mutating Stock Splits & Bonu
         type: 'split',
         ratio: 2,
         effectiveDate: new Date('2024-02-01'),
+        appliedDynamically: true,
       },
     ];
 
@@ -75,6 +76,7 @@ describe('Corporate Action Engine (Retroactive, Non-Mutating Stock Splits & Bonu
         type: 'bonus',
         ratio: 0.10, // 10% bonus
         effectiveDate: new Date('2024-02-01'),
+        appliedDynamically: true,
       },
     ];
 
@@ -86,6 +88,33 @@ describe('Corporate Action Engine (Retroactive, Non-Mutating Stock Splits & Bonu
     expect(comiPreTrade.totalValue).toBe(8000);
   });
 
+  it('should safely bypass corporate actions without appliedDynamically: true (fail-safe legacy/unflagged defense)', () => {
+    const corporateActions = [
+      {
+        stockCode: 'COMI',
+        broker: 'Thndr',
+        type: 'split',
+        ratio: 2,
+        effectiveDate: new Date('2024-02-01'),
+        // appliedDynamically missing / undefined
+      },
+      {
+        stockCode: 'COMI',
+        broker: 'Thndr',
+        type: 'split',
+        ratio: 2,
+        effectiveDate: new Date('2024-02-01'),
+        appliedDynamically: false,
+      },
+    ];
+
+    const adjustedTrades = applyCorporateActions(originalTrades, corporateActions);
+
+    const comiPreTrade = adjustedTrades.find((t) => t._id === 'trade_1');
+    expect(comiPreTrade.shares).toBe(100); // Unchanged
+    expect(comiPreTrade.price).toBe(80);   // Unchanged
+  });
+
   it('must never mutate the original input trade objects', () => {
     const corporateActions = [
       {
@@ -94,6 +123,7 @@ describe('Corporate Action Engine (Retroactive, Non-Mutating Stock Splits & Bonu
         type: 'split',
         ratio: 2,
         effectiveDate: new Date('2024-02-01'),
+        appliedDynamically: true,
       },
     ];
 
