@@ -40,11 +40,23 @@ function applyCorporateActions(trades = [], corporateActions = []) {
     return trades.map(cloneTrade);
   }
 
+  // Feature Flag: ENABLE_DYNAMIC_SPLITS (Default: true)
+  const enableDynamicSplits = process.env.ENABLE_DYNAMIC_SPLITS !== 'false';
+  if (!enableDynamicSplits) {
+    return trades.map(cloneTrade);
+  }
+
+  // Filter corporate actions to only those that should be applied dynamically (skip explicit appliedDynamically: false)
+  const dynamicActions = corporateActions.filter((a) => a.appliedDynamically !== false);
+  if (dynamicActions.length === 0) {
+    return trades.map(cloneTrade);
+  }
+
   // Sort trades chronologically
   const sortedTrades = trades.map(cloneTrade).sort((a, b) => a.date - b.date);
 
   // Sort corporate actions chronologically by effective date
-  const sortedActions = [...corporateActions].sort(
+  const sortedActions = [...dynamicActions].sort(
     (a, b) => new Date(a.effectiveDate) - new Date(b.effectiveDate)
   );
 
@@ -122,6 +134,7 @@ async function createSplitWizard(userId, {
     ratio: Number(ratio),
     effectiveDate: effDate,
     notes,
+    appliedDynamically: true,
   });
 
   await corporateAction.save();

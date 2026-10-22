@@ -66,6 +66,7 @@ router.post(
       ratio: validatedBody.ratio,
       effectiveDate: new Date(validatedBody.effectiveDate),
       notes: validatedBody.notes || '',
+      appliedDynamically: true,
     });
 
     await corporateAction.save();

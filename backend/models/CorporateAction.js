@@ -39,6 +39,11 @@ const CorporateActionSchema = new mongoose.Schema({
     trim: true,
     default: '',
   },
+  appliedDynamically: {
+    type: Boolean,
+    default: false,
+    index: true,
+  },
 }, {
   timestamps: true,
 });
