@@ -32,6 +32,14 @@ const DebtPayoffPlanSchema = new Schema({
 }, { timestamps: true });
 
 DebtPayoffPlanSchema.plugin(softDeletePlugin);
+DebtPayoffPlanSchema.index(
+  { user: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { isActive: true, deletedAt: null },
+    name: 'unique_active_plan_per_user',
+  }
+);
 DebtPayoffPlanSchema.index({ user: 1, isActive: 1, deletedAt: 1 });
 
 module.exports = mongoose.model('DebtPayoffPlan', DebtPayoffPlanSchema);

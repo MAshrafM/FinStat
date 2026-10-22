@@ -5,7 +5,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError, ForbiddenError, BadRequestError } = require('../utils/errors');
+const { NotFoundError, ForbiddenError, BadRequestError, ConflictError } = require('../utils/errors');
 const CreditCard = require('../models/CreditCard');
 const CardTransaction = require('../models/CardTransaction');
 const DebtPayoffPlan = require('../models/DebtPayoffPlan');
@@ -151,20 +151,46 @@ router.post('/plans', auth, validate({ body: savePlanSchema }), asyncHandler(asy
   }
   const validatedBody = getValidated(req, 'body');
 
-  // Deactivate any previously active plan
-  await DebtPayoffPlan.updateMany(
-    { user: req.effectiveUserId, isActive: true, deletedAt: null },
-    { $set: { isActive: false } }
-  );
+  // Gated test concurrency delay hook (strictly in test environment)
+  if (process.env.NODE_ENV === 'test' && req.headers['x-test-delay']) {
+    const delay = Math.min(parseInt(req.headers['x-test-delay'], 10) || 0, 1000);
+    if (delay > 0) {
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
 
-  const newPlan = new DebtPayoffPlan({
-    ...validatedBody,
-    user: req.effectiveUserId,
-    monthlyBudgetInPiastres: toPiastres(validatedBody.monthlyBudget),
-    isActive: true,
-  });
-  await newPlan.save();
-  res.status(201).json(newPlan);
+  const session = await mongoose.startSession();
+  try {
+    let newPlan;
+    await session.withTransaction(async () => {
+      // Deactivate any previously active plan atomically
+      await DebtPayoffPlan.updateMany(
+        { user: req.effectiveUserId, isActive: true, deletedAt: null },
+        { $set: { isActive: false } },
+        { session }
+      );
+
+      newPlan = new DebtPayoffPlan({
+        ...validatedBody,
+        user: req.effectiveUserId,
+        monthlyBudgetInPiastres: toPiastres(validatedBody.monthlyBudget),
+        isActive: true,
+      });
+      await newPlan.save({ session });
+    });
+    res.status(201).json(newPlan);
+  } catch (err) {
+    if (
+      err.code === 11000 ||
+      err.codeName === 'DuplicateKey' ||
+      (err.message && err.message.includes('E11000'))
+    ) {
+      throw new ConflictError('Another debt payoff plan is currently being activated. Please retry.');
+    }
+    throw err;
+  } finally {
+    await session.endSession();
+  }
 }));
 
 /**
@@ -175,12 +201,10 @@ router.delete('/plans/:id', auth, validate({ params: paramsSchema }), asyncHandl
     throw new ForbiddenError('Viewers have read-only access');
   }
   const { id } = getValidated(req, 'params');
-  const plan = await DebtPayoffPlan.findOne({ _id: id, deletedAt: null });
+  const plan = await DebtPayoffPlan.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!plan) throw new NotFoundError('Plan not found');
-  if (plan.user.toString() !== req.effectiveUserId.toString()) {
-    throw new ForbiddenError('User not authorized');
-  }
 
+  plan.isActive = false;
   await plan.softDelete();
   res.json({ msg: 'Debt payoff plan deleted successfully' });
 }));
