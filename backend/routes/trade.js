@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError, ForbiddenError } = require('../utils/errors');
+const { NotFoundError, ForbiddenError, BadRequestError } = require('../utils/errors');
 const {
   createSchema,
   updateSchema,
@@ -23,6 +23,7 @@ const { applyCorporateActions, createSplitWizard } = require('../utils/corporate
 const { wizardCorporateActionSchema } = require('../validationSchemas/corporateActionSchemas');
 const marketPriceService = require('../utils/marketPriceService');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
+const { validateAvailableShares } = require('../utils/tradeValidator');
 
 // @route   GET api/trades
 // @desc    Get all active trades (with pagination)
@@ -182,6 +183,19 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     throw new ForbiddenError('Viewers have read-only access');
   }
   const validatedBody = getValidated(req, 'body');
+
+  if (validatedBody.type === 'Sell') {
+    const validation = await validateAvailableShares(
+      req.effectiveUserId,
+      validatedBody.broker,
+      validatedBody.stockCode,
+      validatedBody.shares
+    );
+    if (!validation.valid) {
+      throw new BadRequestError(validation.message);
+    }
+  }
+
   const newTrade = new Trade({
     ...validatedBody,
     user: req.effectiveUserId,
@@ -217,6 +231,24 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   let trade = await Trade.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!trade) {
     throw new NotFoundError('Trade not found');
+  }
+
+  const targetType = validatedBody.type !== undefined ? validatedBody.type : trade.type;
+  if (targetType === 'Sell') {
+    const targetBroker = validatedBody.broker || trade.broker;
+    const targetStock = validatedBody.stockCode || trade.stockCode;
+    const targetShares = validatedBody.shares !== undefined ? validatedBody.shares : trade.shares;
+
+    const validation = await validateAvailableShares(
+      req.effectiveUserId,
+      targetBroker,
+      targetStock,
+      targetShares,
+      trade._id
+    );
+    if (!validation.valid) {
+      throw new BadRequestError(validation.message);
+    }
   }
 
   const updateData = { ...validatedBody };

@@ -268,6 +268,11 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                                 ⚠️ Cannot sell more than {selectedStockInfo.currentShares} shares
                             </div>
                         )}
+                        {isSellTransaction && isEdit && selectedStockInfo && (
+                            <div style={{ color: '#6c757d', fontSize: '12px', marginTop: '4px' }}>
+                                Available in portfolio: ~{selectedStockInfo.currentShares} shares (adjusted by splits)
+                            </div>
+                        )}
                     </div>
                     <div className="form-group">
                         <label>Price per Share</label>
