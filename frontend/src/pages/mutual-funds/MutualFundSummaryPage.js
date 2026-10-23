@@ -62,23 +62,38 @@ const MutualFundSummaryPage = () => {
                     <tbody>
                         {mfSummaryData.map((item, index) => {
                             const valueWithoutCoupons = item.totalValue - item.totalCouponValue;
-                            const row = lastPriceData.find(n => n.name === item._id.name);
-                            const sellingValue = row.lastPrice * item.currentUnits;
-                            const totalProfit = ((sellingValue / valueWithoutCoupons) - 1) * 100;
+                            const row = lastPriceData?.find(n => n?.name === item._id?.name);
+                            const currentPrice = row?.lastPrice != null && row.lastPrice > 0 ? row.lastPrice : null;
+                            const sellingValue = currentPrice != null ? currentPrice * (item.currentUnits || 0) : (item.totalValue || 0);
+                            const totalProfit = (valueWithoutCoupons > 0 && currentPrice != null)
+                                ? ((sellingValue / valueWithoutCoupons) - 1) * 100
+                                : 0;
                             return (
                                 <tr key={index}>
                                     <td data-label="Code">
-                                        <p style={{ fontWeight: 'bold' }}>{item._id.name}</p>
-                                        <p className="broker">{item._id.code}</p>
+                                        <p style={{ fontWeight: 'bold' }}>{item._id?.name}</p>
+                                        <p className="broker">{item._id?.code}</p>
                                     </td>
                                     <td data-label="Units" style={{ fontWeight: 'bold' }}>{item.currentUnits}</td>
                                     <td data-label="Price">{formatCurrency(item.averagePrice)}</td>
                                     <td data-label="Value" className="total-value">{formatCurrency(item.totalValue)}</td>
                                     <td data-label="Coupons">{formatCurrency(item.totalCouponValue)}</td>
                                     <td data-label="Value w/ Coupons">{formatCurrency(valueWithoutCoupons)}</td>
-                                    <td data-label="Curr. Price">{formatCurrency(row.lastPrice)}</td>
-                                    <td data-label="Selling Value" className="total-value" style={{ color: sellingValue > item.totalValue ? '#27ae60' : '#c0392b' }}>{formatCurrency(sellingValue)}</td>
-                                    <td data-label="Profit" style={{ color: totalProfit > 0 ? '#27ae60' : '#c0392b' }}>{totalProfit.toFixed(2)}%</td>
+                                    <td data-label="Curr. Price">
+                                        {currentPrice != null ? (
+                                            formatCurrency(currentPrice)
+                                        ) : (
+                                            <span className="badge badge-warning" style={{ fontSize: '11px', padding: '3px 6px', background: '#f39c12', color: '#fff', borderRadius: '4px' }}>
+                                                Price Unavailable
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td data-label="Selling Value" className="total-value" style={{ color: sellingValue > item.totalValue ? '#27ae60' : '#c0392b' }}>
+                                        {currentPrice != null ? formatCurrency(sellingValue) : '—'}
+                                    </td>
+                                    <td data-label="Profit" style={{ color: totalProfit > 0 ? '#27ae60' : (totalProfit < 0 ? '#c0392b' : '#7f8c8d') }}>
+                                        {currentPrice != null ? `${totalProfit.toFixed(2)}%` : '—'}
+                                    </td>
                                 </tr>
                             );
                         })}
