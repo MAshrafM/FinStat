@@ -551,9 +551,10 @@ router.get('/summary/:cardId', auth, asyncHandler(async (req, res) => {
     { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } }
   ]);
   const unpaidBeforeCycle = previousUnpaid.length > 0 ? previousUnpaid[0].total : 0;
-  const interestOnUnpaid = unpaidBeforeCycle > 0 ? (unpaidBeforeCycle * (card.interestRate / 100)) : 0;
+  const monthlyApr = (card.apr || 0) / 100 / 12;
+  const interestOnUnpaid = unpaidBeforeCycle > 0 ? Number((unpaidBeforeCycle * monthlyApr).toFixed(2)) : 0;
 
-  const amountDueThisMonth = totalPurchaseDue + totalInstallmentDue + interestOnUnpaid;
+  const amountDueThisMonth = Number((totalPurchaseDue + totalInstallmentDue + interestOnUnpaid).toFixed(2));
 
   const minPaymentPercent = 0.05;
   const minPaymentBase = Math.max(outstandingBalance * minPaymentPercent, card.minimumPaymentFixed || 0);

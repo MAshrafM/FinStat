@@ -147,7 +147,7 @@ const StatementCyclePage = () => {
                 <span className="metric-value" style={{ color: '#16a34a' }}>
                   {formatCurrency(cycleSummary?.totalPayments || 0)}
                 </span>
-                <span className="metric-hint">Net Change: {formatCurrency(cycleSummary?.netCycleChange || 0)}</span>
+                <span className="metric-hint">Net Change: {formatCurrency(Math.max(0, cycleSummary?.netCycleChange || 0))}</span>
               </div>
             </div>
           </div>

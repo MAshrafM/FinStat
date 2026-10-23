@@ -14,7 +14,7 @@ const CreditCardSchema = new Schema({
   paymentDueDay: { type: Number, min: 1, max: 31, default: 15 },
   utilizationAlertThreshold: { type: Number, min: 0, max: 100, default: 30 },
   minimumPaymentPercent: { type: Number, min: 0, max: 100, default: 5 },
-  apr: { type: Number, min: 0, default: 0 },
+  apr: { type: Number, min: 0, default: 0 }, // Annual Percentage Rate in % (e.g., 36 for 36% p.a., monthly rate = apr / 100 / 12)
 }, { timestamps: true });
 
 CreditCardSchema.plugin(softDeletePlugin);
