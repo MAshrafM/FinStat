@@ -428,3 +428,84 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+/* Currency Selector and Conversion Confirmation Card */
+.currency-conversion-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-left: 4px solid #0284c7;
+  border-radius: 10px;
+  padding: 1.1rem 1.4rem;
+  margin: 1rem 0 1.5rem 0;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.08);
+  transition: all 0.2s ease;
+}
+
+.conversion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.conversion-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #0369a1;
+}
+
+.rate-badge {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #7dd3fc;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.conversion-value-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.foreign-pill {
+  background-color: white;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.conversion-arrow {
+  font-size: 1.3rem;
+  color: #0284c7;
+  font-weight: bold;
+}
+
+.egp-equivalent {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.conversion-hint {
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.conversion-hint strong {
+  color: #0f172a;
+}

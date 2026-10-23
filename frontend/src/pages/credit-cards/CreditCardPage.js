@@ -408,7 +408,14 @@ const totalPartial = transactionHistory.reduce((sum, tx) => {
                   )}
 
               </td>
-              <td data-label="Value" className="total-value">{formatCurrency(tx.amount)}</td>
+              <td data-label="Value" className="total-value">
+                {formatCurrency(tx.amount)}
+                {tx.currency && tx.currency !== 'EGP' && tx.foreignAmount && (
+                  <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 500, marginTop: '2px' }}>
+                    ({tx.foreignAmount.toLocaleString()} {tx.currency})
+                  </div>
+                )}
+              </td>
               <td data-label="Paid Amount" className="total-value">{formatCurrency(tx.paidAmount)}</td>
               <td data-label="Status">
                 <span className={`status-badge status-${tx.status.toLowerCase()}`}>

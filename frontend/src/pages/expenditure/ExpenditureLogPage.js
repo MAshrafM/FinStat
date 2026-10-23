@@ -316,6 +316,11 @@ const ExpenditureLogPage = () => {
                         log.transactionType === 'T' ? 'green' : 'gray'
                   }}>
                     <strong>{formatCurrency(log.transactionValue)}</strong>
+                    {log.currency && log.currency !== 'EGP' && log.foreignAmount && (
+                      <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 500, marginTop: '2px' }}>
+                        ({log.foreignAmount.toLocaleString()} {log.currency})
+                      </div>
+                    )}
                   </td>
                   <td data-label="Type">{transactionTypeMap[log.transactionType] || log.transactionType}</td>
                   <td data-label="Categories">

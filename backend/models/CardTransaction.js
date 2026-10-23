@@ -10,6 +10,20 @@ const CardTransactionSchema = new Schema({
   category: { type: String, trim: true, default: 'Other' },
   amount: { type: Number, required: true },
   amountInPiastres: { type: Number, default: 0 },
+  currency: {
+    type: String,
+    default: 'EGP',
+    trim: true,
+    uppercase: true,
+  },
+  foreignAmount: {
+    type: Number,
+    default: null,
+  },
+  exchangeRateSnapshot: {
+    type: Number,
+    default: 1,
+  },
   date: { type: Date, required: true },
   type: { type: String, enum: ['Purchase', 'Installment'], required: true },
   createExpenditure: { type: Boolean, default: true },

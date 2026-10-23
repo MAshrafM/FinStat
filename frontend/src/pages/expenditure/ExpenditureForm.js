@@ -6,6 +6,34 @@ import { FaPlus, FaMinus, FaTrash, FaMagic } from 'react-icons/fa';
 import './Expenditure.css'; // For new styles
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import { getRules } from '../../services/categorizationRuleService';
+import { getCurrencyPrice } from '../../services/currencyService';
+
+export const CURRENCY_OPTIONS = [
+  { code: 'EGP', label: 'EGP (Egyptian Pound)' },
+  { code: 'USD', label: 'USD (US Dollar)' },
+  { code: 'EUR', label: 'EUR (Euro)' },
+  { code: 'GBP', label: 'GBP (British Pound)' },
+  { code: 'SAR', label: 'SAR (Saudi Riyal)' },
+  { code: 'AED', label: 'AED (UAE Dirham)' },
+  { code: 'KWD', label: 'KWD (Kuwaiti Dinar)' },
+  { code: 'CAD', label: 'CAD (Canadian Dollar)' },
+  { code: 'JPY', label: 'JPY (Japanese Yen)' },
+  { code: 'CHF', label: 'CHF (Swiss Franc)' },
+  { code: 'QAR', label: 'QAR (Qatari Riyal)' },
+];
+
+export const DEFAULT_RATES = {
+  USD: 48.5,
+  EUR: 52.5,
+  GBP: 63.0,
+  SAR: 12.95,
+  AED: 13.2,
+  KWD: 158.0,
+  CAD: 35.5,
+  JPY: 0.32,
+  CHF: 55.0,
+  QAR: 13.3,
+};
 
 const ExpenditureForm = ({
   onSubmit,
@@ -13,6 +41,12 @@ const ExpenditureForm = ({
   mode = 'create',
   lastRecord = { bank: 0, cash: 0, prepaid: 0 },
 }) => {
+  // Currency and FX state
+  const [currency, setCurrency] = useState('EGP');
+  const [foreignAmount, setForeignAmount] = useState('');
+  const [exchangeRate, setExchangeRate] = useState(1);
+  const [liveRates, setLiveRates] = useState({});
+
   // State for form inputs
   const [transactionValue, setTransactionValue] = useState('');
   const [transactionType, setTransactionType] = useState('W');
@@ -37,12 +71,36 @@ const ExpenditureForm = ({
   const [suggestedCategory, setSuggestedCategory] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
     // Load active rules for auto-categorization suggestions
     getRules(1, 100, true)
       .then((res) => {
-        setActiveRules(res?.data || []);
+        if (isMounted) setActiveRules(res?.data || []);
       })
-      .catch(() => setActiveRules([]));
+      .catch(() => {
+        if (isMounted) setActiveRules([]);
+      });
+
+    // Load live CIB exchange rates
+    getCurrencyPrice({ suppressToast: true })
+      .then((res) => {
+        if (!isMounted) return;
+        const ratesMap = {};
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        list.forEach((item) => {
+          const code = item.currencyID || item.currency || item.code;
+          const rate = Number(item.sellRate ?? item.buyRate ?? item.rate ?? 0);
+          if (code && rate > 0) {
+            ratesMap[code.toUpperCase()] = rate;
+          }
+        });
+        setLiveRates((prev) => ({ ...prev, ...ratesMap }));
+      })
+      .catch(() => { });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -59,6 +117,24 @@ const ExpenditureForm = ({
       if (initialData.logCashOp) setLogCashOp(initialData.logCashOp);
       if (initialData.logPrepaidOp) setLogPrepaidOp(initialData.logPrepaidOp);
 
+      const initCurr = (initialData.currency || 'EGP').toUpperCase();
+      setCurrency(initCurr);
+
+      if (initialData.foreignAmount !== undefined && initialData.foreignAmount !== null) {
+        setForeignAmount(initialData.foreignAmount.toString());
+      } else {
+        setForeignAmount('');
+      }
+
+      if (initialData.exchangeRateSnapshot && Number(initialData.exchangeRateSnapshot) > 0) {
+        setExchangeRate(Number(initialData.exchangeRateSnapshot));
+      } else if (initCurr !== 'EGP') {
+        const r = liveRates[initCurr] || DEFAULT_RATES[initCurr] || 1;
+        setExchangeRate(r);
+      } else {
+        setExchangeRate(1);
+      }
+
       if (initialData.transactionValue !== undefined) {
         setTransactionValue(initialData.transactionValue.toString());
       }
@@ -74,7 +150,51 @@ const ExpenditureForm = ({
         );
       }
     }
-  }, [initialData, mode]);
+  }, [initialData, mode, liveRates]);
+
+  const handleCurrencyChange = (e) => {
+    const newCurr = e.target.value;
+    setCurrency(newCurr);
+
+    if (newCurr === 'EGP') {
+      setForeignAmount('');
+      setExchangeRate(1);
+    } else {
+      const targetRate = liveRates[newCurr] || DEFAULT_RATES[newCurr] || 1;
+      setExchangeRate(targetRate);
+      if (foreignAmount) {
+        const amt = parseFloat(foreignAmount) || 0;
+        const egpEquivalent = Number((amt * targetRate).toFixed(2));
+        setTransactionValue(egpEquivalent > 0 ? egpEquivalent.toString() : '');
+      }
+    }
+  };
+
+  const handleForeignAmountChange = (e) => {
+    const val = e.target.value;
+    setForeignAmount(val);
+    const num = parseFloat(val) || 0;
+    const rate = parseFloat(exchangeRate) || 1;
+    const egp = Number((num * rate).toFixed(2));
+    setTransactionValue(num > 0 ? egp.toString() : '');
+  };
+
+  const handleExchangeRateChange = (e) => {
+    const newRate = e.target.value;
+    setExchangeRate(newRate);
+    const rateNum = parseFloat(newRate) || 0;
+    const num = parseFloat(foreignAmount) || 0;
+    const egp = Number((num * rateNum).toFixed(2));
+    setTransactionValue(num > 0 && rateNum > 0 ? egp.toString() : '');
+  };
+
+  // Real-time converted EGP equivalent
+  const numericForeignAmount = parseFloat(foreignAmount) || 0;
+  const numericExchangeRate = parseFloat(exchangeRate) || 0;
+  const convertedEgpValue =
+    currency !== 'EGP'
+      ? Number((numericForeignAmount * numericExchangeRate).toFixed(2))
+      : parseFloat(transactionValue) || 0;
 
   // Evaluate rules in real-time when description changes
   useEffect(() => {
@@ -188,10 +308,26 @@ const ExpenditureForm = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const value = parseFloat(transactionValue);
-    if (isNaN(value) || value <= 0) {
-      alert('Please enter a valid positive transaction value.');
-      return;
+    const isForeign = currency !== 'EGP';
+    let value = parseFloat(transactionValue);
+
+    if (isForeign) {
+      const fAmount = parseFloat(foreignAmount);
+      if (isNaN(fAmount) || fAmount <= 0) {
+        alert(`Please enter a valid positive foreign amount in ${currency}.`);
+        return;
+      }
+      const rate = parseFloat(exchangeRate);
+      if (isNaN(rate) || rate <= 0) {
+        alert('Please enter a valid positive exchange rate.');
+        return;
+      }
+      value = Number((fAmount * rate).toFixed(2));
+    } else {
+      if (isNaN(value) || value <= 0) {
+        alert('Please enter a valid positive transaction value.');
+        return;
+      }
     }
 
     if (isSplit) {
@@ -220,6 +356,7 @@ const ExpenditureForm = ({
       cash: newCash,
       prepaid: newPrepaid,
       transactionValue: value,
+      currency,
       transactionType,
       paymentMethod: getPaymentMethod(),
       logBankOp: transactionType === 'na' ? logBankOp : undefined,
@@ -227,6 +364,11 @@ const ExpenditureForm = ({
       logPrepaidOp: transactionType === 'na' ? logPrepaidOp : undefined,
       description,
     };
+
+    if (isForeign) {
+      dataToSubmit.foreignAmount = parseFloat(foreignAmount);
+      dataToSubmit.exchangeRateSnapshot = parseFloat(exchangeRate);
+    }
 
     if (isSplit) {
       dataToSubmit.splits = splits.map((s) => ({
@@ -271,23 +413,27 @@ const ExpenditureForm = ({
 
       <hr className="form-divider" />
 
-      {/* Transaction Value and Type Side by Side */}
+      {/* Currency and Transaction Type Side by Side */}
       <div className="value-type-row">
         <div className="form-group">
-          <label>Transaction Value (EGP)</label>
-          <input
-            type="number"
-            step="any"
-            value={transactionValue}
-            onChange={(e) => setTransactionValue(e.target.value)}
-            placeholder="Enter amount"
-            required
-          />
+          <label htmlFor="expenditure-currency">Currency</label>
+          <select
+            id="expenditure-currency"
+            value={currency}
+            onChange={handleCurrencyChange}
+          >
+            {CURRENCY_OPTIONS.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="form-group">
-          <label>Transaction Type</label>
+          <label htmlFor="transaction-type">Transaction Type</label>
           <select
+            id="transaction-type"
             value={transactionType}
             onChange={(e) => setTransactionType(e.target.value)}
             required
@@ -299,6 +445,83 @@ const ExpenditureForm = ({
           </select>
         </div>
       </div>
+
+      {/* Amount Section: Base Currency (EGP) vs Foreign Currency */}
+      {currency === 'EGP' ? (
+        <div className="form-group">
+          <label htmlFor="transaction-value">Transaction Value (EGP)</label>
+          <input
+            id="transaction-value"
+            type="number"
+            step="any"
+            value={transactionValue}
+            onChange={(e) => setTransactionValue(e.target.value)}
+            placeholder="Enter amount in EGP"
+            required
+          />
+        </div>
+      ) : (
+        <>
+          <div className="value-type-row">
+            <div className="form-group">
+              <label htmlFor="foreign-amount">
+                Foreign Amount ({currency})
+              </label>
+              <input
+                id="foreign-amount"
+                type="number"
+                step="any"
+                value={foreignAmount}
+                onChange={handleForeignAmountChange}
+                placeholder={`Enter amount in ${currency}`}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="exchange-rate">
+                Exchange Rate (1 {currency} in EGP)
+              </label>
+              <input
+                id="exchange-rate"
+                type="number"
+                step="any"
+                value={exchangeRate}
+                onChange={handleExchangeRateChange}
+                placeholder="Exchange rate"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Auto-displayed Converted EGP Equivalent Confirmation */}
+          <div className="currency-conversion-card" data-testid="conversion-confirmation-card">
+            <div className="conversion-header">
+              <span className="conversion-label">Converted EGP Equivalent (Confirmation)</span>
+              <span className="rate-badge">
+                1 {currency} = {parseFloat(exchangeRate || 0).toFixed(4)} EGP
+              </span>
+            </div>
+            <div className="conversion-value-row">
+              <span className="foreign-pill">
+                {foreignAmount
+                  ? `${parseFloat(foreignAmount).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })} ${currency}`
+                  : `0.00 ${currency}`}
+              </span>
+              <span className="conversion-arrow">→</span>
+              <strong className="egp-equivalent" data-testid="converted-egp-value">
+                {formatCurrency(convertedEgpValue)}
+              </strong>
+            </div>
+            <div className="conversion-hint">
+              This transaction will be recorded in your ledger as <strong>{formatCurrency(convertedEgpValue)}</strong>.
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Conditional Options Based on Transaction Type */}
       {transactionType === 'W' && (

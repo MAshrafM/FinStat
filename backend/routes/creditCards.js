@@ -9,6 +9,8 @@ const { NotFoundError, ForbiddenError, BadRequestError } = require('../utils/err
 const CreditCard = require('../models/CreditCard');
 const CardTransaction = require('../models/CardTransaction');
 const CardPayment = require('../models/CardPayment');
+const Expenditure = require('../models/Expenditure');
+const { resolveExchangeRate } = require('../utils/exchangeRateResolver');
 const {
   createCardSchema,
   updateCardSchema,
@@ -112,17 +114,53 @@ router.post('/transactions', auth, validate({ body: createTransactionSchema }), 
     throw new NotFoundError('Card not found');
   }
 
+  const userRole = req.user?.role || 'viewer';
+  const currency = (validatedBody.currency || 'EGP').trim().toUpperCase();
+  let finalAmount, finalCurrency, finalForeignAmount, finalRate;
+
+  if (currency === 'EGP') {
+    finalAmount = validatedBody.amount;
+    finalCurrency = 'EGP';
+    finalForeignAmount = null;
+    finalRate = 1;
+  } else if (userRole === 'admin') {
+    if (validatedBody.exchangeRateSnapshot && Number(validatedBody.exchangeRateSnapshot) > 0) {
+      finalRate = Number(validatedBody.exchangeRateSnapshot);
+    } else {
+      const rateInfo = await resolveExchangeRate(currency, validatedBody.date, null, userRole);
+      finalRate = rateInfo.rate;
+    }
+    finalAmount = validatedBody.amount !== undefined ? validatedBody.amount : Number((validatedBody.foreignAmount * finalRate).toFixed(2));
+    finalCurrency = currency;
+    finalForeignAmount = validatedBody.foreignAmount;
+  } else {
+    const rateInfo = await resolveExchangeRate(currency, validatedBody.date, null, userRole);
+    finalRate = rateInfo.rate;
+    finalCurrency = currency;
+    finalForeignAmount = validatedBody.foreignAmount;
+    finalAmount = Number((finalForeignAmount * finalRate).toFixed(2));
+  }
+
   const transactionData = {
     ...validatedBody,
     user: req.effectiveUserId,
-    amountInPiastres: toPiastres(validatedBody.amount),
+    amount: finalAmount,
+    amountInPiastres: toPiastres(finalAmount),
+    currency: finalCurrency,
+    foreignAmount: finalForeignAmount,
+    exchangeRateSnapshot: finalRate,
     paidAmountInPiastres: toPiastres(validatedBody.paidAmount || 0),
   };
 
-  if (validatedBody.installmentDetails?.monthlyPrincipal !== undefined) {
+  if (validatedBody.installmentDetails) {
+    const months = validatedBody.installmentDetails.months;
+    const monthlyPrincipal = validatedBody.installmentDetails.monthlyPrincipal !== undefined
+      ? validatedBody.installmentDetails.monthlyPrincipal
+      : (months ? finalAmount / months : 0);
     transactionData.installmentDetails = {
       ...validatedBody.installmentDetails,
-      monthlyPrincipalInPiastres: toPiastres(validatedBody.installmentDetails.monthlyPrincipal),
+      monthlyPrincipal,
+      monthlyPrincipalInPiastres: toPiastres(monthlyPrincipal),
     };
   }
 
@@ -151,24 +189,102 @@ router.put('/transactions/:id', auth, validate({ params: paramsSchema, body: upd
   const { id } = getValidated(req, 'params');
   const validatedBody = getValidated(req, 'body');
 
-  const updateData = { ...validatedBody };
-  if (validatedBody.amount !== undefined) {
-    updateData.amountInPiastres = toPiastres(validatedBody.amount);
+  const existingTransaction = await CardTransaction.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
+  if (!existingTransaction) throw new NotFoundError('Transaction not found');
+
+  const userRole = req.user?.role || 'viewer';
+  const targetDate = validatedBody.date !== undefined ? new Date(validatedBody.date) : existingTransaction.date;
+  const newCurrency = (validatedBody.currency !== undefined ? validatedBody.currency : (existingTransaction.currency || 'EGP')).trim().toUpperCase();
+  const currencyChanged = newCurrency !== (existingTransaction.currency || 'EGP');
+  const dateChanged = targetDate.getTime() !== new Date(existingTransaction.date).getTime();
+
+  let finalExchangeRate = existingTransaction.exchangeRateSnapshot || 1;
+  let finalForeignAmount = existingTransaction.foreignAmount;
+  let finalAmount;
+
+  if (newCurrency !== 'EGP') {
+    const mustReResolve = currencyChanged || dateChanged || (userRole === 'admin' && validatedBody.exchangeRateSnapshot !== undefined);
+    if (mustReResolve) {
+      const rateInfo = await resolveExchangeRate(
+        newCurrency,
+        targetDate,
+        validatedBody.exchangeRateSnapshot,
+        userRole
+      );
+      finalExchangeRate = rateInfo.rate;
+    }
+    if (validatedBody.foreignAmount !== undefined) {
+      finalForeignAmount = validatedBody.foreignAmount;
+    }
+
+    if (userRole === 'admin' && validatedBody.amount !== undefined) {
+      finalAmount = validatedBody.amount;
+    } else {
+      finalAmount = Number((finalForeignAmount * finalExchangeRate).toFixed(2));
+    }
+  } else {
+    finalExchangeRate = 1;
+    finalForeignAmount = null;
+    finalAmount = validatedBody.amount !== undefined ? validatedBody.amount : existingTransaction.amount;
   }
+
+  const updateData = {
+    ...validatedBody,
+    currency: newCurrency,
+    foreignAmount: finalForeignAmount,
+    exchangeRateSnapshot: finalExchangeRate,
+    amount: finalAmount,
+    amountInPiastres: toPiastres(finalAmount),
+  };
+
   if (validatedBody.paidAmount !== undefined) {
     updateData.paidAmountInPiastres = toPiastres(validatedBody.paidAmount);
   }
-  if (validatedBody.installmentDetails?.monthlyPrincipal !== undefined) {
-    updateData['installmentDetails.monthlyPrincipalInPiastres'] = toPiastres(validatedBody.installmentDetails.monthlyPrincipal);
+
+  if (validatedBody.installmentDetails) {
+    const months = validatedBody.installmentDetails.months !== undefined ? validatedBody.installmentDetails.months : existingTransaction.installmentDetails?.months;
+    const monthlyPrincipal = validatedBody.installmentDetails.monthlyPrincipal !== undefined
+      ? validatedBody.installmentDetails.monthlyPrincipal
+      : (months ? finalAmount / months : (existingTransaction.installmentDetails?.monthlyPrincipal || 0));
+    updateData.installmentDetails = {
+      ...(existingTransaction.installmentDetails ? existingTransaction.installmentDetails.toObject() : {}),
+      ...validatedBody.installmentDetails,
+      monthlyPrincipal,
+      monthlyPrincipalInPiastres: toPiastres(monthlyPrincipal),
+    };
+  } else if (finalAmount !== existingTransaction.amount && existingTransaction.type === 'Installment' && existingTransaction.installmentDetails?.months) {
+    const months = existingTransaction.installmentDetails.months;
+    const monthlyPrincipal = finalAmount / months;
+    updateData['installmentDetails.monthlyPrincipal'] = monthlyPrincipal;
+    updateData['installmentDetails.monthlyPrincipalInPiastres'] = toPiastres(monthlyPrincipal);
   }
 
-  const transaction = await CardTransaction.findOneAndUpdate(
-    { _id: id, user: req.effectiveUserId, deletedAt: null },
-    { $set: updateData },
-    { new: true, runValidators: true }
-  );
-  if (!transaction) throw new NotFoundError('Transaction not found');
-  res.json(transaction);
+  Object.assign(existingTransaction, updateData);
+  await existingTransaction.save();
+
+  // Keep linked Expenditure in sync if one exists
+  if (existingTransaction.linkedExpenditureId) {
+    const expUpdates = {
+      currency: newCurrency,
+      foreignAmount: finalForeignAmount,
+      exchangeRateSnapshot: finalExchangeRate,
+      transactionValue: finalAmount,
+      transactionValueInPiastres: toPiastres(finalAmount),
+      date: targetDate,
+    };
+    if (validatedBody.description !== undefined) {
+      expUpdates.description = validatedBody.description;
+    }
+    if (validatedBody.category !== undefined) {
+      expUpdates.categories = [validatedBody.category];
+    }
+    await Expenditure.updateOne(
+      { _id: existingTransaction.linkedExpenditureId, user: req.effectiveUserId },
+      { $set: expUpdates }
+    );
+  }
+
+  res.json(existingTransaction);
 }));
 
 router.delete('/transactions/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {

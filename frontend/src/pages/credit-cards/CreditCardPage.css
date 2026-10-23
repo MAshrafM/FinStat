@@ -212,3 +212,118 @@
     margin: 5px 0;
   }
 }
+
+/* Multi-Currency Conversion Card & Badges */
+.currency-conversion-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-left: 4px solid #0284c7;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.08);
+  transition: all 0.2s ease;
+}
+
+.conversion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.conversion-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #0369a1;
+}
+
+.rate-badge {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #7dd3fc;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.conversion-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.foreign-pill {
+  background-color: white;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.conversion-arrow {
+  font-size: 1.2rem;
+  color: #0284c7;
+  font-weight: bold;
+}
+
+.egp-equivalent {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.conversion-hint {
+  font-size: 0.82rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.conversion-hint strong {
+  color: #0f172a;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .currency-conversion-card {
+    padding: 0.75rem 1rem;
+  }
+
+  .conversion-value-row {
+    gap: 0.5rem;
+  }
+
+  .foreign-pill {
+    font-size: 0.95rem;
+  }
+
+  .egp-equivalent {
+    font-size: 1.15rem;
+  }
+}
