@@ -32,6 +32,18 @@ const createSchema = z.object({
   .strict()
   .refine(
     (data) => {
+      if (data.status === 'sold') {
+        return data.sellingDate != null && data.sellingPrice != null;
+      }
+      return true;
+    },
+    {
+      message: 'Selling date and selling price are required when status is sold',
+      path: ['sellingDate'],
+    }
+  )
+  .refine(
+    (data) => {
       if (data.sellingDate && data.date) {
         return new Date(data.sellingDate) >= new Date(data.date);
       }
@@ -66,6 +78,18 @@ const updateSchema = z.object({
     dateStringSchema.optional()
   ),
 }).strict()
+  .refine(
+    (data) => {
+      if (data.status === 'sold') {
+        return data.sellingDate != null && data.sellingPrice != null;
+      }
+      return true;
+    },
+    {
+      message: 'Selling date and selling price are required when status is sold',
+      path: ['sellingDate'],
+    }
+  )
   .refine(
     (data) => {
       if (data.sellingDate && data.date) {

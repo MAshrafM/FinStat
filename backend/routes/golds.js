@@ -82,8 +82,27 @@ router.get('/summary', auth, asyncHandler(async (req, res) => {
         totalHoldingDays: {
           $sum: {
             $cond: [
-              { $eq: ["$status", "sold"] },
+              {
+                $and: [
+                  { $eq: ["$status", "sold"] },
+                  { $ne: ["$sellingDate", null] }
+                ]
+              },
               { $divide: [{ $subtract: ["$sellingDate", "$date"] }, 1000 * 60 * 60 * 24] },
+              0
+            ]
+          }
+        },
+        soldItemCountWithDate: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $eq: ["$status", "sold"] },
+                  { $ne: ["$sellingDate", null] }
+                ]
+              },
+              1,
               0
             ]
           }
@@ -99,7 +118,13 @@ router.get('/summary', auth, asyncHandler(async (req, res) => {
         totalPaid: 1,
         totalSellingPrice: 1,
         itemCount: 1,
-        avgHoldingDays: { $cond: [{ $gt: ["$itemCount", 0] }, { $divide: ["$totalHoldingDays", "$itemCount"] }, 0] }
+        avgHoldingDays: {
+          $cond: [
+            { $gt: ["$soldItemCountWithDate", 0] },
+            { $divide: ["$totalHoldingDays", "$soldItemCountWithDate"] },
+            0
+          ]
+        }
       }
     }
   ]);
