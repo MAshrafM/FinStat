@@ -25,6 +25,64 @@ const {
 const { toPiastres } = require('../utils/currencyUtils');
 const { evaluateRules } = require('../utils/ruleEngine');
 const { validateSplits } = require('../utils/splitValidator');
+const ForexRateHistory = require('../models/ForexRateHistory');
+const { fetchLatestRates } = require('../utils/forexRevaluation');
+
+/**
+ * Resolves the exchange rate for a transaction:
+ * - Base currency (EGP) always returns 1.
+ * - Admin override rate is respected if provided.
+ * - Historical snapshot within 7 days is prioritized.
+ * - Fallback to live rates if transaction is recent (<= 1 day old).
+ * - Otherwise throws BadRequestError.
+ */
+async function resolveExchangeRate(currency, dateInput, clientRate, userRole) {
+  const code = (currency || 'EGP').trim().toUpperCase();
+  if (code === 'EGP') {
+    return { rate: 1, source: 'base' };
+  }
+
+  // Admin override takes precedence if supplied
+  if (userRole === 'admin' && clientRate && Number(clientRate) > 0) {
+    return { rate: Number(clientRate), source: 'admin_override' };
+  }
+
+  const targetDate = dateInput ? new Date(dateInput) : new Date();
+
+  // 1. Check historical ForexRateHistory snapshots (date <= targetDate, descending)
+  const snapshot = await ForexRateHistory.findOne({
+    date: { $lte: targetDate },
+  }).sort({ date: -1 });
+
+  if (snapshot && snapshot.rates) {
+    const daysDiff = Math.abs((targetDate.getTime() - new Date(snapshot.date).getTime()) / (1000 * 60 * 60 * 24));
+    if (daysDiff <= 7) {
+      const rateVal = snapshot.rates instanceof Map ? snapshot.rates.get(code) : snapshot.rates?.[code];
+      const rate = Number(rateVal);
+      if (rate && rate > 0) {
+        return { rate, source: 'historical_snapshot', snapshotDate: snapshot.date };
+      }
+    }
+  }
+
+  // 2. Fallback to live rate if recent transaction (<= 1 day old)
+  const daysOld = (Date.now() - targetDate.getTime()) / (1000 * 60 * 60 * 24);
+  if (daysOld <= 1) {
+    try {
+      const latest = await fetchLatestRates();
+      const ratesMap = latest?.rates || latest;
+      const liveRate = Number(ratesMap?.[code]);
+      if (liveRate && liveRate > 0) {
+        return { rate: liveRate, source: 'live_market' };
+      }
+    } catch (e) {
+      // live fetch error, handled below
+    }
+  }
+
+  const dateStr = targetDate.toISOString().slice(0, 10);
+  throw new BadRequestError(`No exchange rate snapshot available for ${code} on ${dateStr}. Please provide an exchange rate override or ensure exchange rate history is recorded.`);
+}
 
 // @route   GET api/expenditures/recurring
 // @desc    Get all active expenditures marked as recurring
@@ -92,10 +150,36 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     throw new ForbiddenError('Viewers have read-only access');
   }
   const validatedBody = getValidated(req, 'body');
+  const userRole = req.user?.role || 'viewer';
+  const currency = (validatedBody.currency || 'EGP').trim().toUpperCase();
+  let finalExchangeRate = 1;
+  let finalForeignAmount = null;
+  let finalTransactionValue;
 
-  // If splits are provided, validate that sum equals transactionValue
+  if (currency !== 'EGP') {
+    const rateInfo = await resolveExchangeRate(
+      currency,
+      validatedBody.date,
+      validatedBody.exchangeRateSnapshot,
+      userRole
+    );
+    finalExchangeRate = rateInfo.rate;
+    finalForeignAmount = validatedBody.foreignAmount;
+
+    if (userRole === 'admin' && validatedBody.transactionValue !== undefined) {
+      finalTransactionValue = validatedBody.transactionValue;
+    } else {
+      finalTransactionValue = Number((finalForeignAmount * finalExchangeRate).toFixed(2));
+    }
+  } else {
+    finalExchangeRate = 1;
+    finalForeignAmount = null;
+    finalTransactionValue = validatedBody.transactionValue;
+  }
+
+  // If splits are provided, validate that sum equals finalTransactionValue
   if (validatedBody.splits && validatedBody.splits.length > 0) {
-    const splitValidation = validateSplits(validatedBody.transactionValue, validatedBody.splits);
+    const splitValidation = validateSplits(finalTransactionValue, validatedBody.splits);
     if (!splitValidation.isValid) {
       throw new BadRequestError(splitValidation.error);
     }
@@ -132,7 +216,11 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
       ...validatedBody,
       user: req.effectiveUserId,
       date: new Date(validatedBody.date),
-      transactionValueInPiastres: toPiastres(validatedBody.transactionValue),
+      currency,
+      foreignAmount: finalForeignAmount,
+      exchangeRateSnapshot: finalExchangeRate,
+      transactionValue: finalTransactionValue,
+      transactionValueInPiastres: toPiastres(finalTransactionValue),
     });
 
     const prevBalances = await calculatePreviousBalance(
@@ -230,8 +318,46 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     );
 
     // 2. Prepare updated fields
+    const userRole = req.user?.role || 'viewer';
     const targetDate = validatedBody.date !== undefined ? new Date(validatedBody.date) : existingExpenditure.date;
-    const targetValue = validatedBody.transactionValue !== undefined ? validatedBody.transactionValue : existingExpenditure.transactionValue;
+    const newCurrency = (validatedBody.currency !== undefined ? validatedBody.currency : (existingExpenditure.currency || 'EGP')).trim().toUpperCase();
+    const currencyChanged = newCurrency !== (existingExpenditure.currency || 'EGP');
+    const dateChanged = targetDate.getTime() !== existingExpenditure.date.getTime();
+
+    let finalExchangeRate = existingExpenditure.exchangeRateSnapshot || 1;
+    let finalForeignAmount = existingExpenditure.foreignAmount;
+    let targetValue;
+
+    if (newCurrency !== 'EGP') {
+      const mustReResolve = currencyChanged || dateChanged || (userRole === 'admin' && validatedBody.exchangeRateSnapshot !== undefined);
+      if (mustReResolve) {
+        const rateInfo = await resolveExchangeRate(
+          newCurrency,
+          targetDate,
+          validatedBody.exchangeRateSnapshot,
+          userRole
+        );
+        finalExchangeRate = rateInfo.rate;
+      }
+      if (validatedBody.foreignAmount !== undefined) {
+        finalForeignAmount = validatedBody.foreignAmount;
+      }
+
+      if (userRole === 'admin' && validatedBody.transactionValue !== undefined) {
+        targetValue = validatedBody.transactionValue;
+      } else {
+        targetValue = Number((finalForeignAmount * finalExchangeRate).toFixed(2));
+      }
+      existingExpenditure.currency = newCurrency;
+      existingExpenditure.foreignAmount = finalForeignAmount;
+      existingExpenditure.exchangeRateSnapshot = finalExchangeRate;
+    } else {
+      existingExpenditure.currency = 'EGP';
+      existingExpenditure.foreignAmount = null;
+      existingExpenditure.exchangeRateSnapshot = 1;
+      targetValue = validatedBody.transactionValue !== undefined ? validatedBody.transactionValue : existingExpenditure.transactionValue;
+    }
+
     const targetType = validatedBody.transactionType !== undefined ? validatedBody.transactionType : existingExpenditure.transactionType;
     const targetMethod = validatedBody.paymentMethod !== undefined ? validatedBody.paymentMethod : existingExpenditure.paymentMethod;
 

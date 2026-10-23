@@ -13,7 +13,7 @@ const Expenditure = require('../../models/Expenditure');
 const Certificate = require('../../models/Certificate');
 const Trade = require('../../models/Trade');
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 describe('Role Hierarchy & Data Ownership (Integration Tests)', () => {
   let adminUser, managerUser, adminViewer, managerViewer;

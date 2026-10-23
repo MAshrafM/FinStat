@@ -28,17 +28,37 @@ const splitItemSchema = z
  * Schema for creating a new Expenditure log.
  * Enforces strict typing, rejects unknown properties, and trims strings.
  */
-const createSchema = z
-  .object({
-    date: dateStringSchema,
-    bank: z.number({ message: 'Bank balance must be a valid number' }).default(0),
-    cash: z.number({ message: 'Cash balance must be a valid number' }).default(0),
-    prepaid: z.number({ message: 'Prepaid balance must be a valid number' }).default(0),
-    transactionValue: z
-      .number({
-        message: 'Transaction value is required and must be a valid number',
-      })
-      .positive('Transaction value must be greater than 0'),
+const createSchema = z.preprocess(
+  (val) => {
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      const rawCurr = typeof val.currency === 'string' ? val.currency.trim().toUpperCase() : 'EGP';
+      // If foreign transaction and transactionValue not explicitly supplied, synthesize placeholder so superRefine can validate foreignAmount
+      if (rawCurr !== 'EGP' && val.transactionValue === undefined) {
+        return { ...val, transactionValue: 1 };
+      }
+    }
+    return val;
+  },
+  z
+    .object({
+      date: dateStringSchema,
+      bank: z.number({ message: 'Bank balance must be a valid number' }).default(0),
+      cash: z.number({ message: 'Cash balance must be a valid number' }).default(0),
+      prepaid: z.number({ message: 'Prepaid balance must be a valid number' }).default(0),
+      transactionValue: z
+        .number({
+          message: 'Transaction value is required and must be a valid number',
+        })
+        .positive('Transaction value must be greater than 0'),
+      currency: z.string().trim().toUpperCase().default('EGP'),
+    foreignAmount: z
+      .number({ message: 'foreignAmount must be a valid number' })
+      .positive('foreignAmount must be greater than 0')
+      .nullish(),
+    exchangeRateSnapshot: z
+      .number({ message: 'exchangeRateSnapshot must be a valid number' })
+      .positive('exchangeRateSnapshot must be greater than 0')
+      .nullish(),
     transactionType: z.enum(ALLOWED_TRANSACTION_TYPES, {
       message: `Transaction type must be one of: ${ALLOWED_TRANSACTION_TYPES.join(', ')}`,
     }),
@@ -68,7 +88,33 @@ const createSchema = z
   })
   .strict()
   .superRefine((data, ctx) => {
-    if (data.splits && data.splits.length > 0) {
+    const isBase = !data.currency || data.currency === 'EGP';
+    if (isBase) {
+      if (data.transactionValue === undefined || data.transactionValue === null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['transactionValue'],
+          message: 'Transaction value is required for base currency (EGP) transactions',
+        });
+      }
+      if (data.foreignAmount !== undefined && data.foreignAmount !== null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['foreignAmount'],
+          message: 'foreignAmount cannot be specified for base currency (EGP) transactions',
+        });
+      }
+    } else {
+      if (data.foreignAmount === undefined || data.foreignAmount === null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['foreignAmount'],
+          message: `foreignAmount is required for ${data.currency} transactions`,
+        });
+      }
+    }
+
+    if (data.splits && data.splits.length > 0 && data.transactionValue !== undefined) {
       const sum = data.splits.reduce((acc, curr) => acc + curr.amount, 0);
       if (Math.abs(sum - data.transactionValue) > 0.01) {
         ctx.addIssue({
@@ -78,7 +124,8 @@ const createSchema = z
         });
       }
     }
-  });
+  })
+);
 
 /**
  * Schema for updating an existing Expenditure log.
@@ -94,6 +141,15 @@ const updateSchema = z
       .number({ message: 'Transaction value must be a valid number' })
       .positive('Transaction value must be greater than 0')
       .optional(),
+    currency: z.string().trim().toUpperCase().optional(),
+    foreignAmount: z
+      .number({ message: 'foreignAmount must be a valid number' })
+      .positive('foreignAmount must be greater than 0')
+      .nullish(),
+    exchangeRateSnapshot: z
+      .number({ message: 'exchangeRateSnapshot must be a valid number' })
+      .positive('exchangeRateSnapshot must be greater than 0')
+      .nullish(),
     transactionType: z
       .enum(ALLOWED_TRANSACTION_TYPES, {
         message: `Transaction type must be one of: ${ALLOWED_TRANSACTION_TYPES.join(', ')}`,
@@ -125,6 +181,21 @@ const updateSchema = z
   })
   .strict()
   .superRefine((data, ctx) => {
+    if (data.currency === 'EGP' && data.foreignAmount !== undefined && data.foreignAmount !== null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['foreignAmount'],
+        message: 'foreignAmount cannot be specified for base currency (EGP) transactions',
+      });
+    }
+    if (data.currency && data.currency !== 'EGP' && data.foreignAmount === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['foreignAmount'],
+        message: `foreignAmount cannot be null for ${data.currency} transactions`,
+      });
+    }
+
     if (data.splits && data.splits.length > 0 && data.transactionValue !== undefined) {
       const sum = data.splits.reduce((acc, curr) => acc + curr.amount, 0);
       if (Math.abs(sum - data.transactionValue) > 0.01) {

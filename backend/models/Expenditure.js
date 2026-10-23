@@ -49,6 +49,20 @@ const ExpenditureSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  currency: {
+    type: String,
+    default: 'EGP',
+    trim: true,
+    uppercase: true,
+  },
+  foreignAmount: {
+    type: Number,
+    default: null,
+  },
+  exchangeRateSnapshot: {
+    type: Number,
+    default: 1,
+  },
   transactionType: {
     type: String,
     required: true,
