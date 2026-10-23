@@ -15,9 +15,9 @@ describe('Jobs API Integration Tests (Cron)', () => {
     await mongoose.connection.close();
   });
 
-  it('should reject GET /api/jobs/forex-revaluation without secret (403 Forbidden)', async () => {
+  it('should reject GET /api/jobs/forex-revaluation without secret (401 Unauthorized)', async () => {
     const res = await request(app).get('/api/jobs/forex-revaluation');
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
     expect(res.body.success).toBe(false);
   });
 
@@ -25,7 +25,7 @@ describe('Jobs API Integration Tests (Cron)', () => {
     const res = await request(app)
       .get('/api/jobs/forex-revaluation')
       .set('x-cron-secret', 'invalid-wrong-secret');
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(401);
     expect(res.body.success).toBe(false);
   });
 

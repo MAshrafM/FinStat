@@ -52,7 +52,7 @@ const previewSchema = z.object({
 }).passthrough();
 
 const createPaycheckSchema = z.object({
-  month: z.string().trim().optional(),
+  month: z.string().trim().regex(/^\d{4}-\d{2}$/, 'Must be in YYYY-MM format').optional(),
   period: z.string().trim().optional(),
   type: z.enum(ALLOWED_PAYCHECK_TYPES, {
     message: `Type must be one of: ${ALLOWED_PAYCHECK_TYPES.join(', ')}`,
@@ -85,14 +85,14 @@ const createPaycheckSchema = z.object({
   components: z.array(paycheckComponentSchema).optional(),
   taxDetails: z.record(z.any()).optional(),
   insuranceDetails: z.record(z.any()).optional(),
-}).passthrough().superRefine((data, ctx) => {
+}).strict().superRefine((data, ctx) => {
   if (!data.month && !data.period) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Month or Period is required', path: ['month'] });
   }
 });
 
 const updatePaycheckSchema = z.object({
-  month: z.string().trim().optional(),
+  month: z.string().trim().regex(/^\d{4}-\d{2}$/, 'Must be in YYYY-MM format').optional(),
   period: z.string().trim().optional(),
   type: z.enum(ALLOWED_PAYCHECK_TYPES, {
     message: `Type must be one of: ${ALLOWED_PAYCHECK_TYPES.join(', ')}`,
@@ -125,7 +125,7 @@ const updatePaycheckSchema = z.object({
   components: z.array(paycheckComponentSchema).optional(),
   taxDetails: z.record(z.any()).optional(),
   insuranceDetails: z.record(z.any()).optional(),
-}).passthrough();
+}).strict();
 
 const paramsSchema = paramsIdSchema;
 
@@ -134,7 +134,7 @@ const querySchema = paginationQuerySchema.extend({
     (val) => {
       if (!val || val === 'all' || val === 'undefined' || val === 'null' || val === '') return undefined;
       const n = Number(val);
-      return isNaN(n) ? undefined : n;
+      return isNaN(n) ? val : n;
     },
     z.number().int().min(1900).max(2100).optional()
   ),
@@ -143,7 +143,9 @@ const querySchema = paginationQuerySchema.extend({
 module.exports = {
   previewSchema,
   createPaycheckSchema,
+  createSchema: createPaycheckSchema,
   updatePaycheckSchema,
+  updateSchema: updatePaycheckSchema,
   paramsSchema,
   querySchema,
   ALLOWED_PAYCHECK_TYPES,
