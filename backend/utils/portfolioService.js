@@ -512,13 +512,35 @@ async function getPortfolioCashFlows(effectiveUserId, totalTerminalValue = 0) {
   const userObjectId = new mongoose.Types.ObjectId(effectiveUserId);
   const cashFlows = [];
 
-  // 1. Trades
-  const trades = await Trade.find({ user: userObjectId, deletedAt: null }).select('date type totalValue totalValueInPiastres');
+  // 1. Trades - Option C: External vs Internal Broker Boundary
+  const trades = await Trade.find({ user: userObjectId, deletedAt: null }).select('broker date type totalValue totalValueInPiastres');
+
+  // Identify brokers with TopUp or Withdraw records
+  const brokersWithTopUp = new Set();
   for (const t of trades) {
-    if (t.type === 'Buy' || t.type === 'TopUp') {
-      cashFlows.push({ amount: -Math.abs(t.totalValue), date: new Date(t.date) });
-    } else if (t.type === 'Sell' || t.type === 'Dividend' || t.type === 'Withdraw') {
-      cashFlows.push({ amount: Math.abs(t.totalValue), date: new Date(t.date) });
+    if (t.type === 'TopUp' || t.type === 'Withdraw') {
+      if (t.broker) brokersWithTopUp.add(t.broker);
+    }
+  }
+
+  for (const t of trades) {
+    const isTopUpBroker = t.broker && brokersWithTopUp.has(t.broker);
+
+    if (isTopUpBroker) {
+      // For brokers with TopUp/Withdraw, only TopUp (inflow) and Withdraw (outflow) cross the external boundary
+      if (t.type === 'TopUp') {
+        cashFlows.push({ amount: -Math.abs(t.totalValue), date: new Date(t.date) });
+      } else if (t.type === 'Withdraw') {
+        cashFlows.push({ amount: Math.abs(t.totalValue), date: new Date(t.date) });
+      }
+      // Internal transactions (Buy, Sell, Dividend) are internal cash transfers within the broker wallet
+    } else {
+      // For legacy brokers without TopUp records, fallback to direct trade cash flows
+      if (t.type === 'Buy') {
+        cashFlows.push({ amount: -Math.abs(t.totalValue), date: new Date(t.date) });
+      } else if (t.type === 'Sell' || t.type === 'Dividend') {
+        cashFlows.push({ amount: Math.abs(t.totalValue), date: new Date(t.date) });
+      }
     }
   }
 
@@ -676,6 +698,49 @@ async function getStockNetTopUps(effectiveUserId) {
 }
 
 /**
+ * Calculates uninvested broker wallet cash across brokers with TopUp activity.
+ * Net Cash = max(0, TopUps - Withdraws - Buys + Sells + CashDividends)
+ */
+async function getNetBrokerCash(effectiveUserId) {
+  const userObjectId = new mongoose.Types.ObjectId(effectiveUserId);
+  const trades = await Trade.find({ user: userObjectId, deletedAt: null }).select('broker type totalValue');
+
+  const brokerTotals = {};
+  for (const t of trades) {
+    const broker = t.broker || 'Default';
+    if (!brokerTotals[broker]) {
+      brokerTotals[broker] = { hasTopUp: false, topUps: 0, withdraws: 0, buys: 0, sells: 0, dividends: 0 };
+    }
+    const b = brokerTotals[broker];
+    const val = Number(t.totalValue || 0);
+    if (t.type === 'TopUp') {
+      b.hasTopUp = true;
+      b.topUps += val;
+    } else if (t.type === 'Withdraw') {
+      b.hasTopUp = true;
+      b.withdraws += val;
+    } else if (t.type === 'Buy') {
+      b.buys += val;
+    } else if (t.type === 'Sell') {
+      b.sells += val;
+    } else if (t.type === 'Dividend') {
+      b.dividends += val;
+    }
+  }
+
+  let totalNetCash = 0;
+  for (const broker of Object.keys(brokerTotals)) {
+    const b = brokerTotals[broker];
+    if (b.hasTopUp) {
+      const brokerCash = Math.max(0, b.topUps - b.withdraws - b.buys + b.sells + b.dividends);
+      totalNetCash += brokerCash;
+    }
+  }
+
+  return Number(totalNetCash.toFixed(2));
+}
+
+/**
  * Calculates Asset Allocation Breakdown (Invested vs Current Valuation)
  * Uses total stock top-up for Stock invested capital if available.
  */
@@ -759,8 +824,11 @@ async function getPortfolioSummary(effectiveUserId, { forceRefresh = false, cost
   const totalInvested = allocationData.totalInvested;
   const totalCurrentValue = allocationData.totalCurrentValue;
 
+  const netBrokerCash = await getNetBrokerCash(effectiveUserId);
+  const totalTerminalValue = totalCurrentValue + netBrokerCash;
+
   const roiData = calculateROI(totalInvested, totalCurrentValue, realizedPnL);
-  const cashFlows = await getPortfolioCashFlows(effectiveUserId, totalCurrentValue);
+  const cashFlows = await getPortfolioCashFlows(effectiveUserId, totalTerminalValue);
   const xirrData = calculateXIRR(cashFlows);
 
   // Determine overall price health status
@@ -791,6 +859,7 @@ module.exports = {
   getAllHoldings,
   getPortfolioSummary,
   getPortfolioCashFlows,
+  getNetBrokerCash,
   getRealizedPnL,
   calculateAssetAllocation,
   getStockNetTopUps,
