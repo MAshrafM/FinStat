@@ -89,6 +89,23 @@ const createPaycheckSchema = z.object({
   if (!data.month && !data.period) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Month or Period is required', path: ['month'] });
   }
+  const periodVal = data.period || data.month;
+  const rawDate = data.payDate || data.date;
+  if (periodVal && rawDate) {
+    const payDateStr = typeof rawDate === 'string'
+      ? rawDate
+      : (rawDate instanceof Date && !isNaN(rawDate.getTime()) ? rawDate.toISOString().slice(0, 10) : null);
+    if (payDateStr && /^\d{4}-\d{2}/.test(payDateStr)) {
+      const expectedPeriod = payDateStr.slice(0, 7);
+      if (periodVal !== expectedPeriod) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['period'],
+          message: `Period (${periodVal}) must match payDate calendar month (${expectedPeriod})`,
+        });
+      }
+    }
+  }
 });
 
 const updatePaycheckSchema = z.object({
@@ -125,7 +142,25 @@ const updatePaycheckSchema = z.object({
   components: z.array(paycheckComponentSchema).optional(),
   taxDetails: z.record(z.any()).optional(),
   insuranceDetails: z.record(z.any()).optional(),
-}).strict();
+}).strict().superRefine((data, ctx) => {
+  const periodVal = data.period || data.month;
+  const rawDate = data.payDate || data.date;
+  if (periodVal && rawDate) {
+    const payDateStr = typeof rawDate === 'string'
+      ? rawDate
+      : (rawDate instanceof Date && !isNaN(rawDate.getTime()) ? rawDate.toISOString().slice(0, 10) : null);
+    if (payDateStr && /^\d{4}-\d{2}/.test(payDateStr)) {
+      const expectedPeriod = payDateStr.slice(0, 7);
+      if (periodVal !== expectedPeriod) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['period'],
+          message: `Period (${periodVal}) must match payDate calendar month (${expectedPeriod})`,
+        });
+      }
+    }
+  }
+});
 
 const paramsSchema = paramsIdSchema;
 

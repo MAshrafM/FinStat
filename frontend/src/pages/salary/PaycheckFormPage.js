@@ -29,6 +29,36 @@ import { getUserProfile } from '../../services/userService';
 import { useToast } from '../../context/ToastContext';
 import './PaycheckFormPage.css';
 
+export const normalizePayDateInput = (val) => {
+  if (!val) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T12:00:00.000Z`;
+  }
+  if (typeof val === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}/.test(val)) {
+      return `${val.slice(0, 10)}T12:00:00.000Z`;
+    }
+    const parsed = new Date(val);
+    if (!isNaN(parsed.getTime())) {
+      const year = parsed.getFullYear();
+      const month = String(parsed.getMonth() + 1).padStart(2, '0');
+      const day = String(parsed.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}T12:00:00.000Z`;
+    }
+  }
+  if (val instanceof Date && !isNaN(val.getTime())) {
+    const year = val.getFullYear();
+    const month = String(val.getMonth() + 1).padStart(2, '0');
+    const day = String(val.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T12:00:00.000Z`;
+  }
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}T12:00:00.000Z`;
+};
+
 const formatCurrency = (amount) => {
   const num = Number(amount) || 0;
   return num.toLocaleString('en-US', {
@@ -599,13 +629,14 @@ const PaycheckFormPage = () => {
       return;
     }
 
+    const normalizedPayDate = normalizePayDateInput(formData.payDate);
     const payload = {
       type: formData.disbursementType === 'Prepaid' ? 'Prepaid' : 'Cash',
       disbursementType: formData.disbursementType,
       period: formData.period,
       month: formData.period,
-      payDate: formData.payDate,
-      date: formData.payDate,
+      payDate: normalizedPayDate,
+      date: normalizedPayDate,
       salaryProfile: formData.salaryProfile || undefined,
       multiplier: formData.multiplier,
       unitRate: Number(formData.unitRate) || 0,
@@ -787,7 +818,14 @@ const PaycheckFormPage = () => {
                 type="date"
                 className="form-control"
                 value={formData.payDate}
-                onChange={(e) => setFormData({ ...formData, payDate: e.target.value })}
+                onChange={(e) => {
+                  const newDate = e.target.value;
+                  setFormData(prev => ({
+                    ...prev,
+                    payDate: newDate,
+                    period: newDate ? newDate.slice(0, 7) : prev.period,
+                  }));
+                }}
                 required
               />
             </div>

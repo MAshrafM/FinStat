@@ -34,6 +34,21 @@ const extractYear = (period, fallbackYear) => {
 };
 
 /**
+ * Normalizes a date input to UTC midday (12:00:00.000Z) to prevent timezone drift.
+ */
+function normalizeToUtcMidday(dateInput) {
+  if (!dateInput) return new Date(`${new Date().toISOString().slice(0, 10)}T12:00:00.000Z`);
+  if (typeof dateInput === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateInput)) {
+    return new Date(`${dateInput.slice(0, 10)}T12:00:00.000Z`);
+  }
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) {
+    throw new BadRequestError('Invalid payDate format. Expected YYYY-MM-DD string');
+  }
+  return new Date(`${d.toISOString().slice(0, 10)}T12:00:00.000Z`);
+}
+
+/**
  * Recalculates priorYtdGross and cumulativeYtdGross chronologically for all active paychecks in a year.
  */
 async function recalculateYearlyPaychecksChain(userId, year, session) {
@@ -199,12 +214,13 @@ router.post('/', auth, validate({ body: createPaycheckSchema }), asyncHandler(as
   }
   const body = getValidated(req, 'body');
 
-  const period = body.period || body.month;
+  const normalizedPayDate = normalizeToUtcMidday(body.payDate || body.date);
+  const period = body.period || body.month || normalizedPayDate.toISOString().slice(0, 7);
   if (!period) {
     throw new BadRequestError('Period or Month is required');
   }
-  const targetYear = extractYear(period, null);
-  const payDate = body.payDate || body.date || new Date();
+  const targetYear = extractYear(period, normalizedPayDate.getUTCFullYear());
+  const payDate = normalizedPayDate;
   const grossSalary = body.grossSalary !== undefined ? body.grossSalary : (body.grossAmount || 0);
   const netPay = body.netPay !== undefined ? body.netPay : (body.amount || 0);
   const insuranceDeduction = body.insuranceDeduction !== undefined ? body.insuranceDeduction : (body.insuranceDetails?.actualEmployeeShare || body.insuranceDetails?.expectedEmployeeShare || 0);
@@ -354,10 +370,14 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updatePaycheckSc
     throw new ForbiddenError('User not authorized');
   }
 
-  const sourceYear = extractYear(paycheck.period || paycheck.month, paycheck.payDate ? new Date(paycheck.payDate).getFullYear() : null);
-  const targetPeriod = body.period || body.month || paycheck.period;
-  const targetDate = body.payDate || body.date || paycheck.payDate;
-  const targetYear = extractYear(targetPeriod, targetDate ? new Date(targetDate).getFullYear() : null);
+  const sourceYear = extractYear(paycheck.period || paycheck.month, paycheck.payDate ? new Date(paycheck.payDate).getUTCFullYear() : null);
+  let normalizedTargetDate;
+  if (body.payDate || body.date) {
+    normalizedTargetDate = normalizeToUtcMidday(body.payDate || body.date);
+  }
+  const effectiveDate = normalizedTargetDate || paycheck.payDate;
+  const targetPeriod = body.period || body.month || (normalizedTargetDate ? normalizedTargetDate.toISOString().slice(0, 7) : paycheck.period);
+  const targetYear = extractYear(targetPeriod, effectiveDate ? new Date(effectiveDate).getUTCFullYear() : null);
 
   const updateData = { ...body };
   if (body.grossSalary !== undefined || body.grossAmount !== undefined) {
@@ -383,10 +403,9 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updatePaycheckSc
     updateData.period = p;
     updateData.month = p;
   }
-  if (body.payDate || body.date) {
-    const d = body.payDate || body.date;
-    updateData.payDate = d;
-    updateData.date = d;
+  if (normalizedTargetDate) {
+    updateData.payDate = normalizedTargetDate;
+    updateData.date = normalizedTargetDate;
   }
   if (body.notes || body.note) {
     const n = body.notes || body.note;
