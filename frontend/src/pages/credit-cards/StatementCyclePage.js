@@ -3,6 +3,7 @@ import CreditCardSubNav from '../../components/creditCards/CreditCardSubNav';
 import { getCards, getStatementCycles } from '../../services/creditCardService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { FaCalendarAlt, FaClock, FaReceipt, FaMoneyCheckAlt } from 'react-icons/fa';
+import CardInstallmentSchedule from './CardInstallmentSchedule';
 import './StatementCyclePage.css';
 
 const StatementCyclePage = () => {
@@ -180,6 +181,11 @@ const StatementCyclePage = () => {
               </div>
             </div>
           </div>
+
+          {/* Active Card Installment Schedule */}
+          <CardInstallmentSchedule
+            installments={cycleSummary?.activeInstallments || cycleSummary?.transactions?.filter((tx) => tx.type === 'Installment') || []}
+          />
 
           {/* Current Cycle Transactions Itemization */}
           <div className="cycle-transactions-section">
