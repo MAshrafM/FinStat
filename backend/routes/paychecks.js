@@ -1,10 +1,11 @@
 // backend/routes/paychecks.js
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError, ForbiddenError, BadRequestError } = require('../utils/errors');
+const { NotFoundError, ForbiddenError, BadRequestError, ConflictError } = require('../utils/errors');
 const Paycheck = require('../models/Paycheck');
 const TaxBracket = require('../models/TaxBracket');
 const SocialInsurance = require('../models/SocialInsurance');
@@ -31,6 +32,40 @@ const extractYear = (period, fallbackYear) => {
   }
   return new Date().getFullYear();
 };
+
+/**
+ * Recalculates priorYtdGross and cumulativeYtdGross chronologically for all active paychecks in a year.
+ */
+async function recalculateYearlyPaychecksChain(userId, year, session) {
+  const yearStr = String(year);
+  const startOfYear = new Date(`${yearStr}-01-01T00:00:00.000Z`);
+  const endOfYear = new Date(`${yearStr}-12-31T23:59:59.999Z`);
+
+  const paychecks = await Paycheck.find({
+    user: userId,
+    deletedAt: null,
+    $or: [
+      { period: { $regex: `^${yearStr}`, $options: 'i' } },
+      { month: { $regex: `^${yearStr}`, $options: 'i' } },
+      { payDate: { $gte: startOfYear, $lte: endOfYear } },
+      { date: { $gte: startOfYear, $lte: endOfYear } },
+    ],
+  }).sort({ payDate: 1, createdAt: 1 }).session(session);
+
+  let runningYtd = 0;
+  for (const pc of paychecks) {
+    const gross = Number(pc.grossSalary !== undefined && pc.grossSalary !== null ? pc.grossSalary : (pc.grossAmount || 0));
+    const priorYtdGross = runningYtd;
+    const cumulativeYtdGross = priorYtdGross + gross;
+    runningYtd = cumulativeYtdGross;
+
+    if (pc.priorYtdGross !== priorYtdGross || pc.cumulativeYtdGross !== cumulativeYtdGross) {
+      pc.priorYtdGross = priorYtdGross;
+      pc.cumulativeYtdGross = cumulativeYtdGross;
+      await pc.save({ session });
+    }
+  }
+}
 
 // @route   POST /api/paychecks/preview
 // @desc    Accepts components and period, calculates expected tax, insurance, and net pay without saving
@@ -176,68 +211,62 @@ router.post('/', auth, validate({ body: createPaycheckSchema }), asyncHandler(as
   const taxDeduction = body.taxDeduction !== undefined ? body.taxDeduction : (body.taxDetails?.actualTax || body.taxDetails?.expectedTax || 0);
   const totalDeductions = body.totalDeductions !== undefined ? body.totalDeductions : (grossSalary - netPay);
 
-  // Compute prior YTD gross if not supplied
-  let priorYtdGross = body.priorYtdGross;
-  if (priorYtdGross === undefined || priorYtdGross === 0) {
-    const yearStr = String(targetYear);
-    const startOfYear = new Date(`${yearStr}-01-01T00:00:00.000Z`);
-    const endOfYear = new Date(`${yearStr}-12-31T23:59:59.999Z`);
+  const session = await mongoose.startSession();
+  try {
+    let savedId;
+    await session.withTransaction(async () => {
+      const newPaycheck = new Paycheck({
+        ...body,
+        user: req.effectiveUserId,
+        period,
+        month: period,
+        payDate,
+        date: payDate,
+        disbursementType: body.disbursementType || (body.type === 'Prepaid' ? 'Prepaid' : 'Regular'),
+        multiplier: body.multiplier || 1,
+        unitRate: body.unitRate || 0,
+        priorYtdGross: 0,
+        cumulativeYtdGross: grossSalary,
+        grossSalary,
+        grossSalaryInPiastres: toPiastres(grossSalary),
+        grossAmount: grossSalary,
+        grossAmountInPiastres: toPiastres(grossSalary),
+        netPay,
+        netPayInPiastres: toPiastres(netPay),
+        amount: netPay,
+        amountInPiastres: toPiastres(netPay),
+        insuranceDeduction,
+        insuranceDeductionInPiastres: toPiastres(insuranceDeduction),
+        taxDeduction,
+        taxDeductionInPiastres: toPiastres(taxDeduction),
+        martyrsFund: body.martyrsFund || 0,
+        totalDeductions,
+        totalDeductionsInPiastres: toPiastres(totalDeductions),
+        notes: body.notes || body.note || '',
+        note: body.notes || body.note || '',
+      });
 
-    const existingPcs = await Paycheck.find({
-      user: req.effectiveUserId,
-      deletedAt: null,
-      $or: [
-        { period: { $regex: yearStr, $options: 'i' } },
-        { month: { $regex: yearStr, $options: 'i' } },
-        { payDate: { $gte: startOfYear, $lte: endOfYear } },
-        { date: { $gte: startOfYear, $lte: endOfYear } },
-      ],
+      const saved = await newPaycheck.save({ session });
+      savedId = saved._id;
+
+      // Recalculate year chain so all prior/cumulative YTDs are in strict chronological order
+      await recalculateYearlyPaychecksChain(req.effectiveUserId, targetYear, session);
     });
-    priorYtdGross = existingPcs.reduce((sum, p) => {
-      const amt = Number(p.amount !== undefined && p.amount !== null ? p.amount : (p.netPay || 0)) || 0;
-      const tax = Number(p.taxDeduction || p.taxDetails?.actualTax || p.taxDetails?.expectedTax || 0) || 0;
-      const ins = Number(p.insuranceDeduction || p.insuranceDetails?.actualEmployeeShare || p.insuranceDetails?.expectedEmployeeShare || 0) || 0;
-      const martyrs = Number(p.martyrsFund || 0) || 0;
-      const ded = Number(p.totalDeductions || (tax + ins + martyrs)) || 0;
-      const gross = Number(p.grossSalary || p.grossAmount || (amt + ded)) || 0;
-      return sum + gross;
-    }, 0);
+
+    const refreshed = await Paycheck.findById(savedId);
+    res.status(201).json(refreshed);
+  } catch (err) {
+    if (
+      err.code === 11000 ||
+      err.codeName === 'DuplicateKey' ||
+      (err.message && err.message.includes('E11000'))
+    ) {
+      throw new ConflictError('A paycheck already exists for this period and disbursement type');
+    }
+    throw err;
+  } finally {
+    await session.endSession();
   }
-  const cumulativeYtdGross = body.cumulativeYtdGross !== undefined ? body.cumulativeYtdGross : (priorYtdGross + grossSalary);
-
-  const newPaycheck = new Paycheck({
-    ...body,
-    user: req.effectiveUserId,
-    period,
-    month: period,
-    payDate,
-    date: payDate,
-    disbursementType: body.disbursementType || (body.type === 'Prepaid' ? 'Prepaid' : 'Regular'),
-    multiplier: body.multiplier || 1,
-    unitRate: body.unitRate || 0,
-    priorYtdGross,
-    cumulativeYtdGross,
-    grossSalary,
-    grossSalaryInPiastres: toPiastres(grossSalary),
-    grossAmount: grossSalary,
-    grossAmountInPiastres: toPiastres(grossSalary),
-    netPay,
-    netPayInPiastres: toPiastres(netPay),
-    amount: netPay,
-    amountInPiastres: toPiastres(netPay),
-    insuranceDeduction,
-    insuranceDeductionInPiastres: toPiastres(insuranceDeduction),
-    taxDeduction,
-    taxDeductionInPiastres: toPiastres(taxDeduction),
-    martyrsFund: body.martyrsFund || 0,
-    totalDeductions,
-    totalDeductionsInPiastres: toPiastres(totalDeductions),
-    notes: body.notes || body.note || '',
-    note: body.notes || body.note || '',
-  });
-
-  const savedPaycheck = await newPaycheck.save();
-  res.status(201).json(savedPaycheck);
 }));
 
 // @route   GET /api/paychecks/all
@@ -307,6 +336,8 @@ router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async 
 
 // @route   PUT /api/paychecks/:id
 // @desc    Update a paycheck
+// @route   PUT /api/paychecks/:id
+// @desc    Update a paycheck
 // @access  Private
 router.put('/:id', auth, validate({ params: paramsSchema, body: updatePaycheckSchema }), asyncHandler(async (req, res) => {
   if (!req.canModify) {
@@ -322,6 +353,11 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updatePaycheckSc
   if (paycheck.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
+
+  const sourceYear = extractYear(paycheck.period || paycheck.month, paycheck.payDate ? new Date(paycheck.payDate).getFullYear() : null);
+  const targetPeriod = body.period || body.month || paycheck.period;
+  const targetDate = body.payDate || body.date || paycheck.payDate;
+  const targetYear = extractYear(targetPeriod, targetDate ? new Date(targetDate).getFullYear() : null);
 
   const updateData = { ...body };
   if (body.grossSalary !== undefined || body.grossAmount !== undefined) {
@@ -358,13 +394,35 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updatePaycheckSc
     updateData.note = n;
   }
 
-  const updated = await Paycheck.findByIdAndUpdate(
-    id,
-    { $set: updateData },
-    { new: true, runValidators: true }
-  );
+  const session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async () => {
+      await Paycheck.findByIdAndUpdate(
+        id,
+        { $set: updateData },
+        { new: true, runValidators: true, session }
+      );
 
-  res.json(updated);
+      const yearsToRecalc = [...new Set([sourceYear, targetYear])];
+      for (const year of yearsToRecalc) {
+        await recalculateYearlyPaychecksChain(req.effectiveUserId, year, session);
+      }
+    });
+
+    const refreshed = await Paycheck.findById(id);
+    res.json(refreshed);
+  } catch (err) {
+    if (
+      err.code === 11000 ||
+      err.codeName === 'DuplicateKey' ||
+      (err.message && err.message.includes('E11000'))
+    ) {
+      throw new ConflictError('A paycheck already exists for this period and disbursement type');
+    }
+    throw err;
+  } finally {
+    await session.endSession();
+  }
 }));
 
 // @route   DELETE /api/paychecks/:id
@@ -382,8 +440,19 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
   if (paycheck.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
-  await paycheck.softDelete();
-  res.json({ msg: 'Paycheck removed' });
+
+  const targetYear = extractYear(paycheck.period || paycheck.month, paycheck.payDate ? new Date(paycheck.payDate).getFullYear() : null);
+
+  const session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async () => {
+      await paycheck.softDelete(session);
+      await recalculateYearlyPaychecksChain(req.effectiveUserId, targetYear, session);
+    });
+    res.json({ msg: 'Paycheck removed' });
+  } finally {
+    await session.endSession();
+  }
 }));
 
 // @route   POST /api/paychecks/:id/restore

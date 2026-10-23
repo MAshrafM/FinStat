@@ -231,5 +231,9 @@ PaycheckSchema.index({ user: 1, period: 1 });
 PaycheckSchema.index({ user: 1, payDate: -1 });
 PaycheckSchema.index({ user: 1, month: -1 });
 PaycheckSchema.index({ user: 1, deletedAt: 1 });
+PaycheckSchema.index(
+  { user: 1, period: 1, disbursementType: 1 },
+  { unique: true, partialFilterExpression: { deletedAt: null }, name: 'idx_unique_user_period_disbursement' }
+);
 
 module.exports = mongoose.model('Paycheck', PaycheckSchema);
