@@ -57,6 +57,10 @@ const CertificateSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  maturityDateDerived: {
+    type: Boolean,
+    default: true,
+  },
   withdrawalDate: {
     type: Date,
     default: null,
@@ -71,10 +75,10 @@ const CertificateSchema = new mongoose.Schema({
 });
 
 CertificateSchema.pre('save', function (next) {
-  if (this.startDate && this.period && !this.maturityDate) {
-    const mat = new Date(this.startDate);
-    mat.setMonth(mat.getMonth() + Number(this.period));
-    this.maturityDate = mat;
+  if (!this.maturityDate && this.startDate && this.period) {
+    const { addMonthsClamped } = require('../utils/interestAccrual');
+    this.maturityDate = addMonthsClamped(this.startDate, Number(this.period));
+    this.maturityDateDerived = true;
   }
   next();
 });

@@ -52,6 +52,38 @@ function calculateAccruedInterest(certificate, asOfDate = new Date()) {
 }
 
 /**
+ * Adds months to a date, clamping the day to the last valid day of the target month
+ * to prevent JavaScript month overflow (e.g., Nov 30 + 3 months -> Feb 28).
+ *
+ * Returns a new Date object. The input date is not mutated.
+ *
+ * @param {Date|string} date
+ * @param {number} months
+ * @returns {Date} Clamped target date in UTC
+ */
+function addMonthsClamped(date, months) {
+  if (!date) throw new TypeError('Date must be provided to addMonthsClamped');
+  const d = new Date(date);
+  if (isNaN(d.getTime())) throw new TypeError('Invalid date provided to addMonthsClamped');
+
+  if (months === null || months === undefined || typeof months === 'boolean') {
+    throw new TypeError('Months must be a finite number');
+  }
+
+  const monthsNum = Number(months);
+  if (!Number.isFinite(monthsNum)) {
+    throw new TypeError('Months must be a finite number');
+  }
+
+  const origDay = d.getUTCDate();
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + monthsNum);
+  const lastDayOfTargetMonth = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  d.setUTCDate(Math.min(origDay, lastDayOfTargetMonth));
+  return d;
+}
+
+/**
  * Determines the next scheduled payout date based on payout interval.
  *
  * @param {Object} certificate
@@ -74,17 +106,18 @@ function calculateNextPayoutDate(certificate, asOfDate = new Date()) {
   const interval = (certificate.payoutInterval || 'monthly').toLowerCase();
   const stepMonths = intervalMonthsMap[interval] || 1;
 
+  let monthsElapsed = 0;
   let candidateDate = new Date(startDate);
-  // Roll forward until after asOfDate
+  // Roll forward until after asOfDate preserving the anchor day of month
   while (candidateDate <= currentDate) {
-    candidateDate.setMonth(candidateDate.getMonth() + stepMonths);
+    monthsElapsed += stepMonths;
+    candidateDate = addMonthsClamped(startDate, monthsElapsed);
   }
 
   // Cap at maturityDate if defined
   let maturityDate = certificate.maturityDate ? new Date(certificate.maturityDate) : null;
   if (!maturityDate && certificate.startDate && certificate.period) {
-    maturityDate = new Date(certificate.startDate);
-    maturityDate.setMonth(maturityDate.getMonth() + Number(certificate.period));
+    maturityDate = addMonthsClamped(certificate.startDate, Number(certificate.period));
   }
 
   if (maturityDate && candidateDate > maturityDate) {
@@ -134,9 +167,9 @@ function generateAccrualTrajectory(certificate, asOfDate = new Date()) {
   const now = new Date(asOfDate);
   const period = Number(certificate.period) || 12;
 
-  let maturity = certificate.maturityDate ? new Date(certificate.maturityDate) : new Date(start);
-  if (!certificate.maturityDate) {
-    maturity.setMonth(maturity.getMonth() + period);
+  let maturity = certificate.maturityDate ? new Date(certificate.maturityDate) : null;
+  if (!maturity) {
+    maturity = addMonthsClamped(start, period);
   }
 
   const annualRate = Number(certificate.interest ?? certificate.interestRate ?? 0);
@@ -206,8 +239,7 @@ function deriveCertificateStatus(certificate, asOfDate = new Date()) {
 
   let maturity = certificate.maturityDate ? new Date(certificate.maturityDate) : null;
   if (!maturity && certificate.startDate && certificate.period) {
-    maturity = new Date(certificate.startDate);
-    maturity.setMonth(maturity.getMonth() + Number(certificate.period));
+    maturity = addMonthsClamped(certificate.startDate, Number(certificate.period));
   }
 
   if (maturity) {
@@ -224,6 +256,7 @@ function deriveCertificateStatus(certificate, asOfDate = new Date()) {
 }
 
 module.exports = {
+  addMonthsClamped,
   calculateAccruedInterest,
   calculateNextPayoutDate,
   calculateTotalInterestEarned,

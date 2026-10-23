@@ -17,6 +17,7 @@ const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
 const {
+  addMonthsClamped,
   calculateAccruedInterest,
   calculateNextPayoutDate,
   calculateTotalInterestEarned,
@@ -36,8 +37,7 @@ function enrichCertificate(certDoc) {
 
   let maturity = plain.maturityDate ? new Date(plain.maturityDate) : null;
   if (!maturity && plain.startDate && plain.period) {
-    maturity = new Date(plain.startDate);
-    maturity.setMonth(maturity.getMonth() + Number(plain.period));
+    maturity = addMonthsClamped(plain.startDate, Number(plain.period));
   }
 
   const now = new Date();
@@ -94,15 +94,16 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
   const validatedBody = getValidated(req, 'body');
 
   let maturityDate = validatedBody.maturityDate;
+  let maturityDateDerived = false;
   if (!maturityDate && validatedBody.startDate && validatedBody.period) {
-    const mat = new Date(validatedBody.startDate);
-    mat.setMonth(mat.getMonth() + Number(validatedBody.period));
-    maturityDate = mat;
+    maturityDate = addMonthsClamped(validatedBody.startDate, Number(validatedBody.period));
+    maturityDateDerived = true;
   }
 
   const newCertificate = new Certificate({
     ...validatedBody,
     maturityDate,
+    maturityDateDerived,
     user: req.effectiveUserId,
     amountInPiastres: toPiastres(validatedBody.amount),
   });
@@ -205,6 +206,16 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   const updateData = { ...validatedBody };
   if (validatedBody.amount !== undefined) {
     updateData.amountInPiastres = toPiastres(validatedBody.amount);
+  }
+  if (validatedBody.maturityDate !== undefined) {
+    updateData.maturityDateDerived = false;
+  } else if (validatedBody.startDate !== undefined || validatedBody.period !== undefined) {
+    const targetStartDate = validatedBody.startDate !== undefined ? validatedBody.startDate : certificate.startDate;
+    const targetPeriod = validatedBody.period !== undefined ? validatedBody.period : certificate.period;
+    if (certificate.maturityDateDerived !== false) {
+      updateData.maturityDate = addMonthsClamped(targetStartDate, Number(targetPeriod));
+      updateData.maturityDateDerived = true;
+    }
   }
 
   certificate = await Certificate.findOneAndUpdate(
