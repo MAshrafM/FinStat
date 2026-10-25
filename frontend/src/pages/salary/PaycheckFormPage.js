@@ -254,30 +254,11 @@ const computeLiveEstimate = (components, options = {}) => {
     .filter(c => c.category !== 'deduction' && c.isInsurable !== false)
     .reduce((sum, c) => sum + (c.value || 0), 0);
 
-  const insurableBase = (includeInsurance && insurableEarnings > 0)
-    ? Math.min(Math.max(insurableEarnings, 2700), 16700)
-    : 0;
-  const expectedInsurance = Math.round(insurableBase * 0.11 * 100) / 100;
-  const expectedEmployerInsurance = Math.round(insurableBase * 0.1875 * 100) / 100;
-
   // Cumulative YTD Gross
   const cumulativeYtdGross = priorYtdGross + grossSalary;
 
-  let matchedTier = BRACKET_TIERS[0];
-  for (const tier of BRACKET_TIERS) {
-    if (cumulativeYtdGross >= tier.from && (cumulativeYtdGross <= tier.to || tier.to === Infinity)) {
-      matchedTier = tier;
-      break;
-    }
-  }
-
-  const appliedRate = includeTax ? matchedTier.rate : 0;
-  const expectedTax = includeTax ? Math.round(grossSalary * (appliedRate / 100) * 100) / 100 : 0;
-  const martyrsFund = includeMartyrsFund ? Math.round(grossSalary * 0.0005 * 100) / 100 : 0;
-
-  const totalDeductions = Math.round((expectedTax + expectedInsurance + martyrsFund + manualDeductions) * 100) / 100;
-  const netPay = Math.round((grossSalary - totalDeductions) * 100) / 100;
-
+  // Local baseline returns structural sums and flags isLocalFallback: true
+  // Statutory progressive tax and social insurance are authoritative only from /api/paychecks/preview
   return {
     disbursementType,
     multiplier,
@@ -287,32 +268,20 @@ const computeLiveEstimate = (components, options = {}) => {
     taxableIncome: Math.round(grossSalary * 100) / 100,
     priorYtdGross,
     cumulativeYtdGross,
-    insurableIncome: insurableBase,
-    appliedTaxRate: appliedRate,
-    matchedBracket: matchedTier,
-    expectedTax,
+    insurableIncome: 0,
+    appliedTaxRate: 0,
+    matchedBracket: null,
+    expectedTax: 0,
     includeTax,
     includeInsurance,
-    expectedInsurance,
-    expectedEmployerInsurance,
+    expectedInsurance: 0,
+    expectedEmployerInsurance: 0,
     includeMartyrsFund,
-    martyrsFund,
+    martyrsFund: 0,
     customDeductions: manualDeductions,
-    totalDeductions,
-    netPay,
-    taxDetails: {
-      bracketBreakdown: [
-        {
-          bracket: matchedTier.name,
-          rate: appliedRate,
-          taxableAmount: Math.round(grossSalary * 100) / 100,
-          tax: expectedTax,
-          cumulativeYtdGross,
-          priorYtdGross,
-          isMatched: true,
-        },
-      ],
-    },
+    totalDeductions: manualDeductions,
+    netPay: Math.round((grossSalary - manualDeductions) * 100) / 100,
+    isLocalFallback: true,
   };
 };
 
@@ -357,6 +326,7 @@ const PaycheckFormPage = () => {
   });
 
   const [previewResult, setPreviewResult] = useState(() => computeLiveEstimate([]));
+  const [previewError, setPreviewError] = useState(null);
 
   // Trigger calculation from backend (with live estimate fallback)
   const triggerCalculation = useCallback(async (periodVal, componentsVal, silent = false, overrideOptions = {}) => {
@@ -378,12 +348,10 @@ const PaycheckFormPage = () => {
       unitRate: sanitizedUnitRate,
     };
 
-    // Immediately calculate local preview so UI updates without lag
-    const localEst = computeLiveEstimate(sanitized, { ...opts, priorYtdGross: formData.priorYtdGross });
-    setPreviewResult(localEst);
+    setPreviewError(null);
+    setCalculating(true);
 
     try {
-      setCalculating(true);
       const res = await calculatePaycheckPreview({
         period: periodToUse,
         components: sanitized,
@@ -392,6 +360,7 @@ const PaycheckFormPage = () => {
 
       if (res && res.preview) {
         setPreviewResult(res.preview);
+        setPreviewError(null);
         if (res.preview.priorYtdGross !== undefined) {
           setFormData(prev => ({ ...prev, priorYtdGross: res.preview.priorYtdGross }));
         }
@@ -400,8 +369,12 @@ const PaycheckFormPage = () => {
         }
       }
     } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message || 'Statutory calculation service temporarily unavailable';
+      setPreviewError(errorMsg);
+      const fallbackEst = computeLiveEstimate(sanitized, { ...opts, priorYtdGross: formData.priorYtdGross });
+      setPreviewResult(fallbackEst);
       if (!silent && notify) {
-        notify('Calculated with YTD cumulative gross model', 'info');
+        notify(`Calculation warning: ${errorMsg}`, 'error');
       }
     } finally {
       setCalculating(false);
@@ -1144,6 +1117,31 @@ const PaycheckFormPage = () => {
             )}
           </div>
 
+          {/* HTTP 400 / CALCULATION ERROR WARNING BANNER */}
+          {previewError && (
+            <div
+              id="preview-error-banner"
+              role="alert"
+              style={{
+                backgroundColor: '#fffbeb',
+                border: '1px solid #fcd34d',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                marginBottom: '1.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                color: '#92400e',
+                fontSize: '0.875rem',
+              }}
+            >
+              <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>⚠</span>
+              <div>
+                <strong>Statutory Preview Calculation Warning:</strong> {previewError}. Please review salary components or input exact payslip amounts in Step 4.
+              </div>
+            </div>
+          )}
+
           {/* YTD PROGRESS BANNER */}
           <div style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
@@ -1171,7 +1169,7 @@ const PaycheckFormPage = () => {
               </div>
               <span style={{ fontSize: '0.8rem', color: '#16a34a', fontWeight: 600 }}>
                 {formData.includeTax !== false
-                  ? `Matched Bracket: ${activeResult.appliedTaxRate}% Tax Rate`
+                  ? (activeResult.appliedTaxRate ? `Matched Bracket: ${activeResult.appliedTaxRate}% Tax Rate` : 'Statutory Progressive Tax (Law 175/2023)')
                   : 'Tax Exempt for this Payout'}
               </span>
             </div>
@@ -1192,7 +1190,7 @@ const PaycheckFormPage = () => {
                 <span className="stat-title">Suggested Tax ({activeResult.appliedTaxRate}%)</span>
               </div>
               <div className="stat-amount deduction-color">{formatCurrency(activeResult.expectedTax)}</div>
-              <div className="stat-subtext">Flat bracket on gross</div>
+              <div className="stat-subtext">{activeResult.isLocalFallback ? 'Awaiting calculation' : (activeResult.appliedTaxRate ? `Law 175/2023 progressive (${activeResult.appliedTaxRate}%)` : 'Tax exempt')}</div>
             </div>
 
             <div className="preview-stat-card">
@@ -1200,7 +1198,7 @@ const PaycheckFormPage = () => {
                 <span className="stat-title">Social Insurance</span>
               </div>
               <div className="stat-amount deduction-color">{formatCurrency(activeResult.expectedInsurance)}</div>
-              <div className="stat-subtext">{formData.includeInsurance ? '11% Insurable Base' : '0.00 EGP (Off)'}</div>
+              <div className="stat-subtext">{formData.includeInsurance ? (activeResult.isLocalFallback ? '11% Insurable Base' : `11% of ${formatCurrency(activeResult.insurableIncome || activeResult.cappedInsurableIncome || 0)}`) : '0.00 EGP (Off)'}</div>
             </div>
 
             <div className="preview-stat-card highlight-card">
