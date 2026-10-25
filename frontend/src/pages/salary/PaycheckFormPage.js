@@ -175,17 +175,7 @@ const DISBURSEMENT_TYPES = [
   { id: 'Prepaid', label: 'Prepaid Advance', icon: CreditCard, desc: 'Mid-month advance (Zero deductions)', color: '#64748b' },
 ];
 
-const BRACKET_TIERS = [
-  { level: 1, name: '0 to 40,000 EGP/yr (0 to 3,333 EGP/mo)', from: 0, to: 40000, rate: 0 },
-  { level: 2, name: '40,000 to 55,000 EGP/yr (3,333 to 4,583 EGP/mo)', from: 40000, to: 55000, rate: 10 },
-  { level: 3, name: '55,000 to 70,000 EGP/yr (4,583 to 5,833 EGP/mo)', from: 55000, to: 70000, rate: 15 },
-  { level: 4, name: '70,000 to 200,000 EGP/yr (5,833 to 16,667 EGP/mo)', from: 70000, to: 200000, rate: 20 },
-  { level: 5, name: '200,000 to 400,000 EGP/yr (16,667 to 33,333 EGP/mo)', from: 200000, to: 400000, rate: 22.5 },
-  { level: 6, name: '400,000 to 1,200,000 EGP/yr (33,333 to 100,000 EGP/mo)', from: 400000, to: 1200000, rate: 25 },
-  { level: 7, name: 'Above 1,200,000 EGP/yr (> 100,000 EGP/mo)', from: 1200000, to: Infinity, rate: 27.5 },
-];
-
-// Real-time Cumulative YTD Gross Calculator
+// Baseline Component Sums & Fallback Estimator
 const computeLiveEstimate = (components, options = {}) => {
   const sanitized = sanitizeComponents(components);
   const disbursementType = options.disbursementType || 'Regular';
@@ -248,10 +238,6 @@ const computeLiveEstimate = (components, options = {}) => {
 
   const manualDeductions = sanitized
     .filter(c => c.category === 'deduction')
-    .reduce((sum, c) => sum + (c.value || 0), 0);
-
-  const insurableEarnings = sanitized
-    .filter(c => c.category !== 'deduction' && c.isInsurable !== false)
     .reduce((sum, c) => sum + (c.value || 0), 0);
 
   // Cumulative YTD Gross
