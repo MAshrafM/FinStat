@@ -195,6 +195,7 @@ router.post('/preview', auth, validate({ body: previewSchema }), asyncHandler(as
     appliedConfig: {
       taxYear: targetYear,
       personalExemption: resolvedTax.personalExemption,
+      minInsurableIncome: resolvedInsurance.minInsurableIncome,
       insuranceEmployeeShare: resolvedInsurance.employeeShare,
       insuranceEmployerShare: resolvedInsurance.employerShare,
       maxInsurableIncome: resolvedInsurance.maxInsurableIncome,

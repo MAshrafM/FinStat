@@ -21,7 +21,9 @@ function calculateInsurance(monthlyInsurableIncome = 0, insuranceConfig = {}) {
     };
   }
 
-  const minCap = Math.max(0, Number(insuranceConfig.minInsurableIncome) || 0);
+  const minCap = insuranceConfig.minInsurableIncome !== undefined && insuranceConfig.minInsurableIncome !== null
+    ? Math.max(0, Number(insuranceConfig.minInsurableIncome) || 0)
+    : 2000;
   const maxCap = insuranceConfig.maxInsurableIncome !== undefined && insuranceConfig.maxInsurableIncome !== null
     ? Number(insuranceConfig.maxInsurableIncome)
     : Infinity;
