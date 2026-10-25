@@ -1,20 +1,120 @@
 // backend/utils/taxCalculator.js
 
 /**
- * Calculates payroll tax using the Company Cumulative Year-to-Date (YTD) Gross Tax Model:
- * 1. Tracks cumulative gross income earned so far in the calendar year:
- *    cumulativeYtdGross = priorYtdGross + currentGross
- * 2. Matches cumulativeYtdGross against the annual tax bracket schedule [from, to]
- *    (e.g., 0-40k @ 0%, 40k-55k @ 10%, 55k-70k @ 15%, 70k-200k @ 20%, 200k-400k @ 22.5%, 400k-1.2M @ 25%, >1.2M @ 27.5%)
- * 3. Applies the matched single bracket rate (R%) directly to this paycheck's gross amount:
- *    paycheckTax = currentGross * (R / 100)
- * 4. At the start of the year (cumulative gross <= 40k), rate is 0%. As cumulative gross increases,
- *    subsequent paychecks advance to higher bracket percentages.
+ * Calculates progressive income tax by slicing annual taxable base across tiered brackets
+ * under Egyptian Tax Law (Law 91/2005 as amended by Law 175/2023 & Law 7/2024).
+ * 
+ * @param {number} annualTaxableBase - Net annual taxable base in EGP (Gross - SI - Exemption)
+ * @param {Array} taxBrackets - Array of bracket objects [{ level, from, to, rate }]
+ * @returns {Object} { annualTax, monthlyTax, bracketBreakdown, effectiveRate, matchedBracket }
+ */
+function calculateProgressiveTax(annualTaxableBase = 0, taxBrackets = []) {
+  const base = Math.max(0, Number(annualTaxableBase) || 0);
+
+  if (base === 0 || !Array.isArray(taxBrackets) || taxBrackets.length === 0) {
+    const firstBracket = Array.isArray(taxBrackets) && taxBrackets.length > 0 ? taxBrackets[0] : null;
+    return {
+      annualTax: 0,
+      monthlyTax: 0,
+      bracketBreakdown: Array.isArray(taxBrackets) ? taxBrackets.map((b, i) => ({
+        level: b.level || (i + 1),
+        bracket: b.to === Infinity || Number(b.to) >= 1000000000
+          ? `Above ${(Number(b.from) || 0).toLocaleString()} EGP/yr`
+          : `${(Number(b.from) || 0).toLocaleString()} to ${(Number(b.to) || 0).toLocaleString()} EGP/yr`,
+        from: Number(b.from) || 0,
+        to: Number(b.to) || Infinity,
+        rate: Number(b.rate) || 0,
+        taxableAmount: 0,
+        tax: 0,
+        isMatched: i === 0,
+      })) : [],
+      effectiveRate: 0,
+      matchedBracket: firstBracket ? {
+        level: firstBracket.level || 1,
+        rate: Number(firstBracket.rate) || 0,
+        description: `${(Number(firstBracket.from) || 0).toLocaleString()} to ${(Number(firstBracket.to) || 0).toLocaleString()} EGP/yr`,
+        from: Number(firstBracket.from) || 0,
+        to: Number(firstBracket.to) || Infinity,
+      } : null,
+    };
+  }
+
+  // Sort brackets ascending by 'from'
+  const sortedBrackets = [...taxBrackets].sort((a, b) => (Number(a.from) || 0) - (Number(b.from) || 0));
+
+  let remaining = base;
+  let totalAnnualTax = 0;
+  const bracketBreakdown = [];
+  let highestMatched = null;
+
+  for (let i = 0; i < sortedBrackets.length; i++) {
+    const b = sortedBrackets[i];
+    const from = Number(b.from) || 0;
+    const to = b.to !== undefined && b.to !== null && Number(b.to) < 1000000000
+      ? Number(b.to)
+      : Infinity;
+    const rate = Number(b.rate) || 0;
+    const rateFraction = rate > 1 ? rate / 100 : rate;
+    const span = to === Infinity ? Infinity : Math.max(0, to - from);
+
+    const taxableAmount = Math.max(0, Math.min(remaining, span));
+    const tierTax = Math.round(taxableAmount * rateFraction * 100) / 100;
+
+    remaining = Math.max(0, remaining - taxableAmount);
+    totalAnnualTax += tierTax;
+
+    const isMatched = taxableAmount > 0 || (i === 0 && base === 0);
+
+    const bracketDescription = to === Infinity
+      ? `Above ${from.toLocaleString()} EGP/yr`
+      : `${from.toLocaleString()} to ${to.toLocaleString()} EGP/yr`;
+
+    const breakdownItem = {
+      level: b.level || (i + 1),
+      bracket: bracketDescription,
+      from,
+      to,
+      rate,
+      taxableAmount: Math.round(taxableAmount * 100) / 100,
+      tax: tierTax,
+      isMatched,
+    };
+
+    bracketBreakdown.push(breakdownItem);
+
+    if (taxableAmount > 0 || !highestMatched) {
+      highestMatched = {
+        level: breakdownItem.level,
+        rate,
+        description: bracketDescription,
+        from,
+        to,
+      };
+    }
+  }
+
+  totalAnnualTax = Math.round(totalAnnualTax * 100) / 100;
+  const monthlyTax = Math.round((totalAnnualTax / 12) * 100) / 100;
+  const effectiveRate = base > 0 ? Math.round((totalAnnualTax / base) * 10000) / 100 : 0;
+
+  return {
+    annualTax: totalAnnualTax,
+    monthlyTax,
+    bracketBreakdown,
+    effectiveRate,
+    matchedBracket: highestMatched,
+  };
+}
+
+/**
+ * Calculates payroll tax using either:
+ * A) Statutory Progressive Tax Model (Law 175/2023 Annualized-Average Method for Regular Paychecks)
+ * B) Company Cumulative Year-to-Date (YTD) Gross Tax Model (for specialized lump sums / bonuses)
  * 
  * @param {number} monthlyTaxableOrGross - Current paycheck gross in EGP
  * @param {Array} taxBrackets - Array of bracket objects [{ level, from, to, rate }]
- * @param {number} personalExemption - Optional personal exemption
- * @param {Object} options - Options: { grossSalary, priorYtdGross, includeTax, includeMartyrsFund }
+ * @param {number} personalExemption - Annual personal exemption (20,000 EGP under Law 175/2023)
+ * @param {Object} options - Options: { grossSalary, priorYtdGross, includeTax, includeMartyrsFund, taxModel, annualInsuranceContribution }
  * @returns {Object} Calculation result { monthlyTax, annualTax, appliedRate, matchedBracket, priorYtdGross, cumulativeYtdGross, bracketBreakdown, monthlyMartyrsFund, annualMartyrsFund }
  */
 function calculateTax(
@@ -39,7 +139,7 @@ function calculateTax(
     return {
       monthlyTax: 0,
       annualTax: 0,
-      taxableAnnual: cumulativeYtdGross,
+      taxableAnnual: 0,
       appliedRate: 0,
       matchedBracket: null,
       priorYtdGross,
@@ -50,10 +150,53 @@ function calculateTax(
     };
   }
 
-  // Sort brackets ascending by 'from'
+  // Determine calculation mode:
+  // Statutory progressive mode applies if explicitly requested, or if annualInsuranceContribution is supplied,
+  // or if personalExemption > 0 and taxModel is not explicitly 'cumulative'.
+  const useProgressive = options.taxModel === 'progressive' ||
+    (options.taxModel !== 'cumulative' && (options.annualInsuranceContribution !== undefined || personalExemption > 0));
+
+  if (useProgressive) {
+    const annualGross = currentGross * 12;
+    const annualSI = Math.max(0, Number(options.annualInsuranceContribution) || 0);
+    const exemption = Math.max(0, Number(personalExemption) || 0);
+
+    // Statutory deduction order: Annual Gross - Annual SI - Personal Exemption
+    const netTaxableBase = Math.max(0, annualGross - annualSI - exemption);
+
+    let progressiveResult = {
+      annualTax: 0,
+      monthlyTax: 0,
+      bracketBreakdown: [],
+      effectiveRate: 0,
+      matchedBracket: null,
+    };
+
+    if (includeTax && netTaxableBase > 0) {
+      progressiveResult = calculateProgressiveTax(netTaxableBase, taxBrackets);
+    }
+
+    const monthlyTax = includeTax ? progressiveResult.monthlyTax : 0;
+    const annualTax = includeTax ? progressiveResult.annualTax : 0;
+    const appliedRate = progressiveResult.matchedBracket?.rate ?? progressiveResult.effectiveRate ?? 0;
+
+    return {
+      monthlyTax,
+      annualTax,
+      taxableAnnual: Math.round(netTaxableBase * 100) / 100,
+      appliedRate,
+      matchedBracket: progressiveResult.matchedBracket,
+      priorYtdGross,
+      cumulativeYtdGross,
+      bracketBreakdown: progressiveResult.bracketBreakdown,
+      monthlyMartyrsFund,
+      annualMartyrsFund,
+    };
+  }
+
+  // Cumulative YTD Gross Model (Legacy / Bonus Disbursements)
   const sortedBrackets = [...taxBrackets].sort((a, b) => (Number(a.from) || 0) - (Number(b.from) || 0));
 
-  // Find matching bracket where cumulativeYtdGross falls
   let matchedBracket = null;
   for (const b of sortedBrackets) {
     const from = Number(b.from) || 0;
@@ -72,7 +215,6 @@ function calculateTax(
     }
   }
 
-  // Fallback to highest bracket if exceeding top
   if (!matchedBracket && sortedBrackets.length > 0) {
     const lastB = sortedBrackets[sortedBrackets.length - 1];
     matchedBracket = {
@@ -86,7 +228,6 @@ function calculateTax(
   const rawRate = (includeTax && matchedBracket) ? matchedBracket.rate : 0;
   const rateFraction = rawRate > 1 ? rawRate / 100 : rawRate;
 
-  // Apply matched percentage to this paycheck's gross
   const monthlyTax = includeTax ? Math.round(currentGross * rateFraction * 100) / 100 : 0;
   const annualTax = includeTax ? Math.round(cumulativeYtdGross * rateFraction * 100) / 100 : 0;
 
@@ -130,5 +271,6 @@ function calculateTax(
 }
 
 module.exports = {
+  calculateProgressiveTax,
   calculateTax,
 };

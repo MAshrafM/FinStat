@@ -181,19 +181,6 @@ function calculatePreview(components = [], taxConfig = {}, insuranceConfig = {},
     .filter(c => c.category !== 'deduction' && c.isInsurable)
     .reduce((sum, c) => sum + c.evaluatedAmount, 0);
 
-  // Cumulative YTD Tax Bracket Calculation
-  const taxResult = calculateTax(
-    grossSalary,
-    taxConfig.brackets || [],
-    taxConfig.personalExemption || 0,
-    {
-      grossSalary,
-      priorYtdGross,
-      includeTax,
-      includeMartyrsFund,
-    }
-  );
-
   // Social Insurance Calculation
   let insuranceResult = {
     insurableIncome: 0,
@@ -211,6 +198,30 @@ function calculatePreview(components = [], taxConfig = {}, insuranceConfig = {},
       isEnabled: true,
     };
   }
+
+  // Statutory Annual Employee Social Insurance Contribution
+  const annualInsuranceContribution = includeInsurance && insuranceResult.employeeContribution > 0
+    ? insuranceResult.employeeContribution * 12
+    : 0;
+
+  const isRegular = disbursementType === 'Regular';
+  const hasStatutoryExemption = taxConfig?.personalExemption !== undefined && Number(taxConfig.personalExemption) > 0;
+  const taxModel = options.taxModel || (isRegular && hasStatutoryExemption ? 'progressive' : 'cumulative');
+
+  // Income Tax Calculation (Law 175/2023 Statutory Progressive Model for Regular Paychecks)
+  const taxResult = calculateTax(
+    grossSalary,
+    taxConfig.brackets || [],
+    taxConfig.personalExemption || 0,
+    {
+      grossSalary,
+      priorYtdGross,
+      includeTax,
+      includeMartyrsFund,
+      taxModel,
+      annualInsuranceContribution,
+    }
+  );
 
   // Martyrs Fund
   const martyrsFund = includeMartyrsFund ? taxResult.monthlyMartyrsFund : 0;
@@ -237,7 +248,9 @@ function calculatePreview(components = [], taxConfig = {}, insuranceConfig = {},
     grossSalary: Math.round(grossSalary * 100) / 100,
     basicSalary: Math.round(basicSalarySum * 100) / 100,
     taxableIncome: Math.round(taxableIncome * 100) / 100,
-    insurableIncome: Math.round(insurableIncome * 100) / 100,
+    insurableIncome: includeInsurance && insurableIncome > 0
+      ? insuranceResult.cappedInsurableIncome
+      : Math.round(insurableIncome * 100) / 100,
     priorYtdGross,
     cumulativeYtdGross: taxResult.cumulativeYtdGross,
     appliedTaxRate: taxResult.appliedRate,
