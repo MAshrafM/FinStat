@@ -89,35 +89,82 @@ const ComponentTable = ({
             <thead>
               <tr>
                 <th style={{ width: '22%' }}>Component Name</th>
-                <th style={{ width: '18%' }}>Category</th>
+                <th style={{ width: '16%' }}>Category</th>
                 <th style={{ width: '14%' }}>Type</th>
                 <th style={{ width: '16%' }}>Basis / Value</th>
-                <th style={{ width: '10%' }} title="Subject to income tax">
+                <th style={{ width: '8%' }} title="Active status in profile">Active</th>
+                <th style={{ width: '8%' }} title="Subject to income tax">
                   <span className="th-icon-label"><Receipt size={14} /> Taxable</span>
                 </th>
-                <th style={{ width: '10%' }} title="Subject to social insurance">
+                <th style={{ width: '8%' }} title="Subject to social insurance">
                   <span className="th-icon-label"><Shield size={14} /> Insurable</span>
                 </th>
-                {!readOnly && <th style={{ width: '10%' }}>Actions</th>}
+                {!readOnly && <th style={{ width: '8%' }}>Actions</th>}
               </tr>
             </thead>
             <tbody>
               {components.map((comp, idx) => {
                 const currentCategory = CATEGORIES.find(c => c.value === comp.category) || CATEGORIES[0];
+                const isInactive = comp.isActive === false;
                 return (
-                  <tr key={idx} className={comp.category === 'deduction' ? 'row-deduction' : ''}>
+                  <tr
+                    key={idx}
+                    className={[
+                      comp.category === 'deduction' ? 'row-deduction' : '',
+                      isInactive ? 'row-inactive' : '',
+                    ].filter(Boolean).join(' ')}
+                    style={isInactive ? { opacity: 0.6 } : undefined}
+                  >
                     <td>
                       {readOnly ? (
-                        <span className="component-name-readonly">{comp.name || 'Unnamed Component'}</span>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <span className="component-name-readonly">{comp.name || 'Unnamed Component'}</span>
+                          {isInactive && (
+                            <span
+                              className="badge-inactive"
+                              style={{
+                                marginLeft: '8px',
+                                fontSize: '0.7rem',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                backgroundColor: '#e5e7eb',
+                                color: '#4b5563',
+                                fontWeight: 500,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              Inactive
+                            </span>
+                          )}
+                        </div>
                       ) : (
-                        <input
-                          type="text"
-                          className="component-input"
-                          placeholder="e.g. Basic Salary, Transport"
-                          value={comp.name || ''}
-                          onChange={(e) => handleFieldChange(idx, 'name', e.target.value)}
-                          required
-                        />
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            className="component-input"
+                            placeholder="e.g. Basic Salary, Transport"
+                            value={comp.name || ''}
+                            onChange={(e) => handleFieldChange(idx, 'name', e.target.value)}
+                            required
+                          />
+                          {isInactive && (
+                            <span
+                              className="badge-inactive"
+                              style={{
+                                marginLeft: '8px',
+                                fontSize: '0.7rem',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                backgroundColor: '#e5e7eb',
+                                color: '#4b5563',
+                                fontWeight: 500,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              Inactive
+                            </span>
+                          )}
+                        </div>
                       )}
                     </td>
                     <td>
@@ -197,6 +244,21 @@ const ComponentTable = ({
                           </div>
                         )}
                       </div>
+                    </td>
+                    <td className="text-center">
+                      <label
+                        className="checkbox-toggle-container"
+                        title={comp.category === 'basic' ? 'Basic salary cannot be disabled' : (comp.isActive !== false ? 'Active' : 'Inactive')}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={comp.isActive !== false}
+                          disabled={readOnly || comp.category === 'basic'}
+                          onChange={(e) => handleFieldChange(idx, 'isActive', e.target.checked)}
+                          aria-label={`Toggle active for ${comp.name || 'component'}`}
+                        />
+                        <span className="checkmark"></span>
+                      </label>
                     </td>
                     <td className="text-center">
                       <label className="checkbox-toggle-container">

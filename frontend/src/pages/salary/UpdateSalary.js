@@ -133,16 +133,19 @@ const UpdateSalary = () => {
 
     try {
       setSaving(true);
-      const cleanComponents = components.map(c => ({
-        name: (c.name || 'Component').trim(),
-        category: c.category || 'allowance',
-        type: c.type || 'fixed',
-        value: Number(c.value) || 0,
-        calculationBasis: c.calculationBasis || 'gross',
-        isTaxable: c.isTaxable !== false,
-        isInsurable: c.isInsurable !== false,
-        isActive: c.isActive !== false,
-      }));
+      const cleanComponents = components.map(c => {
+        const isActive = c.isActive !== false;
+        return {
+          name: (c.name || 'Component').trim(),
+          category: c.category || 'allowance',
+          type: c.type || 'fixed',
+          value: isActive ? (Number(c.value) || 0) : 0,
+          calculationBasis: c.calculationBasis || 'gross',
+          isTaxable: c.isTaxable !== false,
+          isInsurable: c.isInsurable !== false,
+          isActive,
+        };
+      });
 
       const payload = {
         name: formData.name.trim(),
