@@ -7,6 +7,7 @@ if (process.env.NODE_ENV !== 'test') {
 
 // Import the Express library
 const express = require('express');
+const mongoose = require('mongoose');
 const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -15,6 +16,8 @@ const { verifyTransactionSupport } = require('./config/verifyTransactionSupport'
 const errorHandler = require('./middleware/errorHandler');
 const { NotFoundError } = require('./utils/errors');
 const { seedDefaultTaxAndInsurance } = require('./utils/seedTaxAndInsurance');
+const packageJson = require('./package.json');
+const APP_VERSION = packageJson.version || '1.0.0';
 
 // Create an instance of an Express application
 const app = express();
@@ -83,6 +86,19 @@ app.use('/api/categories', require('./routes/categories'));
 app.use('/api/debt-payoff', require('./routes/debtPayoff'));
 app.use('/api/jobs', require('./routes/jobs'));
 
+// Deep health check endpoint for uptime monitors and load balancers (unauthenticated)
+app.get('/api/health', (req, res) => {
+  const isDbConnected = mongoose.connection.readyState === 1;
+  const statusCode = isDbConnected ? 200 : 503;
+  return res.status(statusCode).json({
+    status: isDbConnected ? 'UP' : 'DOWN',
+    db: isDbConnected ? 'connected' : 'disconnected',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    version: APP_VERSION,
+  });
+});
+
 // 404 handler specifically scoped to unmatched /api routes
 app.use('/api', (req, res, next) => {
   next(new NotFoundError(`API endpoint ${req.originalUrl} not found`));
@@ -90,6 +106,85 @@ app.use('/api', (req, res, next) => {
 
 // Centralized error handling middleware (must be registered after all routes)
 app.use(errorHandler);
+
+let serverInstance = null;
+
+/**
+ * Graceful process shutdown handler
+ * Closes active HTTP server connections and Mongoose database connection cleanly within timeout boundary
+ */
+async function gracefulShutdown(signal, options = {}) {
+  const {
+    server = serverInstance,
+    mongooseInstance = mongoose,
+    timeoutMs = 5000,
+    exitProcess = true,
+    onTimeout = null,
+  } = options;
+
+  console.log(`Received ${signal}. Initiating graceful shutdown...`);
+
+  let timerHandle = null;
+  let timedOut = false;
+
+  const timeoutPromise = new Promise((resolve) => {
+    timerHandle = setTimeout(() => {
+      timedOut = true;
+      console.error(`Graceful shutdown timed out after ${timeoutMs}ms. Forcing exit.`);
+      if (typeof onTimeout === 'function') onTimeout();
+      if (exitProcess) {
+        process.exit(1);
+      } else {
+        resolve({ timedOut: true });
+      }
+    }, timeoutMs);
+    timerHandle.unref();
+  });
+
+  const shutdownActions = async () => {
+    try {
+      if (server && typeof server.close === 'function') {
+        await new Promise((resolve, reject) => {
+          server.close((err) => (err ? reject(err) : resolve()));
+        });
+        console.log('HTTP server closed successfully.');
+      }
+
+      if (mongooseInstance && mongooseInstance.connection.readyState !== 0) {
+        await mongooseInstance.connection.close(false);
+        console.log('MongoDB connection closed cleanly.');
+      }
+      return { timedOut: false };
+    } catch (err) {
+      console.error('Error during graceful shutdown:', err);
+      throw err;
+    }
+  };
+
+  try {
+    const outcome = await Promise.race([shutdownActions(), timeoutPromise]);
+    if (timerHandle) clearTimeout(timerHandle);
+
+    if (outcome && outcome.timedOut) {
+      return outcome;
+    }
+
+    if (!timedOut && exitProcess) {
+      process.exit(0);
+    }
+    return outcome;
+  } catch (err) {
+    if (timerHandle) clearTimeout(timerHandle);
+    if (exitProcess) process.exit(1);
+    throw err;
+  }
+}
+
+// Attach process signal listeners in standalone mode
+if (require.main === module && process.env.NODE_ENV !== 'test') {
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+}
 
 // Server startup orchestration with fail-fast database connection
 async function startServer() {
@@ -107,7 +202,7 @@ async function startServer() {
       initRecurringCron();
 
       const PORT = process.env.PORT || 5000;
-      app.listen(PORT, () => {
+      serverInstance = app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
       });
     }
@@ -124,5 +219,11 @@ if (process.env.NODE_ENV !== 'test') {
   startServer();
 }
 
+app.gracefulShutdown = gracefulShutdown;
+app.startServer = startServer;
+app.getServer = () => serverInstance;
+
 module.exports = app;
 module.exports.startServer = startServer;
+module.exports.gracefulShutdown = gracefulShutdown;
+module.exports.getServer = () => serverInstance;
