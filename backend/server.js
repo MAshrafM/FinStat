@@ -79,6 +79,7 @@ app.use('/api/real-estates', require('./routes/realEstates'));
 app.use('/api/categorization-rules', require('./routes/categorizationRules'));
 app.use('/api/recurring-suggestions', require('./routes/recurringSuggestions'));
 app.use('/api/budgets', require('./routes/budgets'));
+app.use('/api/categories', require('./routes/categories'));
 app.use('/api/debt-payoff', require('./routes/debtPayoff'));
 app.use('/api/jobs', require('./routes/jobs'));
 
@@ -96,6 +97,10 @@ async function startServer() {
     await connectDB();
     await verifyTransactionSupport();
     await seedDefaultTaxAndInsurance();
+    const categoriesRouter = require('./routes/categories');
+    if (categoriesRouter.seedSystemCategories) {
+      await categoriesRouter.seedSystemCategories();
+    }
 
     if (require.main === module) {
       const { initRecurringCron } = require('./jobs/recurringJob');
