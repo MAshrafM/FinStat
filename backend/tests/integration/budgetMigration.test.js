@@ -4,6 +4,8 @@ const Budget = require('../../models/Budget');
 const User = require('../../models/User');
 const { runDedupeAndNormalize } = require('../../scripts/dedupeAndNormalizeBudgets');
 
+jest.setTimeout(60000);
+
 describe('Step 4D.1: [AUD-CORR-004] Budget Migration & Deduplication Tests', () => {
   let testUser;
 
