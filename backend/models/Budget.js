@@ -29,11 +29,13 @@ const BudgetSchema = new mongoose.Schema(
       type: Number,
       min: 1,
       max: 12,
+      default: null,
     },
     quarter: {
       type: Number,
       min: 1,
       max: 4,
+      default: null,
     },
     amount: {
       type: Number,
@@ -45,6 +47,10 @@ const BudgetSchema = new mongoose.Schema(
       max: 100,
       default: 80,
     },
+    notes: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -53,7 +59,13 @@ const BudgetSchema = new mongoose.Schema(
 
 BudgetSchema.plugin(softDeletePlugin);
 
-BudgetSchema.index({ user: 1, category: 1, period: 1, year: 1 });
+// Disable automatic index creation to prevent boot-time E11000 race conditions on pre-existing duplicates
+BudgetSchema.set('autoIndex', false);
+
+BudgetSchema.index(
+  { user: 1, category: 1, period: 1, year: 1, month: 1, quarter: 1 },
+  { unique: true, partialFilterExpression: { deletedAt: null } }
+);
 BudgetSchema.index({ user: 1, deletedAt: 1 });
 
 module.exports = mongoose.model('Budget', BudgetSchema);

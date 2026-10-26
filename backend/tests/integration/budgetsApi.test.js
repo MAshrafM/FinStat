@@ -129,4 +129,237 @@ describe('Budgets API Integration Tests', () => {
     expect(updatedGrocery.spentAmount).toBe(950);
     expect(updatedGrocery.alertStatus).toBe('red');
   });
+
+  describe('Step 4D.1: [AUD-CORR-004] Budget Period Conditional Validation & Duplicate Guard', () => {
+    test('POST /api/budgets rejects monthly budget missing month field with HTTP 400', async () => {
+      const res = await request(app)
+        .post('/api/budgets')
+        .set('x-auth-token', userToken)
+        .send({
+          category: 'Dining Out',
+          period: 'monthly',
+          year: 2025,
+          amount: 2500,
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      const errors = res.body.errors || [];
+      expect(errors.some((e) => e.field === 'month' || e.message.includes('Month is required'))).toBe(true);
+    });
+
+    test('POST /api/budgets rejects monthly budget containing forbidden quarter field with HTTP 400', async () => {
+      const res = await request(app)
+        .post('/api/budgets')
+        .set('x-auth-token', userToken)
+        .send({
+          category: 'Dining Out',
+          period: 'monthly',
+          year: 2025,
+          month: 5,
+          quarter: 2,
+          amount: 2500,
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      const errors = res.body.errors || [];
+      expect(errors.some((e) => e.field === 'quarter' || e.message.includes('Quarter must not be set'))).toBe(true);
+    });
+
+    test('POST /api/budgets rejects quarterly budget missing quarter field with HTTP 400', async () => {
+      const res = await request(app)
+        .post('/api/budgets')
+        .set('x-auth-token', userToken)
+        .send({
+          category: 'Healthcare',
+          period: 'quarterly',
+          year: 2025,
+          amount: 6000,
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      const errors = res.body.errors || [];
+      expect(errors.some((e) => e.field === 'quarter' || e.message.includes('Quarter is required'))).toBe(true);
+    });
+
+    test('POST /api/budgets rejects yearly budget containing forbidden month or quarter with HTTP 400', async () => {
+      const res = await request(app)
+        .post('/api/budgets')
+        .set('x-auth-token', userToken)
+        .send({
+          category: 'Insurance',
+          period: 'yearly',
+          year: 2025,
+          month: 1,
+          amount: 15000,
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.success).toBe(false);
+      const errors = res.body.errors || [];
+      expect(errors.some((e) => e.field === 'month' || e.message.includes('Month and quarter must not be set'))).toBe(true);
+    });
+
+    test('POST /api/budgets rejects duplicate active monthly budget with HTTP 409 Conflict', async () => {
+      // First submission succeeds
+      const firstRes = await request(app)
+        .post('/api/budgets')
+        .set('x-auth-token', userToken)
+        .send({
+          category: 'Utilities',
+          period: 'monthly',
+          year: 2025,
+          month: 6,
+          amount: 1200,
+        });
+      expect(firstRes.status).toBe(201);
+
+      // Duplicate submission rejected with HTTP 409
+      const dupRes = await request(app)
+        .post('/api/budgets')
+        .set('x-auth-token', userToken)
+        .send({
+          category: 'Utilities',
+          period: 'monthly',
+          year: 2025,
+          month: 6,
+          amount: 1500,
+        });
+
+      expect(dupRes.status).toBe(409);
+      expect(dupRes.body.success).toBe(false);
+      expect(dupRes.body.message).toMatch(/already exists|conflict/i);
+    });
+
+    test('POST /api/budgets rejects duplicate active yearly budget with HTTP 409 Conflict', async () => {
+      const firstRes = await request(app)
+        .post('/api/budgets')
+        .set('x-auth-token', userToken)
+        .send({
+          category: 'Vacation',
+          period: 'yearly',
+          year: 2025,
+          amount: 30000,
+        });
+      expect(firstRes.status).toBe(201);
+
+      const dupRes = await request(app)
+        .post('/api/budgets')
+        .set('x-auth-token', userToken)
+        .send({
+          category: 'Vacation',
+          period: 'yearly',
+          year: 2025,
+          amount: 35000,
+        });
+
+      expect(dupRes.status).toBe(409);
+      expect(dupRes.body.success).toBe(false);
+      expect(dupRes.body.message).toMatch(/already exists|conflict/i);
+    });
+
+    test('PUT /api/budgets/:id rejects attempts to modify period or year with HTTP 400', async () => {
+      const budget = await Budget.create({
+        user: testUser._id,
+        category: 'Education',
+        period: 'monthly',
+        year: 2025,
+        month: 9,
+        amount: 5000,
+      });
+
+      const putPeriodRes = await request(app)
+        .put(`/api/budgets/${budget._id}`)
+        .set('x-auth-token', userToken)
+        .send({ period: 'yearly' });
+
+      expect(putPeriodRes.status).toBe(400);
+      const periodErrors = putPeriodRes.body.errors || [];
+      expect(
+        /Period and year cannot be modified/i.test(putPeriodRes.body.message || '') ||
+        periodErrors.some((e) => /Period and year cannot be modified/i.test(e.message))
+      ).toBe(true);
+
+      const putYearRes = await request(app)
+        .put(`/api/budgets/${budget._id}`)
+        .set('x-auth-token', userToken)
+        .send({ year: 2026 });
+
+      expect(putYearRes.status).toBe(400);
+      const yearErrors = putYearRes.body.errors || [];
+      expect(
+        /Period and year cannot be modified/i.test(putYearRes.body.message || '') ||
+        yearErrors.some((e) => /Period and year cannot be modified/i.test(e.message))
+      ).toBe(true);
+    });
+
+    test('PUT /api/budgets/:id rejects updating month on a quarterly budget with HTTP 400', async () => {
+      const budget = await Budget.create({
+        user: testUser._id,
+        category: 'Investments',
+        period: 'quarterly',
+        year: 2025,
+        quarter: 1,
+        amount: 10000,
+      });
+
+      const res = await request(app)
+        .put(`/api/budgets/${budget._id}`)
+        .set('x-auth-token', userToken)
+        .send({ month: 3 });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/Month can only be updated on monthly budgets/i);
+    });
+
+    test('PUT /api/budgets/:id rejects updating quarter on a monthly budget with HTTP 400', async () => {
+      const budget = await Budget.create({
+        user: testUser._id,
+        category: 'Fitness',
+        period: 'monthly',
+        year: 2025,
+        month: 2,
+        amount: 800,
+      });
+
+      const res = await request(app)
+        .put(`/api/budgets/${budget._id}`)
+        .set('x-auth-token', userToken)
+        .send({ quarter: 1 });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/Quarter can only be updated on quarterly budgets/i);
+    });
+
+    test('POST /api/budgets allows creating budget when an older one for same period was soft-deleted', async () => {
+      const budget = await Budget.create({
+        user: testUser._id,
+        category: 'Electronics',
+        period: 'monthly',
+        year: 2025,
+        month: 11,
+        amount: 4000,
+      });
+
+      // Soft delete the budget
+      await budget.softDelete();
+
+      // Create new budget for same category/period/year/month
+      const recreateRes = await request(app)
+        .post('/api/budgets')
+        .set('x-auth-token', userToken)
+        .send({
+          category: 'Electronics',
+          period: 'monthly',
+          year: 2025,
+          month: 11,
+          amount: 4500,
+        });
+
+      expect(recreateRes.status).toBe(201);
+      expect(recreateRes.body.amount).toBe(4500);
+    });
+  });
 });

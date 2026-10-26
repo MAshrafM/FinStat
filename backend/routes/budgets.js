@@ -5,7 +5,7 @@ const Budget = require('../models/Budget');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError, ForbiddenError } = require('../utils/errors');
+const { NotFoundError, ForbiddenError, BadRequestError, ConflictError } = require('../utils/errors');
 const {
   createBudgetSchema,
   updateBudgetSchema,
@@ -74,6 +74,20 @@ router.post(
     }
     const body = getValidated(req, 'body');
 
+    // Duplicate guard for active budgets
+    const existingBudget = await Budget.findOne({
+      user: req.effectiveUserId,
+      category: body.category,
+      period: body.period,
+      year: body.year,
+      month: body.period === 'monthly' ? body.month : null,
+      quarter: body.period === 'quarterly' ? body.quarter : null,
+      deletedAt: null,
+    });
+    if (existingBudget) {
+      throw new ConflictError('A budget for this category and period already exists');
+    }
+
     const budget = await Budget.create({
       ...body,
       user: req.effectiveUserId,
@@ -131,6 +145,30 @@ router.put(
 
     if (budget.user.toString() !== req.effectiveUserId.toString()) {
       throw new ForbiddenError('User not authorized');
+    }
+
+    // Cross-field update enforcement against existing budget period
+    if (body.month !== undefined && budget.period !== 'monthly') {
+      throw new BadRequestError('Month can only be updated on monthly budgets');
+    }
+    if (body.quarter !== undefined && budget.period !== 'quarterly') {
+      throw new BadRequestError('Quarter can only be updated on quarterly budgets');
+    }
+
+    // Duplicate collision check against other active budgets
+    const collisionQuery = {
+      _id: { $ne: id },
+      user: req.effectiveUserId,
+      category: body.category || budget.category,
+      period: budget.period,
+      year: budget.year,
+      month: budget.period === 'monthly' ? (body.month !== undefined ? body.month : budget.month) : null,
+      quarter: budget.period === 'quarterly' ? (body.quarter !== undefined ? body.quarter : budget.quarter) : null,
+      deletedAt: null,
+    };
+    const duplicate = await Budget.findOne(collisionQuery);
+    if (duplicate) {
+      throw new ConflictError('A budget for this category and period already exists');
     }
 
     Object.assign(budget, body);
