@@ -1,7 +1,7 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
 const http = require('http');
-const testDb = require('../helpers/testDb');
+const connectDB = require('../../config/db');
 const app = require('../../server');
 const packageJson = require('../../package.json');
 
@@ -9,11 +9,13 @@ jest.setTimeout(60000);
 
 describe('Step 5A.1: [AUD-OPS-003] Health Check & Graceful Shutdown', () => {
   beforeAll(async () => {
-    await testDb.connect();
+    await connectDB();
   });
 
   afterAll(async () => {
-    await testDb.closeDatabase();
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
   });
 
   describe('GET /api/health', () => {
@@ -49,7 +51,7 @@ describe('Step 5A.1: [AUD-OPS-003] Health Check & Graceful Shutdown', () => {
         });
       } finally {
         // Reconnect test database for subsequent tests
-        await testDb.connect();
+        await connectDB();
       }
     });
   });
@@ -75,7 +77,7 @@ describe('Step 5A.1: [AUD-OPS-003] Health Check & Graceful Shutdown', () => {
       expect(mongoose.connection.readyState).toBe(0);
 
       // Reconnect test DB for subsequent teardown
-      await testDb.connect();
+      await connectDB();
     });
 
     it('triggers timeout handling when an operation hangs during shutdown', async () => {
@@ -105,7 +107,7 @@ describe('Step 5A.1: [AUD-OPS-003] Health Check & Graceful Shutdown', () => {
 
       // Ensure test DB is connected
       if (mongoose.connection.readyState === 0) {
-        await testDb.connect();
+        await connectDB();
       }
     });
   });
