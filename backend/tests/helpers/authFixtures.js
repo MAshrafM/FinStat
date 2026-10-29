@@ -1,9 +1,13 @@
+require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../../models/User');
 
 const DEFAULT_TEST_PASSWORD = 'TestPassword123!';
-const TEST_JWT_SECRET = process.env.JWT_SECRET || 'finstat-test-jwt-secret-key-at-least-32-chars-long!';
+
+function getJwtSecret() {
+  return process.env.JWT_SECRET || 'Finstatsonic';
+}
 
 /**
  * Seed a test user with a given role
@@ -37,11 +41,14 @@ async function createTestUser(options = {}) {
  */
 function generateTestToken(user, options = {}) {
   const payload = {
-    userId: user._id || user.id,
-    role: user.role || 'manager',
-    username: user.username,
+    user: {
+      id: user._id ? user._id.toString() : (user.id || user.userId),
+      role: user.role || 'manager',
+      username: user.username,
+      managedBy: user.managedBy ? user.managedBy.toString() : null,
+    },
   };
-  return jwt.sign(payload, TEST_JWT_SECRET, { expiresIn: '1h', ...options });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: '1h', ...options });
 }
 
 /**
@@ -53,10 +60,23 @@ function generateAuthHeader(user) {
   return `Bearer ${generateTestToken(user)}`;
 }
 
+/**
+ * Create a test user and generate their signed token and Authorization header
+ * @param {Object} options
+ * @returns {Promise<{ user: User, token: string, authHeader: string }>}
+ */
+async function createUserWithToken(options = {}) {
+  const user = await createTestUser(options);
+  const token = generateTestToken(user);
+  const authHeader = `Bearer ${token}`;
+  return { user, token, authHeader };
+}
+
 module.exports = {
   DEFAULT_TEST_PASSWORD,
-  TEST_JWT_SECRET,
+  TEST_JWT_SECRET: getJwtSecret(),
   createTestUser,
   generateTestToken,
   generateAuthHeader,
+  createUserWithToken,
 };

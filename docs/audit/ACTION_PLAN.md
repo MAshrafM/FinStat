@@ -133,7 +133,7 @@ graph LR
 | **Phase 4C** | Egyptian Statutory Payroll Compliance | `MF-DEF-006`, `MF-DEF-007` | 1 day | No (Legally Sensitive) | `[x] COMPLETE` |
 | **Phase 4D** | Form & Validation Persistence | `AUD-CORR-004`, `MF-DEF-008`, `MF-DEF-009` | 0.5 days | Yes | `[x] COMPLETE` |
 | **Phase 5A** | Operational Readiness | `AUD-OPS-003`, `AUD-OPS-005` (Full) | 1 day | Yes (with 5B) | `[x] COMPLETE` |
-| **Phase 5B** | Testing Quality & Safety Net | `AUD-TEST-001` (Full), `AUD-TEST-002` | 1.5 days | Yes (with 5A) | `[ ] NOT STARTED` |
+| **Phase 5B** | Testing Quality & Safety Net | `AUD-TEST-001` (Full), `AUD-TEST-002`, `AUD-SEC-010` | 1.5 days | Yes (with 5A) | `[ ] IN PROGRESS` |
 | **Phase 5C** | Performance & Scalability | `AUD-PERF-003`, `AUD-PERF-004`, `AUD-PERF-005`, `GAP-013` | 1.5 days | No | `[ ] NOT STARTED` |
 | **Phase 6A** | Navigation & Page Consolidation | `SIMP-002`, `SIMP-003`, `SIMP-004`, `SIMP-007`, `AUD-ARCH-001` | 1.5 days | Yes (with 6B) | `[ ] NOT STARTED` |
 | **Phase 6B** | Schema & UI Hygiene | `SIMP-008`, `SIMP-009`, `GAP-007`, `GAP-008`, `GAP-010`, `AUD-ARCH-003` | 1.5 days | Yes (with 6A) | `[ ] NOT STARTED` |
@@ -1764,6 +1764,7 @@ cd d:/Projects/FinStat/frontend && npm run build
 | **AUD-SEC-007** | Missing Security Headers (Helmet) & Clickjacking | **Phase 1, Step 1.6** |
 | **AUD-SEC-008** | Excessive 30-Day JWT Access Token Lifetime | **Phase 2A, Step 2A.4** |
 | **AUD-SEC-009** | Missing Rate Limiting on 2FA & Refresh Endpoints | **Phase 1, Step 1.7** |
+| **AUD-SEC-010** | ID Enumeration Oracle (Paycheck PUT/DELETE returns HTTP 403 instead of 404 on Foreign Documents) | **Cataloged in Phase 5B, Step 5B.1a** |
 | **MF-SEC-002** | Asset Sell Multi-Tenant Isolation (IDOR: Phase 2B Assets, Phase 2C Real Estate & Credit Cards) | **Phase 2B, Step 2B.3 & Phase 2C, Step 2C.0** |
 | **MF-SEC-005** | Insecure File Upload & Path Traversal | **Deferred to Cloud Storage Phase** |
 | **MF-SEC-006** | DB Model Import/Export UI & Streaming Endpoint | **Phase 2C, Step 2C.1** |
