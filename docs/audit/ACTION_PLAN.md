@@ -133,7 +133,7 @@ graph LR
 | **Phase 4C** | Egyptian Statutory Payroll Compliance | `MF-DEF-006`, `MF-DEF-007` | 1 day | No (Legally Sensitive) | `[x] COMPLETE` |
 | **Phase 4D** | Form & Validation Persistence | `AUD-CORR-004`, `MF-DEF-008`, `MF-DEF-009` | 0.5 days | Yes | `[x] COMPLETE` |
 | **Phase 5A** | Operational Readiness | `AUD-OPS-003`, `AUD-OPS-005` (Full) | 1 day | Yes (with 5B) | `[x] COMPLETE` |
-| **Phase 5B** | Testing Quality & Safety Net | `AUD-TEST-001` (Full), `AUD-TEST-002`, `AUD-SEC-010` | 1.5 days | Yes (with 5A) | `[ ] IN PROGRESS` |
+| **Phase 5B** | Testing Quality & Safety Net | `AUD-TEST-001` (Full), `AUD-TEST-002`, `AUD-SEC-010` | 1.5 days | Yes (with 5A) | `[x] COMPLETE` |
 | **Phase 5C** | Performance & Scalability | `AUD-PERF-003`, `AUD-PERF-004`, `AUD-PERF-005`, `GAP-013` | 1.5 days | No | `[ ] NOT STARTED` |
 | **Phase 6A** | Navigation & Page Consolidation | `SIMP-002`, `SIMP-003`, `SIMP-004`, `SIMP-007`, `AUD-ARCH-001` | 1.5 days | Yes (with 6B) | `[ ] NOT STARTED` |
 | **Phase 6B** | Schema & UI Hygiene | `SIMP-008`, `SIMP-009`, `GAP-007`, `GAP-008`, `GAP-010`, `AUD-ARCH-003` | 1.5 days | Yes (with 6A) | `[ ] NOT STARTED` |
@@ -1250,9 +1250,9 @@ cd d:/Projects/FinStat/frontend && npm run build
   * Create `backend/tests/certificatesApi.test.js`
 * **File-Count Cap**: 3 files.
 * **Definition of Done (DoD)**:
-  - [ ] Automated tests cover Egyptian statutory payroll, stock position overselling, and certificate yield accrual.
-  - [ ] >80% statement coverage on financial routes.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Automated tests cover Egyptian statutory payroll, stock position overselling, and certificate yield accrual.
+  - [x] >80% statement coverage on financial routes.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1264,16 +1264,16 @@ cd d:/Projects/FinStat/frontend && npm run build
   * Create `frontend/src/pages/salary/PaycheckFormPage.test.js`
 * **File-Count Cap**: 2 files.
 * **Definition of Done (DoD)**:
-  - [ ] React Testing Library tests validate login rendering, route guard redirects, and paycheck form calculation preview.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] React Testing Library tests validate login rendering, route guard redirects, and paycheck form calculation preview.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
 ### Phase 5B Verification Gate
 *(Expected verification timeout: < 120s)*
-- [ ] Backend financial integration test suite passes 100% green.
-- [ ] Frontend test suite executes cleanly without warnings.
-- [ ] **Phase 5B Signed Off**: `[ ] YES` | Date: `__________`
+- [x] Backend financial integration test suite passes 100% green.
+- [x] Frontend test suite executes cleanly without warnings.
+- [x] **Phase 5B Signed Off**: `[x] YES` | Date: `2026-10-29`
 
 ---
 
