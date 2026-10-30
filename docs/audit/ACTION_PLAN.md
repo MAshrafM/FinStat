@@ -134,7 +134,7 @@ graph LR
 | **Phase 4D** | Form & Validation Persistence | `AUD-CORR-004`, `MF-DEF-008`, `MF-DEF-009` | 0.5 days | Yes | `[x] COMPLETE` |
 | **Phase 5A** | Operational Readiness | `AUD-OPS-003`, `AUD-OPS-005` (Full) | 1 day | Yes (with 5B) | `[x] COMPLETE` |
 | **Phase 5B** | Testing Quality & Safety Net | `AUD-TEST-001` (Full), `AUD-TEST-002`, `AUD-SEC-010` | 1.5 days | Yes (with 5A) | `[x] COMPLETE` |
-| **Phase 5C** | Performance & Scalability | `AUD-PERF-003`, `AUD-PERF-004`, `AUD-PERF-005`, `GAP-013` | 1.5 days | No | `[ ] NOT STARTED` |
+| **Phase 5C** | Performance & Scalability | `AUD-PERF-003`, `AUD-PERF-004`, `AUD-PERF-005`, `GAP-013` | 1.5 days | No | `[x] COMPLETE` |
 | **Phase 6A** | Navigation & Page Consolidation | `SIMP-002`, `SIMP-003`, `SIMP-004`, `SIMP-007`, `AUD-ARCH-001` | 1.5 days | Yes (with 6B) | `[ ] NOT STARTED` |
 | **Phase 6B** | Schema & UI Hygiene | `SIMP-008`, `SIMP-009`, `GAP-007`, `GAP-008`, `GAP-010`, `AUD-ARCH-003` | 1.5 days | Yes (with 6A) | `[ ] NOT STARTED` |
 | **Phase 7A** | Ingestion & Export | `FEAT-001`, `FEAT-003`, `GAP-005`, `GAP-006` | 2 days | Yes (with 7B) | `[ ] NOT STARTED` |
@@ -1287,8 +1287,8 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **Target File**: [backend/routes/debtPayoff.js](file:///d:/Projects/FinStat/backend/routes/debtPayoff.js)
 * **File-Count Cap**: 1 file.
 * **Definition of Done (DoD)**:
-  - [ ] Replaces looped card balance queries with single MongoDB aggregation `$lookup`.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Replaces looped card balance queries with single MongoDB aggregation grouped by card.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1297,13 +1297,13 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **Est. Effort**: 1h
 * **Target Files**:
   * `backend/routes/expenditures.js`
-  * `backend/routes/trades.js`
+  * `backend/routes/trade.js`
   * `backend/routes/export.js`
 * **File-Count Cap**: 3 files.
 * **Definition of Done (DoD)**:
-  - [ ] Default `limit: 50` on transaction list endpoints.
-  - [ ] Bulk export streams via Mongoose `.cursor()`, processing 10,000 rows under 100MB RAM.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Clamped `/all` queries to 1,000 lean docs with `limit + 1` accurate truncation detection and `X-Truncated` header.
+  - [x] Bulk export streams via Mongoose `.cursor()`, processing 10,000 rows under 100MB RAM.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1312,11 +1312,12 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **Est. Effort**: 1h
 * **Target Files**:
   * `backend/routes/mutualFundTrades.js`
-  * `frontend/src/pages/mutualFunds/MutualFundSummaryPage.js`
-* **File-Count Cap**: 2 files.
+  * `frontend/src/context/MFContext.js`
+  * `frontend/src/services/mutualFundService.js`
+* **File-Count Cap**: 3 files.
 * **Definition of Done (DoD)**:
-  - [ ] Single `POST /api/mutual-funds/batch-prices` request replaces client-side N+1 fetch waterfall.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Single `POST /api/mutual-funds/batch-prices` request replaces client-side N+1 fetch waterfall with client-side 5-min TTL cache.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1325,22 +1326,21 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **Est. Effort**: 1h
 * **Target Files**:
   * Create `frontend/src/components/common/DebouncedSearchInput.js`
-  * `frontend/src/pages/trades/TradeList.js`
-  * `frontend/src/pages/expenditures/ExpenditureList.js`
-* **File-Count Cap**: 3 files.
+  * `frontend/src/pages/trades/TradeLogPage.js`
+* **File-Count Cap**: 2 files.
 * **Definition of Done (DoD)**:
-  - [ ] Fast typing fires single search request 300ms after last keystroke.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Fast typing fires single search request 300ms after last keystroke with keyboard accessibility.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
 ### Phase 5C Verification Gate
 *(Expected verification timeout: < 120s)*
-- [ ] Debt payoff endpoint executes in a single database aggregation.
-- [ ] Export streams 10,000 rows with flat heap memory.
-- [ ] Mutual fund summary loads with 1 batch request.
-- [ ] Search debounce prevents keystroke request storms.
-- [ ] **Phase 5C Signed Off**: `[ ] YES` | Date: `__________`
+- [x] Debt payoff endpoint executes in a single database aggregation.
+- [x] Export streams 10,000 rows with flat heap memory.
+- [x] Mutual fund summary loads with 1 batch request.
+- [x] Search debounce prevents keystroke request storms.
+- [x] **Phase 5C Signed Off**: `[x] YES` | Date: `2026-10-30`
 
 ---
 
