@@ -1,7 +1,7 @@
 // frontend/src/context/MFContext.js
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 // Service
-import { getMutualFundSummary, getLastPrice } from '../services/mutualFundService';
+import { getMutualFundSummary, getLastPrice, getBatchLastPrices } from '../services/mutualFundService';
 // Helpers
 import { safePercentage } from '../utils/helper'; // Import any helper functions you need 
 // 1. Create the Context
@@ -10,6 +10,14 @@ const MFContext = createContext();
 export const useMFData = () => {
     return useContext(MFContext);
 };
+// Client-side cache store with 5-minute TTL
+const priceCache = new Map();
+const CLIENT_CACHE_TTL_MS = 5 * 60 * 1000;
+
+export const __resetPriceCacheForTests = () => {
+    priceCache.clear();
+};
+
 // 3. Create the Provider Component
 export const MFProvider = ({ children }) => {
     const [mfSummaryData, setMfSummaryData] = useState([]);
@@ -19,42 +27,57 @@ export const MFProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Recent Prices
-    const loadLastPrice = useCallback(async (fundName) => {
-        if (!fundName || fundName.length === 0) {
+    // Recent Prices with 5-minute client-side TTL cache
+    const loadLastPrice = useCallback(async (fundNames, forceRefresh = false) => {
+        if (!fundNames || fundNames.length === 0) {
             return [];
         }
+
+        const now = Date.now();
+        const missingNames = [];
+        const cachedPrices = [];
+
+        if (!forceRefresh) {
+            for (const name of fundNames) {
+                const cached = priceCache.get(name);
+                if (cached && (now - cached.timestamp < CLIENT_CACHE_TTL_MS)) {
+                    cachedPrices.push({ name, lastPrice: cached.lastPrice });
+                } else {
+                    missingNames.push(name);
+                }
+            }
+        } else {
+            missingNames.push(...fundNames);
+        }
+
+        if (missingNames.length === 0) {
+            setLastPriceData(cachedPrices);
+            return cachedPrices;
+        }
+
         try {
-            const lastprices = await Promise.all(fundName.map( async (name) => {
-                if (!name) {
-                    console.warn("Empty fund name provided, skipping...");
-                    return { name: name || 'unknown' , lastPrice: 0 }; // Default to 0 if no name provided
-                }
+            const res = await getBatchLastPrices(missingNames, { forceRefresh });
+            const fetchedPrices = res?.prices || [];
 
-                try {
-                    const data = await getLastPrice(name);
-                    if (!data || !data.rows || !Array.isArray(data.rows)) {
-                        console.warn(`No data found for fund: ${name}`);
-                        return { name, lastPrice: 0 }; // Default to 0 if no data found
-                    }
+            fetchedPrices.forEach((p) => {
+                priceCache.set(p.name, { lastPrice: p.lastPrice, timestamp: now });
+            });
 
-                    let fName = data.rows.find(f => f.name === name);
-                    if (!fName) {
-                        console.warn(`No data found for fund: ${name}`);
-                        return { name, lastPrice: 0 }; // Default to 0 if no data found
-                    }
-                    return { name, lastPrice: fName.price || 0 }; // Default to 0 if no price found
-                } catch (error) {
-                    console.error(`Error fetching last price for ${name}:`, error);
-                    return { name, lastPrice: 0 }; // Default to 0 if error occurs
-                }
-            }));
-            setLastPriceData(lastprices);
-            return lastprices;
+            const combined = [
+                ...cachedPrices,
+                ...fetchedPrices.map((p) => ({ name: p.name, lastPrice: p.lastPrice })),
+            ];
+            setLastPriceData(combined);
+            return combined;
         } catch (error) {
-            console.error("Error loading last prices:", error);
-            setLastPriceData([]);
-            return [];
+            console.error("Error loading batch last prices:", error);
+            // Serve stale cache on failure
+            const fallback = fundNames.map((name) => {
+                const stale = priceCache.get(name);
+                return { name, lastPrice: stale?.lastPrice || 0 };
+            });
+            setLastPriceData(fallback);
+            return fallback;
         }
     }, []);
 
@@ -96,7 +119,7 @@ export const MFProvider = ({ children }) => {
                 .filter(item => item && item._id && item._id.name)
                 .map(item => item._id.name);
             
-            const newPrices = await loadLastPrice(fundNames);
+            const newPrices = await loadLastPrice(fundNames, true);
             
             // Recalculate totals with new prices
             if (newPrices && newPrices.length > 0) {

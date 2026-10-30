@@ -21,6 +21,9 @@ export const getMutualFundSummary = (options = {}) =>
 export const getLastPrice = (fundName, options = {}) =>
   apiClient.get(`${API_URL}/last-price?name=${encodeURIComponent(fundName)}`, options);
 
+export const getBatchLastPrices = (names, options = {}) =>
+  apiClient.post(`${API_URL}/batch-prices`, { names, forceRefresh: options.forceRefresh || false }, options);
+
 export const getTradeById = (id, options = {}) =>
   apiClient.get(`${API_URL}/${id}`, options);
 

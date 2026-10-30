@@ -61,6 +61,38 @@ router.get('/last-price', auth, asyncHandler(async (req, res) => {
   res.json(result.data);
 }));
 
+// @route   POST api/mutual-funds/batch-prices
+// @desc    Get latest prices for multiple mutual funds in a single round-trip (max 50)
+router.post('/batch-prices', auth, asyncHandler(async (req, res) => {
+  const { names, forceRefresh = false } = req.body || {};
+  if (!Array.isArray(names) || names.length === 0) {
+    return res.json({ prices: [] });
+  }
+
+  const uniqueNames = [...new Set(names.filter((n) => typeof n === 'string' && n.trim().length > 0))].slice(0, 50);
+
+  const prices = await Promise.all(
+    uniqueNames.map(async (name) => {
+      try {
+        const result = await marketPriceService.getFundPrice(name, { forceRefresh });
+        const rows = result?.data?.rows;
+        const matchedRow = Array.isArray(rows) ? rows.find((r) => r.name === name) : null;
+        return {
+          name,
+          lastPrice: matchedRow?.price || 0,
+          isLive: result.isLive ?? false,
+          isStale: result.isStale ?? true,
+          source: result.source || 'cache',
+        };
+      } catch (err) {
+        return { name, lastPrice: 0, isLive: false, isStale: true, source: 'error' };
+      }
+    })
+  );
+
+  res.json({ prices });
+}));
+
 // @route   POST api/mutual-funds
 // @desc    Create a new trade
 router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
