@@ -135,7 +135,7 @@ graph LR
 | **Phase 5A** | Operational Readiness | `AUD-OPS-003`, `AUD-OPS-005` (Full) | 1 day | Yes (with 5B) | `[x] COMPLETE` |
 | **Phase 5B** | Testing Quality & Safety Net | `AUD-TEST-001` (Full), `AUD-TEST-002`, `AUD-SEC-010` | 1.5 days | Yes (with 5A) | `[x] COMPLETE` |
 | **Phase 5C** | Performance & Scalability | `AUD-PERF-003`, `AUD-PERF-004`, `AUD-PERF-005`, `GAP-013` | 1.5 days | No | `[x] COMPLETE` |
-| **Phase 6A** | Navigation & Page Consolidation | `SIMP-002`, `SIMP-003`, `SIMP-004`, `SIMP-007`, `AUD-ARCH-001` | 1.5 days | Yes (with 6B) | `[ ] NOT STARTED` |
+| **Phase 6A** | Navigation & Page Consolidation | `SIMP-002`, `SIMP-003`, `SIMP-004`, `SIMP-007`, `AUD-ARCH-001` | 1.5 days | Yes (with 6B) | `[x] COMPLETE` |
 | **Phase 6B** | Schema & UI Hygiene | `SIMP-008`, `SIMP-009`, `GAP-007`, `GAP-008`, `GAP-010`, `AUD-ARCH-003` | 1.5 days | Yes (with 6A) | `[ ] NOT STARTED` |
 | **Phase 7A** | Ingestion & Export | `FEAT-001`, `FEAT-003`, `GAP-005`, `GAP-006` | 2 days | Yes (with 7B) | `[ ] NOT STARTED` |
 | **Phase 7B** | Financial Bridges | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003` | 2 days | Yes (with 7A) | `[ ] NOT STARTED` |
@@ -1358,8 +1358,8 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 3 files.
 * **Actions**: Mount `DashboardSummary` on `/dashboard` with top Quick Actions bar; deprecate empty 15-button launcher.
 * **Definition of Done (DoD)**:
-  - [ ] Login immediately displays financial summary metrics.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Login immediately displays financial summary metrics.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1370,8 +1370,8 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 1 file.
 * **Actions**: Group flat links into 5 collapsible categories: *Overview*, *Income & Payroll*, *Daily Spending*, *Investments & Wealth*, and *System & Settings*.
 * **Definition of Done (DoD)**:
-  - [ ] Sidebar requires zero vertical scrolling on standard desktop resolution.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Sidebar requires zero vertical scrolling on standard desktop resolution.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1384,8 +1384,8 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 3 files.
 * **Actions**: Merge twin files into single toggle view `[ Calendar Year | Fiscal Year ]`.
 * **Definition of Done (DoD)**:
-  - [ ] Analytics switch dynamically between Jan–Dec and Jul–Jun without page reload.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Analytics switch dynamically between Jan–Dec and Jul–Jun without page reload.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1397,18 +1397,18 @@ cd d:/Projects/FinStat/frontend && npm run build
   * Deprecate `frontend/src/pages/insurance/SocialInsurancePage.js`
 * **File-Count Cap**: 3 files.
 * **Definition of Done (DoD)**:
-  - [ ] Tabbed view renders tax brackets and social insurance rules in unified hub.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Tabbed view renders tax brackets and social insurance rules in unified hub.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
 ### Phase 6A Verification Gate
 *(Expected verification timeout: < 120s)*
-- [ ] User lands directly on summary metrics upon login.
-- [ ] Sidebar organized into 5 hubs without vertical scrolling.
-- [ ] Calendar and Fiscal analysis switch dynamically in a single toggle view.
-- [ ] Single Payroll Rules Hub renders both statutory rules.
-- [ ] **Phase 6A Signed Off**: `[ ] YES` | Date: `__________`
+- [x] User lands directly on summary metrics upon login.
+- [x] Sidebar organized into 5 hubs without vertical scrolling.
+- [x] Calendar and Fiscal analysis switch dynamically in a single toggle view.
+- [x] Single Payroll Rules Hub renders both statutory rules.
+- [x] **Phase 6A Signed Off**: `[x] YES` | Date: `2026-10-30`
 
 ---
 
