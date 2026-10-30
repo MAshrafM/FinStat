@@ -130,3 +130,4 @@ describe('Bulk Export Streaming Behavior Tests [AUD-PERF-004]', () => {
     expect(res.body.error).toContain('Export exceeds maximum limit of 10000 rows (found 10001)');
   });
 });
+

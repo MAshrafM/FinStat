@@ -98,3 +98,4 @@ describe('DebouncedSearchInput Component Tests [GAP-013]', () => {
     expect(onChange).toHaveBeenCalledWith('');
   });
 });
+

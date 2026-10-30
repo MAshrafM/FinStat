@@ -79,3 +79,4 @@ const DebouncedSearchInput = ({
 };
 
 export default DebouncedSearchInput;
+
