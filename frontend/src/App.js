@@ -11,7 +11,6 @@ import './components/Table.css';
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Portfolio = React.lazy(() => import('./pages/portfolio/PortfolioDashboard'));
-const Summary = React.lazy(() => import('./pages/DashboardSummary'));
 
 // User Profile
 const ProfilePage = React.lazy(() => import('./pages/profile/ProfilePage'));
@@ -29,13 +28,9 @@ const UpdateSalary = React.lazy(() => import('./pages/salary/UpdateSalary'));
 
 // Pay Analysis
 const PayrollAnalyticsPage = React.lazy(() => import('./pages/analysis/PayrollAnalyticsPage'));
-const CalendarAnalysis = React.lazy(() => import('./pages/analysis/CalendarAnalysis'));
-const FiscalAnalysis = React.lazy(() => import('./pages/analysis/FiscalAnalysis'));
 
 // Social Insurance & Taxes (User & Admin)
 const PayrollRulesHub = React.lazy(() => import('./pages/salary/PayrollRulesHub'));
-const SocialInsurancePage = React.lazy(() => import('./pages/insurance/SocialInsurancePage'));
-const TaxesPage = React.lazy(() => import('./pages/taxes/TaxesPage'));
 const TaxConfigPage = React.lazy(() => import('./pages/admin/TaxConfigPage'));
 const InsuranceConfigPage = React.lazy(() => import('./pages/admin/InsuranceConfigPage'));
 const BackupPage = React.lazy(() => import('./pages/admin/BackupPage'));
