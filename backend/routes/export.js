@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
+
+const MAX_EXPORT_ROWS = parseInt(process.env.MAX_EXPORT_ROWS, 10) || 10000;
 const auth = require('../middleware/auth');
 const Expenditure = require('../models/Expenditure');
 const Trade = require('../models/Trade');
@@ -56,9 +58,9 @@ router.get('/expenditures', auth, exportRateLimiter, async (req, res) => {
     }
 
     const count = await Expenditure.countDocuments(query);
-    if (count > 5000) {
+    if (count > MAX_EXPORT_ROWS) {
       return res.status(400).json({
-        error: `Export exceeds maximum limit of 5000 rows (found ${count}). Please narrow your query filter.`,
+        error: `Export exceeds maximum limit of ${MAX_EXPORT_ROWS} rows (found ${count}). Please narrow your query filter.`,
       });
     }
 
@@ -132,9 +134,9 @@ router.get('/trades', auth, exportRateLimiter, async (req, res) => {
     }
 
     const count = await Trade.countDocuments(query);
-    if (count > 5000) {
+    if (count > MAX_EXPORT_ROWS) {
       return res.status(400).json({
-        error: `Export exceeds maximum limit of 5000 rows (found ${count}). Please narrow your query filter.`,
+        error: `Export exceeds maximum limit of ${MAX_EXPORT_ROWS} rows (found ${count}). Please narrow your query filter.`,
       });
     }
 

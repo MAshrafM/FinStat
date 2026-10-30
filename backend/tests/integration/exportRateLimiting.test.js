@@ -191,13 +191,13 @@ describe('Bulk Export Rate Limiting & Row Cap Tests [MF-SEC-008]', () => {
     expect(lines[1]).toContain('COMI');
   });
 
-  test('rejects queries exceeding 5,000 rows with 400 Bad Request [MF-SEC-008]', async () => {
-    mockCountDocumentsOverride = 5001;
+  test('rejects queries exceeding 10,000 rows with 400 Bad Request [MF-SEC-008]', async () => {
+    mockCountDocumentsOverride = 10001;
 
     const res = await request(app).get('/api/export/expenditures');
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toContain('Export exceeds maximum limit of 5000 rows (found 5001)');
+    expect(res.body.error).toContain('Export exceeds maximum limit of 10000 rows (found 10001)');
   });
 
   test('enforces rate limiting: 6th request within window returns 429 Too Many Requests', async () => {

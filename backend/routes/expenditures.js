@@ -39,10 +39,18 @@ router.get('/recurring', auth, asyncHandler(async (req, res) => {
 }));
 
 // @route   GET api/expenditures/all
-// @desc    Get ALL non-deleted expenditure without pagination (for analysis pages)
+// @desc    Get ALL non-deleted expenditure without pagination (clamped to 1000 lean docs)
 router.get('/all', auth, asyncHandler(async (req, res) => {
-  const expenditures = await Expenditure.find({ user: req.effectiveUserId, deletedAt: null }).sort({ date: -1, _id: -1 });
-  res.json(expenditures);
+  const requestedLimit = parseInt(req.query.limit, 10);
+  const limit = Number.isFinite(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, 1000) : 1000;
+  const raw = await Expenditure.find({ user: req.effectiveUserId, deletedAt: null })
+    .sort({ date: -1, _id: -1 })
+    .limit(limit + 1)
+    .lean();
+  const truncated = raw.length > limit;
+  if (truncated) raw.pop();
+  res.setHeader('X-Truncated', truncated ? 'true' : 'false');
+  res.json(raw);
 }));
 
 // @route   GET api/expenditures/latest

@@ -258,6 +258,9 @@ describe('Step 5B.1a: [AUD-TEST-001] Paychecks API Integration Tests', () => {
   });
 
   describe('4. Retrieval & Listing (GET /api/paychecks, /all, /:id)', () => {
+    // /all contract: deferred from 5C (AUD-PERF-004 followup — see CHANGELOG [Phase 5C]).
+    // Maximum lifetime volume per user ~480 rows, below the 1,000 clamp threshold.
+    // Tracked as CHANGELOG item 5C-followup-paychecks-all.
     it('returns unpaginated paychecks for current user via GET /api/paychecks/all', async () => {
       await request(app)
         .post('/api/paychecks')
