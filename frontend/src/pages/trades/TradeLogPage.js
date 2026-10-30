@@ -6,6 +6,7 @@ import { formatDate, formatCurrency } from '../../utils/formatters';
 import { FaEdit, FaTrash, FaPlus, FaBolt } from 'react-icons/fa';
 import PaginationControls from '../../components/PaginationControls';
 import ProtectedAction from '../../components/common/ProtectedAction';
+import DebouncedSearchInput from '../../components/common/DebouncedSearchInput';
 import '../../components/Table.css';
 import './Trades.css';
 
@@ -107,12 +108,15 @@ const TradeLogPage = () => {
         <button onClick={() => handleFilterClick('EFG')} className={brokerFilter === 'EFG' ? 'active' : ''}>EFG</button>
         <button onClick={() => handleFilterClick('Telda')} className={brokerFilter === 'Telda' ? 'active' : ''}>Telda</button>
         <button onClick={() => handleFilterClick('TopUp')} className={brokerFilter === 'TopUp' ? 'active' : ''}>Top Ups</button>
-        <input
-          type="text"
-          placeholder="Search Stock Code..."
+        <DebouncedSearchInput
           value={searchTerm}
-          onChange={handleSearchChange}
+          onChange={(val) => {
+            setSearchTerm(val);
+            setCurrentPage(1);
+          }}
+          placeholder="Search Stock Code..."
           className="search-input"
+          ariaLabel="Search Stock Code"
         />
       </div>
 
