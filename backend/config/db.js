@@ -30,7 +30,9 @@ const connectDB = async () => {
       maxPoolSize: parsePoolSize(process.env.MONGO_MAX_POOL_SIZE),
     };
 
-    cached.promise = mongoose.connect(process.env.MONGO_URI, opts).then((mongooseInstance) => {
+    const uri = process.env.MONGO_URI || (process.env.NODE_ENV === 'test' ? 'mongodb://127.0.0.1:27017/finstat_test' : undefined);
+
+    cached.promise = mongoose.connect(uri, opts).then((mongooseInstance) => {
       console.log('MongoDB Connected...');
       return mongooseInstance;
     });
