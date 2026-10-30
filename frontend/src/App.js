@@ -28,6 +28,7 @@ const EditHistoryRecord = React.lazy(() => import('./pages/salary/EditHistoryRec
 const UpdateSalary = React.lazy(() => import('./pages/salary/UpdateSalary'));
 
 // Pay Analysis
+const PayrollAnalyticsPage = React.lazy(() => import('./pages/analysis/PayrollAnalyticsPage'));
 const CalendarAnalysis = React.lazy(() => import('./pages/analysis/CalendarAnalysis'));
 const FiscalAnalysis = React.lazy(() => import('./pages/analysis/FiscalAnalysis'));
 
@@ -140,8 +141,9 @@ function App() {
                 <Route path="/salary/paychecks/edit/:id" element={<PaycheckFormPage />} />
 
                 {/* Analytics */}
-                <Route path="/analysis/calendar" element={<CalendarAnalysis />} />
-                <Route path="/analysis/fiscal" element={<FiscalAnalysis />} />
+                <Route path="/analysis/payroll" element={<PayrollAnalyticsPage />} />
+                <Route path="/analysis/calendar" element={<Navigate to="/analysis/payroll?cycle=calendar" replace />} />
+                <Route path="/analysis/fiscal" element={<Navigate to="/analysis/payroll?cycle=fiscal" replace />} />
 
                 {/* Social Insurance & Taxes */}
                 <Route path="/social-insurance" element={<SocialInsurancePage />} />
