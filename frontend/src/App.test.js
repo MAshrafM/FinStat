@@ -15,6 +15,8 @@ jest.mock('./pages/admin/AdminDashboard', () => () => <div data-testid="admin-da
 jest.mock('./pages/salary/SalaryProfilePage', () => () => <div data-testid="salary-profiles-page">Salary Profiles Page</div>);
 jest.mock('./pages/paycheck/PaycheckLog', () => () => <div data-testid="paycheck-log-page">Paycheck Log Page</div>);
 jest.mock('./pages/trades/AddTradePage', () => () => <div data-testid="add-trade-page">Add Trade Page</div>);
+jest.mock('./pages/analysis/PayrollAnalyticsPage', () => () => <div data-testid="payroll-analytics-page">Payroll Analytics Page</div>);
+jest.mock('./pages/salary/PayrollRulesHub', () => () => <div data-testid="payroll-rules-hub">Payroll Rules Hub</div>);
 
 describe('Step 5B.2: [AUD-TEST-002] Frontend App Route Guards & Role Access Controls', () => {
   beforeEach(() => {
@@ -141,5 +143,53 @@ describe('Step 5B.2: [AUD-TEST-002] Frontend App Route Guards & Role Access Cont
     await waitFor(() => {
       expect(screen.getByTestId('paycheck-log-page')).toBeInTheDocument();
     });
+  });
+
+  it('9. executes Phase 6A legacy redirects (/summary -> /dashboard, /analysis/calendar & /analysis/fiscal -> /analysis/payroll, /taxes & /social-insurance -> /salary/rules)', async () => {
+    seedAuth('manager');
+
+    // 1. /summary -> /dashboard
+    window.history.pushState({}, '', '/summary');
+    const r1 = render(<App />);
+    await waitFor(() => {
+      expect(screen.getByTestId('dashboard-page')).toBeInTheDocument();
+    });
+    r1.unmount();
+
+    // 2. /analysis/calendar -> /analysis/payroll?cycle=calendar
+    window.history.pushState({}, '', '/analysis/calendar');
+    const r2 = render(<App />);
+    await waitFor(() => {
+      expect(screen.getByTestId('payroll-analytics-page')).toBeInTheDocument();
+    });
+    expect(window.location.search).toContain('cycle=calendar');
+    r2.unmount();
+
+    // 3. /analysis/fiscal -> /analysis/payroll?cycle=fiscal
+    window.history.pushState({}, '', '/analysis/fiscal');
+    const r3 = render(<App />);
+    await waitFor(() => {
+      expect(screen.getByTestId('payroll-analytics-page')).toBeInTheDocument();
+    });
+    expect(window.location.search).toContain('cycle=fiscal');
+    r3.unmount();
+
+    // 4. /taxes -> /salary/rules?tab=taxes
+    window.history.pushState({}, '', '/taxes');
+    const r4 = render(<App />);
+    await waitFor(() => {
+      expect(screen.getByTestId('payroll-rules-hub')).toBeInTheDocument();
+    });
+    expect(window.location.search).toContain('tab=taxes');
+    r4.unmount();
+
+    // 5. /social-insurance -> /salary/rules?tab=insurance
+    window.history.pushState({}, '', '/social-insurance');
+    const r5 = render(<App />);
+    await waitFor(() => {
+      expect(screen.getByTestId('payroll-rules-hub')).toBeInTheDocument();
+    });
+    expect(window.location.search).toContain('tab=insurance');
+    r5.unmount();
   });
 });
