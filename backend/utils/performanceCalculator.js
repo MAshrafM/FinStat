@@ -169,10 +169,10 @@ function calculateXIRR(cashFlows, initialGuess = 0.1) {
     };
   }
 
-  const roundedXirr = Number((rate * 100).toFixed(2));
+  const roundedXirr = Number((rate * 100).toFixed(2)) + 0;
   return {
-    xirr: roundedXirr,
-    rate,
+    xirr: roundedXirr === 0 ? 0 : roundedXirr,
+    rate: rate === 0 ? 0 : rate,
     message: null,
   };
 }
@@ -194,11 +194,16 @@ function calculateROI(totalInvested, currentValue, realizedPnL = 0) {
   const totalGain = unrealizedPnL + realized;
   const roi = invested > 0 ? (totalGain / invested) * 100 : 0;
 
+  const roiVal = Number(roi.toFixed(2)) + 0;
+  const totalGainVal = Number(totalGain.toFixed(2)) + 0;
+  const unrealizedPnLVal = Number(unrealizedPnL.toFixed(2)) + 0;
+  const realizedPnLVal = Number(realized.toFixed(2)) + 0;
+
   return {
-    roi: Number(roi.toFixed(2)),
-    totalGain: Number(totalGain.toFixed(2)),
-    unrealizedPnL: Number(unrealizedPnL.toFixed(2)),
-    realizedPnL: Number(realized.toFixed(2)),
+    roi: roiVal === 0 ? 0 : roiVal,
+    totalGain: totalGainVal === 0 ? 0 : totalGainVal,
+    unrealizedPnL: unrealizedPnLVal === 0 ? 0 : unrealizedPnLVal,
+    realizedPnL: realizedPnLVal === 0 ? 0 : realizedPnLVal,
   };
 }
 
