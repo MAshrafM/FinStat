@@ -80,6 +80,8 @@ describe('Auth Hardening & Scalability Suite', () => {
     });
 
     it('should rotate refresh token and issue new access token on POST /refresh', async () => {
+      // Ensure JWT iat advances to the next second
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const res = await request(app)
         .post('/api/auth/refresh')
         .set('Cookie', [refreshTokenCookie]);
@@ -135,10 +137,12 @@ describe('Auth Hardening & Scalability Suite', () => {
 
       expect(res.statusCode).toBe(401);
 
-      // Wait 100ms for async audit logger
-      await new Promise((r) => setTimeout(r, 150));
-
-      const audit = await LoginAudit.findOne({ attemptedUsername: 'test_auth_user', success: false });
+      let audit = null;
+      for (let i = 0; i < 20; i++) {
+        audit = await LoginAudit.findOne({ attemptedUsername: 'test_auth_user', success: false });
+        if (audit) break;
+        await new Promise((r) => setTimeout(r, 100));
+      }
       expect(audit).toBeDefined();
       expect(audit.attemptedUsername).toBe('test_auth_user');
       expect(audit.success).toBe(false);
@@ -151,9 +155,12 @@ describe('Auth Hardening & Scalability Suite', () => {
 
       expect(res.statusCode).toBe(401);
 
-      await new Promise((r) => setTimeout(r, 150));
-
-      const audit = await LoginAudit.findOne({ attemptedUsername: 'unknown_ghost_user' });
+      let audit = null;
+      for (let i = 0; i < 20; i++) {
+        audit = await LoginAudit.findOne({ attemptedUsername: 'unknown_ghost_user' });
+        if (audit) break;
+        await new Promise((r) => setTimeout(r, 100));
+      }
       expect(audit).toBeDefined();
       expect(audit.userId).toBeNull();
       expect(audit.attemptedUsername).toBe('unknown_ghost_user');

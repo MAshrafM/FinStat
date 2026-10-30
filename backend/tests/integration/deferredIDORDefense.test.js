@@ -1,6 +1,7 @@
 // backend/tests/integration/deferredIDORDefense.test.js
 const request = require('supertest');
 const express = require('express');
+const mongoose = require('mongoose');
 
 const RealEstate = require('../../models/RealEstate');
 const CreditCard = require('../../models/CreditCard');
@@ -53,6 +54,14 @@ describe('Deferred IDOR Defense Tests [MF-SEC-002]', () => {
     jest.clearAllMocks();
     mockCurrentUserId = userBId; // Default to User B
     app = createTestApp();
+
+    const mockSession = {
+      withTransaction: jest.fn(async (callback) => {
+        return await callback();
+      }),
+      endSession: jest.fn().mockResolvedValue(true),
+    };
+    jest.spyOn(mongoose, 'startSession').mockResolvedValue(mockSession);
   });
 
   describe('Real Estate Routes (PUT /:id, DELETE /:id)', () => {
@@ -62,17 +71,12 @@ describe('Deferred IDOR Defense Tests [MF-SEC-002]', () => {
         if (query.user && query.user.toString() === userBId) {
           return Promise.resolve(null);
         }
-        // If un-scoped query without user (legacy bug), return user A's doc
-        return Promise.resolve({
-          _id: targetId,
-          user: userAId,
-          name: 'Apartment A',
-        });
+        return Promise.resolve({ _id: targetId, user: userAId });
       });
 
       const res = await request(app)
         .put(`/api/real-estates/${targetId}`)
-        .send({ name: 'Hacked Apartment' });
+        .send({ name: 'Hacked Property' });
 
       expect(res.status).toBe(404);
       expect(res.body.msg || res.body.message).toContain('Property not found');
@@ -83,11 +87,7 @@ describe('Deferred IDOR Defense Tests [MF-SEC-002]', () => {
         if (query.user && query.user.toString() === userBId) {
           return Promise.resolve(null);
         }
-        return Promise.resolve({
-          _id: targetId,
-          user: userAId,
-          softDelete: jest.fn(),
-        });
+        return Promise.resolve({ _id: targetId, user: userAId, softDelete: jest.fn() });
       });
 
       const res = await request(app).delete(`/api/real-estates/${targetId}`);
@@ -103,16 +103,12 @@ describe('Deferred IDOR Defense Tests [MF-SEC-002]', () => {
         if (query.user && query.user.toString() === userBId) {
           return Promise.resolve(null);
         }
-        return Promise.resolve({
-          _id: targetId,
-          user: userAId,
-          cardName: 'Gold Card',
-        });
+        return Promise.resolve({ _id: targetId, user: userAId });
       });
 
       const res = await request(app)
         .put(`/api/credit-cards/cards/${targetId}`)
-        .send({ name: 'Renamed Card' });
+        .send({ name: 'Hacked Card Name' });
 
       expect(res.status).toBe(404);
       expect(res.body.msg || res.body.message).toContain('Card not found');
@@ -123,11 +119,7 @@ describe('Deferred IDOR Defense Tests [MF-SEC-002]', () => {
         if (query.user && query.user.toString() === userBId) {
           return Promise.resolve(null);
         }
-        return Promise.resolve({
-          _id: targetId,
-          user: userAId,
-          softDelete: jest.fn(),
-        });
+        return Promise.resolve({ _id: targetId, user: userAId, softDelete: jest.fn() });
       });
 
       const res = await request(app).delete(`/api/credit-cards/cards/${targetId}`);
@@ -212,12 +204,11 @@ describe('Deferred IDOR Defense Tests [MF-SEC-002]', () => {
     });
 
     it('returns 404 (not 403) when User B pays User A transaction in full', async () => {
-      CardTransaction.findOne.mockImplementation((query) => {
-        if (query.user && query.user.toString() === userBId) {
+      CardTransaction.findOne.mockImplementation(() => ({
+        session: jest.fn().mockImplementation(() => {
           return Promise.resolve(null);
-        }
-        return Promise.resolve({ _id: targetId, user: userAId });
-      });
+        }),
+      }));
 
       const res = await request(app)
         .post('/api/credit-cards/payments/full')
@@ -228,12 +219,11 @@ describe('Deferred IDOR Defense Tests [MF-SEC-002]', () => {
     });
 
     it('returns 404 (not 403) when User B makes partial payment on User A transaction', async () => {
-      CardTransaction.findOne.mockImplementation((query) => {
-        if (query.user && query.user.toString() === userBId) {
+      CardTransaction.findOne.mockImplementation(() => ({
+        session: jest.fn().mockImplementation(() => {
           return Promise.resolve(null);
-        }
-        return Promise.resolve({ _id: targetId, user: userAId });
-      });
+        }),
+      }));
 
       const res = await request(app)
         .post('/api/credit-cards/payments/partial')

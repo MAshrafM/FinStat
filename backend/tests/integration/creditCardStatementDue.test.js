@@ -50,10 +50,15 @@ describe('Step 4A.1: [AUD-CORR-001] Credit Card Statement Due & Interest Calcula
 
   it('should return numeric interestOnUnpaid and amountDueThisMonth instead of NaN when unpaidBeforeCycle > 0', async () => {
     const now = new Date();
-    // Prior cycle date (before cycleStart)
-    const priorDate = new Date(now.getFullYear(), now.getMonth() - 2, 10);
-    // Current cycle date
-    const currentDate = new Date(now.getFullYear(), now.getMonth(), 10);
+    const billingDay = card.billingCycleDay;
+    let cycleStart = new Date(now.getFullYear(), now.getMonth(), billingDay);
+    if (now.getDate() < billingDay) {
+      cycleStart.setMonth(cycleStart.getMonth() - 1);
+    }
+    // Prior cycle date (strictly before cycleStart)
+    const priorDate = new Date(cycleStart.getTime() - 15 * 24 * 60 * 60 * 1000);
+    // Current cycle date (strictly inside [cycleStart, cycleEnd))
+    const currentDate = new Date(cycleStart.getTime() + 24 * 60 * 60 * 1000);
 
     // 1. Previous unpaid transaction from prior cycle: 5,000 EGP
     await CardTransaction.create({
@@ -122,7 +127,12 @@ describe('Step 4A.1: [AUD-CORR-001] Credit Card Statement Due & Interest Calcula
 
   it('should evaluate amountDueThisMonth to exact net purchases when previous unpaid balance is zero', async () => {
     const now = new Date();
-    const currentDate = new Date(now.getFullYear(), now.getMonth(), 10);
+    const billingDay = card.billingCycleDay;
+    let cycleStart = new Date(now.getFullYear(), now.getMonth(), billingDay);
+    if (now.getDate() < billingDay) {
+      cycleStart.setMonth(cycleStart.getMonth() - 1);
+    }
+    const currentDate = new Date(cycleStart.getTime() + 24 * 60 * 60 * 1000);
 
     // Charges 12,500.50 - Paid 5,000 - Refund 1,200 = 6,300.50
     await CardTransaction.create({
