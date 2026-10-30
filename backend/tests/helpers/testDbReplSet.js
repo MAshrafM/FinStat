@@ -22,6 +22,9 @@ async function connect() {
       count: 1,
       storageEngine: 'wiredTiger',
     },
+    instanceOpts: [
+      { launchTimeout: 30000 },
+    ],
   };
 
   if (systemBinary) {

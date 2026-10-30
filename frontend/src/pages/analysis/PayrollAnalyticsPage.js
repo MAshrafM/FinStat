@@ -224,3 +224,4 @@ const PayrollAnalyticsPage = () => {
 };
 
 export default PayrollAnalyticsPage;
+

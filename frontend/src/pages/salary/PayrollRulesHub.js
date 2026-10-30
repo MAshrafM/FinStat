@@ -430,3 +430,4 @@ const PayrollRulesHub = ({ initialTab }) => {
 };
 
 export default PayrollRulesHub;
+
