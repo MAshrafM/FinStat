@@ -68,10 +68,10 @@ const TradeLogPage = () => {
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+  const handleSearchChange = useCallback((val) => {
+    setSearchTerm(val);
     setCurrentPage(1);
-  };
+  }, []);
 
   return (
     <div className="page-container">
@@ -110,10 +110,7 @@ const TradeLogPage = () => {
         <button onClick={() => handleFilterClick('TopUp')} className={brokerFilter === 'TopUp' ? 'active' : ''}>Top Ups</button>
         <DebouncedSearchInput
           value={searchTerm}
-          onChange={(val) => {
-            setSearchTerm(val);
-            setCurrentPage(1);
-          }}
+          onChange={handleSearchChange}
           placeholder="Search Stock Code..."
           className="search-input"
           ariaLabel="Search Stock Code"

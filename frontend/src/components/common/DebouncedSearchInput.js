@@ -23,9 +23,7 @@ const DebouncedSearchInput = ({
 
   // Sync with external value changes (e.g., parent reset)
   useEffect(() => {
-    if (externalValue !== inputValue) {
-      setInputValue(externalValue);
-    }
+    setInputValue(externalValue);
   }, [externalValue]);
 
   // Debounced callback

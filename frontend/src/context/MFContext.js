@@ -1,7 +1,7 @@
 // frontend/src/context/MFContext.js
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 // Service
-import { getMutualFundSummary, getLastPrice, getBatchLastPrices } from '../services/mutualFundService';
+import { getMutualFundSummary, getBatchLastPrices } from '../services/mutualFundService';
 // Helpers
 import { safePercentage } from '../utils/helper'; // Import any helper functions you need 
 // 1. Create the Context
