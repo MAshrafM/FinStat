@@ -54,22 +54,33 @@ router.post('/calculate', auth, validate({ body: calculatePayoffSchema }), async
     });
   }
 
-  // Calculate current outstanding balance and minimum payment for each card
+  // Calculate current outstanding balance and minimum payment for each card in a single aggregation
+  const targetCardIds = userCards.map((c) => c._id);
+  const cardBalances = await CardTransaction.aggregate([
+    {
+      $match: {
+        card: { $in: targetCardIds },
+        user: userId,
+        type: { $in: ['Purchase', 'Installment'] },
+        status: { $in: ['Due', 'Partial'] },
+        deletedAt: null,
+      },
+    },
+    {
+      $group: {
+        _id: '$card',
+        total: {
+          $sum: { $subtract: ['$amount', { $ifNull: ['$paidAmount', 0] }] },
+        },
+      },
+    },
+  ]);
+
+  const balanceMap = new Map(cardBalances.map((b) => [b._id.toString(), b.total]));
+
   const cardsPayload = [];
   for (const card of userCards) {
-    const pRes = await CardTransaction.aggregate([
-      { $match: { card: card._id, user: userId, type: 'Purchase', status: { $in: ['Due', 'Partial'] }, deletedAt: null } },
-      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } },
-    ]);
-    const purchaseBal = pRes.length > 0 ? pRes[0].total : 0;
-
-    const iRes = await CardTransaction.aggregate([
-      { $match: { card: card._id, user: userId, type: 'Installment', status: { $in: ['Due', 'Partial'] }, deletedAt: null } },
-      { $group: { _id: null, total: { $sum: { $subtract: ["$amount", { $ifNull: ["$paidAmount", 0] }] } } } },
-    ]);
-    const installBal = iRes.length > 0 ? iRes[0].total : 0;
-    const balance = purchaseBal + installBal;
-
+    const balance = balanceMap.get(card._id.toString()) || 0;
     if (balance > 0) {
       const minPercent = (card.minimumPaymentPercent || 5) / 100;
       const minPayment = Math.max(balance * minPercent, 50); // min 50 EGP floor
