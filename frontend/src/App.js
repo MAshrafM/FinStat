@@ -33,6 +33,7 @@ const CalendarAnalysis = React.lazy(() => import('./pages/analysis/CalendarAnaly
 const FiscalAnalysis = React.lazy(() => import('./pages/analysis/FiscalAnalysis'));
 
 // Social Insurance & Taxes (User & Admin)
+const PayrollRulesHub = React.lazy(() => import('./pages/salary/PayrollRulesHub'));
 const SocialInsurancePage = React.lazy(() => import('./pages/insurance/SocialInsurancePage'));
 const TaxesPage = React.lazy(() => import('./pages/taxes/TaxesPage'));
 const TaxConfigPage = React.lazy(() => import('./pages/admin/TaxConfigPage'));
@@ -145,9 +146,10 @@ function App() {
                 <Route path="/analysis/calendar" element={<Navigate to="/analysis/payroll?cycle=calendar" replace />} />
                 <Route path="/analysis/fiscal" element={<Navigate to="/analysis/payroll?cycle=fiscal" replace />} />
 
-                {/* Social Insurance & Taxes */}
-                <Route path="/social-insurance" element={<SocialInsurancePage />} />
-                <Route path="/taxes" element={<TaxesPage />} />
+                {/* Social Insurance & Taxes (Canonical & Legacy Redirects) */}
+                <Route path="/salary/rules" element={<PayrollRulesHub />} />
+                <Route path="/social-insurance" element={<Navigate to="/salary/rules?tab=insurance" replace />} />
+                <Route path="/taxes" element={<Navigate to="/salary/rules?tab=taxes" replace />} />
 
                 {/* Expenditures & Automation */}
                 <Route path="/expenditures" element={<ExpenditureLogPage />} />
