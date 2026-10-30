@@ -686,12 +686,12 @@ const Summary = () => {
                 </div>
             </div>
             <div className="dashboard-grid">
-                <Link to="/analysis/calendar" className="dashboard-card">
+                <Link to="/analysis/payroll?cycle=calendar" className="dashboard-card">
                     <FaRegCalendarAlt size={50} />
                     <h2>Calendar Year Analysis</h2>
                     <p>Analyze income from January to December of each year.</p>
                 </Link>
-                <Link to="/analysis/fiscal" className="dashboard-card">
+                <Link to="/analysis/payroll?cycle=fiscal" className="dashboard-card">
                     <FaChartArea size={50} />
                     <h2>Fiscal Year Analysis</h2>
                     <p>Analyze income based on a July to June fiscal cycle.</p>
@@ -701,12 +701,12 @@ const Summary = () => {
                     <h2>Expenditure Analysis</h2>
                     <p>Visualize your spending habits and fund flow.</p>
                 </Link>
-                <Link to="/social-insurance" className="dashboard-card">
+                <Link to="/salary/rules?tab=insurance" className="dashboard-card">
                     <FaShieldAlt size={50} />
                     <h2>Social Insurance</h2>
                     <p>Track yearly registered income and paycheck deductions.</p>
                 </Link>
-                <Link to="/taxes" className="dashboard-card">
+                <Link to="/salary/rules?tab=taxes" className="dashboard-card">
                     <FaFileInvoiceDollar size={50} />
                     <h2>Taxes</h2>
                     <p>View tax brackets and track yearly tax deductions.</p>

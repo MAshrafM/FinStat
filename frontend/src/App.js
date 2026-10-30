@@ -113,7 +113,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/portfolio" element={<Portfolio />} />
                 <Route path="/portfolio/rebalancing" element={<RebalancingPage />} />
-                <Route path="/summary" element={<Summary />} />
+                <Route path="/summary" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/security" element={<SecuritySettingsPage />} />

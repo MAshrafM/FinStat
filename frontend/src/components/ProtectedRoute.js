@@ -5,17 +5,16 @@ import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
 import ViewOnlyBanner from './common/ViewOnlyBanner';
-// Lazy import contexts to reduce initial bundle size
-const DataProvider = React.lazy(() => import('../context/DataContext').then(m => ({ default: m.DataProvider })));
-const GoldProvider = React.lazy(() => import('../context/GoldContext').then(m => ({ default: m.GoldProvider })));
-const MFProvider = React.lazy(() => import('../context/MFContext').then(m => ({ default: m.MFProvider })));
-const CertProvider = React.lazy(() => import('../context/CertContext').then(m => ({ default: m.CertProvider })));
-const CurrProvider = React.lazy(() => import('../context/CurrContext').then(m => ({ default: m.CurrProvider })));
-const BankProvider = React.lazy(() => import('../context/BankContext').then(m => ({ default: m.BankProvider })));
-const CreditProvider = React.lazy(() => import('../context/CreditContext').then(m => ({ default: m.CreditProvider })));
+import { DataProvider } from '../context/DataContext';
+import { GoldProvider } from '../context/GoldContext';
+import { MFProvider } from '../context/MFContext';
+import { CertProvider } from '../context/CertContext';
+import { CurrProvider } from '../context/CurrContext';
+import { BankProvider } from '../context/BankContext';
+import { CreditProvider } from '../context/CreditContext';
 // Route configuration for better maintainability
 const ROUTE_CONFIG = {
-  basicRoutes: ['/dashboard', '/portfolio', '/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/social-insurance', '/real-estate', '/real-estate/new', '/real-estate/edit'],
+  basicRoutes: ['/portfolio', '/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/real-estate', '/real-estate/new', '/real-estate/edit', '/analysis/payroll', '/salary/rules'],
   contextRoutes: {
     data: ['/trades/new', '/trades/add', '/trades/edit', '/trade-summary', '/corporate-actions'],
     gold: ['/gold-wallet/summary'],
@@ -25,7 +24,7 @@ const ROUTE_CONFIG = {
     bank: ['/bank-accounts'],
     credit: ['/credit-cards']
   },
-  fullDataRoutes: ['/summary'] // Routes that need all data
+  fullDataRoutes: ['/dashboard', '/summary'] // Routes that need all data
 };
 
 // Helper function to determine required providers
