@@ -1,13 +1,17 @@
 // frontend/src/pages/Dashboard.js
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaRedo, FaMoneyBillWave, FaChartLine, FaChartPie, FaGem, FaHome, FaRegListAlt } from 'react-icons/fa';
+import { FaRedo, FaPlus, FaArrowRight } from 'react-icons/fa';
 import DashboardSummary from './DashboardSummary';
+import AppLauncher from '../components/dashboard/AppLauncher';
 import { getRecurringSuggestions } from '../services/recurringSuggestionService';
+import { useCanModify } from '../context/AuthContext';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const { canModify } = useCanModify();
   const [pendingRecurCount, setPendingRecurCount] = useState(0);
+  const [launcher, setLauncher] = useState({ open: false, tab: 'create' });
 
   useEffect(() => {
     getRecurringSuggestions(1, 10, { isAccepted: false, isRejected: false })
@@ -17,192 +21,63 @@ const Dashboard = () => {
       .catch(() => setPendingRecurCount(0));
   }, []);
 
-  return (
-    <div className="dashboard-root" data-testid="dashboard-page">
-      {pendingRecurCount > 0 && (
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
-            border: '1px solid #93c5fd',
-            borderRadius: '12px',
-            padding: '14px 20px',
-            margin: '16px 24px 0 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '12px',
-            color: '#1e40af',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <FaRedo size={20} color="#2563eb" />
-            <div>
-              <strong>Recurring Expenses Detected:</strong> You have{' '}
-              <strong style={{ color: '#1d4ed8' }}>{pendingRecurCount} recurring pattern suggestion(s)</strong>{' '}
-              ready for confirmation.
-            </div>
-          </div>
-          <Link
-            to="/expenditures/recurring"
-            style={{
-              background: '#2563eb',
-              color: 'white',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              textDecoration: 'none',
-              fontWeight: '600',
-              fontSize: '0.85rem',
-            }}
-          >
-            Review Now
-          </Link>
-        </div>
-      )}
+  const openLauncher = useCallback((tab = 'create') => {
+    setLauncher({ open: true, tab });
+  }, []);
 
-      {/* Centered, Enhanced Quick Actions Bar */}
-      <div
-        className="quick-actions-bar"
-        style={{
-          display: 'flex',
-          gap: '12px',
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          padding: '24px 24px 8px 24px',
-          maxWidth: '1200px',
-          margin: '0 auto',
-        }}
-      >
-        <Link
-          to="/salary/paychecks/new"
-          className="btn-quick-action"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(59, 130, 246, 0.12)',
-            color: '#2563eb',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
-            padding: '10px 18px',
-            borderRadius: '10px',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-            textDecoration: 'none',
-            boxShadow: '0 2px 6px rgba(59, 130, 246, 0.08)',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          <FaRegListAlt size={16} /> + Log Paycheck
-        </Link>
-        <Link
-          to="/expenditures/new"
-          className="btn-quick-action"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(16, 185, 129, 0.12)',
-            color: '#059669',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            padding: '10px 18px',
-            borderRadius: '10px',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-            textDecoration: 'none',
-            boxShadow: '0 2px 6px rgba(16, 185, 129, 0.08)',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          <FaMoneyBillWave size={16} /> + Add Expense
-        </Link>
-        <Link
-          to="/trades/add"
-          className="btn-quick-action"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(14, 165, 233, 0.12)',
-            color: '#0284c7',
-            border: '1px solid rgba(14, 165, 233, 0.3)',
-            padding: '10px 18px',
-            borderRadius: '10px',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-            textDecoration: 'none',
-            boxShadow: '0 2px 6px rgba(14, 165, 233, 0.08)',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          <FaChartLine size={16} /> + New Trade
-        </Link>
-        <Link
-          to="/mutual-funds/new"
-          className="btn-quick-action"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(139, 92, 246, 0.12)',
-            color: '#7c3aed',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
-            padding: '10px 18px',
-            borderRadius: '10px',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-            textDecoration: 'none',
-            boxShadow: '0 2px 6px rgba(139, 92, 246, 0.08)',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          <FaChartPie size={16} /> + Mutual Fund
-        </Link>
-        <Link
-          to="/gold-wallet/new"
-          className="btn-quick-action"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(234, 179, 8, 0.12)',
-            color: '#ca8a04',
-            border: '1px solid rgba(234, 179, 8, 0.3)',
-            padding: '10px 18px',
-            borderRadius: '10px',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-            textDecoration: 'none',
-            boxShadow: '0 2px 6px rgba(234, 179, 8, 0.08)',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          <FaGem size={16} /> + Add Gold
-        </Link>
-        <Link
-          to="/real-estate/new"
-          className="btn-quick-action"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(236, 72, 153, 0.12)',
-            color: '#db2777',
-            border: '1px solid rgba(236, 72, 153, 0.3)',
-            padding: '10px 18px',
-            borderRadius: '10px',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-            textDecoration: 'none',
-            boxShadow: '0 2px 6px rgba(236, 72, 153, 0.08)',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          <FaHome size={16} /> + New Property
-        </Link>
+  const closeLauncher = useCallback(() => {
+    setLauncher((prev) => ({ ...prev, open: false }));
+  }, []);
+
+  // Command-palette style shortcut: Ctrl/Cmd + K.
+  useEffect(() => {
+    const handleShortcut = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        openLauncher(canModify ? 'create' : 'explore');
+      }
+    };
+
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  }, [canModify, openLauncher]);
+
+  return (
+    <div className="dashboard-shell" data-testid="dashboard-page">
+      <div className="dashboard-container">
+        {pendingRecurCount > 0 && (
+          <div className="dash-alert" role="status">
+            <div className="dash-alert-main">
+              <span className="dash-alert-icon">
+                <FaRedo aria-hidden="true" />
+              </span>
+              <div>
+                <strong>{pendingRecurCount} recurring pattern{pendingRecurCount === 1 ? '' : 's'} detected</strong>
+                <p>Review the suggestions and confirm your subscriptions to keep budgets accurate.</p>
+              </div>
+            </div>
+            <Link to="/expenditures/recurring" className="dash-alert-action">
+              Review now <FaArrowRight aria-hidden="true" />
+            </Link>
+          </div>
+        )}
+
+        <DashboardSummary onOpenLauncher={openLauncher} />
       </div>
 
-      <DashboardSummary />
+      {canModify && (
+        <button
+          type="button"
+          className="dash-fab"
+          onClick={() => openLauncher('create')}
+          title="Open the add menu (Ctrl + K)"
+        >
+          <FaPlus aria-hidden="true" />
+          <span>New</span>
+        </button>
+      )}
+
+      <AppLauncher open={launcher.open} initialTab={launcher.tab} onClose={closeLauncher} />
     </div>
   );
 };

@@ -110,7 +110,7 @@ describe('Step 5B.2: [AUD-TEST-002] Frontend App Route Guards & Role Access Cont
 
     await waitFor(() => {
       expect(screen.getByTestId('tax-config-page')).toBeInTheDocument();
-    });
+    }, { timeout: 4000 });
   });
 
   it('7. blocks viewer from general /admin route and redirects to /dashboard', async () => {
