@@ -7,6 +7,7 @@ import { useCertData } from '../../context/CertContext';
 import { useToast } from '../../context/ToastContext';
 import { FaEdit, FaTrash, FaEye, FaHandHoldingUsd, FaPlus, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import ProtectedAction from '../../components/common/ProtectedAction';
+import ConfirmModal from '../../components/common/ConfirmModal';
 import { useCanModify } from '../../context/AuthContext';
 import '../trades/Trades.css';
 
@@ -20,20 +21,29 @@ const CertificateLogPage = () => {
     const [withdrawalReason, setWithdrawalReason] = useState('');
     const [confirmedCheckbox, setConfirmedCheckbox] = useState(false);
     const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
+    const [deletingCertId, setDeletingCertId] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-    const handleDelete = async (id) => {
+    const handleDeleteClick = (id) => {
         if (!canModify) return;
-        if (window.confirm('Are you sure you want to delete this certificate?')) {
-            try {
-                await deleteCertificate(id);
-                showToast('Certificate deleted successfully', 'success');
-                if (typeof refreshCertificates === 'function') {
-                    refreshCertificates();
-                }
-            } catch (err) {
-                console.error("Failed to delete certificate:", err);
-                showToast(err.response?.data?.message || 'Failed to delete certificate', 'error');
+        setDeletingCertId(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deletingCertId || !canModify) return;
+        setIsDeleting(true);
+        try {
+            await deleteCertificate(deletingCertId);
+            showToast('Certificate deleted successfully', 'success');
+            setDeletingCertId(null);
+            if (typeof refreshCertificates === 'function') {
+                refreshCertificates();
             }
+        } catch (err) {
+            console.error("Failed to delete certificate:", err);
+            showToast(err.response?.data?.message || 'Failed to delete certificate', 'error');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -320,7 +330,7 @@ const CertificateLogPage = () => {
                                             <ProtectedAction tooltip="View-only access">
                                                 <FaTrash
                                                     className="action-icon delete-icon"
-                                                    onClick={() => handleDelete(cert._id)}
+                                                    onClick={() => handleDeleteClick(cert._id)}
                                                     title="Delete"
                                                     style={{ cursor: 'pointer', color: '#ef4444' }}
                                                 />
@@ -479,6 +489,18 @@ const CertificateLogPage = () => {
                     </div>
                 </div>
             )}
+
+            <ConfirmModal
+                isOpen={Boolean(deletingCertId)}
+                title="Delete Certificate"
+                message="Are you sure you want to delete this certificate? This action cannot be undone."
+                confirmText="Delete Certificate"
+                cancelText="Cancel"
+                variant="danger"
+                isLoading={isDeleting}
+                onConfirm={handleConfirmDelete}
+                onCancel={() => !isDeleting && setDeletingCertId(null)}
+            />
         </div>
     );
 };

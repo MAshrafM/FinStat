@@ -10,6 +10,8 @@ import PaginationControls from '../../components/PaginationControls';
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import ExpenditureSubNav from './ExpenditureSubNav';
 import ProtectedAction from '../../components/common/ProtectedAction';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 const transactionTypeMap = {
   W: 'Withdraw',
@@ -22,12 +24,15 @@ const transactionTypeMap = {
 };
 
 const ExpenditureLogPage = () => {
+  const { showToast } = useToast();
   const [expenditures, setExpenditures] = useState([]);
   const [processedExpenditures, setProcessedExpenditures] = useState([]);
   const [selectedType, setSelectedType] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [latestHolding, setLatestHolding] = useState({ bank: 0, cash: 0, prepaid: 0 });
 
   const loadExpenditures = useCallback((page, typeFilter) => {
@@ -80,15 +85,24 @@ const ExpenditureLogPage = () => {
     setProcessedExpenditures(sortedByTimestamp);
   }, [expenditures]);
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this log?')) {
-      try {
-        await deleteExpenditure(id);
-        loadExpenditures(currentPage, selectedType);
-        loadLatestHolding();
-      } catch (err) {
-        console.error('Failed to delete expenditure:', err);
-      }
+  const handleDeleteClick = (id) => {
+    setDeletingId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingId) return;
+    setIsDeleting(true);
+    try {
+      await deleteExpenditure(deletingId);
+      showToast('Expenditure deleted successfully', 'success');
+      setDeletingId(null);
+      loadExpenditures(currentPage, selectedType);
+      loadLatestHolding();
+    } catch (err) {
+      console.error('Failed to delete expenditure:', err);
+      showToast(err.response?.data?.message || 'Failed to delete expenditure', 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -489,7 +503,7 @@ const ExpenditureLogPage = () => {
                     <ProtectedAction tooltip="View-only access">
                       <button
                         type="button"
-                        onClick={() => handleDelete(log._id)}
+                        onClick={() => handleDeleteClick(log._id)}
                         style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
                         title="Delete expenditure"
                       >
@@ -507,6 +521,18 @@ const ExpenditureLogPage = () => {
         page={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
+      />
+
+      <ConfirmModal
+        isOpen={Boolean(deletingId)}
+        title="Delete Expenditure"
+        message="Are you sure you want to delete this expenditure log? This action cannot be undone."
+        confirmText="Delete Expenditure"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => !isDeleting && setDeletingId(null)}
       />
     </div>
   );

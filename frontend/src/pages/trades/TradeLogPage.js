@@ -6,17 +6,22 @@ import { formatDate, formatCurrency } from '../../utils/formatters';
 import { FaEdit, FaTrash, FaPlus, FaBolt } from 'react-icons/fa';
 import PaginationControls from '../../components/PaginationControls';
 import ProtectedAction from '../../components/common/ProtectedAction';
+import ConfirmModal from '../../components/common/ConfirmModal';
 import DebouncedSearchInput from '../../components/common/DebouncedSearchInput';
+import { useToast } from '../../context/ToastContext';
 import '../../components/Table.css';
 import './Trades.css';
 
 const TradeLogPage = () => {
+  const { showToast } = useToast();
   const [trades, setTrades] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [brokerFilter, setBrokerFilter] = useState(null); // null, 'Thndr', 'EFG'
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [deletingTradeId, setDeletingTradeId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadTrades = useCallback((page, broker, search) => {
     setIsLoading(true);
@@ -44,15 +49,23 @@ const TradeLogPage = () => {
     loadTrades(currentPage, brokerFilter, searchTerm);
   }, [currentPage, brokerFilter, searchTerm, loadTrades]);
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this trade?')) {
-      try {
-        await deleteTrade(id);
-        loadTrades(currentPage, brokerFilter, searchTerm); // Refresh the list
-      } catch (err) {
-        console.error("Failed to delete trade:", err);
-        alert('Failed to delete trade.');
-      }
+  const handleDeleteClick = (id) => {
+    setDeletingTradeId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingTradeId) return;
+    setIsDeleting(true);
+    try {
+      await deleteTrade(deletingTradeId);
+      showToast('Trade deleted successfully', 'success');
+      setDeletingTradeId(null);
+      loadTrades(currentPage, brokerFilter, searchTerm);
+    } catch (err) {
+      console.error("Failed to delete trade:", err);
+      showToast(err.response?.data?.message || 'Failed to delete trade.', 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -163,7 +176,7 @@ const TradeLogPage = () => {
                       <ProtectedAction tooltip="View-only access">
                         <button
                           type="button"
-                          onClick={() => handleDelete(trade._id)}
+                          onClick={() => handleDeleteClick(trade._id)}
                           style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
                           title="Delete trade"
                         >
@@ -179,6 +192,18 @@ const TradeLogPage = () => {
         </table>
       </div>
       <PaginationControls page={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+
+      <ConfirmModal
+        isOpen={Boolean(deletingTradeId)}
+        title="Delete Trade"
+        message="Are you sure you want to delete this trade? This will permanently remove the trade and update your portfolio calculations."
+        confirmText="Delete Trade"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => !isDeleting && setDeletingTradeId(null)}
+      />
     </div>
   );
 };
