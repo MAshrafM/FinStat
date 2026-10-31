@@ -1807,6 +1807,7 @@ cd d:/Projects/FinStat/frontend && npm run build
 | **AUD-TEST-002** | Void of Frontend Component & User-Journey Test Coverage | **Phase 5B, Step 5B.2** |
 | **AUD-TEST-DEBT-001** | Substituted 5C Edge-Case Tests Pending Dedicated Test Strengthening Session | **Pre-Phase 7A Session** |
 | **AUD-ARCH-004** | Eager Loading of Context Providers in ProtectedRoute (Jest Suspense Timing) | **Phase 6A, Step 6A.1 & Pre-Phase 7A Review** |
+| **AUD-UI-DEBT-002** | 14 Secondary & Administrative Legacy Confirmation Dialogs Deferred from 6B.2 | **Phase 7B / Pre-Phase 8 Review** |
 | **SIMP-001** | Purge Abandoned Legacy Paycheck CRUD Subsystem | **Phase 1, Step 1.8** |
 | **SIMP-002** | Consolidate Twin Calendar & Fiscal Year Analysis Pages | **Phase 6A, Step 6A.3** |
 | **SIMP-003** | Unify Redundant Home Launcher (`/dashboard`) with Profile Summary | **Phase 6A, Step 6A.1** |
