@@ -136,7 +136,7 @@ graph LR
 | **Phase 5B** | Testing Quality & Safety Net | `AUD-TEST-001` (Full), `AUD-TEST-002`, `AUD-SEC-010` | 1.5 days | Yes (with 5A) | `[x] COMPLETE` |
 | **Phase 5C** | Performance & Scalability | `AUD-PERF-003`, `AUD-PERF-004`, `AUD-PERF-005`, `GAP-013` | 1.5 days | No | `[x] COMPLETE` |
 | **Phase 6A** | Navigation & Page Consolidation | `SIMP-002`, `SIMP-003`, `SIMP-004`, `SIMP-007`, `AUD-ARCH-001` | 1.5 days | Yes (with 6B) | `[x] COMPLETE` |
-| **Phase 6B** | Schema & UI Hygiene | `SIMP-008`, `SIMP-009`, `GAP-007`, `GAP-008`, `GAP-010`, `AUD-ARCH-003` | 1.5 days | Yes (with 6A) | `[ ] NOT STARTED` |
+| **Phase 6B** | Schema & UI Hygiene | `SIMP-008`, `SIMP-009`, `GAP-007`, `GAP-008`, `GAP-010`, `AUD-ARCH-003` | 1.5 days | Yes (with 6A) | `[x] COMPLETE` |
 | **Phase 7A** | Ingestion & Export | `FEAT-001`, `FEAT-003`, `GAP-005`, `GAP-006` | 2 days | Yes (with 7B) | `[ ] NOT STARTED` |
 | **Phase 7B** | Financial Bridges | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003` | 2 days | Yes (with 7A) | `[ ] NOT STARTED` |
 | **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[ ] NOT STARTED` |
@@ -1423,8 +1423,8 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 1 file.
 * **Actions**: Canonicalize fields (`grossSalary`, `netPay`, `period`, `payDate`); convert legacy aliases (`grossAmount`, `amount`, `month`) to virtual getters; remove pre-save hook.
 * **Definition of Done (DoD)**:
-  - [ ] Legacy API clients continue receiving `.grossAmount` without duplicate DB storage.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Legacy API clients continue receiving `.grossAmount` without duplicate DB storage.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1439,8 +1439,8 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 4 files.
 * **Actions**: Replace blocking `window.confirm()` and `alert()` calls with styled accessible modal dialogs.
 * **Definition of Done (DoD)**:
-  - [ ] Non-blocking modal renders with clear danger styling and keyboard accessibility (ESC closes).
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Non-blocking modal renders with clear danger styling and keyboard accessibility (ESC closes).
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1451,8 +1451,8 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 1 file.
 * **Actions**: Add regional Egyptian/MENA brokers (Hermes, Thndr, Mubasher) and support custom broker text entry.
 * **Definition of Done (DoD)**:
-  - [ ] User can select Thndr or type custom broker name.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] User can select Thndr or type custom broker name.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1463,18 +1463,18 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 1 file.
 * **Actions**: Add table multi-select checkboxes with floating bulk action bar: "Delete Selected" and "Change Category".
 * **Definition of Done (DoD)**:
-  - [ ] Selecting 10 expenses allows single-click category re-assignment.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Selecting 10 expenses allows single-click category re-assignment.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
 ### Phase 6B Verification Gate
 *(Expected verification timeout: < 120s)*
-- [ ] Paycheck legacy field aliases accessible via virtuals without DB storage.
-- [ ] Deletions trigger non-blocking `<ConfirmModal />`.
-- [ ] Custom broker entry supported in trade form.
-- [ ] Bulk actions allow multi-row deletion and re-categorization.
-- [ ] **Phase 6B Signed Off**: `[ ] YES` | Date: `__________`
+- [x] Paycheck legacy field aliases accessible via virtuals without DB storage.
+- [x] Deletions trigger non-blocking `<ConfirmModal />`.
+- [x] Custom broker entry supported in trade form.
+- [x] Bulk actions allow multi-row deletion and re-categorization.
+- [x] **Phase 6B Signed Off**: `[x] YES` | Date: `2026-10-31`
 
 ---
 
