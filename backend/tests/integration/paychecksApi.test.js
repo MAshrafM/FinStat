@@ -1,5 +1,6 @@
 // backend/tests/integration/paychecksApi.test.js
 const request = require('supertest');
+const mongoose = require('mongoose');
 const { connect, clearDatabase, closeDatabase } = require('../helpers/testDbReplSet');
 const { createUserWithToken } = require('../helpers/authFixtures');
 const app = require('../../server');
@@ -492,6 +493,134 @@ describe('Step 5B.1a: [AUD-TEST-001] Paychecks API Integration Tests', () => {
         .set('Authorization', otherAuth);
 
       expect(res.status).toBe(404);
+    });
+  });
+
+  describe('7. [SIMP-008, AUD-ARCH-003] Dual Schema Field Deprecation & Virtuals Round-Trip', () => {
+    it('persists legacy payload shape into canonical fields without writing duplicate physical keys', async () => {
+      const legacyPayload = {
+        month: '2024-07',
+        payDate: '2024-07-15',
+        disbursementType: 'Regular',
+        amount: 12078.70,
+        grossAmount: 15000,
+        insuranceDeduction: 1386,
+        taxDeduction: 1535.30,
+        components: [
+          { name: 'Basic Salary', category: 'basic', type: 'fixed', value: 15000, isTaxable: true, isInsurable: true },
+        ],
+      };
+
+      const res = await request(app)
+        .post('/api/paychecks')
+        .set('Authorization', managerAuth)
+        .send(legacyPayload);
+
+      expect(res.status).toBe(201);
+      expect(res.body._id).toBeDefined();
+      expect(res.body.grossSalary).toBe(15000);
+      expect(res.body.netPay).toBe(12078.70);
+      expect(res.body.period).toBe('2024-07');
+
+      // Virtual accessors returned in serialized JSON
+      expect(res.body.grossAmount).toBe(15000);
+      expect(res.body.amount).toBe(12078.70);
+      expect(res.body.month).toBe('2024-07');
+      expect(res.body.insuranceDeduction).toBe(1386);
+      expect(res.body.taxDeduction).toBe(1535.30);
+
+      // Verify physical MongoDB storage has NO duplicate legacy keys
+      const rawDoc = await mongoose.connection.collection('paychecks').findOne({
+        _id: new mongoose.Types.ObjectId(res.body._id),
+      });
+
+      expect(rawDoc).toBeDefined();
+      expect(rawDoc.period).toBe('2024-07');
+      expect(rawDoc.grossSalary).toBe(15000);
+      expect(rawDoc.netPay).toBe(12078.70);
+
+      // Physical legacy fields must not be stored
+      expect(rawDoc.month).toBeUndefined();
+      expect(rawDoc.amount).toBeUndefined();
+      expect(rawDoc.grossAmount).toBeUndefined();
+    });
+
+    it('returns accurate virtual calculations on GET /api/paychecks/:id', async () => {
+      const pc = await request(app)
+        .post('/api/paychecks')
+        .set('Authorization', managerAuth)
+        .send({
+          period: '2024-08',
+          payDate: '2024-08-15',
+          grossSalary: 20000,
+          netPay: 16000,
+          insuranceDeduction: 1800,
+          taxDeduction: 2200,
+          disbursementType: 'Regular',
+        });
+
+      const res = await request(app)
+        .get(`/api/paychecks/${pc.body._id}`)
+        .set('Authorization', managerAuth);
+
+      expect(res.status).toBe(200);
+      expect(res.body.grossSalary).toBe(20000);
+      expect(res.body.netPay).toBe(16000);
+      expect(res.body.grossAmount).toBe(20000);
+      expect(res.body.amount).toBe(16000);
+      expect(res.body.month).toBe('2024-08');
+      expect(res.body.insuranceDeduction).toBe(1800);
+      expect(res.body.taxDeduction).toBe(2200);
+      expect(res.body.insuranceDeductionInPiastres).toBe(180000);
+      expect(res.body.taxDeductionInPiastres).toBe(220000);
+    });
+
+    it('filters paychecks accurately by year across both canonical and legacy documents', async () => {
+      await request(app)
+        .post('/api/paychecks')
+        .set('Authorization', managerAuth)
+        .send({
+          period: '2024-08',
+          payDate: '2024-08-15',
+          grossSalary: 20000,
+          netPay: 16000,
+          disbursementType: 'Regular',
+        });
+
+      const res = await request(app)
+        .get('/api/paychecks?year=2024')
+        .set('Authorization', managerAuth);
+
+      expect(res.status).toBe(200);
+      const items = res.body.data;
+      expect(Array.isArray(items)).toBe(true);
+      expect(items.length).toBeGreaterThan(0);
+      const found = items.find((p) => p.period === '2024-08');
+      expect(found).toBeDefined();
+      expect(found.month).toBe('2024-08');
+    });
+
+    it('queries historical documents with legacy month field only via GET /api/paychecks', async () => {
+      await mongoose.connection.collection('paychecks').insertOne({
+        user: managerUser._id,
+        month: '2024-11',
+        amount: 10000,
+        grossAmount: 12000,
+        disbursementType: 'Regular',
+        deletedAt: null,
+        createdAt: new Date('2024-11-15T12:00:00Z'),
+        updatedAt: new Date('2024-11-15T12:00:00Z'),
+      });
+
+      const res = await request(app)
+        .get('/api/paychecks?year=2024')
+        .set('Authorization', managerAuth);
+
+      expect(res.status).toBe(200);
+      const items = res.body.data;
+      expect(Array.isArray(items)).toBe(true);
+      const historical = items.find((p) => p.month === '2024-11');
+      expect(historical).toBeDefined();
     });
   });
 });

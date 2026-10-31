@@ -236,9 +236,7 @@ router.post('/', auth, validate({ body: createPaycheckSchema }), asyncHandler(as
         ...body,
         user: req.effectiveUserId,
         period,
-        month: period,
         payDate,
-        date: payDate,
         disbursementType: body.disbursementType || (body.type === 'Prepaid' ? 'Prepaid' : 'Regular'),
         multiplier: body.multiplier || 1,
         unitRate: body.unitRate || 0,
@@ -246,21 +244,20 @@ router.post('/', auth, validate({ body: createPaycheckSchema }), asyncHandler(as
         cumulativeYtdGross: grossSalary,
         grossSalary,
         grossSalaryInPiastres: toPiastres(grossSalary),
-        grossAmount: grossSalary,
-        grossAmountInPiastres: toPiastres(grossSalary),
         netPay,
         netPayInPiastres: toPiastres(netPay),
-        amount: netPay,
-        amountInPiastres: toPiastres(netPay),
-        insuranceDeduction,
-        insuranceDeductionInPiastres: toPiastres(insuranceDeduction),
-        taxDeduction,
-        taxDeductionInPiastres: toPiastres(taxDeduction),
+        taxDetails: body.taxDetails || {
+          actualTax: taxDeduction,
+          expectedTax: taxDeduction,
+        },
+        insuranceDetails: body.insuranceDetails || {
+          actualEmployeeShare: insuranceDeduction,
+          expectedEmployeeShare: insuranceDeduction,
+        },
         martyrsFund: body.martyrsFund || 0,
         totalDeductions,
         totalDeductionsInPiastres: toPiastres(totalDeductions),
         notes: body.notes || body.note || '',
-        note: body.notes || body.note || '',
       });
 
       const saved = await newPaycheck.save({ session });
@@ -293,7 +290,7 @@ router.get('/all', auth, asyncHandler(async (req, res) => {
   const paychecks = await Paycheck.find({
     user: req.effectiveUserId,
     deletedAt: null,
-  }).sort({ period: -1, month: -1, payDate: -1, createdAt: -1 });
+  }).sort({ period: -1, payDate: -1, createdAt: -1 });
 
   res.json(paychecks);
 }));
@@ -321,7 +318,7 @@ router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req,
 
   const total = await Paycheck.countDocuments(query);
   const paychecks = await Paycheck.find(query)
-    .sort({ period: -1, month: -1, payDate: -1, createdAt: -1 })
+    .sort({ period: -1, payDate: -1, createdAt: -1 })
     .skip(skip)
     .limit(limit);
 
@@ -381,19 +378,24 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updatePaycheckSc
   const targetYear = extractYear(targetPeriod, effectiveDate ? new Date(effectiveDate).getUTCFullYear() : null);
 
   const updateData = { ...body };
+  // Purge legacy physical keys from update payload so only canonical fields are stored
+  delete updateData.grossAmount;
+  delete updateData.grossAmountInPiastres;
+  delete updateData.amount;
+  delete updateData.amountInPiastres;
+  delete updateData.month;
+  delete updateData.date;
+  delete updateData.note;
+
   if (body.grossSalary !== undefined || body.grossAmount !== undefined) {
     const gross = body.grossSalary !== undefined ? body.grossSalary : body.grossAmount;
     updateData.grossSalary = gross;
-    updateData.grossAmount = gross;
     updateData.grossSalaryInPiastres = toPiastres(gross);
-    updateData.grossAmountInPiastres = toPiastres(gross);
   }
   if (body.netPay !== undefined || body.amount !== undefined) {
     const net = body.netPay !== undefined ? body.netPay : body.amount;
     updateData.netPay = net;
-    updateData.amount = net;
     updateData.netPayInPiastres = toPiastres(net);
-    updateData.amountInPiastres = toPiastres(net);
   }
   if (body.totalDeductions !== undefined) {
     updateData.totalDeductions = body.totalDeductions;
@@ -402,16 +404,12 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updatePaycheckSc
   if (body.period || body.month) {
     const p = body.period || body.month;
     updateData.period = p;
-    updateData.month = p;
   }
   if (normalizedTargetDate) {
     updateData.payDate = normalizedTargetDate;
-    updateData.date = normalizedTargetDate;
   }
   if (body.notes || body.note) {
-    const n = body.notes || body.note;
-    updateData.notes = n;
-    updateData.note = n;
+    updateData.notes = body.notes || body.note;
   }
 
   const session = await mongoose.startSession();

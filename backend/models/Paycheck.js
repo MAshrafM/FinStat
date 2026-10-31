@@ -155,81 +155,103 @@ const PaycheckSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-
-  // Legacy field support
-  month: {
-    type: String,
-  },
-  type: {
-    type: String,
-    enum: ['Cash', 'Prepaid', 'Direct Deposit', 'Other'],
-    default: 'Direct Deposit',
-  },
-  amount: {
-    type: Number,
-  },
-  amountInPiastres: {
-    type: Number,
-  },
-  grossAmount: {
-    type: Number,
-  },
-  grossAmountInPiastres: {
-    type: Number,
-  },
-  insuranceDeduction: {
-    type: Number,
-  },
-  insuranceDeductionInPiastres: {
-    type: Number,
-  },
-  taxDeduction: {
-    type: Number,
-  },
-  taxDeductionInPiastres: {
-    type: Number,
-  },
-  date: {
-    type: Date,
-  },
 }, {
   timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
 });
 
-// Middleware to sync legacy fields before saving
-PaycheckSchema.pre('save', function (next) {
-  if (!this.month && this.period) {
-    this.month = this.period;
-  }
-  if (!this.period && this.month) {
-    this.period = this.month;
-  }
-  if (!this.date && this.payDate) {
-    this.date = this.payDate;
-  }
-  if (!this.payDate && this.date) {
-    this.payDate = this.date;
-  }
-  if (this.netPay !== undefined && this.amount === undefined) {
-    this.amount = this.netPay;
-  }
-  if (this.amount !== undefined && this.netPay === undefined) {
-    this.netPay = this.amount;
-  }
-  if (this.grossSalary !== undefined && this.grossAmount === undefined) {
-    this.grossAmount = this.grossSalary;
-  }
-  if (this.grossAmount !== undefined && this.grossSalary === undefined) {
-    this.grossSalary = this.grossAmount;
-  }
-  next();
-});
+// Virtual accessors for legacy schema field backward compatibility (SIMP-008, AUD-ARCH-003)
+PaycheckSchema.virtual('month')
+  .get(function () { return this.period; })
+  .set(function (val) { this.period = val; });
+
+PaycheckSchema.virtual('date')
+  .get(function () { return this.payDate; })
+  .set(function (val) { this.payDate = val; });
+
+PaycheckSchema.virtual('amount')
+  .get(function () { return this.netPay; })
+  .set(function (val) {
+    this.netPay = val;
+    if (this.netPayInPiastres === undefined || this.netPayInPiastres === 0) {
+      this.netPayInPiastres = typeof val === 'number' ? Math.round(val * 100) : 0;
+    }
+  });
+
+PaycheckSchema.virtual('amountInPiastres')
+  .get(function () {
+    return this.netPayInPiastres !== undefined && this.netPayInPiastres !== null
+      ? this.netPayInPiastres
+      : (this.netPay ? Math.round(this.netPay * 100) : 0);
+  })
+  .set(function (val) {
+    this.netPayInPiastres = val;
+    if (this.netPay === undefined || this.netPay === 0) {
+      this.netPay = typeof val === 'number' ? val / 100 : 0;
+    }
+  });
+
+PaycheckSchema.virtual('grossAmount')
+  .get(function () { return this.grossSalary; })
+  .set(function (val) {
+    this.grossSalary = val;
+    if (this.grossSalaryInPiastres === undefined || this.grossSalaryInPiastres === 0) {
+      this.grossSalaryInPiastres = typeof val === 'number' ? Math.round(val * 100) : 0;
+    }
+  });
+
+PaycheckSchema.virtual('grossAmountInPiastres')
+  .get(function () {
+    return this.grossSalaryInPiastres !== undefined && this.grossSalaryInPiastres !== null
+      ? this.grossSalaryInPiastres
+      : (this.grossSalary ? Math.round(this.grossSalary * 100) : 0);
+  })
+  .set(function (val) {
+    this.grossSalaryInPiastres = val;
+    if (this.grossSalary === undefined || this.grossSalary === 0) {
+      this.grossSalary = typeof val === 'number' ? val / 100 : 0;
+    }
+  });
+
+PaycheckSchema.virtual('insuranceDeduction')
+  .get(function () { return this.insuranceDetails?.actualEmployeeShare || 0; })
+  .set(function (val) {
+    if (!this.insuranceDetails) this.insuranceDetails = {};
+    this.insuranceDetails.actualEmployeeShare = val;
+  });
+
+PaycheckSchema.virtual('insuranceDeductionInPiastres')
+  .get(function () {
+    const share = this.insuranceDetails?.actualEmployeeShare || 0;
+    return Math.round(share * 100);
+  })
+  .set(function (val) {
+    if (!this.insuranceDetails) this.insuranceDetails = {};
+    this.insuranceDetails.actualEmployeeShare = typeof val === 'number' ? val / 100 : 0;
+  });
+
+PaycheckSchema.virtual('taxDeduction')
+  .get(function () { return this.taxDetails?.actualTax || 0; })
+  .set(function (val) {
+    if (!this.taxDetails) this.taxDetails = {};
+    this.taxDetails.actualTax = val;
+  });
+
+PaycheckSchema.virtual('taxDeductionInPiastres')
+  .get(function () {
+    const tax = this.taxDetails?.actualTax || 0;
+    return Math.round(tax * 100);
+  })
+  .set(function (val) {
+    if (!this.taxDetails) this.taxDetails = {};
+    this.taxDetails.actualTax = typeof val === 'number' ? val / 100 : 0;
+  });
 
 PaycheckSchema.plugin(softDeletePlugin);
 
 PaycheckSchema.index({ user: 1, period: 1 });
 PaycheckSchema.index({ user: 1, payDate: -1 });
-PaycheckSchema.index({ user: 1, month: -1 });
 PaycheckSchema.index({ user: 1, deletedAt: 1 });
 PaycheckSchema.index(
   { user: 1, period: 1, disbursementType: 1 },
