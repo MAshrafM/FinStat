@@ -143,5 +143,14 @@ describe('ConfirmModal Component Tests [SIMP-009, GAP-010]', () => {
     fireEvent.keyDown(cancelBtn, { key: 'Tab', shiftKey: true });
     expect(document.activeElement).toBe(confirmBtn);
   });
+
+  test('12. autofocuses Cancel button upon render to prevent accidental destructive submission on Enter', () => {
+    jest.useFakeTimers();
+    render(<ConfirmModal {...defaultProps} />);
+    const cancelBtn = screen.getByRole('button', { name: 'Cancel' });
+    jest.advanceTimersByTime(20);
+    expect(cancelBtn).toHaveFocus();
+    jest.useRealTimers();
+  });
 });
 

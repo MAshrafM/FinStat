@@ -39,10 +39,10 @@ const ConfirmModal = ({
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    // Auto-focus confirm button on open
+    // Auto-focus cancel button on open to prevent accidental destructive submission on Enter
     const focusTimeout = setTimeout(() => {
-      if (confirmBtnRef.current) {
-        confirmBtnRef.current.focus();
+      if (cancelBtnRef.current) {
+        cancelBtnRef.current.focus();
       }
     }, 10);
 
