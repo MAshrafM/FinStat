@@ -43,11 +43,17 @@ const PaycheckSchema = new mongoose.Schema({
     type: String,
     required: true, // e.g., 'January 2025' or '2025-01'
     trim: true,
+    get: function (val) {
+      return val || this._doc?.month;
+    },
   },
   payDate: {
     type: Date,
     required: true,
     default: Date.now,
+    get: function (val) {
+      return this._doc?.date || val;
+    },
   },
   components: [PaycheckComponentSchema],
 
@@ -56,10 +62,24 @@ const PaycheckSchema = new mongoose.Schema({
     type: Number,
     required: true,
     default: 0,
+    get: function (val) {
+      if (val !== undefined && val !== null && val !== 0) return val;
+      return (this._doc?.grossAmount !== undefined && this._doc?.grossAmount !== null && this._doc?.grossAmount !== 0)
+        ? this._doc.grossAmount
+        : (val ?? 0);
+    },
   },
   grossSalaryInPiastres: {
     type: Number,
     default: 0,
+    get: function (val) {
+      if (val !== undefined && val !== null && val !== 0) return val;
+      if (this._doc?.grossAmountInPiastres !== undefined && this._doc?.grossAmountInPiastres !== null && this._doc?.grossAmountInPiastres !== 0) {
+        return this._doc.grossAmountInPiastres;
+      }
+      const gross = this.grossSalary || this._doc?.grossAmount;
+      return gross ? Math.round(gross * 100) : (val ?? 0);
+    },
   },
   totalDeductions: {
     type: Number,
@@ -73,10 +93,24 @@ const PaycheckSchema = new mongoose.Schema({
     type: Number,
     required: true,
     default: 0,
+    get: function (val) {
+      if (val !== undefined && val !== null && val !== 0) return val;
+      return (this._doc?.amount !== undefined && this._doc?.amount !== null && this._doc?.amount !== 0)
+        ? this._doc.amount
+        : (val ?? 0);
+    },
   },
   netPayInPiastres: {
     type: Number,
     default: 0,
+    get: function (val) {
+      if (val !== undefined && val !== null && val !== 0) return val;
+      if (this._doc?.amountInPiastres !== undefined && this._doc?.amountInPiastres !== null && this._doc?.amountInPiastres !== 0) {
+        return this._doc.amountInPiastres;
+      }
+      const net = this.netPay || this._doc?.amount;
+      return net ? Math.round(net * 100) : (val ?? 0);
+    },
   },
 
   // Calculated vs Actual Tax & Insurance Details
@@ -157,21 +191,26 @@ const PaycheckSchema = new mongoose.Schema({
   },
 }, {
   timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true },
+  toJSON: { virtuals: true, getters: true },
+  toObject: { virtuals: true, getters: true },
 });
 
 // Virtual accessors for legacy schema field backward compatibility (SIMP-008, AUD-ARCH-003)
 PaycheckSchema.virtual('month')
-  .get(function () { return this.period; })
+  .get(function () { return this.period || this._doc?.month; })
   .set(function (val) { this.period = val; });
 
 PaycheckSchema.virtual('date')
-  .get(function () { return this.payDate; })
+  .get(function () { return this.payDate || this._doc?.date; })
   .set(function (val) { this.payDate = val; });
 
 PaycheckSchema.virtual('amount')
-  .get(function () { return this.netPay; })
+  .get(function () {
+    if (this.netPay !== undefined && this.netPay !== null && this.netPay !== 0) return this.netPay;
+    return (this._doc?.amount !== undefined && this._doc?.amount !== null && this._doc?.amount !== 0)
+      ? this._doc.amount
+      : (this.netPay ?? 0);
+  })
   .set(function (val) {
     this.netPay = val;
     if (this.netPayInPiastres === undefined || this.netPayInPiastres === 0) {
@@ -181,9 +220,14 @@ PaycheckSchema.virtual('amount')
 
 PaycheckSchema.virtual('amountInPiastres')
   .get(function () {
-    return this.netPayInPiastres !== undefined && this.netPayInPiastres !== null
-      ? this.netPayInPiastres
-      : (this.netPay ? Math.round(this.netPay * 100) : 0);
+    if (this.netPayInPiastres !== undefined && this.netPayInPiastres !== null && this.netPayInPiastres !== 0) {
+      return this.netPayInPiastres;
+    }
+    if (this._doc?.amountInPiastres !== undefined && this._doc?.amountInPiastres !== null && this._doc?.amountInPiastres !== 0) {
+      return this._doc.amountInPiastres;
+    }
+    const amt = this.amount;
+    return amt ? Math.round(amt * 100) : 0;
   })
   .set(function (val) {
     this.netPayInPiastres = val;
@@ -193,7 +237,12 @@ PaycheckSchema.virtual('amountInPiastres')
   });
 
 PaycheckSchema.virtual('grossAmount')
-  .get(function () { return this.grossSalary; })
+  .get(function () {
+    if (this.grossSalary !== undefined && this.grossSalary !== null && this.grossSalary !== 0) return this.grossSalary;
+    return (this._doc?.grossAmount !== undefined && this._doc?.grossAmount !== null && this._doc?.grossAmount !== 0)
+      ? this._doc.grossAmount
+      : (this.grossSalary ?? 0);
+  })
   .set(function (val) {
     this.grossSalary = val;
     if (this.grossSalaryInPiastres === undefined || this.grossSalaryInPiastres === 0) {
@@ -203,9 +252,14 @@ PaycheckSchema.virtual('grossAmount')
 
 PaycheckSchema.virtual('grossAmountInPiastres')
   .get(function () {
-    return this.grossSalaryInPiastres !== undefined && this.grossSalaryInPiastres !== null
-      ? this.grossSalaryInPiastres
-      : (this.grossSalary ? Math.round(this.grossSalary * 100) : 0);
+    if (this.grossSalaryInPiastres !== undefined && this.grossSalaryInPiastres !== null && this.grossSalaryInPiastres !== 0) {
+      return this.grossSalaryInPiastres;
+    }
+    if (this._doc?.grossAmountInPiastres !== undefined && this._doc?.grossAmountInPiastres !== null && this._doc?.grossAmountInPiastres !== 0) {
+      return this._doc.grossAmountInPiastres;
+    }
+    const gross = this.grossAmount;
+    return gross ? Math.round(gross * 100) : 0;
   })
   .set(function (val) {
     this.grossSalaryInPiastres = val;
@@ -215,7 +269,13 @@ PaycheckSchema.virtual('grossAmountInPiastres')
   });
 
 PaycheckSchema.virtual('insuranceDeduction')
-  .get(function () { return this.insuranceDetails?.actualEmployeeShare || 0; })
+  .get(function () {
+    const share = this.insuranceDetails?.actualEmployeeShare;
+    if (share !== undefined && share !== null && share !== 0) return share;
+    return (this._doc?.insuranceDeduction !== undefined && this._doc?.insuranceDeduction !== null)
+      ? this._doc.insuranceDeduction
+      : (share ?? 0);
+  })
   .set(function (val) {
     if (!this.insuranceDetails) this.insuranceDetails = {};
     this.insuranceDetails.actualEmployeeShare = val;
@@ -223,7 +283,10 @@ PaycheckSchema.virtual('insuranceDeduction')
 
 PaycheckSchema.virtual('insuranceDeductionInPiastres')
   .get(function () {
-    const share = this.insuranceDetails?.actualEmployeeShare || 0;
+    if (this._doc?.insuranceDeductionInPiastres !== undefined && this._doc?.insuranceDeductionInPiastres !== null) {
+      return this._doc.insuranceDeductionInPiastres;
+    }
+    const share = this.insuranceDeduction || 0;
     return Math.round(share * 100);
   })
   .set(function (val) {
@@ -232,7 +295,13 @@ PaycheckSchema.virtual('insuranceDeductionInPiastres')
   });
 
 PaycheckSchema.virtual('taxDeduction')
-  .get(function () { return this.taxDetails?.actualTax || 0; })
+  .get(function () {
+    const tax = this.taxDetails?.actualTax;
+    if (tax !== undefined && tax !== null && tax !== 0) return tax;
+    return (this._doc?.taxDeduction !== undefined && this._doc?.taxDeduction !== null)
+      ? this._doc.taxDeduction
+      : (tax ?? 0);
+  })
   .set(function (val) {
     if (!this.taxDetails) this.taxDetails = {};
     this.taxDetails.actualTax = val;
@@ -240,7 +309,10 @@ PaycheckSchema.virtual('taxDeduction')
 
 PaycheckSchema.virtual('taxDeductionInPiastres')
   .get(function () {
-    const tax = this.taxDetails?.actualTax || 0;
+    if (this._doc?.taxDeductionInPiastres !== undefined && this._doc?.taxDeductionInPiastres !== null) {
+      return this._doc.taxDeductionInPiastres;
+    }
+    const tax = this.taxDeduction || 0;
     return Math.round(tax * 100);
   })
   .set(function (val) {

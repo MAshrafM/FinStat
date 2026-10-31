@@ -18,44 +18,46 @@ module.exports = {
       const doc = await cursor.next();
       const updates = {};
 
-      if (doc.period === undefined && doc.month !== undefined) {
+      if ((doc.period === undefined || doc.period === null || doc.period === '') && doc.month !== undefined) {
         updates.period = doc.month;
       }
       if (doc.payDate === undefined && doc.date !== undefined) {
         updates.payDate = doc.date;
       }
-      if (doc.netPay === undefined && doc.amount !== undefined) {
+      if ((doc.netPay === undefined || doc.netPay === null || doc.netPay === 0) && (doc.amount !== undefined && doc.amount !== null && doc.amount !== 0)) {
         updates.netPay = doc.amount;
       }
-      if (doc.netPayInPiastres === undefined) {
-        if (doc.amountInPiastres !== undefined) {
+      if (doc.netPayInPiastres === undefined || doc.netPayInPiastres === null || doc.netPayInPiastres === 0) {
+        if (doc.amountInPiastres !== undefined && doc.amountInPiastres !== null && doc.amountInPiastres !== 0) {
           updates.netPayInPiastres = doc.amountInPiastres;
         } else if (doc.netPay !== undefined || doc.amount !== undefined) {
-          updates.netPayInPiastres = Math.round((doc.netPay !== undefined ? doc.netPay : doc.amount) * 100);
+          const effectiveNet = doc.netPay || doc.amount || 0;
+          if (effectiveNet > 0) updates.netPayInPiastres = Math.round(effectiveNet * 100);
         }
       }
-      if (doc.grossSalary === undefined && doc.grossAmount !== undefined) {
+      if ((doc.grossSalary === undefined || doc.grossSalary === null || doc.grossSalary === 0) && (doc.grossAmount !== undefined && doc.grossAmount !== null && doc.grossAmount !== 0)) {
         updates.grossSalary = doc.grossAmount;
       }
-      if (doc.grossSalaryInPiastres === undefined) {
-        if (doc.grossAmountInPiastres !== undefined) {
+      if (doc.grossSalaryInPiastres === undefined || doc.grossSalaryInPiastres === null || doc.grossSalaryInPiastres === 0) {
+        if (doc.grossAmountInPiastres !== undefined && doc.grossAmountInPiastres !== null && doc.grossAmountInPiastres !== 0) {
           updates.grossSalaryInPiastres = doc.grossAmountInPiastres;
         } else if (doc.grossSalary !== undefined || doc.grossAmount !== undefined) {
-          updates.grossSalaryInPiastres = Math.round((doc.grossSalary !== undefined ? doc.grossSalary : doc.grossAmount) * 100);
+          const effectiveGross = doc.grossSalary || doc.grossAmount || 0;
+          if (effectiveGross > 0) updates.grossSalaryInPiastres = Math.round(effectiveGross * 100);
         }
       }
-      if (doc.insuranceDetails === undefined || doc.insuranceDetails?.actualEmployeeShare === undefined) {
-        if (doc.insuranceDeduction !== undefined) {
+      if (doc.insuranceDetails === undefined || doc.insuranceDetails?.actualEmployeeShare === undefined || doc.insuranceDetails?.actualEmployeeShare === 0) {
+        if (doc.insuranceDeduction !== undefined && doc.insuranceDeduction !== null && doc.insuranceDeduction !== 0) {
           updates['insuranceDetails.actualEmployeeShare'] = doc.insuranceDeduction;
-          if (doc.insuranceDetails?.expectedEmployeeShare === undefined) {
+          if (doc.insuranceDetails?.expectedEmployeeShare === undefined || doc.insuranceDetails?.expectedEmployeeShare === 0) {
             updates['insuranceDetails.expectedEmployeeShare'] = doc.insuranceDeduction;
           }
         }
       }
-      if (doc.taxDetails === undefined || doc.taxDetails?.actualTax === undefined) {
-        if (doc.taxDeduction !== undefined) {
+      if (doc.taxDetails === undefined || doc.taxDetails?.actualTax === undefined || doc.taxDetails?.actualTax === 0) {
+        if (doc.taxDeduction !== undefined && doc.taxDeduction !== null && doc.taxDeduction !== 0) {
           updates['taxDetails.actualTax'] = doc.taxDeduction;
-          if (doc.taxDetails?.expectedTax === undefined) {
+          if (doc.taxDetails?.expectedTax === undefined || doc.taxDetails?.expectedTax === 0) {
             updates['taxDetails.expectedTax'] = doc.taxDeduction;
           }
         }

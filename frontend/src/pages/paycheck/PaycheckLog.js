@@ -6,14 +6,19 @@ import PaycheckTable from './PaycheckTable';
 import { getPaychecksLog, deletePaycheck, getPaychecks } from '../../services/paycheckService';
 import PaginationControls from '../../components/PaginationControls';
 import ProtectedAction from '../../components/common/ProtectedAction';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/formatters';
 
 const PaycheckLog = () => {
+    const { showToast } = useToast();
     const [paychecks, setPaychecks] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [selectedYear, setSelectedYear] = useState('all');
+    const [deletingPaycheckId, setDeletingPaycheckId] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [summaryData, setSummaryData] = useState({
         totalCash: 0,
         totalPrepaid: 0,
@@ -42,8 +47,8 @@ const PaycheckLog = () => {
 
         // Process all paychecks
         paychecksData.forEach(paycheck => {
-            const year = (paycheck.month || paycheck.period || '').substring(0, 4) || new Date(paycheck.payDate || paycheck.date || Date.now()).getFullYear().toString();
-            const amount = paycheck.amount !== undefined ? paycheck.amount : (paycheck.netPay || 0);
+            const year = (paycheck.period || paycheck.month || '').substring(0, 4) || new Date(paycheck.payDate || paycheck.date || Date.now()).getFullYear().toString();
+            const amount = Number(paycheck.netPay !== undefined && paycheck.netPay !== null && paycheck.netPay !== 0 ? paycheck.netPay : (paycheck.amount || 0));
 
             // Initialize year if not exists
             if (!yearlyBreakdown[year]) {
@@ -118,9 +123,17 @@ const PaycheckLog = () => {
         loadPaychecks(currentPage, selectedYear);
     }, [currentPage, selectedYear, loadPaychecks]);
 
-    const handleDeletePaycheck = async (id) => {
-        if (window.confirm('Are you sure you want to delete this entry?')) {
-            await deletePaycheck(id);
+    const handleDeleteClick = (id) => {
+        setDeletingPaycheckId(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deletingPaycheckId) return;
+        setIsDeleting(true);
+        try {
+            await deletePaycheck(deletingPaycheckId);
+            showToast('Paycheck entry deleted successfully', 'success');
+            setDeletingPaycheckId(null);
             loadPaychecks(currentPage, selectedYear);
             // Refresh summary data
             const updatedPaychecks = await getPaychecks();
@@ -128,6 +141,11 @@ const PaycheckLog = () => {
                 const list = Array.isArray(updatedPaychecks) ? updatedPaychecks : (updatedPaychecks.data || []);
                 calculateSummaryData(list);
             }
+        } catch (err) {
+            console.error('Failed to delete paycheck:', err);
+            showToast('Failed to delete paycheck entry', 'error');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -370,7 +388,7 @@ const PaycheckLog = () => {
 
             {/* Paycheck Table */}
             <div className="table-section">
-                <PaycheckTable paychecks={paychecks} onPaycheckDeleted={handleDeletePaycheck} />
+                <PaycheckTable paychecks={paychecks} onPaycheckDeleted={handleDeleteClick} />
                 <PaginationControls
                     page={currentPage}
                     totalPages={totalPages}
@@ -379,6 +397,18 @@ const PaycheckLog = () => {
                     showAlways
                 />
             </div>
+
+            <ConfirmModal
+                isOpen={Boolean(deletingPaycheckId)}
+                title="Delete Paycheck"
+                message="Are you sure you want to delete this paycheck entry? This action cannot be undone."
+                confirmText="Delete Paycheck"
+                cancelText="Cancel"
+                variant="danger"
+                isLoading={isDeleting}
+                onConfirm={handleConfirmDelete}
+                onCancel={() => !isDeleting && setDeletingPaycheckId(null)}
+            />
         </div>
     );
 };

@@ -51,16 +51,16 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
         return createdB - createdA;
       }),
       monthlyTotal: entries.reduce((sum, entry) => {
-        const val = Number(entry.amount !== undefined && entry.amount !== null ? entry.amount : (entry.netPay || 0)) || 0;
+        const val = Number(entry.netPay !== undefined && entry.netPay !== null && entry.netPay !== 0 ? entry.netPay : (entry.amount || 0)) || 0;
         return sum + val;
       }, 0),
       monthlyGrossTotal: entries.reduce((sum, entry) => {
-        const amt = Number(entry.amount !== undefined && entry.amount !== null ? entry.amount : (entry.netPay || 0)) || 0;
-        const tax = Number(entry.taxDeduction || entry.taxDetails?.actualTax || entry.taxDetails?.expectedTax || 0) || 0;
-        const ins = Number(entry.insuranceDeduction || entry.insuranceDetails?.actualEmployeeShare || entry.insuranceDetails?.expectedEmployeeShare || 0) || 0;
+        const amt = Number(entry.netPay !== undefined && entry.netPay !== null && entry.netPay !== 0 ? entry.netPay : (entry.amount || 0)) || 0;
+        const tax = Number(entry.taxDetails?.actualTax ?? entry.taxDeduction ?? entry.taxDetails?.expectedTax ?? 0) || 0;
+        const ins = Number(entry.insuranceDetails?.actualEmployeeShare ?? entry.insuranceDeduction ?? entry.insuranceDetails?.expectedEmployeeShare ?? 0) || 0;
         const martyrs = Number(entry.martyrsFund || 0) || 0;
-        const ded = Number(entry.totalDeductions || (tax + ins + martyrs)) || 0;
-        const gr = Number(entry.grossSalary || entry.grossAmount || (amt + ded)) || 0;
+        const ded = Number(entry.totalDeductions !== undefined && entry.totalDeductions !== null ? entry.totalDeductions : (tax + ins + martyrs)) || 0;
+        const gr = Number(entry.grossSalary !== undefined && entry.grossSalary !== null && entry.grossSalary !== 0 ? entry.grossSalary : (entry.grossAmount || (amt + ded))) || 0;
         return sum + gr;
       }, 0),
       rowCount: entries.length,
@@ -97,13 +97,13 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
             groupedData.map((monthGroup) => (
               <React.Fragment key={monthGroup.month}>
                 {monthGroup.entries.map((entry, entryIndex) => {
-                  const amountVal = Number(entry.amount !== undefined && entry.amount !== null ? entry.amount : (entry.netPay || 0)) || 0;
-                  const taxVal = Number(entry.taxDeduction || entry.taxDetails?.actualTax || entry.taxDetails?.expectedTax || 0) || 0;
-                  const insVal = Number(entry.insuranceDeduction || entry.insuranceDetails?.actualEmployeeShare || entry.insuranceDetails?.expectedEmployeeShare || 0) || 0;
+                  const amountVal = Number(entry.netPay !== undefined && entry.netPay !== null && entry.netPay !== 0 ? entry.netPay : (entry.amount || 0)) || 0;
+                  const taxVal = Number(entry.taxDetails?.actualTax ?? entry.taxDeduction ?? entry.taxDetails?.expectedTax ?? 0) || 0;
+                  const insVal = Number(entry.insuranceDetails?.actualEmployeeShare ?? entry.insuranceDeduction ?? entry.insuranceDetails?.expectedEmployeeShare ?? 0) || 0;
                   const martyrsVal = Number(entry.martyrsFund || 0) || 0;
 
                   let deductionsVal = Number(entry.totalDeductions !== undefined && entry.totalDeductions !== null ? entry.totalDeductions : (taxVal + insVal + martyrsVal)) || 0;
-                  let grossVal = Number(entry.grossSalary || entry.grossAmount || 0) || 0;
+                  let grossVal = Number(entry.grossSalary !== undefined && entry.grossSalary !== null && entry.grossSalary !== 0 ? entry.grossSalary : (entry.grossAmount || 0)) || 0;
 
                   if (grossVal === 0 && (amountVal > 0 || deductionsVal > 0)) {
                     grossVal = amountVal + deductionsVal;
