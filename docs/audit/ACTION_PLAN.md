@@ -138,7 +138,7 @@ graph LR
 | **Phase 6A** | Navigation & Page Consolidation | `SIMP-002`, `SIMP-003`, `SIMP-004`, `SIMP-007`, `AUD-ARCH-001` | 1.5 days | Yes (with 6B) | `[x] COMPLETE` |
 | **Phase 6B** | Schema & UI Hygiene | `SIMP-008`, `SIMP-009`, `GAP-007`, `GAP-008`, `GAP-010`, `AUD-ARCH-003` | 1.5 days | Yes (with 6A) | `[x] COMPLETE` |
 | **Phase 7A** | Ingestion & Export | `FEAT-001`, `FEAT-003`, `GAP-005`, `GAP-006` | 2 days | Yes (with 7B) | `[ ] NOT STARTED` |
-| **Phase 7B** | Financial Bridges | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003` | 2 days | Yes (with 7A) | `[ ] NOT STARTED` |
+| **Phase 7B** | Financial Bridges & Secondary UI Hygiene | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003`, `AUD-UI-DEBT-002` | 2 days | Yes (with 7A) | `[ ] NOT STARTED` |
 | **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[ ] NOT STARTED` |
 | **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[ ] NOT STARTED` |
 | **Phase 8A** | Backend Service Decoupling | `AUD-ARCH-002` | 2.5 days | No | `[ ] NOT STARTED` |
@@ -1555,10 +1555,39 @@ cd d:/Projects/FinStat/frontend && npm run build
 
 ---
 
+### Step 7B.3: [AUD-UI-DEBT-002] Standardize Secondary & Administrative Modal Confirmations
+* **Requires User Input**: No.
+* **Est. Effort**: 1.5h
+* **Target Files**:
+  * `frontend/src/pages/admin/BackupPage.js`
+  * `frontend/src/pages/security/SecuritySettingsPage.js`
+  * `frontend/src/pages/expenditure/RulesPage.js`
+  * `frontend/src/pages/expenditure/BudgetsPage.js`
+  * `frontend/src/pages/expenditure/RecurringSuggestionsPage.js`
+  * `frontend/src/pages/trades/CorporateActionsList.js`
+  * `frontend/src/pages/salary/SalaryHistory.js`
+  * `frontend/src/pages/salary/SalaryProfilePage.js`
+  * `frontend/src/pages/credit-cards/CreditCardPage.js`
+  * `frontend/src/pages/real-estate/RealEstateLogPage.js`
+  * `frontend/src/pages/mutual-funds/MutualFundLogPage.js`
+  * `frontend/src/pages/gold/GoldLogPage.js`
+  * `frontend/src/pages/currency/CurrencyLogPage.js`
+  * `frontend/src/pages/currency/CurrencyDetailPage.js`
+  * `frontend/src/pages/certificates/CertificateDetailPage.js`
+* **File-Count Cap**: 15 files.
+* **Actions**: Replace remaining legacy `window.confirm()` and `alert()` calls across secondary administrative, configuration, and secondary log screens with styled, accessible `<ConfirmModal />` and `useToast` notifications.
+* **Definition of Done (DoD)**:
+  - [ ] Zero raw `window.confirm()` or `alert()` calls remaining across the frontend application.
+  - [ ] All destructive deletions across secondary/admin modules require explicit accessible `<ConfirmModal />` confirmation.
+  - [ ] Appended entry to `CHANGELOG.md`.
+
+---
+
 ### Phase 7B Verification Gate
 *(Expected verification timeout: < 120s)*
 - [ ] Income logging atomically credits target bank balance.
 - [ ] Rebalance recommendation opens pre-filled trade ticket.
+- [ ] All 14 secondary/administrative confirmation dialogs migrated to `<ConfirmModal />` with 0 remaining raw alerts.
 - [ ] **Phase 7B Signed Off**: `[ ] YES` | Date: `__________`
 
 ---
@@ -1807,7 +1836,7 @@ cd d:/Projects/FinStat/frontend && npm run build
 | **AUD-TEST-002** | Void of Frontend Component & User-Journey Test Coverage | **Phase 5B, Step 5B.2** |
 | **AUD-TEST-DEBT-001** | Substituted 5C Edge-Case Tests Pending Dedicated Test Strengthening Session | **Pre-Phase 7A Session** |
 | **AUD-ARCH-004** | Eager Loading of Context Providers in ProtectedRoute (Jest Suspense Timing) | **Phase 6A, Step 6A.1 & Pre-Phase 7A Review** |
-| **AUD-UI-DEBT-002** | 14 Secondary & Administrative Legacy Confirmation Dialogs Deferred from 6B.2 | **Phase 7B / Pre-Phase 8 Review** |
+| **AUD-UI-DEBT-002** | 14 Secondary & Administrative Legacy Confirmation Dialogs Deferred from 6B.2 | **Phase 7B, Step 7B.3** |
 | **SIMP-001** | Purge Abandoned Legacy Paycheck CRUD Subsystem | **Phase 1, Step 1.8** |
 | **SIMP-002** | Consolidate Twin Calendar & Fiscal Year Analysis Pages | **Phase 6A, Step 6A.3** |
 | **SIMP-003** | Unify Redundant Home Launcher (`/dashboard`) with Profile Summary | **Phase 6A, Step 6A.1** |
