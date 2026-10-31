@@ -1,18 +1,20 @@
 const { z } = require('zod');
 const { paramsIdSchema, paginationQuerySchema, dateStringSchema, sanitizeQueryParam } = require('./commonSchemas');
 
-const ALLOWED_BROKERS = ['Thndr', 'EFG', 'Telda'];
 const ALLOWED_TRADE_TYPES = ['Buy', 'Sell', 'TopUp', 'Dividend', 'Withdraw', 'Split'];
 const STOCK_CODE_REQUIRED_TYPES = ['Buy', 'Sell', 'Dividend', 'Split'];
 
 /**
  * Trade creation schema with cross-field refinement ensuring stockCode exists for equity trades.
+ * Supports Egyptian regional presets and custom brokers up to 50 characters [GAP-007].
  */
 const createSchema = z.object({
   date: dateStringSchema,
-  broker: z.enum(ALLOWED_BROKERS, {
-    message: `Broker must be one of: ${ALLOWED_BROKERS.join(', ')}`,
-  }),
+  broker: z
+    .string({ message: 'Broker must be a string' })
+    .trim()
+    .min(1, 'Broker cannot be empty')
+    .max(50, 'Broker cannot exceed 50 characters'),
   stockCode: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? undefined : val),
     z.string({ message: 'Stock code must be a string' }).trim().min(1, 'Stock code cannot be empty').optional()
@@ -57,9 +59,12 @@ const updateSchema = z.object({
     (val) => (val === '' || val === null || val === undefined ? undefined : val),
     dateStringSchema.optional()
   ),
-  broker: z.enum(ALLOWED_BROKERS, {
-    message: `Broker must be one of: ${ALLOWED_BROKERS.join(', ')}`,
-  }).optional(),
+  broker: z
+    .string({ message: 'Broker must be a string' })
+    .trim()
+    .min(1, 'Broker cannot be empty')
+    .max(50, 'Broker cannot exceed 50 characters')
+    .optional(),
   stockCode: z.preprocess(
     (val) => (val === '' || val === null || val === undefined ? undefined : val),
     z.string({ message: 'Stock code must be a string' }).trim().min(1, 'Stock code cannot be empty').optional()

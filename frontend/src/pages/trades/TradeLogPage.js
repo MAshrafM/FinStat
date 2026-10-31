@@ -118,7 +118,11 @@ const TradeLogPage = () => {
       <div className="filter-controls">
         <button onClick={() => handleFilterClick(null)} className={!brokerFilter ? 'active' : ''}>All Brokers</button>
         <button onClick={() => handleFilterClick('Thndr')} className={brokerFilter === 'Thndr' ? 'active' : ''}>Thndr</button>
+        <button onClick={() => handleFilterClick('EFG Hermes')} className={brokerFilter === 'EFG Hermes' ? 'active' : ''}>EFG Hermes</button>
         <button onClick={() => handleFilterClick('EFG')} className={brokerFilter === 'EFG' ? 'active' : ''}>EFG</button>
+        <button onClick={() => handleFilterClick('Mubasher')} className={brokerFilter === 'Mubasher' ? 'active' : ''}>Mubasher</button>
+        <button onClick={() => handleFilterClick('CI Capital')} className={brokerFilter === 'CI Capital' ? 'active' : ''}>CI Capital</button>
+        <button onClick={() => handleFilterClick('Beltone')} className={brokerFilter === 'Beltone' ? 'active' : ''}>Beltone</button>
         <button onClick={() => handleFilterClick('Telda')} className={brokerFilter === 'Telda' ? 'active' : ''}>Telda</button>
         <button onClick={() => handleFilterClick('TopUp')} className={brokerFilter === 'TopUp' ? 'active' : ''}>Top Ups</button>
         <DebouncedSearchInput

@@ -18,7 +18,8 @@ const CorporateActionSchema = new mongoose.Schema({
   broker: {
     type: String,
     required: true,
-    enum: ['Thndr', 'EFG', 'Telda'],
+    trim: true,
+    maxlength: [50, 'Broker name cannot exceed 50 characters'],
   },
   type: {
     type: String,

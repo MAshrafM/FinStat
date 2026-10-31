@@ -2,7 +2,6 @@
 const { z } = require('zod');
 const { paramsIdSchema, paginationQuerySchema, dateStringSchema, sanitizeQueryParam } = require('./commonSchemas');
 
-const ALLOWED_BROKERS = ['Thndr', 'EFG', 'Telda'];
 const ALLOWED_TYPES = ['split', 'bonus'];
 
 const createCorporateActionSchema = z.object({
@@ -11,9 +10,11 @@ const createCorporateActionSchema = z.object({
     .trim()
     .min(1, 'Stock code cannot be empty')
     .toUpperCase(),
-  broker: z.enum(ALLOWED_BROKERS, {
-    message: `Broker must be one of: ${ALLOWED_BROKERS.join(', ')}`,
-  }),
+  broker: z
+    .string({ message: 'Broker must be a string' })
+    .trim()
+    .min(1, 'Broker cannot be empty')
+    .max(50, 'Broker cannot exceed 50 characters'),
   type: z.enum(ALLOWED_TYPES, {
     message: `Type must be one of: ${ALLOWED_TYPES.join(', ')}`,
   }),

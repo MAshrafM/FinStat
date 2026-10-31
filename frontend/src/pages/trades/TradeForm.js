@@ -4,11 +4,31 @@ import { formatCurrency } from '../../utils/formatters';
 import { useData } from '../../context/DataContext';
 import './Trades.css';
 
+export const PRESET_BROKERS = [
+    'Thndr',
+    'EFG Hermes',
+    'EFG',
+    'Mubasher',
+    'CI Capital',
+    'Beltone',
+    'Arabeya Online',
+    'Telda',
+];
+
 const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const { openPosData, tradesData } = useData();
+    const [selectedBrokerOption, setSelectedBrokerOption] = useState(() => {
+        const b = initialData?.broker || 'Thndr';
+        return PRESET_BROKERS.includes(b) ? b : 'Other';
+    });
+    const [customBroker, setCustomBroker] = useState(() => {
+        const b = initialData?.broker || '';
+        return PRESET_BROKERS.includes(b) ? '' : b;
+    });
+
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
-        broker: 'Thndr',
+        broker: initialData?.broker || 'Thndr',
         type: 'Buy',
         stockCode: '',
         shares: '',
@@ -33,9 +53,13 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
     useEffect(() => {
         if (isEdit && initialData) {
+            const b = initialData.broker || 'Thndr';
+            const isPreset = PRESET_BROKERS.includes(b);
+            setSelectedBrokerOption(isPreset ? b : 'Other');
+            setCustomBroker(isPreset ? '' : b);
             setFormData({
                 date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : '',
-                broker: initialData.broker || 'Thndr',
+                broker: b,
                 type: initialData.type || 'Buy',
                 stockCode: initialData.stockCode || '',
                 shares: initialData.shares || '',
@@ -116,8 +140,30 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const isCashTrade = ['TopUp', 'Withdraw'].includes(formData.type);
     const isSellTransaction = formData.type === 'Sell';
 
+    const handleBrokerDropdownChange = (e) => {
+        const value = e.target.value;
+        setSelectedBrokerOption(value);
+        if (value === 'Other') {
+            setFormData(prev => ({ ...prev, broker: customBroker.trim() }));
+        } else {
+            setFormData(prev => ({ ...prev, broker: value }));
+        }
+    };
+
+    const handleCustomBrokerChange = (e) => {
+        const value = e.target.value.slice(0, 50);
+        setCustomBroker(value);
+        setFormData(prev => ({ ...prev, broker: value.trim() }));
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        const resolvedBroker = (selectedBrokerOption === 'Other' ? customBroker : formData.broker).trim();
+        if (!resolvedBroker) {
+            alert('Please select or specify a valid broker name.');
+            return;
+        }
 
         // Validation for sell transactions
         if (formData.type === 'Sell' && !isEdit) {
@@ -132,6 +178,7 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
         const payload = {
             ...formData,
+            broker: resolvedBroker,
             shares: parseFloat(formData.shares) || 0,
             price: parseFloat(formData.price) || 0,
             fees: parseFloat(formData.fees) || 0,
@@ -157,12 +204,31 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             </div>
             <div className="form-group">
                 <label>Broker</label>
-                <select name="broker" value={formData.broker} onChange={handleChange}>
-                    <option value="Thndr">Thndr</option>
-                    <option value="EFG">EFG</option>
-                    <option value="Telda">Telda</option>
+                <select
+                    name="brokerSelect"
+                    value={selectedBrokerOption}
+                    onChange={handleBrokerDropdownChange}
+                >
+                    {PRESET_BROKERS.map(b => (
+                        <option key={b} value={b}>{b}</option>
+                    ))}
+                    <option value="Other">Other (Custom Broker)</option>
                 </select>
             </div>
+            {selectedBrokerOption === 'Other' && (
+                <div className="form-group">
+                    <label>Custom Broker Name</label>
+                    <input
+                        type="text"
+                        name="customBroker"
+                        placeholder="e.g., Interactive Brokers, QNB Finansbank"
+                        value={customBroker}
+                        onChange={handleCustomBrokerChange}
+                        maxLength={50}
+                        required
+                    />
+                </div>
+            )}
             <div className="form-group">
                 <label>Transaction Type</label>
                 <select name="type" value={formData.type} onChange={handleChange}>

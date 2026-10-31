@@ -467,5 +467,91 @@ describe('Step 5B.1b: [AUD-TEST-001] Trades API Integration Tests', () => {
       expect(res.body.corporateAction.type).toBe('split');
     });
   });
+
+  describe('7. [GAP-007] Expanded Broker Configuration & Regional Presets', () => {
+    it('accepts Egyptian regional preset brokers (EFG Hermes, Mubasher, CI Capital, Beltone, Arabeya Online)', async () => {
+      const presets = ['EFG Hermes', 'Mubasher', 'CI Capital', 'Beltone', 'Arabeya Online'];
+      for (const broker of presets) {
+        const res = await request(app)
+          .post('/api/trades')
+          .set('Authorization', managerAuth)
+          .send({
+            date: '2024-06-01',
+            broker,
+            stockCode: 'COMI',
+            type: 'Buy',
+            shares: 10,
+            price: 50,
+            fees: 5,
+            totalValue: 505,
+          });
+
+        expect(res.status).toBe(201);
+        expect(res.body.broker).toBe(broker);
+      }
+    });
+
+    it('accepts custom broker string up to 50 characters (e.g. Interactive Brokers)', async () => {
+      const customBroker = 'Interactive Brokers UK';
+      const res = await request(app)
+        .post('/api/trades')
+        .set('Authorization', managerAuth)
+        .send({
+          date: '2024-06-02',
+          broker: customBroker,
+          type: 'TopUp',
+          totalValue: 10000,
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.broker).toBe(customBroker);
+    });
+
+    it('rejects broker name exceeding 50 characters with HTTP 400', async () => {
+      const longBroker = 'A'.repeat(51);
+      const res = await request(app)
+        .post('/api/trades')
+        .set('Authorization', managerAuth)
+        .send({
+          date: '2024-06-03',
+          broker: longBroker,
+          type: 'TopUp',
+          totalValue: 1000,
+        });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('rejects empty or whitespace-only broker name with HTTP 400', async () => {
+      const res = await request(app)
+        .post('/api/trades')
+        .set('Authorization', managerAuth)
+        .send({
+          date: '2024-06-04',
+          broker: '   ',
+          type: 'TopUp',
+          totalValue: 1000,
+        });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('preserves and returns historical enum brokers (Thndr, EFG, Telda)', async () => {
+      for (const broker of ['Thndr', 'EFG', 'Telda']) {
+        const res = await request(app)
+          .post('/api/trades')
+          .set('Authorization', managerAuth)
+          .send({
+            date: '2024-06-05',
+            broker,
+            type: 'TopUp',
+            totalValue: 500,
+          });
+
+        expect(res.status).toBe(201);
+        expect(res.body.broker).toBe(broker);
+      }
+    });
+  });
 });
 
