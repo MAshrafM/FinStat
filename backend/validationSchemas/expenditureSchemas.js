@@ -227,10 +227,43 @@ const querySchema = paginationQuerySchema.extend({
     .optional(),
 });
 
+/**
+ * Bulk category reassignment schema [GAP-008]
+ * Maximum 100 items per request for $O(1)$ batch update.
+ */
+const bulkCategorySchema = z
+  .object({
+    ids: z
+      .array(mongoIdSchema, { message: 'ids must be an array of valid IDs' })
+      .min(1, 'At least one ID is required')
+      .max(100, 'Cannot update more than 100 items at once'),
+    category: z
+      .string({ message: 'Category must be a string' })
+      .trim()
+      .min(1, 'Category cannot be empty')
+      .max(100, 'Category cannot exceed 100 characters'),
+  })
+  .strict();
+
+/**
+ * Bulk delete schema [GAP-008]
+ * Maximum 50 items per request to guarantee ACID transaction completion.
+ */
+const bulkDeleteSchema = z
+  .object({
+    ids: z
+      .array(mongoIdSchema, { message: 'ids must be an array of valid IDs' })
+      .min(1, 'At least one ID is required')
+      .max(50, 'Cannot delete more than 50 items at once'),
+  })
+  .strict();
+
 module.exports = {
   createSchema,
   updateSchema,
   paramsSchema,
   querySchema,
   splitItemSchema,
+  bulkCategorySchema,
+  bulkDeleteSchema,
 };

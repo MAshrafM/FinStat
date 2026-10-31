@@ -12,6 +12,8 @@ const {
   updateSchema,
   paramsSchema,
   querySchema,
+  bulkCategorySchema,
+  bulkDeleteSchema,
 } = require('../validationSchemas/expenditureSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 const {
@@ -222,6 +224,86 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
   });
 
   res.status(201).json(createdDoc);
+}));
+
+// @route   POST api/expenditures/bulk-category
+// @desc    Bulk update category for selected expenditures [GAP-008]
+router.post('/bulk-category', auth, validate({ body: bulkCategorySchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+
+  const { ids, category } = getValidated(req, 'body');
+
+  const result = await Expenditure.updateMany(
+    {
+      _id: { $in: ids },
+      user: req.effectiveUserId,
+      deletedAt: null,
+    },
+    {
+      $set: { categories: [category] },
+    }
+  );
+
+  res.json({
+    success: true,
+    matchedCount: result.matchedCount,
+    modifiedCount: result.modifiedCount,
+  });
+}));
+
+// @route   POST api/expenditures/bulk-delete
+// @desc    Bulk soft-delete expenditures and revert balance propagation within an ACID transaction [GAP-008]
+router.post('/bulk-delete', auth, validate({ body: bulkDeleteSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+
+  const { ids } = getValidated(req, 'body');
+
+  const deletedCount = await executeInTransaction(async (session) => {
+    // 1. Fetch all matching active documents belonging to this user
+    const expenditures = await Expenditure.find({
+      _id: { $in: ids },
+      user: req.effectiveUserId,
+      deletedAt: null,
+    })
+      .sort({ date: 1, _id: 1 })
+      .session(session);
+
+    if (expenditures.length === 0) {
+      return 0;
+    }
+
+    // 2. Revert balances for each expenditure and soft delete
+    for (const exp of expenditures) {
+      const deltas = calculateSignedDeltas(exp);
+      const revertedDeltas = deltas.map(({ account, delta, deltaInPiastres }) => ({
+        account,
+        delta: -delta,
+        deltaInPiastres: -deltaInPiastres,
+      }));
+
+      // Revert balance changes on future records
+      await propagateBalanceChanges(
+        exp.user,
+        revertedDeltas,
+        exp.date,
+        exp._id,
+        session
+      );
+
+      await exp.softDelete(session);
+    }
+
+    return expenditures.length;
+  });
+
+  res.json({
+    success: true,
+    deletedCount,
+  });
 }));
 
 // @route   GET api/expenditures/:id

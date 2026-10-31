@@ -29,3 +29,9 @@ export const updateExpenditure = (id, data, options = {}) =>
 
 export const deleteExpenditure = (id, options = {}) =>
   apiClient.delete(`${API_URL}/${id}`, options);
+
+export const bulkUpdateCategory = (ids, category, options = {}) =>
+  apiClient.post(`${API_URL}/bulk-category`, { ids, category }, options);
+
+export const bulkDeleteExpenditures = (ids, options = {}) =>
+  apiClient.post(`${API_URL}/bulk-delete`, { ids }, options);

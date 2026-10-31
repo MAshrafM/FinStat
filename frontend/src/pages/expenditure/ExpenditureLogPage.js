@@ -1,7 +1,13 @@
 // frontend/src/pages/expenditure/ExpenditureLogPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { getExpenditures, deleteExpenditure, getLatestExpenditure } from '../../services/expenditureService';
+import {
+  getExpenditures,
+  deleteExpenditure,
+  getLatestExpenditure,
+  bulkUpdateCategory,
+  bulkDeleteExpenditures,
+} from '../../services/expenditureService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { FaPencilAlt, FaTrash, FaUniversity, FaMoneyBillWave, FaCreditCard, FaWallet, FaPlus } from 'react-icons/fa';
 import '../../components/Table.css'; // Reuse table styles
@@ -34,6 +40,73 @@ const ExpenditureLogPage = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [latestHolding, setLatestHolding] = useState({ bank: 0, cash: 0, prepaid: 0 });
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [targetCategory, setTargetCategory] = useState(EXPENDITURE_CATEGORIES[0]?.name || 'Groceries');
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [isBulkUpdatingCategory, setIsBulkUpdatingCategory] = useState(false);
+
+  const handleToggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    if (processedExpenditures.length === 0) return;
+    const allSelected = processedExpenditures.every((log) => selectedIds.has(log._id));
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(processedExpenditures.map((log) => log._id)));
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkCategoryReassign = async () => {
+    if (selectedIds.size === 0) return;
+    setIsBulkUpdatingCategory(true);
+    try {
+      const idsArray = Array.from(selectedIds);
+      await bulkUpdateCategory(idsArray, targetCategory);
+      showToast(`Updated category to "${targetCategory}" for ${idsArray.length} transaction${idsArray.length === 1 ? '' : 's'}`, 'success');
+      setSelectedIds(new Set());
+      loadExpenditures(currentPage, selectedType);
+    } catch (err) {
+      console.error('Failed to update categories:', err);
+      showToast(err.response?.data?.message || 'Failed to update categories', 'error');
+    } finally {
+      setIsBulkUpdatingCategory(false);
+    }
+  };
+
+  const handleConfirmBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setIsBulkDeleting(true);
+    try {
+      const idsArray = Array.from(selectedIds);
+      await bulkDeleteExpenditures(idsArray);
+      showToast(`Deleted ${idsArray.length} transaction${idsArray.length === 1 ? '' : 's'} successfully`, 'success');
+      setSelectedIds(new Set());
+      setShowBulkDeleteModal(false);
+      loadExpenditures(currentPage, selectedType);
+      loadLatestHolding();
+    } catch (err) {
+      console.error('Failed to bulk delete expenditures:', err);
+      showToast(err.response?.data?.message || 'Failed to delete expenditures', 'error');
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
 
   const loadExpenditures = useCallback((page, typeFilter) => {
     setIsLoading(true);
@@ -108,6 +181,7 @@ const ExpenditureLogPage = () => {
 
   const handleFilterChange = (type) => {
     setSelectedType(type);
+    setSelectedIds(new Set());
     setCurrentPage(1); // Reset to first page when changing filter
   };
 
@@ -289,10 +363,79 @@ const ExpenditureLogPage = () => {
           )}
         </div>
       </div>
+
+      {selectedIds.size > 0 && (
+        <div className="bulk-actions-bar" role="region" aria-label="Bulk actions toolbar">
+          <div className="bulk-actions-info">
+            <span className="bulk-count-badge">{selectedIds.size} selected</span>
+            <button
+              type="button"
+              className="bulk-btn bulk-btn-clear"
+              onClick={handleClearSelection}
+              disabled={isBulkUpdatingCategory || isBulkDeleting}
+            >
+              Deselect All
+            </button>
+          </div>
+
+          <div className="bulk-actions-controls">
+            <label htmlFor="bulk-category-select" style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500 }}>
+              Category:
+            </label>
+            <select
+              id="bulk-category-select"
+              className="bulk-category-select"
+              value={targetCategory}
+              onChange={(e) => setTargetCategory(e.target.value)}
+              disabled={isBulkUpdatingCategory || isBulkDeleting}
+            >
+              {EXPENDITURE_CATEGORIES.map((cat) => (
+                <option key={cat.name} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+
+            <ProtectedAction tooltip="View-only access">
+              <button
+                type="button"
+                className="bulk-btn bulk-btn-reassign"
+                onClick={handleBulkCategoryReassign}
+                disabled={isBulkUpdatingCategory || isBulkDeleting}
+              >
+                {isBulkUpdatingCategory ? 'Updating...' : 'Reassign Category'}
+              </button>
+            </ProtectedAction>
+
+            <ProtectedAction tooltip="View-only access">
+              <button
+                type="button"
+                className="bulk-btn bulk-btn-delete"
+                onClick={() => setShowBulkDeleteModal(true)}
+                disabled={isBulkUpdatingCategory || isBulkDeleting}
+              >
+                Delete Selected
+              </button>
+            </ProtectedAction>
+          </div>
+        </div>
+      )}
+
       <div className="table-container">
         <table className="styled-table">
           <thead>
             <tr>
+              <th className="checkbox-cell" style={{ width: '40px' }}>
+                <input
+                  type="checkbox"
+                  aria-label="Select all expenditures on this page"
+                  checked={
+                    processedExpenditures.length > 0 &&
+                    processedExpenditures.every((log) => selectedIds.has(log._id))
+                  }
+                  onChange={handleToggleSelectAll}
+                />
+              </th>
               <th>Date</th>
               <th>Bank</th>
               <th>Cash</th>
@@ -307,19 +450,27 @@ const ExpenditureLogPage = () => {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan="9" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                <td colSpan="10" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
                   Loading expenditures...
                 </td>
               </tr>
             ) : processedExpenditures.length === 0 ? (
               <tr>
-                <td colSpan="9" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                <td colSpan="10" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
                   No expenditure records found. Click <strong>Add Expenditure</strong> to record a new transaction.
                 </td>
               </tr>
             ) : (
               processedExpenditures.map(log => (
                 <tr key={log._id}>
+                  <td className="checkbox-cell">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select transaction ${log.description || log._id}`}
+                      checked={selectedIds.has(log._id)}
+                      onChange={() => handleToggleSelect(log._id)}
+                    />
+                  </td>
                   <td data-label="Date">{formatDate(log.date)}</td>
                   <td data-label="Bank">{formatCurrency(log.runningBalances?.bank ?? log.bank)}</td>
                   <td data-label="Cash">{formatCurrency(log.runningBalances?.cash ?? log.cash)}</td>
@@ -520,7 +671,10 @@ const ExpenditureLogPage = () => {
       <PaginationControls
         page={currentPage}
         totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        onPageChange={(page) => {
+          setSelectedIds(new Set());
+          setCurrentPage(page);
+        }}
       />
 
       <ConfirmModal
@@ -533,6 +687,18 @@ const ExpenditureLogPage = () => {
         isLoading={isDeleting}
         onConfirm={handleConfirmDelete}
         onCancel={() => !isDeleting && setDeletingId(null)}
+      />
+
+      <ConfirmModal
+        isOpen={showBulkDeleteModal}
+        title="Delete Selected Expenditures"
+        message={`Are you sure you want to delete ${selectedIds.size} expenditure transaction${selectedIds.size === 1 ? '' : 's'}? Running balances for subsequent transactions will be automatically adjusted.`}
+        confirmText={`Delete ${selectedIds.size} Items`}
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isBulkDeleting}
+        onConfirm={handleConfirmBulkDelete}
+        onCancel={() => !isBulkDeleting && setShowBulkDeleteModal(false)}
       />
     </div>
   );
