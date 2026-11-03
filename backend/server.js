@@ -85,6 +85,8 @@ app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/debt-payoff', require('./routes/debtPayoff'));
 app.use('/api/jobs', require('./routes/jobs'));
+app.use('/api/reports', require('./routes/reports'));
+
 
 // Deep health check endpoint for uptime monitors and load balancers (unauthenticated)
 app.get('/api/health', (req, res) => {
