@@ -39,6 +39,24 @@
   flex-wrap: wrap;
 }
 
+.year-select-dropdown {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.year-select-dropdown:hover,
+.year-select-dropdown:focus {
+  border-color: #2563eb;
+}
+
 .year-range-selector {
   display: inline-flex;
   background-color: #f1f5f9;
@@ -99,7 +117,7 @@
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 18px;
+  padding: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -107,13 +125,13 @@
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: #64748b;
+  letter-spacing: 0.5px;
   margin-bottom: 6px;
 }
 
 .kpi-stat-value {
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #0f172a;
 }
@@ -130,24 +148,24 @@
   color: #dc2626;
 }
 
-/* Charts Section */
+/* Sections */
 .report-section {
-  margin-bottom: 36px;
+  margin-bottom: 32px;
 }
 
 .report-section-title {
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: #0f172a;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
+/* Charts Grid */
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 20px;
 }
 
@@ -157,15 +175,13 @@
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
 }
 
 .chart-card-title {
-  font-size: 1rem;
+  margin: 0 0 16px 0;
+  font-size: 1.05rem;
   font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 14px;
+  color: #334155;
 }
 
 .chart-wrapper {
@@ -174,25 +190,25 @@
   width: 100%;
 }
 
-/* Tables */
+/* Data Tables */
 .report-table-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  overflow: hidden;
+  overflow-x: auto;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .report-table {
   width: 100%;
   border-collapse: collapse;
+  text-align: left;
   font-size: 0.875rem;
 }
 
 .report-table th,
 .report-table td {
   padding: 12px 16px;
-  text-align: left;
   border-bottom: 1px solid #f1f5f9;
 }
 
@@ -234,17 +250,24 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 12mm 15mm;
+    margin: 10mm 12mm;
   }
 
-  /* Suppress screen navigation, sidebars, buttons, floating bars */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box !important;
+  }
+
+  /* Suppress screen navigation, sidebars, buttons, floating bars, dropdowns */
   nav,
   .sidebar,
   .header,
   .fab-container,
   .report-controls,
   .btn-print,
-  .year-range-selector {
+  .year-range-selector,
+  .year-select-dropdown {
     display: none !important;
   }
 
@@ -256,17 +279,18 @@
     padding: 0 !important;
     margin: 0 !important;
     max-width: 100% !important;
+    width: 100% !important;
   }
 
   .report-header {
     border-bottom: 2px solid #000000 !important;
-    padding-bottom: 10px !important;
-    margin-bottom: 16px !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 12px !important;
   }
 
   .report-header-titles h1 {
     color: #000000 !important;
-    font-size: 1.6rem !important;
+    font-size: 1.5rem !important;
   }
 
   .report-audit-meta {
@@ -274,30 +298,92 @@
     font-size: 0.8rem !important;
   }
 
-  /* Break inside prevention */
-  .kpi-stat-card,
-  .chart-card,
-  .report-table tr {
+  /* Clean 4-column KPI grid fitting within A4 page width */
+  .report-kpi-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .kpi-stat-card {
+    padding: 8px 10px !important;
+    border: 1px solid #cbd5e1 !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
 
+  .kpi-stat-card .kpi-stat-label {
+    font-size: 0.72rem !important;
+  }
+
+  .kpi-stat-card .kpi-stat-value {
+    font-size: 1.05rem !important;
+  }
+
   .report-section {
     page-break-before: auto !important;
+    margin-bottom: 16px !important;
   }
 
   .report-section-break {
     page-break-before: always !important;
   }
 
-  .chart-wrapper {
-    height: 240px !important;
+  .report-section-title {
+    color: #0f172a !important;
+    font-size: 1.15rem !important;
+    margin-bottom: 8px !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Stack charts and tables vertically in print so tables have full 100% width! */
+  .charts-grid {
+    display: block !important;
     width: 100% !important;
   }
 
-  .charts-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
+  .chart-card {
+    margin-bottom: 14px !important;
+    width: 100% !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .chart-card-title {
+    font-size: 0.95rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  .chart-wrapper {
+    height: 220px !important;
+    width: 100% !important;
+  }
+
+  /* Full-width table formatting without overflow clipping */
+  .report-table-card {
+    overflow: visible !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    margin-bottom: 14px !important;
+    break-inside: auto !important;
+  }
+
+  .report-table {
+    width: 100% !important;
+    font-size: 8pt !important;
+    table-layout: auto !important;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 5px 6px !important;
+  }
+
+  .report-table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .report-table th {

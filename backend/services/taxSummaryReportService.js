@@ -37,15 +37,18 @@ async function generateTaxSummaryReport(userId, yearParam) {
     throw err;
   }
 
-  // 2. Query paychecks for user within the calendar year
+  // 2. Query paychecks for user within the calendar year (supporting payDate and legacy date)
   const yearStart = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
   const yearEnd = new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999));
 
   const paychecks = await Paycheck.find({
     user: userObjectId,
-    payDate: { $gte: yearStart, $lte: yearEnd },
     deletedAt: null,
-  }).sort({ payDate: 1 }).lean();
+    $or: [
+      { payDate: { $gte: yearStart, $lte: yearEnd } },
+      { date: { $gte: yearStart, $lte: yearEnd } },
+    ],
+  }).sort({ payDate: 1, date: 1 }).lean();
 
   let totalGrossSalary = 0;
   let totalActualTaxPaid = 0;
@@ -53,10 +56,15 @@ async function generateTaxSummaryReport(userId, yearParam) {
   let totalMartyrsPaid = 0;
 
   for (const p of paychecks) {
-    totalGrossSalary += Number(p.grossSalary) || 0;
-    totalActualTaxPaid += Number(p.taxDetails?.actualTax) || 0;
-    totalSocialInsurance += Number(p.insuranceDetails?.actualEmployeeShare) || 0;
-    totalMartyrsPaid += Number(p.martyrsFund) || 0;
+    const gross = Number(p.grossSalary) || Number(p.grossAmount) || (p.grossSalaryInPiastres ? p.grossSalaryInPiastres / 100 : 0) || (p.grossAmountInPiastres ? p.grossAmountInPiastres / 100 : 0) || 0;
+    const tax = Number(p.taxDetails?.actualTax) || Number(p.taxDeduction) || (p.taxDeductionInPiastres ? p.taxDeductionInPiastres / 100 : 0) || 0;
+    const ins = Number(p.insuranceDetails?.actualEmployeeShare) || Number(p.insuranceDeduction) || (p.insuranceDeductionInPiastres ? p.insuranceDeductionInPiastres / 100 : 0) || 0;
+    const martyrs = Number(p.martyrsFund) || (p.martyrsFundInPiastres ? p.martyrsFundInPiastres / 100 : 0) || 0;
+
+    totalGrossSalary += gross;
+    totalActualTaxPaid += tax;
+    totalSocialInsurance += ins;
+    totalMartyrsPaid += martyrs;
   }
 
   totalGrossSalary = Math.round(totalGrossSalary * 100) / 100;

@@ -13,6 +13,7 @@ const RealEstate = require('../models/RealEstate');
 const Budget = require('../models/Budget');
 const DebtPayoffPlan = require('../models/DebtPayoffPlan');
 const CategorizationRule = require('../models/CategorizationRule');
+const { getDateRange } = require('../utils/budgetCalculator');
 
 /**
  * Validates and parses startYear / endYear query options.
@@ -60,12 +61,15 @@ async function generateComprehensiveReport(userId, options = {}) {
   const { startYear, endYear, periodStart, periodEnd } = parseYearRange(options);
   const userObjectId = new mongoose.Types.ObjectId(userId);
 
-  // 1. Paychecks
+  // 1. Paychecks (supporting both canonical payDate and legacy date/grossAmount fields)
   const paychecks = await Paycheck.find({
     user: userObjectId,
-    payDate: { $gte: periodStart, $lte: periodEnd },
     deletedAt: null,
-  }).sort({ payDate: 1 }).lean();
+    $or: [
+      { payDate: { $gte: periodStart, $lte: periodEnd } },
+      { date: { $gte: periodStart, $lte: periodEnd } },
+    ],
+  }).sort({ payDate: 1, date: 1 }).lean();
 
   let totalGrossSalary = 0;
   let totalNetPay = 0;
@@ -75,11 +79,11 @@ async function generateComprehensiveReport(userId, options = {}) {
   const paycheckMonthlyMap = {};
 
   for (const p of paychecks) {
-    const gross = Number(p.grossSalary) || 0;
-    const net = Number(p.netPay) || 0;
-    const tax = Number(p.taxDetails?.actualTax) || 0;
-    const ins = Number(p.insuranceDetails?.actualEmployeeShare) || 0;
-    const martyrs = Number(p.martyrsFund) || 0;
+    const gross = Number(p.grossSalary) || Number(p.grossAmount) || (p.grossSalaryInPiastres ? p.grossSalaryInPiastres / 100 : 0) || (p.grossAmountInPiastres ? p.grossAmountInPiastres / 100 : 0) || 0;
+    const net = Number(p.netPay) || Number(p.amount) || (p.netPayInPiastres ? p.netPayInPiastres / 100 : 0) || (p.amountInPiastres ? p.amountInPiastres / 100 : 0) || 0;
+    const tax = Number(p.taxDetails?.actualTax) || Number(p.taxDeduction) || (p.taxDeductionInPiastres ? p.taxDeductionInPiastres / 100 : 0) || 0;
+    const ins = Number(p.insuranceDetails?.actualEmployeeShare) || Number(p.insuranceDeduction) || (p.insuranceDeductionInPiastres ? p.insuranceDeductionInPiastres / 100 : 0) || 0;
+    const martyrs = Number(p.martyrsFund) || (p.martyrsFundInPiastres ? p.martyrsFundInPiastres / 100 : 0) || 0;
 
     totalGrossSalary += gross;
     totalNetPay += net;
@@ -87,15 +91,22 @@ async function generateComprehensiveReport(userId, options = {}) {
     totalInsurance += ins;
     totalMartyrsFund += martyrs;
 
-    if (p.payDate) {
-      const ym = new Date(p.payDate).toISOString().substring(0, 7);
+    const rawDate = p.payDate || p.date;
+    let ym = rawDate ? new Date(rawDate).toISOString().substring(0, 7) : null;
+    if (!ym && (p.period || p.month)) {
+      const match = (p.period || p.month).match(/^(\d{4})-(\d{2})/);
+      if (match) ym = `${match[1]}-${match[2]}`;
+    }
+
+    if (ym) {
       if (!paycheckMonthlyMap[ym]) {
-        paycheckMonthlyMap[ym] = { yearMonth: ym, grossSalary: 0, netPay: 0, tax: 0, insurance: 0 };
+        paycheckMonthlyMap[ym] = { yearMonth: ym, grossSalary: 0, netPay: 0, tax: 0, insurance: 0, martyrsFund: 0 };
       }
       paycheckMonthlyMap[ym].grossSalary += gross;
       paycheckMonthlyMap[ym].netPay += net;
       paycheckMonthlyMap[ym].tax += tax;
       paycheckMonthlyMap[ym].insurance += ins;
+      paycheckMonthlyMap[ym].martyrsFund += martyrs;
     }
   }
 
@@ -349,46 +360,64 @@ async function generateComprehensiveReport(userId, options = {}) {
   const totalRealEstateAcquisitionCost = properties.reduce((sum, p) => sum + (Number(p.purchasePrice) || 0), 0);
   const totalRealEstateMarketValue = properties.reduce((sum, p) => sum + (Number(p.currentValuation) || 0), 0);
 
-  // 10. Budgets & Utilization
-  const budgets = await Budget.find({ user: userObjectId, deletedAt: null }).lean();
-  const budgetCategories = budgets.map(b => b.category).filter(Boolean);
-  let budgetUtilization = [];
+  // 10. Budgets & Utilization (Computed strictly within each budget's specific timeframe)
+  const budgets = await Budget.find({
+    user: userObjectId,
+    deletedAt: null,
+    $or: [
+      { year: { $gte: startYear, $lte: endYear } },
+      { year: { $exists: false } },
+    ],
+  }).sort({ category: 1 }).lean();
 
-  if (budgetCategories.length > 0) {
-    const spendByBudgetCategory = await Expenditure.aggregate([
+  const categoryBudgetMap = {};
+
+  for (const b of budgets) {
+    const { startDate, endDate } = getDateRange(b.period, b.year, b.month, b.quarter);
+    // Query expenditures strictly within this budget's timeframe
+    const spendResult = await Expenditure.aggregate([
       {
         $match: {
           user: userObjectId,
-          date: { $gte: periodStart, $lte: periodEnd },
+          date: { $gte: startDate, $lte: endDate },
+          categories: b.category,
           deletedAt: null,
         },
       },
-      { $unwind: '$categories' },
-      { $match: { categories: { $in: budgetCategories } } },
       {
         $group: {
-          _id: '$categories',
+          _id: null,
           spent: { $sum: '$transactionValue' },
         },
       },
     ]);
 
-    const spendMap = {};
-    for (const s of spendByBudgetCategory) {
-      spendMap[s._id] = Number(s.spent) || 0;
+    const actual = (spendResult.length > 0 && Number(spendResult[0].spent)) || 0;
+    const rawBudget = Number(b.amount) || 0;
+
+    if (!categoryBudgetMap[b.category]) {
+      categoryBudgetMap[b.category] = {
+        category: b.category,
+        budgetedAmount: 0,
+        actualSpent: 0,
+      };
     }
 
-    budgetUtilization = budgets.map(b => {
-      const actual = spendMap[b.category] || 0;
-      const budgetAmount = Number(b.amount) || 0;
-      return {
-        category: b.category,
-        budgetedAmount: budgetAmount,
-        actualSpent: actual,
-        utilizationPercentage: budgetAmount > 0 ? Number(((actual / budgetAmount) * 100).toFixed(1)) : 0,
-      };
-    });
+    categoryBudgetMap[b.category].budgetedAmount += rawBudget;
+    categoryBudgetMap[b.category].actualSpent += actual;
   }
+
+  const budgetUtilization = Object.values(categoryBudgetMap).map(c => {
+    const budgeted = Math.round(c.budgetedAmount * 100) / 100;
+    const actual = Math.round(c.actualSpent * 100) / 100;
+    const utilPct = budgeted > 0 ? Number(((actual / budgeted) * 100).toFixed(1)) : 0;
+    return {
+      category: c.category,
+      budgetedAmount: budgeted,
+      actualSpent: actual,
+      utilizationPercentage: utilPct,
+    };
+  });
 
   // 11. Debt Payoff Plan
   const debtPlan = await DebtPayoffPlan.findOne({ user: userObjectId, isActive: true, deletedAt: null }).lean();

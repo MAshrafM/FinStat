@@ -52,18 +52,27 @@ export const chartCommonOptions = {
 
 const ComprehensiveReportPage = () => {
   const { user } = useAuth();
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
+  const [targetYear, setTargetYear] = useState(currentYear);
   const [rangePreset, setRangePreset] = useState('3Y'); // '1Y' | '3Y' | '5Y'
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const currentYear = useMemo(() => new Date().getFullYear(), []);
+  const availableYears = useMemo(() => {
+    const list = [];
+    for (let y = currentYear; y >= currentYear - 6; y--) {
+      list.push(y);
+    }
+    return list;
+  }, [currentYear]);
 
   const { startYear, endYear } = useMemo(() => {
-    if (rangePreset === '1Y') return { startYear: currentYear, endYear: currentYear };
-    if (rangePreset === '5Y') return { startYear: currentYear - 4, endYear: currentYear };
-    return { startYear: currentYear - 2, endYear: currentYear };
-  }, [rangePreset, currentYear]);
+    const end = Number(targetYear) || currentYear;
+    if (rangePreset === '1Y') return { startYear: end, endYear: end };
+    if (rangePreset === '5Y') return { startYear: end - 4, endYear: end };
+    return { startYear: end - 2, endYear: end };
+  }, [rangePreset, targetYear, currentYear]);
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
@@ -129,52 +138,53 @@ const ComprehensiveReportPage = () => {
 
   // 2. Spend by Category Chart
   const categoryChartData = useMemo(() => {
-    const categories = report?.expenditures?.spendByCategory || [];
-    const topCategories = categories.slice(0, 7);
+    const list = report?.expenditures?.spendByCategory || [];
     return {
-      labels: topCategories.map(c => c.category),
+      labels: list.map(c => c.category),
       datasets: [
         {
-          data: topCategories.map(c => c.totalSpent),
+          data: list.map(c => c.totalSpent),
           backgroundColor: [
-            '#2563eb',
-            '#0d9488',
-            '#f59e0b',
-            '#ec4899',
-            '#8b5cf6',
+            '#3b82f6',
             '#10b981',
-            '#64748b',
+            '#f59e0b',
+            '#ef4444',
+            '#8b5cf6',
+            '#ec4899',
+            '#14b8a6',
+            '#6366f1',
           ],
-          borderWidth: 1,
         },
       ],
     };
   }, [report]);
 
-  // 3. Asset Allocation Chart
+  // 3. Asset Allocation Doughnut Chart
   const assetAllocationData = useMemo(() => {
     const inv = report?.investments || {};
-    const equitiesVal = inv.equities?.totalBuyValue || 0;
-    const mfVal = inv.mutualFunds?.totalSubscriptions || 0;
-    const goldVal = inv.gold?.totalCost || 0;
-    const certVal = inv.certificates?.totalPrincipalHeld || 0;
-    const realEstateVal = inv.realEstate?.currentMarketValue || 0;
-    const forexVal = report?.currency?.totalForexValuationEGP || 0;
+    const curr = report?.currency || {};
+    const liquidCash = report?.kpi?.liquidAssets || 0;
+
+    const equities = inv.equities?.totalBuyValue || 0;
+    const mutualFunds = inv.mutualFunds?.totalSubscriptions || 0;
+    const certificates = inv.certificates?.totalPrincipalHeld || 0;
+    const gold = inv.gold?.totalCost || 0;
+    const realEstate = inv.realEstate?.currentMarketValue || 0;
+    const forex = curr.totalForexValuationEGP || 0;
 
     return {
-      labels: ['Equities', 'Mutual Funds', 'Gold', 'Certificates', 'Real Estate', 'Forex'],
+      labels: ['Equities', 'Mutual Funds', 'Certificates', 'Gold', 'Real Estate', 'Forex & Cash'],
       datasets: [
         {
-          data: [equitiesVal, mfVal, goldVal, certVal, realEstateVal, forexVal],
+          data: [equities, mutualFunds, certificates, gold, realEstate, forex + liquidCash],
           backgroundColor: [
-            '#3b82f6',
-            '#6366f1',
+            '#2563eb',
+            '#059669',
+            '#d97706',
             '#eab308',
-            '#14b8a6',
-            '#8b5cf6',
-            '#06b6d4',
+            '#7c3aed',
+            '#0891b2',
           ],
-          borderWidth: 1,
         },
       ],
     };
@@ -184,8 +194,8 @@ const ComprehensiveReportPage = () => {
     return (
       <div className="comprehensive-report-page">
         <div className="report-loading">
-          <h2>Generating Consolidated Financial Report…</h2>
-          <p>Aggregating records across all 12 modules.</p>
+          <div className="loading-spinner" />
+          <p>Generating Consolidated Financial Report…</p>
         </div>
       </div>
     );
@@ -195,7 +205,7 @@ const ComprehensiveReportPage = () => {
     return (
       <div className="comprehensive-report-page">
         <div className="report-error">
-          <h2>Report Generation Error</h2>
+          <h3>Report Generation Error</h3>
           <p>{error}</p>
           <button type="button" className="btn-print" onClick={fetchReport}>
             Retry
@@ -215,11 +225,24 @@ const ComprehensiveReportPage = () => {
           <h1>Comprehensive Financial Report</h1>
           <div className="report-audit-meta">
             Generated: {report?.meta?.generatedAt ? new Date(report.meta.generatedAt).toUTCString() : new Date().toUTCString()}
-            {user?.username ? ` by ${user.username}` : ''} | Period: {startYear} – {endYear}
+            {user?.username ? ` by ${user.username}` : ''} | Period: {report?.meta?.startYear || startYear} – {report?.meta?.endYear || endYear}
           </div>
         </div>
 
         <div className="report-controls">
+          <select
+            className="year-select-dropdown"
+            aria-label="Select Ending Year"
+            value={targetYear}
+            onChange={(e) => setTargetYear(Number(e.target.value))}
+          >
+            {availableYears.map((yr) => (
+              <option key={yr} value={yr}>
+                Ending in {yr}
+              </option>
+            ))}
+          </select>
+
           <div className="year-range-selector" role="group" aria-label="Year range selector">
             <button
               type="button"
@@ -301,6 +324,7 @@ const ComprehensiveReportPage = () => {
         </div>
       </section>
 
+      {/* Spending & Budget Breakdown */}
       <section className="report-section">
         <h2 className="report-section-title">🥧 Spending Breakdown & Budget</h2>
         <div className="charts-grid">
@@ -315,7 +339,8 @@ const ComprehensiveReportPage = () => {
               <thead>
                 <tr>
                   <th>Category</th>
-                  <th className="numeric">Budget</th>
+                  <th className="numeric">Monthly Target</th>
+                  <th className="numeric">Period Budget</th>
                   <th className="numeric">Actual Spent</th>
                   <th className="numeric">Utilization</th>
                 </tr>
@@ -325,6 +350,7 @@ const ComprehensiveReportPage = () => {
                   report.budget.categories.map((b) => (
                     <tr key={b.category}>
                       <td>{b.category}</td>
+                      <td className="numeric">{formatCurrency(b.monthlyTarget !== undefined ? b.monthlyTarget : b.budgetedAmount)}</td>
                       <td className="numeric">{formatCurrency(b.budgetedAmount)}</td>
                       <td className="numeric">{formatCurrency(b.actualSpent)}</td>
                       <td className="numeric">{b.utilizationPercentage}%</td>
@@ -332,7 +358,7 @@ const ComprehensiveReportPage = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" style={{ textAlign: 'center', color: '#64748b' }}>
+                    <td colSpan="5" style={{ textAlign: 'center', color: '#64748b' }}>
                       No active budgets configured for this period.
                     </td>
                   </tr>
@@ -354,6 +380,7 @@ const ComprehensiveReportPage = () => {
                 <th className="numeric">Gross Salary</th>
                 <th className="numeric">Income Tax</th>
                 <th className="numeric">Social Insurance</th>
+                <th className="numeric">Martyrs Fund</th>
                 <th className="numeric">Net Pay</th>
               </tr>
             </thead>
@@ -365,12 +392,13 @@ const ComprehensiveReportPage = () => {
                     <td className="numeric">{formatCurrency(m.grossSalary)}</td>
                     <td className="numeric">{formatCurrency(m.tax)}</td>
                     <td className="numeric">{formatCurrency(m.insurance)}</td>
+                    <td className="numeric">{formatCurrency(m.martyrsFund || 0)}</td>
                     <td className="numeric">{formatCurrency(m.netPay)}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', color: '#64748b' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', color: '#64748b' }}>
                     No paycheck entries recorded in this period.
                   </td>
                 </tr>

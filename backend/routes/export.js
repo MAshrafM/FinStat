@@ -213,9 +213,16 @@ router.get('/financial-ledger', auth, exportRateLimiter, async (req, res) => {
 
     const MAX_LEDGER_ROWS = parseInt(process.env.MAX_EXPORT_ROWS, 10) || 25000;
 
-    // Check count across modules
+    // Check count across modules (supporting payDate and legacy date)
     const [pCount, eCount, tCount, mfCount, gCount, cCount] = await Promise.all([
-      Paycheck.countDocuments({ user: userId, payDate: { $gte: periodStart, $lte: periodEnd }, deletedAt: null }),
+      Paycheck.countDocuments({
+        user: userId,
+        deletedAt: null,
+        $or: [
+          { payDate: { $gte: periodStart, $lte: periodEnd } },
+          { date: { $gte: periodStart, $lte: periodEnd } },
+        ],
+      }),
       Expenditure.countDocuments({ user: userId, date: { $gte: periodStart, $lte: periodEnd }, deletedAt: null }),
       Trade.countDocuments({ user: userId, date: { $gte: periodStart, $lte: periodEnd }, deletedAt: null }),
       MutualFundTrade.countDocuments({ user: userId, date: { $gte: periodStart, $lte: periodEnd }, deletedAt: null }),
@@ -236,8 +243,15 @@ router.get('/financial-ledger', auth, exportRateLimiter, async (req, res) => {
     const header = 'Date,Module,AmountEGP,Description,Category\n';
     res.write(header);
 
-    // Initialize 6 streaming cursors sorted chronologically
-    const pCursor = Paycheck.find({ user: userId, payDate: { $gte: periodStart, $lte: periodEnd }, deletedAt: null }).sort({ payDate: 1 }).lean().cursor();
+    // Initialize 6 streaming cursors sorted chronologically (supporting payDate and legacy date)
+    const pCursor = Paycheck.find({
+      user: userId,
+      deletedAt: null,
+      $or: [
+        { payDate: { $gte: periodStart, $lte: periodEnd } },
+        { date: { $gte: periodStart, $lte: periodEnd } },
+      ],
+    }).sort({ payDate: 1, date: 1 }).lean().cursor();
     const eCursor = Expenditure.find({ user: userId, date: { $gte: periodStart, $lte: periodEnd }, deletedAt: null }).sort({ date: 1 }).lean().cursor();
     const tCursor = Trade.find({ user: userId, date: { $gte: periodStart, $lte: periodEnd }, deletedAt: null }).sort({ date: 1 }).lean().cursor();
     const mfCursor = MutualFundTrade.find({ user: userId, date: { $gte: periodStart, $lte: periodEnd }, deletedAt: null }).sort({ date: 1 }).lean().cursor();
@@ -246,7 +260,7 @@ router.get('/financial-ledger', auth, exportRateLimiter, async (req, res) => {
 
     // 6-way cursor merge buffer (holds exactly 1 doc per cursor)
     const cursorSlots = [
-      { cursor: pCursor, doc: null, map: d => ({ date: d.payDate, module: 'Paycheck', amount: d.netPay || 0, desc: `Salary - ${d.period || ''}`, cat: 'Income' }) },
+      { cursor: pCursor, doc: null, map: d => ({ date: d.payDate || d.date, module: 'Paycheck', amount: d.netPay || d.amount || 0, desc: `Salary - ${d.period || d.month || ''}`, cat: 'Income' }) },
       { cursor: eCursor, doc: null, map: d => ({ date: d.date, module: 'Expenditure', amount: d.transactionValue || 0, desc: d.description || '', cat: (d.categories && d.categories[0]) || 'Other' }) },
       { cursor: tCursor, doc: null, map: d => ({ date: d.date, module: 'Trade', amount: (d.shares || 0) * (d.price || 0), desc: `${d.type || 'Trade'} ${d.stockCode || ''}`, cat: 'Equities' }) },
       { cursor: mfCursor, doc: null, map: d => ({ date: d.date, module: 'MutualFundTrade', amount: (d.units || 0) * (d.price || 0), desc: `${d.type || 'Trade'} ${d.code || d.name || ''}`, cat: 'Mutual Funds' }) },
