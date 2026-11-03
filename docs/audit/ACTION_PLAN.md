@@ -138,6 +138,7 @@ graph LR
 | **Phase 6A** | Navigation & Page Consolidation | `SIMP-002`, `SIMP-003`, `SIMP-004`, `SIMP-007`, `AUD-ARCH-001` | 1.5 days | Yes (with 6B) | `[x] COMPLETE` |
 | **Phase 6B** | Schema & UI Hygiene | `SIMP-008`, `SIMP-009`, `GAP-007`, `GAP-008`, `GAP-010`, `AUD-ARCH-003` | 1.5 days | Yes (with 6A) | `[x] COMPLETE` |
 | **Phase 7A** | Multi-Module Reporting & Comprehensive Export | `FEAT-003`, `GAP-006`, `AUD-TEST-DEBT-001` | 2 days | Yes (with 7B) | `[x] COMPLETE` |
+| **Phase 7A.5** | Lending Tracker (P2P Personal Loans & Receivables) | FEAT-005 (Lending) | 1 day | No | [ ] IN PROGRESS |
 | **Phase 7B** | Financial Bridges & Secondary UI Hygiene | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003`, `AUD-UI-DEBT-002` | 2 days | Yes (with 7A) | `[ ] NOT STARTED` |
 | **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[ ] NOT STARTED` |
 | **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[ ] NOT STARTED` |
@@ -1566,6 +1567,146 @@ cd d:/Projects/FinStat/frontend && npm run build
 
 ---
 
+# Phase 7A.5: Lending Tracker (P2P Personal Loans & Receivables)
+
+---
+
+### Step 7A.5.0: Pre-Flight Verification & Carryover Governance
+* **Requires User Input**: No.
+* **Est. Effort**: 0.5h
+* **Target Files**:
+  * CHANGELOG.md
+  * docs/audit/ACTION_PLAN.md
+* **File-Count Cap**: 2 doc files.
+* **Actions**: Verify baseline checks (V1–V12), log won't-fix for FEAT-001/GAP-005, log deferrals for paychecks /all and AUD-ARCH-004, and set up tracking index.
+* **Definition of Done (DoD)**:
+  - [x] Pre-flight verifications complete.
+  - [x] CHANGELOG.md updated with ### Won't Fix - 7A and Phase 7A.5 entries.
+
+---
+
+### Step 7A.5.1: [FEAT-005] Backend Models & Pure-Tracking Service
+* **Requires User Input**: No.
+* **Est. Effort**: 1.5h
+* **Target Files**:
+  * Create backend/models/Person.js
+  * Create backend/models/LoanTransaction.js
+  * Create backend/models/Loan.js
+  * Create backend/services/lendingService.js
+  * Create backend/tests/unit/lendingService.test.js
+* **File-Count Cap**: 5 files (4 prod + 1 test).
+* **Actions**: Implement Person and Loan models with soft-delete plugin; build lendingService.js with chronological running balance computation, intermediate running balance deletion defense, status transitions, and period-scoped summary aggregation.
+* **Definition of Done (DoD)**:
+  - [ ] All 12 unit tests pass in lendingService.test.js.
+  - [ ] Appended entry to CHANGELOG.md.
+
+---
+
+### Step 7A.5.2: [FEAT-005] Person API Routes & Integration Tests
+* **Requires User Input**: No.
+* **Est. Effort**: 1.0h
+* **Target Files**:
+  * Create backend/validationSchemas/lendingSchemas.js
+  * Create backend/routes/lendingPersons.js
+  * backend/server.js
+  * Create backend/tests/integration/lendingPersonsApi.test.js
+* **File-Count Cap**: 4 files (3 prod + 1 test).
+* **Actions**: Implement Person CRUD routes with Zod validation, tenant scoping via 
+eq.effectiveUserId, bounded 2-query join for aggregate debt, and deletion blocker on active loans.
+* **Definition of Done (DoD)**:
+  - [ ] All 12 integration tests pass in lendingPersonsApi.test.js.
+  - [ ] Appended entry to CHANGELOG.md.
+
+---
+
+### Step 7A.5.3: [FEAT-005] Loan & Summary Routes & Integration Tests
+* **Requires User Input**: No.
+* **Est. Effort**: 1.5h
+* **Target Files**:
+  * Create backend/routes/lendingLoans.js
+  * backend/server.js
+  * Create backend/tests/integration/lendingLoansApi.test.js
+  * Create backend/tests/integration/lendingSummaryApi.test.js
+* **File-Count Cap**: 4 files (2 prod + 2 test).
+* **Actions**: Implement Loan CRUD, borrow/repay transaction appending, transaction deletion with intermediate balance guard, and global current receivables summary route.
+* **Definition of Done (DoD)**:
+  - [ ] All 15 tests pass in lendingLoansApi.test.js.
+  - [ ] All 5 tests pass in lendingSummaryApi.test.js.
+  - [ ] Appended entry to CHANGELOG.md.
+
+---
+
+### Step 7A.5.4: [FEAT-005] Frontend Pages, Components & Client Service
+* **Requires User Input**: No.
+* **Est. Effort**: 2.0h
+* **Target Files**:
+  * Create frontend/src/services/lendingService.js
+  * Create frontend/src/pages/lending/LendingDashboardPage.js
+  * Create frontend/src/pages/lending/PersonDetailPage.js
+  * Create frontend/src/pages/lending/LoanDetailPage.js
+  * Create frontend/src/pages/lending/AddTransactionForm.js
+  * Create frontend/src/pages/lending/PersonCard.js
+  * Create frontend/src/pages/lending/Lending.css
+  * Create frontend/src/pages/lending/__tests__/LendingDashboardPage.test.js
+  * Create frontend/src/pages/lending/__tests__/LoanDetailPage.test.js
+* **File-Count Cap**: 9 files (7 prod + 2 test).
+* **Actions**: Build responsive Lending UI with KPI ribbons, search/filter, person cards, transaction ledger with running balances, double-submission protection, and <ConfirmModal /> dialogs.
+* **Definition of Done (DoD)**:
+  - [ ] All 7 tests pass in LendingDashboardPage.test.js.
+  - [ ] All 7 tests pass in LoanDetailPage.test.js.
+  - [ ] Appended entry to CHANGELOG.md.
+
+---
+
+### Step 7A.5.5: [FEAT-005] Navigation, Routing & Role Integration
+* **Requires User Input**: No.
+* **Est. Effort**: 0.5h
+* **Target Files**:
+  * frontend/src/App.js
+  * frontend/src/components/Sidebar.js
+  * frontend/src/components/ProtectedRoute.js
+  * frontend/src/components/__tests__/SidebarHubs.test.js
+* **File-Count Cap**: 4 files (3 prod + 1 test extended).
+* **Actions**: Mount routes /lending, /lending/persons/:id, /lending/loans/:id; add Lending Tracker to Sidebar *Daily Spending* hub; register in ProtectedRoute basicRoutes.
+* **Definition of Done (DoD)**:
+  - [ ] All 9 tests pass in SidebarHubs.test.js.
+  - [ ] All 9 tests pass in App.test.js.
+  - [ ] Appended entry to CHANGELOG.md.
+
+---
+
+### Step 7A.5.6: [FEAT-005] Phase 7A Retrofit (Report & Dashboard Integration)
+* **Requires User Input**: No.
+* **Est. Effort**: 1.0h
+* **Target Files**:
+  * backend/services/comprehensiveReportService.js
+  * frontend/src/pages/reports/ComprehensiveReportPage.js
+  * frontend/src/pages/DashboardSummary.js
+  * backend/tests/unit/comprehensiveReportService.test.js
+  * frontend/src/pages/reports/__tests__/ComprehensiveReportPage.test.js
+* **File-Count Cap**: 5 files (3 prod + 2 tests extended).
+* **Actions**: Integrate Module 13 loans aggregate into comprehensive report; add Receivables KPI, Top Debtors table, and 6th Doughnut chart slice; add Receivables asset line to Dashboard.
+* **Definition of Done (DoD)**:
+  - [ ] All 8 tests pass in comprehensiveReportService.test.js.
+  - [ ] All 8 tests pass in ComprehensiveReportPage.test.js.
+  - [ ] Appended entry to CHANGELOG.md.
+
+---
+
+### Step 7A.5.7: Verification Gate & Sign-Off
+* **Requires User Input**: Yes (Manual visual walkthrough verification).
+* **Est. Effort**: 0.5h
+* **Target Files**:
+  * CHANGELOG.md
+  * docs/audit/ACTION_PLAN.md
+* **Actions**: Execute 44 backend dedicated tests, 53 backend regression tests, 14 frontend dedicated tests, and 38 frontend regression tests.
+* **Definition of Done (DoD)**:
+  - [ ] All 149 automated tests pass cleanly with zero open handles.
+  - [ ] Manual verification flow executed and confirmed.
+  - [ ] Phase 7A.5 signed off.
+
+---
+
 # Phase 7B: Financial Bridges
 
 ---
@@ -1904,6 +2045,7 @@ cd d:/Projects/FinStat/frontend && npm run build
 | **FEAT-004** | Closed-Loop Rebalancing Execution with Trade Order Pre-filling | **Phase 7B, Step 7B.2** |
 | **GAP-001** | Rebalancing Action Link is a Non-Prefilled Dead End | **Phase 7B, Step 7B.2** |
 | **GAP-003** | Inter-Module Cash Flow Disconnect: Income Does Not Flow to Bank | **Phase 7B, Step 7B.1** |
+| **FEAT-005 (Lending)** | Peer-to-Peer Personal Loans & Receivables Tracker | **Phase 7A.5** |
 | **FEAT-005** | Forward-Looking Bill Scheduler & Due Date Alerting | **Phase 7C, Step 7C.1** |
 | **FEAT-006** | Soft-Delete Recycle Bin & 10-Second Deletion Undo | **Phase 7C, Step 7C.2** |
 | **GAP-004** | Soft-Delete "Black Hole": Zero Frontend Recovery or Trash UI | **Phase 7C, Step 7C.2** |

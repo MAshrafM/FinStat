@@ -148,3 +148,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Mounted `GET /api/export/financial-ledger` in `backend/routes/export.js`, merging 6 Mongoose cursor streams (Paychecks, Expenditures, Card Transactions, Stock Trades, Gold Liquidations, Certificate Withdrawals) chronologically with hard cap `MAX_EXPORT_ROWS = 25000` to prevent memory exhaustion.
   - Backed by unit test suite `taxSummaryReportService.test.js` (6/6 passed) and integration test suite `taxReportApi.test.js` (4/4 passed).
 - Verification Gate: Formally signed off Phase 7A. Verified green pass across all 9 Phase 7A test suites (54/54 tests passed) and 88 cross-module regression tests (total 142 tests passed) with zero open handles.
+
+### Won't Fix - 7A
+- FEAT-001 / GAP-005 (Automated Statement Ingestion Pipeline): Formally designated Won't Fix by architectural design. Automated bank statement CSV/Excel ingestion is deferred to FinStat's native mobile twin application (automated incoming bank SMS parsing), keeping the web core lightweight and eliminating brittle bank-specific spreadsheet scrapers.
+
+### Deferred - Phase 7A.5 Carryovers
+- 5C-followup-paychecks-all: Clamping /api/paychecks listing endpoint deferred to Phase 7C (safe query bounds remain active).
+- AUD-ARCH-004: Context provider bundle-size measurement deferred to Phase 8A bundle audit.
+- AUD-UI-DEBT-002: 14 secondary confirmation dialogs remain scheduled for Phase 7B.3.
+
+### Added - Phase 7A.5: Lending Tracker (P2P Personal Loans & Receivables)
+- Step 7A.5.0: Pre-flight codebase verification (V1–V12), resolved carryover debts, and established `phase-7a5-lending-tracker` feature branch.
