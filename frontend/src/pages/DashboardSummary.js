@@ -69,7 +69,11 @@ const changeBetween = (current, base) => {
   return ((current - base) / base) * 100;
 };
 
-const formatSignedPercent = (value) => `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+const formatSignedPercent = (value) => {
+  const num = typeof value === 'number' ? value : Number(value);
+  if (Number.isNaN(num)) return '0.0%';
+  return `${num >= 0 ? '+' : ''}${num.toFixed(1)}%`;
+};
 
 const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
   const { user, canModify } = useAuth();
@@ -427,9 +431,10 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
         color: '#6366f1',
         current: c.lendingReceivables,
         invested: c.lendingReceivables,
-        metaLabel: 'Active Debtors',
-        metaValue: lendingSummary?.personsCount || 0,
-        delta: { gain: 0, percentage: 0 },
+        metaLabel: 'Total Borrowed',
+        metaValue: safeNumber(lendingSummary?.totalBorrowed) / 100,
+        delta: null,
+        note: (lendingSummary?.activeLoansCount || 0) > 0 ? `${lendingSummary.activeLoansCount} active loans` : 'No active loans',
         viewPath: '/lending',
         addPath: '/lending',
       },
