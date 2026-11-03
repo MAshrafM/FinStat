@@ -1561,7 +1561,7 @@ cd d:/Projects/FinStat/frontend && npm run build
 - [x] Frontend report page renders responsive KPIs, Chart.js graphs, and prints clean A4 PDFs.
 - [x] Egyptian Statutory Tax Summary reconciles Law 175/2023 and Law 200/2020 liabilities.
 - [x] Full Ledger CSV export streams multi-module records chronologically up to 25,000 rows.
-- [x] Zero regressions across 121 tests (backend unit/integration & frontend Jest suites).
+- [x] Zero regressions across 142 tests (54 Phase 7A dedicated + 88 cross-module regression tests).
 - [x] **Phase 7A Signed Off**: `[x] YES` | Date: `2026-11-03`
 
 ---
