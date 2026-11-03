@@ -93,6 +93,7 @@ const SettingsPage = React.lazy(() => import('./pages/profile/SettingsPage'));
 const CorporateActionWizard = React.lazy(() => import('./pages/trades/CorporateActionWizard'));
 const CorporateActionsList = React.lazy(() => import('./pages/trades/CorporateActionsList'));
 const RebalancingPage = React.lazy(() => import('./pages/portfolio/RebalancingPage'));
+const ComprehensiveReportPage = React.lazy(() => import('./pages/reports/ComprehensiveReportPage'));
 
 // Admin User Management
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
@@ -110,6 +111,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/portfolio" element={<Portfolio />} />
                 <Route path="/portfolio/rebalancing" element={<RebalancingPage />} />
+                <Route path="/reports/financial" element={<ComprehensiveReportPage />} />
                 <Route path="/summary" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/settings" element={<SettingsPage />} />

@@ -56,6 +56,7 @@ const HUB_DEFINITIONS = [
       { path: '/certificates', icon: '🏛️', title: 'Bank Certificates', description: 'Fixed income' },
       { path: '/currency', icon: '💱', title: 'Foreign Currency', description: 'Currency wallet' },
       { path: '/real-estate', icon: '🏘️', title: 'Real Estate', description: 'Property portfolio' },
+      { path: '/reports/financial', icon: '📑', title: 'Financial Report', description: 'Comprehensive report & print PDF' },
     ],
   },
   {

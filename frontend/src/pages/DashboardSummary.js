@@ -592,6 +592,13 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
               <FaCompass aria-hidden="true" />
               Explore summaries
             </button>
+            <Link
+              to="/reports/financial"
+              className="dash-btn dash-btn-ghost"
+              style={{ textDecoration: 'none' }}
+            >
+              📑 Financial Report
+            </Link>
           </div>
         </div>
 

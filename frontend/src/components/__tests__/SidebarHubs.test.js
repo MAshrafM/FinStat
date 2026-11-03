@@ -130,4 +130,12 @@ describe('Step 6A.2: [SIMP-004] Sidebar Hubs & Navigation Rationalization Unit T
     expect(screen.queryByText('Tax Brackets')).not.toBeInTheDocument();
     expect(screen.queryByText('Database Backup')).not.toBeInTheDocument();
   });
+
+  test('8. renders Financial Report navigation link in Investments & Wealth hub [FEAT-003]', () => {
+    renderSidebar('/reports/financial', 'admin');
+
+    // On /reports/financial, Investments & Wealth should auto-expand
+    expect(screen.getByText('Financial Report')).toBeInTheDocument();
+    expect(screen.getByText('Bank Certificates')).toBeInTheDocument();
+  });
 });
