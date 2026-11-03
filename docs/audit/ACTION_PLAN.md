@@ -138,7 +138,7 @@ graph LR
 | **Phase 6A** | Navigation & Page Consolidation | `SIMP-002`, `SIMP-003`, `SIMP-004`, `SIMP-007`, `AUD-ARCH-001` | 1.5 days | Yes (with 6B) | `[x] COMPLETE` |
 | **Phase 6B** | Schema & UI Hygiene | `SIMP-008`, `SIMP-009`, `GAP-007`, `GAP-008`, `GAP-010`, `AUD-ARCH-003` | 1.5 days | Yes (with 6A) | `[x] COMPLETE` |
 | **Phase 7A** | Multi-Module Reporting & Comprehensive Export | `FEAT-003`, `GAP-006`, `AUD-TEST-DEBT-001` | 2 days | Yes (with 7B) | `[x] COMPLETE` |
-| **Phase 7A.5** | Lending Tracker (P2P Personal Loans & Receivables) | FEAT-005 (Lending) | 1 day | No | [ ] IN PROGRESS |
+| **Phase 7A.5** | Lending Tracker (P2P Personal Loans & Receivables) | FEAT-005 (Lending) | 1 day | No | `[x] COMPLETE` |
 | **Phase 7B** | Financial Bridges & Secondary UI Hygiene | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003`, `AUD-UI-DEBT-002` | 2 days | Yes (with 7A) | `[ ] NOT STARTED` |
 | **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[ ] NOT STARTED` |
 | **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[ ] NOT STARTED` |
@@ -1668,9 +1668,9 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 4 files (3 prod + 1 test extended).
 * **Actions**: Mount routes /lending, /lending/persons/:id, /lending/loans/:id; add Lending Tracker to Sidebar *Daily Spending* hub; register in ProtectedRoute basicRoutes.
 * **Definition of Done (DoD)**:
-  - [ ] All 9 tests pass in SidebarHubs.test.js.
-  - [ ] All 9 tests pass in App.test.js.
-  - [ ] Appended entry to CHANGELOG.md.
+  - [x] All 9 tests pass in SidebarHubs.test.js.
+  - [x] All 9 tests pass in App.test.js.
+  - [x] Appended entry to CHANGELOG.md.
 
 ---
 
@@ -1686,9 +1686,9 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 5 files (3 prod + 2 tests extended).
 * **Actions**: Integrate Module 13 loans aggregate into comprehensive report; add Receivables KPI, Top Debtors table, and 6th Doughnut chart slice; add Receivables asset line to Dashboard.
 * **Definition of Done (DoD)**:
-  - [ ] All 8 tests pass in comprehensiveReportService.test.js.
-  - [ ] All 8 tests pass in ComprehensiveReportPage.test.js.
-  - [ ] Appended entry to CHANGELOG.md.
+  - [x] All 8 tests pass in comprehensiveReportService.test.js.
+  - [x] All 8 tests pass in ComprehensiveReportPage.test.js.
+  - [x] Appended entry to CHANGELOG.md.
 
 ---
 
@@ -1700,9 +1700,9 @@ cd d:/Projects/FinStat/frontend && npm run build
   * docs/audit/ACTION_PLAN.md
 * **Actions**: Execute 44 backend dedicated tests, 53 backend regression tests, 14 frontend dedicated tests, and 38 frontend regression tests.
 * **Definition of Done (DoD)**:
-  - [ ] All 149 automated tests pass cleanly with zero open handles.
-  - [ ] Manual verification flow executed and confirmed.
-  - [ ] Phase 7A.5 signed off.
+  - [x] All 149 automated tests pass cleanly with zero open handles.
+  - [x] Manual verification flow executed and confirmed.
+  - [x] Phase 7A.5 signed off.
 
 ---
 
