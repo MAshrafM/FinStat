@@ -305,6 +305,7 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
     creditCardsSummary,
     safeCurrencySummary,
     realEstates,
+    lendingSummary,
   ]);
 
   const holdings = useMemo(() => {
@@ -417,8 +418,23 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
         viewPath: '/real-estate',
         addPath: '/real-estate/new',
       },
+      {
+        key: 'lending',
+        name: 'Receivables',
+        subtitle: 'Personal loans & tracking',
+        icon: FaHandshake,
+        tone: 'indigo',
+        color: '#6366f1',
+        current: c.lendingReceivables,
+        invested: c.lendingReceivables,
+        metaLabel: 'Active Debtors',
+        metaValue: lendingSummary?.personsCount || 0,
+        delta: { gain: 0, percentage: 0 },
+        viewPath: '/lending',
+        addPath: '/lending',
+      },
     ];
-  }, [calculations]);
+  }, [calculations, lendingSummary]);
 
   const activeAssetCount = useMemo(
     () => holdings.filter((asset) => asset.current > 0 || asset.invested > 0).length,

@@ -3,7 +3,6 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoanDetailPage from '../LoanDetailPage';
 import * as lendingService from '../../../services/lendingService';
-import { useToast } from '../../../context/ToastContext';
 
 jest.mock('../../../services/lendingService');
 jest.mock('../../../context/ToastContext', () => ({
@@ -86,10 +85,10 @@ describe('Step 7A.5.4: LoanDetailPage Component Tests [FEAT-005]', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText(/Ahmed/i)[0]).toBeInTheDocument();
-      expect(screen.getByText(/Remaining Balance/i)).toBeInTheDocument();
-      expect(screen.getByText(/Total Borrowed/i)).toBeInTheDocument();
-      expect(screen.getByText(/Total Repaid/i)).toBeInTheDocument();
     });
+    expect(screen.getByText(/Remaining Balance/i)).toBeInTheDocument();
+    expect(screen.getByText(/Total Borrowed/i)).toBeInTheDocument();
+    expect(screen.getByText(/Total Repaid/i)).toBeInTheDocument();
   });
 
   test('2. Renders transaction table with computed running balances in chronological sequence', async () => {
@@ -97,10 +96,10 @@ describe('Step 7A.5.4: LoanDetailPage Component Tests [FEAT-005]', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Initial disbursement')).toBeInTheDocument();
-      expect(screen.getByText('First installment')).toBeInTheDocument();
-      expect(screen.getAllByText(/10,000\.00/i)[0]).toBeInTheDocument();
-      expect(screen.getAllByText(/6,000\.00/i)[0]).toBeInTheDocument();
     });
+    expect(screen.getByText('First installment')).toBeInTheDocument();
+    expect(screen.getAllByText(/10,000\.00/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/6,000\.00/i)[0]).toBeInTheDocument();
   });
 
   test('3. Clicking "Add Payment" opens payment modal with repay preselected', async () => {
@@ -138,8 +137,8 @@ describe('Step 7A.5.4: LoanDetailPage Component Tests [FEAT-005]', () => {
           note: 'Second installment',
         })
       );
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   test('5. Double-submission guard: disables submit button while isLoading === true; repeated click does not fire duplicate API call', async () => {

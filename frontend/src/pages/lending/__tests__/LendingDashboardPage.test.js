@@ -3,7 +3,6 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LendingDashboardPage from '../LendingDashboardPage';
 import * as lendingService from '../../../services/lendingService';
-import { useToast } from '../../../context/ToastContext';
 
 jest.mock('../../../services/lendingService');
 jest.mock('../../../context/ToastContext', () => ({
@@ -87,9 +86,9 @@ describe('Step 7A.5.4: LendingDashboardPage Component Tests [FEAT-005]', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Total Receivables/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/Total Repaid/i)[0]).toBeInTheDocument();
-      expect(screen.getByText(/Active Debtors/i)).toBeInTheDocument();
     });
+    expect(screen.getAllByText(/Total Repaid/i)[0]).toBeInTheDocument();
+    expect(screen.getByText(/Active Debtors/i)).toBeInTheDocument();
   });
 
   test('2. Renders list of person cards with formatted currency balances', async () => {
@@ -97,8 +96,8 @@ describe('Step 7A.5.4: LendingDashboardPage Component Tests [FEAT-005]', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText('Ahmed')[0]).toBeInTheDocument();
-      expect(screen.getAllByText('Karim')[0]).toBeInTheDocument();
     });
+    expect(screen.getAllByText('Karim')[0]).toBeInTheDocument();
   });
 
   test('3. Filters loan table by status dropdown (Active, Repaid, WrittenOff, All)', async () => {
@@ -142,8 +141,8 @@ describe('Step 7A.5.4: LendingDashboardPage Component Tests [FEAT-005]', () => {
 
     await waitFor(() => {
       expect(lendingService.createPerson).toHaveBeenCalledWith({ name: 'Sara', note: 'Friend' });
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   test('6. Toggling sort order by balance / last activity re-orders the list', async () => {
@@ -172,7 +171,7 @@ describe('Step 7A.5.4: LendingDashboardPage Component Tests [FEAT-005]', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/No personal loans or receivables found/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /\+ Add First Borrower/i })).toBeInTheDocument();
     });
+    expect(screen.getByRole('button', { name: /\+ Add First Borrower/i })).toBeInTheDocument();
   });
 });

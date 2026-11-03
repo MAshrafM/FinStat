@@ -191,6 +191,11 @@ function App() {
                 <Route path="/credit-cards/statements" element={<StatementCyclePage />} />
                 <Route path="/credit-cards/debt-payoff" element={<DebtPayoffPage />} />
                 <Route path="/credit-cards/reconcile" element={<ReconciliationPage />} />
+
+                {/* Lending Tracker (P2P Personal Loans & Receivables) */}
+                <Route path="/lending" element={<LendingDashboardPage />} />
+                <Route path="/lending/persons/:id" element={<PersonDetailPage />} />
+                <Route path="/lending/loans/:id" element={<LoanDetailPage />} />
               </Route>
             </Routes>
           </React.Suspense>
