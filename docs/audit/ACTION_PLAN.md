@@ -1629,9 +1629,9 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 4 files (2 prod + 2 test).
 * **Actions**: Implement Loan CRUD, borrow/repay transaction appending, transaction deletion with intermediate balance guard, and global current receivables summary route.
 * **Definition of Done (DoD)**:
-  - [ ] All 15 tests pass in lendingLoansApi.test.js.
-  - [ ] All 5 tests pass in lendingSummaryApi.test.js.
-  - [ ] Appended entry to CHANGELOG.md.
+  - [x] All 15 tests pass in lendingLoansApi.test.js.
+  - [x] All 5 tests pass in lendingSummaryApi.test.js.
+  - [x] Appended entry to CHANGELOG.md.
 
 ---
 
