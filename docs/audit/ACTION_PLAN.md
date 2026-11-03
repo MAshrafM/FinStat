@@ -1597,8 +1597,8 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 5 files (4 prod + 1 test).
 * **Actions**: Implement Person and Loan models with soft-delete plugin; build lendingService.js with chronological running balance computation, intermediate running balance deletion defense, status transitions, and period-scoped summary aggregation.
 * **Definition of Done (DoD)**:
-  - [ ] All 12 unit tests pass in lendingService.test.js.
-  - [ ] Appended entry to CHANGELOG.md.
+  - [x] All 12 unit tests pass in lendingService.test.js.
+  - [x] Appended entry to CHANGELOG.md.
 
 ---
 
