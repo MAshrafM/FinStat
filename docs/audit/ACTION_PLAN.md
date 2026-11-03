@@ -1651,9 +1651,9 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 9 files (7 prod + 2 test).
 * **Actions**: Build responsive Lending UI with KPI ribbons, search/filter, person cards, transaction ledger with running balances, double-submission protection, and <ConfirmModal /> dialogs.
 * **Definition of Done (DoD)**:
-  - [ ] All 7 tests pass in LendingDashboardPage.test.js.
-  - [ ] All 7 tests pass in LoanDetailPage.test.js.
-  - [ ] Appended entry to CHANGELOG.md.
+  - [x] All 7 tests pass in LendingDashboardPage.test.js.
+  - [x] All 7 tests pass in LoanDetailPage.test.js.
+  - [x] Appended entry to CHANGELOG.md.
 
 ---
 
