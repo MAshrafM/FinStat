@@ -1611,11 +1611,10 @@ cd d:/Projects/FinStat/frontend && npm run build
   * backend/server.js
   * Create backend/tests/integration/lendingPersonsApi.test.js
 * **File-Count Cap**: 4 files (3 prod + 1 test).
-* **Actions**: Implement Person CRUD routes with Zod validation, tenant scoping via 
-eq.effectiveUserId, bounded 2-query join for aggregate debt, and deletion blocker on active loans.
+* **Actions**: Implement Person CRUD routes with Zod validation, tenant scoping via req.effectiveUserId, bounded 2-query join for aggregate debt, and deletion blocker on active loans.
 * **Definition of Done (DoD)**:
-  - [ ] All 12 integration tests pass in lendingPersonsApi.test.js.
-  - [ ] Appended entry to CHANGELOG.md.
+  - [x] All 12 integration tests pass in lendingPersonsApi.test.js.
+  - [x] Appended entry to CHANGELOG.md.
 
 ---
 
