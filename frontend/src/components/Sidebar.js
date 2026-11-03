@@ -39,6 +39,7 @@ const HUB_DEFINITIONS = [
       { path: '/expenditures/recurring', icon: '🔁', title: 'Recurring Expenses', description: 'Subscription scanner' },
       { path: '/expenditure-analysis', icon: '🥧', title: 'Spending Analysis', description: 'Spending visualizations' },
       { path: '/credit-cards', icon: '💳', title: 'Credit Cards & Debt', description: 'Cycles, payoff & alerts' },
+      { path: '/lending', icon: '🤝', title: 'Lending Tracker', description: 'Personal loans & receivables' },
     ],
   },
   {

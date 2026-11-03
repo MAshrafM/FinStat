@@ -14,7 +14,7 @@ import { BankProvider } from '../context/BankContext';
 import { CreditProvider } from '../context/CreditContext';
 // Route configuration for better maintainability
 const ROUTE_CONFIG = {
-  basicRoutes: ['/portfolio', '/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/real-estate', '/real-estate/new', '/real-estate/edit', '/analysis/payroll', '/salary/rules'],
+  basicRoutes: ['/portfolio', '/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/real-estate', '/real-estate/new', '/real-estate/edit', '/analysis/payroll', '/salary/rules', '/lending'],
   contextRoutes: {
     data: ['/trades/new', '/trades/add', '/trades/edit', '/trade-summary', '/corporate-actions'],
     gold: ['/gold-wallet/summary'],

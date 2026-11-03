@@ -138,4 +138,12 @@ describe('Step 6A.2: [SIMP-004] Sidebar Hubs & Navigation Rationalization Unit T
     expect(screen.getByText('Financial Report')).toBeInTheDocument();
     expect(screen.getByText('Bank Certificates')).toBeInTheDocument();
   });
+
+  test('9. renders Lending Tracker navigation link in Daily Spending hub [FEAT-005]', () => {
+    renderSidebar('/lending', 'admin');
+
+    // On /lending, Daily Spending should auto-expand
+    expect(screen.getByText('Lending Tracker')).toBeInTheDocument();
+    expect(screen.getByText('Expenditure Log')).toBeInTheDocument();
+  });
 });

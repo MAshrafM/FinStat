@@ -95,6 +95,11 @@ const CorporateActionsList = React.lazy(() => import('./pages/trades/CorporateAc
 const RebalancingPage = React.lazy(() => import('./pages/portfolio/RebalancingPage'));
 const ComprehensiveReportPage = React.lazy(() => import('./pages/reports/ComprehensiveReportPage'));
 
+// Lending Tracker (P2P Personal Loans & Receivables)
+const LendingDashboardPage = React.lazy(() => import('./pages/lending/LendingDashboardPage'));
+const PersonDetailPage = React.lazy(() => import('./pages/lending/PersonDetailPage'));
+const LoanDetailPage = React.lazy(() => import('./pages/lending/LoanDetailPage'));
+
 // Admin User Management
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 
