@@ -245,4 +245,40 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
       expect(screen.getByText('Comprehensive Financial Report')).toBeInTheDocument();
     });
   });
+
+  test('Test 8: renders Peer-to-Peer Loans & Receivables section and 6th slice in Asset Allocation chart [FEAT-005]', async () => {
+    const reportWithLoans = {
+      ...mockReportData,
+      loans: {
+        totalBorrowed: 1500000,
+        totalRepaid: 500000,
+        totalOutstanding: 1000000,
+        activeLoansCount: 2,
+        topDebtors: [
+          { personId: 'p1', personName: 'Ahmed Borrower', balanceInPiastres: 1000000 },
+        ],
+      },
+    };
+
+    apiClient.get.mockResolvedValueOnce(reportWithLoans);
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Comprehensive Financial Report')).toBeInTheDocument();
+    });
+
+    // Check KPI Ribbon Total Receivables
+    expect(screen.getByText('Total Receivables')).toBeInTheDocument();
+
+    // Check Section Title
+    expect(screen.getByText(/Peer-to-Peer Loans & Receivables/i)).toBeInTheDocument();
+    expect(screen.getByText('Ahmed Borrower')).toBeInTheDocument();
+
+    // Check Doughnut Chart received Receivables label
+    const doughnut = screen.getAllByTestId('doughnut-chart')[0];
+    expect(doughnut).toBeInTheDocument();
+    const chartData = JSON.parse(doughnut.textContent);
+    expect(chartData.labels).toContain('Receivables');
+  });
 });

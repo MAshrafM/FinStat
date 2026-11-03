@@ -14,6 +14,7 @@ const Budget = require('../models/Budget');
 const DebtPayoffPlan = require('../models/DebtPayoffPlan');
 const CategorizationRule = require('../models/CategorizationRule');
 const { getDateRange } = require('../utils/budgetCalculator');
+const lendingService = require('./lendingService');
 
 /**
  * Validates and parses startYear / endYear query options.
@@ -451,11 +452,18 @@ async function generateComprehensiveReport(userId, options = {}) {
     ? Number(((categorizedCount / totalPeriodExpenditures) * 100).toFixed(1))
     : 100;
 
+  // 13. Peer-to-Peer Loans & Receivables
+  const loansSummary = await lendingService.getSummaryAggregate(userObjectId, {
+    periodStart,
+    periodEnd,
+  });
+
   // Executive KPI Summary
   const investedAssets = totalTradeBuyValue + totalMfSubscriptions + totalGoldPurchasesCost + totalCertificatesPrincipal + totalRealEstateMarketValue;
   const liquidAssets = totalForexValuationEGP;
   const totalLiabilities = totalOutstandingBalance;
-  const netWorth = liquidAssets + investedAssets - totalLiabilities;
+  const receivables = (loansSummary.totalOutstanding || 0) / 100;
+  const netWorth = liquidAssets + investedAssets + receivables - totalLiabilities;
 
   const totalGrossIncome = totalGrossSalary + totalDividendIncome + tradeRealizedGains + totalCouponIncome + mfRealizedGains;
   const totalExpenses = totalSpent + totalTax + totalInsurance + totalMartyrsFund;
@@ -535,6 +543,14 @@ async function generateComprehensiveReport(userId, options = {}) {
     categorizationRules: {
       activeRulesCount,
       autoCategorizationCoverage,
+    },
+    loans: {
+      totalBorrowed: loansSummary.totalBorrowed,
+      totalRepaid: loansSummary.totalRepaid,
+      totalOutstanding: loansSummary.totalOutstanding,
+      activeLoansCount: loansSummary.activeLoansCount,
+      personsCount: loansSummary.personsCount,
+      topDebtors: loansSummary.topDebtors,
     },
   };
 }

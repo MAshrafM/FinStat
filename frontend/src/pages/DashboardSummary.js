@@ -14,6 +14,7 @@ import {
   FaCompass,
   FaExchangeAlt,
   FaGem,
+  FaHandshake,
   FaHome,
   FaLandmark,
   FaPiggyBank,
@@ -36,6 +37,7 @@ import { getRealEstates } from '../services/realEstateService';
 import { getBudgetProgress } from '../services/budgetService';
 import { getCertificates } from '../services/certificateService';
 import { getCurrency } from '../services/currencyService';
+import { getLendingSummary } from '../services/lendingService';
 import { QUICK_LAUNCH_ACTIONS, EXPLORE_LINKS } from '../config/dashboardActions';
 import { formatCurrency } from '../utils/formatters';
 import { normDiv } from '../utils/helper';
@@ -91,6 +93,7 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
   const { bankAccountData = {} } = useBankData();
   const { creditCardsSummary = {} } = useCreditData();
   const [realEstates, setRealEstates] = useState([]);
+  const [lendingSummary, setLendingSummary] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -100,6 +103,13 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
         if (isMounted) setRealEstates(data || []);
       })
       .catch((err) => console.error('Failed to load real estate for summary:', err));
+
+    getLendingSummary()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res?.success) setLendingSummary(res.data);
+      })
+      .catch((err) => console.error('Failed to load lending summary for dashboard:', err));
 
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
@@ -215,6 +225,8 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
       0
     );
 
+    const lendingReceivables = safeNumber(lendingSummary?.totalOutstanding) / 100;
+
     const totalPaid =
       goldPaid +
       certAmount +
@@ -222,7 +234,8 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
       stockAmount +
       bankBalance +
       currencyTotalPrice +
-      realEstateTotalPaid;
+      realEstateTotalPaid +
+      lendingReceivables;
     const totalCurrent =
       goldCurrent +
       certAmount +
@@ -230,7 +243,8 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
       stockCurrent +
       bankBalance +
       currencyCurrentValue +
-      realEstateTotalCurrent;
+      realEstateTotalCurrent +
+      lendingReceivables;
 
     const goldCAGR =
       goldPaid > 0
@@ -274,6 +288,7 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
       realEstateTotalPaid,
       realEstateTotalCurrent,
       realEstates,
+      lendingReceivables,
       totalPaid,
       totalCurrent,
       totalGain,

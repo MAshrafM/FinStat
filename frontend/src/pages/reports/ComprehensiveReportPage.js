@@ -171,12 +171,13 @@ const ComprehensiveReportPage = () => {
     const gold = inv.gold?.totalCost || 0;
     const realEstate = inv.realEstate?.currentMarketValue || 0;
     const forex = curr.totalForexValuationEGP || 0;
+    const receivables = (report?.loans?.totalOutstanding || 0) / 100;
 
     return {
-      labels: ['Equities', 'Mutual Funds', 'Certificates', 'Gold', 'Real Estate', 'Forex & Cash'],
+      labels: ['Equities', 'Mutual Funds', 'Certificates', 'Gold', 'Real Estate', 'Forex & Cash', 'Receivables'],
       datasets: [
         {
-          data: [equities, mutualFunds, certificates, gold, realEstate, forex + liquidCash],
+          data: [equities, mutualFunds, certificates, gold, realEstate, forex + liquidCash, receivables],
           backgroundColor: [
             '#2563eb',
             '#059669',
@@ -184,6 +185,7 @@ const ComprehensiveReportPage = () => {
             '#eab308',
             '#7c3aed',
             '#0891b2',
+            '#818cf8',
           ],
         },
       ],
@@ -303,6 +305,12 @@ const ComprehensiveReportPage = () => {
           <div className="kpi-stat-label">Savings Rate</div>
           <div className="kpi-stat-value success">{kpi.savingsRate || 0}%</div>
         </div>
+        <div className="kpi-stat-card">
+          <div className="kpi-stat-label">Total Receivables</div>
+          <div className="kpi-stat-value" style={{ color: '#4f46e5' }}>
+            {formatCurrency((report?.loans?.totalOutstanding || 0) / 100)}
+          </div>
+        </div>
       </section>
 
       {/* Visual Analytics */}
@@ -400,6 +408,37 @@ const ComprehensiveReportPage = () => {
                 <tr>
                   <td colSpan="6" style={{ textAlign: 'center', color: '#64748b' }}>
                     No paycheck entries recorded in this period.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Detailed Lending Ledger */}
+      <section className="report-section report-section-break">
+        <h2 className="report-section-title">🤝 Peer-to-Peer Loans & Receivables</h2>
+        <div className="report-table-card">
+          <table className="report-table">
+            <thead>
+              <tr>
+                <th>Top Debtor</th>
+                <th className="numeric">Outstanding Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(report?.loans?.topDebtors || []).length > 0 ? (
+                report.loans.topDebtors.map((d, idx) => (
+                  <tr key={d.personId || idx}>
+                    <td>{d.personName}</td>
+                    <td className="numeric">{formatCurrency((d.balanceInPiastres || 0) / 100)}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="2" style={{ textAlign: 'center', color: '#64748b' }}>
+                    No active debtors or loans recorded in this period.
                   </td>
                 </tr>
               )}

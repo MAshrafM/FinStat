@@ -344,4 +344,56 @@ describe('Comprehensive Financial Report Service Unit Tests [FEAT-003]', () => {
     expect(report.payroll.monthlyTrend).toHaveLength(1);
     expect(report.payroll.monthlyTrend[0].yearMonth).toBe('2025-06');
   });
+
+  test('Test 8 (Lending Tracker Module 13 Integration): aggregates loans and excludes WrittenOff loans from receivables', async () => {
+    const Person = require('../../models/Person');
+    const Loan = require('../../models/Loan');
+
+    const person = await Person.create({
+      user: userId,
+      name: 'Test Borrower',
+    });
+
+    // Active loan with transactions within 2025
+    await Loan.create({
+      user: userId,
+      person: person._id,
+      status: 'Active',
+      transactions: [
+        {
+          type: 'borrow',
+          amountInPiastres: 1000000,
+          date: new Date('2025-03-01T12:00:00.000Z'),
+        },
+        {
+          type: 'repay',
+          amountInPiastres: 200000,
+          date: new Date('2025-04-01T12:00:00.000Z'),
+        },
+      ],
+    });
+
+    // WrittenOff loan (must be excluded from totalOutstanding)
+    await Loan.create({
+      user: userId,
+      person: person._id,
+      status: 'WrittenOff',
+      transactions: [
+        {
+          type: 'borrow',
+          amountInPiastres: 500000,
+          date: new Date('2025-05-01T12:00:00.000Z'),
+        },
+      ],
+    });
+
+    const report = await generateComprehensiveReport(userId, { startYear: 2025, endYear: 2025 });
+
+    expect(report.loans).toBeDefined();
+    expect(report.loans.totalBorrowed).toBe(1500000);
+    expect(report.loans.totalRepaid).toBe(200000);
+    expect(report.loans.totalOutstanding).toBe(800000);
+    expect(report.loans.topDebtors).toHaveLength(1);
+    expect(report.loans.topDebtors[0].personName).toBe('Test Borrower');
+  });
 });
