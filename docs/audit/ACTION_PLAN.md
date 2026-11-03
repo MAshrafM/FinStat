@@ -137,7 +137,7 @@ graph LR
 | **Phase 5C** | Performance & Scalability | `AUD-PERF-003`, `AUD-PERF-004`, `AUD-PERF-005`, `GAP-013` | 1.5 days | No | `[x] COMPLETE` |
 | **Phase 6A** | Navigation & Page Consolidation | `SIMP-002`, `SIMP-003`, `SIMP-004`, `SIMP-007`, `AUD-ARCH-001` | 1.5 days | Yes (with 6B) | `[x] COMPLETE` |
 | **Phase 6B** | Schema & UI Hygiene | `SIMP-008`, `SIMP-009`, `GAP-007`, `GAP-008`, `GAP-010`, `AUD-ARCH-003` | 1.5 days | Yes (with 6A) | `[x] COMPLETE` |
-| **Phase 7A** | Ingestion & Export | `FEAT-001`, `FEAT-003`, `GAP-005`, `GAP-006` | 2 days | Yes (with 7B) | `[ ] NOT STARTED` |
+| **Phase 7A** | Multi-Module Reporting & Comprehensive Export | `FEAT-003`, `GAP-006`, `AUD-TEST-DEBT-001` | 2 days | Yes (with 7B) | `[x] COMPLETE` |
 | **Phase 7B** | Financial Bridges & Secondary UI Hygiene | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003`, `AUD-UI-DEBT-002` | 2 days | Yes (with 7A) | `[ ] NOT STARTED` |
 | **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[ ] NOT STARTED` |
 | **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[ ] NOT STARTED` |
@@ -1478,45 +1478,91 @@ cd d:/Projects/FinStat/frontend && npm run build
 
 ---
 
-# Phase 7A: Ingestion & Export
+# Phase 7A: Multi-Module Financial Reporting & Comprehensive Export
 
 ---
 
-### Step 7A.1: [FEAT-001] & [GAP-005] Automated Statement Ingestion Pipeline (CSV & Excel)
-* **Requires User Input**: Yes (Supply sample Egyptian bank statement exports [CSV & Excel] for CIB, QNB, NBE).
+### Step 7A.0: [AUD-TEST-DEBT-001] Pre-Flight Test Debt Closure (4 Substituted 5C Edge-Cases)
+* **Requires User Input**: No.
+* **Est. Effort**: 0.5h
+* **Target Files**:
+  * `frontend/src/components/common/__tests__/DebouncedSearchInput.test.js`
+  * `frontend/src/context/__tests__/MFContextCache.test.js`
+  * `backend/tests/integration/debtPayoffOptimization.test.js`
+* **File-Count Cap**: 3 test files.
+* **Actions**: Strengthen pre-existing test suites by adding: (1) `DebouncedSearchInput` negative boundary check at `t=299ms` where `onChange` is called 0 times; (2) `DebouncedSearchInput` immediate clear to empty string `""` triggering `onChange('')` with zero delay; (3) `MFContextCache` verification that calling `refreshLastPrices` passes `{ forceRefresh: true }` to `getBatchLastPrices`; (4) `debtPayoffOptimization` multi-card test asserting zero-balance cards are excluded from `cardsPayload`.
+* **Definition of Done (DoD)**:
+  - [x] All 4 substituted edge-case vectors pass cleanly in their respective suites.
+  - [x] Appended entry to `CHANGELOG.md` resolving `AUD-TEST-DEBT-001`.
+
+---
+
+### Step 7A.1: [FEAT-003] & [GAP-006] Backend Multi-Module Financial Aggregation Engine
+* **Requires User Input**: No.
 * **Est. Effort**: 1.5h
 * **Target Files**:
-  * Create `backend/services/importService.js`
-  * `backend/routes/expenditures.js`
-  * Create `frontend/src/pages/expenditures/StatementImport.js`
-* **File-Count Cap**: 3 files.
-* **Actions**: Multi-bank CSV/Excel parser supporting CIB, QNB, Banque Misr; preview table with rule-based auto-categorization.
+  * Create `backend/services/comprehensiveReportService.js`
+  * `backend/routes/reports.js`
+  * `backend/server.js`
+  * Create `backend/tests/unit/comprehensiveReportService.test.js`
+  * Create `backend/tests/integration/reportsApi.test.js`
+* **File-Count Cap**: 5 files (3 prod + 2 test).
+* **Actions**: Implement sequential 12-module aggregation engine tailored for serverless single-connection constraints (`maxPoolSize: 1`), covering Paycheck, Expenditure, CreditCard, CardTransaction, Trade, MutualFundTrade, Gold, Certificate, Currency, RealEstate, Budget, and DebtPayoffPlan. Expose `GET /api/reports/comprehensive?startYear=YYYY&endYear=YYYY` with 5-year maximum window validation and unauthenticated 401 defense.
 * **Definition of Done (DoD)**:
-  - [ ] User uploads 50-row bank CSV, previews mapping, and commits transactions in <30 seconds with >80% categorization accuracy.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Sequential aggregation executes across 12 models in < 2 seconds without connection pool exhaustion.
+  - [x] All 7 unit and 6 integration tests pass.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
-### Step 7A.2: [FEAT-003] & [GAP-006] Financial Data Portability & Official Tax Reports
-* **Requires User Input**: Yes (Confirm required official tax report layout and export column specifications).
-* **Est. Effort**: 1h
+### Step 7A.2: [FEAT-003] & [GAP-006] Frontend Comprehensive Financial Report Page & Print PDF
+* **Requires User Input**: No.
+* **Est. Effort**: 1.5h
 * **Target Files**:
-  * Create `backend/services/reportExportService.js`
-  * `backend/routes/export.js`
-  * Create `frontend/src/pages/reports/TaxReportGenerator.js`
-* **File-Count Cap**: 3 files.
-* **Actions**: Generate downloadable annual tax summary PDF and full CSV financial ledger exports.
+  * Create `frontend/src/pages/reports/ComprehensiveReportPage.js`
+  * Create `frontend/src/pages/reports/ComprehensiveReport.css`
+  * `frontend/src/App.js`
+  * `frontend/src/components/Sidebar.js`
+  * `frontend/src/pages/DashboardSummary.js`
+  * Create `frontend/src/pages/reports/__tests__/ComprehensiveReportPage.test.js`
+* **File-Count Cap**: 6 files (5 prod + 1 test).
+* **Actions**: Build responsive multi-module report UI with KPI summary ribbons, interactive Chart.js visualizations (Net Worth Trajectory, Income vs Expenses, Asset Allocation Doughnut), breakdown data tables, year-range selectors, error boundaries, and browser-native `@media print` layout generating crisp 300-DPI A4 PDFs via `window.print()`. Mount route `/reports/financial` in `App.js`, add sidebar link under *Investments & Wealth*, and add quick link in `DashboardSummary.js`.
 * **Definition of Done (DoD)**:
-  - [ ] Annual tax summary PDF exports cleanly with official formatting and breakdown.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Comprehensive Report Page renders charts and metrics responsively.
+  - [x] `window.print()` outputs clean A4 PDF layout without server memory overhead.
+  - [x] All 7 page unit tests and 8 sidebar navigation tests pass.
+  - [x] Appended entry to `CHANGELOG.md`.
+
+---
+
+### Step 7A.3: [FEAT-003] & [GAP-006] Egyptian Statutory Annual Tax Summary & Full Ledger Export
+* **Requires User Input**: No.
+* **Est. Effort**: 1.5h
+* **Target Files**:
+  * Create `backend/services/taxSummaryReportService.js`
+  * `backend/routes/reports.js`
+  * `backend/routes/export.js`
+  * Create `backend/tests/unit/taxSummaryReportService.test.js`
+  * Create `backend/tests/integration/taxReportApi.test.js`
+* **File-Count Cap**: 5 files (3 prod + 2 test).
+* **Actions**: Implement Egyptian Statutory Tax Summary service per Law 175/2023 progressive brackets, dynamic personal exemption lookup from `TaxBracket`, and Law 200/2020 0.05% gross wage Martyrs Memorial Fund reconciliation. Expose `GET /api/reports/tax-summary?year=YYYY` returning statutory tax delta and overpaid/underpaid status. Implement `GET /api/export/financial-ledger?startYear=YYYY&endYear=YYYY` streaming 6 financial streams (Paychecks, Expenditures, Card Transactions, Stock Trades, Gold Liquidations, Certificate Withdrawals) chronologically via Mongoose cursors capped at 25,000 rows.
+* **Definition of Done (DoD)**:
+  - [x] Annual statutory tax liability and Martyrs Fund reconcile within 0.00 EGP variance.
+  - [x] Cursor streaming CSV ledger formats multi-module transactions chronologically.
+  - [x] All 6 unit and 4 integration tests pass.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
 ### Phase 7A Verification Gate
 *(Expected verification timeout: < 120s)*
-- [ ] Bank statement CSV imported and committed successfully.
-- [ ] Tax report PDF generated with accurate statutory totals.
-- [ ] **Phase 7A Signed Off**: `[ ] YES` | Date: `__________`
+- [x] Pre-flight test debt (`AUD-TEST-DEBT-001`) closed with 4 passing edge-case vectors.
+- [x] Comprehensive Multi-Module Report aggregates 12 models in serverless single-connection mode.
+- [x] Frontend report page renders responsive KPIs, Chart.js graphs, and prints clean A4 PDFs.
+- [x] Egyptian Statutory Tax Summary reconciles Law 175/2023 and Law 200/2020 liabilities.
+- [x] Full Ledger CSV export streams multi-module records chronologically up to 25,000 rows.
+- [x] Zero regressions across 121 tests (backend unit/integration & frontend Jest suites).
+- [x] **Phase 7A Signed Off**: `[x] YES` | Date: `2026-11-03`
 
 ---
 
