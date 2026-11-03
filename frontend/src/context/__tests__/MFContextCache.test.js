@@ -135,5 +135,40 @@ describe('MFContext Client-Side TTL Cache Tests [AUD-PERF-005]', () => {
       expect.arrayContaining([expect.objectContaining({ name: 'Fund Alpha', lastPrice: 105 })])
     );
   });
+
+  test('refreshLastPrices explicitly passes forceRefresh: true option to getBatchLastPrices [AUD-TEST-DEBT-001]', async () => {
+    mfService.getBatchLastPrices
+      .mockResolvedValueOnce({
+        prices: [{ name: 'Fund Alpha', lastPrice: 105 }],
+      })
+      .mockResolvedValueOnce({
+        prices: [{ name: 'Fund Alpha', lastPrice: 125 }],
+      });
+
+    let contextRef;
+    render(
+      <MFProvider>
+        <TestConsumer onReady={(data) => { contextRef = data; }} />
+      </MFProvider>
+    );
+
+    await waitFor(() => {
+      expect(contextRef?.isLoading).toBe(false);
+    });
+
+    expect(mfService.getBatchLastPrices).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await contextRef.refreshLastPrices();
+    });
+
+    expect(mfService.getBatchLastPrices).toHaveBeenCalledTimes(2);
+    expect(mfService.getBatchLastPrices).toHaveBeenLastCalledWith(['Fund Alpha'], { forceRefresh: true });
+    expect(contextRef.lastPriceData).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: 'Fund Alpha', lastPrice: 125 })])
+    );
+  });
 });
+
+
 

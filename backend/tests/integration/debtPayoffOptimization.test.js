@@ -193,4 +193,79 @@ describe('Debt Payoff Optimization Integration Tests [AUD-PERF-003]', () => {
     expect(res.body.cards).toHaveLength(0);
     expect(res.body.schedule).toHaveLength(0);
   });
+
+  test('mix of zero-balance and active-balance cards includes ONLY positive balance cards in cardsPayload and schedule [AUD-TEST-DEBT-001]', async () => {
+    // 1. Zero-balance card (paid off)
+    const cardZero = await CreditCard.create({
+      user: user._id,
+      name: 'Zero Balance Card',
+      bank: 'CIB',
+      limit: 20000,
+      apr: 22,
+      minimumPaymentPercent: 5,
+      billingCycleDay: 1,
+      paymentDueDay: 25,
+    });
+    await CardTransaction.create({
+      user: user._id,
+      card: cardZero._id,
+      description: 'Fully Paid Transaction',
+      category: 'Utilities',
+      amount: 1000,
+      amountInPiastres: 100000,
+      paidAmount: 1000,
+      paidAmountInPiastres: 100000,
+      currency: 'EGP',
+      date: new Date('2026-06-05'),
+      type: 'Purchase',
+      status: 'Paid',
+    });
+
+    // 2. Active card with outstanding balance (5,000 EGP)
+    const cardActive = await CreditCard.create({
+      user: user._id,
+      name: 'Active Debt Card',
+      bank: 'HSBC',
+      limit: 30000,
+      apr: 24,
+      minimumPaymentPercent: 5,
+      billingCycleDay: 5,
+      paymentDueDay: 28,
+    });
+    await CardTransaction.create({
+      user: user._id,
+      card: cardActive._id,
+      description: 'Pending Debt Transaction',
+      category: 'Electronics',
+      amount: 5000,
+      amountInPiastres: 500000,
+      paidAmount: 0,
+      paidAmountInPiastres: 0,
+      currency: 'EGP',
+      date: new Date('2026-06-10'),
+      type: 'Purchase',
+      status: 'Due',
+    });
+
+    const res = await request(app)
+      .post('/api/debt-payoff/calculate')
+      .set('Authorization', authHeader)
+      .send({
+        strategy: 'snowball',
+        monthlyBudget: 2500,
+      });
+
+    expect(res.status).toBe(200);
+    // Only the active card should be included
+    expect(res.body.cards).toHaveLength(1);
+    expect(res.body.cards[0].name).toBe('Active Debt Card');
+    expect(res.body.cards[0].balanceInPiastres).toBe(500000);
+
+    // Schedule should be computed only for the active card
+    expect(res.body.schedule.length).toBeGreaterThan(0);
+    const scheduledCardIds = new Set(res.body.schedule.map(s => s.cardId.toString()));
+    expect(scheduledCardIds.has(cardActive._id.toString())).toBe(true);
+    expect(scheduledCardIds.has(cardZero._id.toString())).toBe(false);
+  });
 });
+

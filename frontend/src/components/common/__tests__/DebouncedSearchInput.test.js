@@ -97,5 +97,37 @@ describe('DebouncedSearchInput Component Tests [GAP-013]', () => {
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith('');
   });
+
+  test('boundary precision: onChange is called 0 times at t=299ms and fires exactly once at t=300ms [AUD-TEST-DEBT-001]', () => {
+    const onChange = jest.fn();
+    render(<DebouncedSearchInput value="" onChange={onChange} delay={300} />);
+
+    const input = screen.getByRole('searchbox');
+    fireEvent.change(input, { target: { value: 'BOUNDARY_TEST' } });
+
+    act(() => {
+      jest.advanceTimersByTime(299);
+    });
+    expect(onChange).toHaveBeenCalledTimes(0);
+
+    act(() => {
+      jest.advanceTimersByTime(1);
+    });
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith('BOUNDARY_TEST');
+  });
+
+  test('clearing input directly to empty string fires onChange immediately without timer delay distinct from Escape [AUD-TEST-DEBT-001]', () => {
+    const onChange = jest.fn();
+    render(<DebouncedSearchInput value="currentSearch" onChange={onChange} delay={300} />);
+
+    const input = screen.getByRole('searchbox');
+    fireEvent.change(input, { target: { value: '' } });
+
+    // Fires immediately without needing jest.advanceTimersByTime
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith('');
+  });
 });
+
 
