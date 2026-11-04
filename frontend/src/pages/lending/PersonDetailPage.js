@@ -156,7 +156,7 @@ const PersonDetailPage = () => {
   return (
     <div className="lending-page">
       <div style={{ marginBottom: '16px' }}>
-        <Link to="/lending" style={{ textDecoration: 'none', color: '#4f46e5', fontSize: '0.9rem' }}>
+        <Link to="/lending" style={{ textDecoration: 'none', color: '#009879', fontSize: '0.9rem', fontWeight: 500 }}>
           ← Back to Lending Dashboard
         </Link>
       </div>
@@ -195,8 +195,8 @@ const PersonDetailPage = () => {
       {/* Aggregate Banner */}
       <div
         style={{
-          background: activeDebt > 0 ? '#eef2ff' : '#f0fdf4',
-          border: `1px solid ${activeDebt > 0 ? '#c7d2fe' : '#bbf7d0'}`,
+          background: activeDebt > 0 ? '#e6f5f1' : '#f0fdf4',
+          border: `1px solid ${activeDebt > 0 ? '#a7f3d0' : '#bbf7d0'}`,
           borderRadius: '10px',
           padding: '16px 20px',
           marginBottom: '24px',
@@ -208,7 +208,7 @@ const PersonDetailPage = () => {
         }}
       >
         <div>
-          <span style={{ fontSize: '1.1rem', fontWeight: 600, color: activeDebt > 0 ? '#312e81' : '#14532d' }}>
+          <span style={{ fontSize: '1.1rem', fontWeight: 600, color: activeDebt > 0 ? '#007a61' : '#14532d' }}>
             {activeDebt > 0
               ? `${person.name} currently owes you ${formatCurrency(activeDebt)} across ${activeCount} active loan${
                   activeCount === 1 ? '' : 's'
@@ -226,7 +226,11 @@ const PersonDetailPage = () => {
 
       {/* Loans List */}
       <h2 style={{ fontSize: '1.25rem', marginBottom: '16px', fontWeight: 600 }}>Loans for {person.name}</h2>
-      <div className="lending-table-card">
+      <div className="lending-scroll-hint" aria-hidden="true">
+        <span>↔ Scroll horizontally to view full loan details</span>
+      </div>
+
+      <div className="table-container lending-table-card">
         <table className="lending-table">
           <thead>
             <tr>
@@ -260,7 +264,7 @@ const PersonDetailPage = () => {
                     <td>{new Date(loan.createdAt).toLocaleDateString()}</td>
                     <td>{formatCurrency(borrowed)}</td>
                     <td style={{ color: '#059669' }}>{formatCurrency(repaid)}</td>
-                    <td style={{ fontWeight: 600, color: balance > 0 ? '#4f46e5' : '#64748b' }}>
+                    <td style={{ fontWeight: 600, color: balance > 0 ? '#009879' : '#64748b' }}>
                       {formatCurrency(balance)}
                     </td>
                     <td>
@@ -276,7 +280,7 @@ const PersonDetailPage = () => {
                         {loan.status}
                       </span>
                     </td>
-                    <td>{loan.notes || '—'}</td>
+                    <td className="cell-wrap">{loan.notes || '—'}</td>
                     <td style={{ textAlign: 'right' }}>
                       <Link
                         to={`/lending/loans/${loan._id}`}

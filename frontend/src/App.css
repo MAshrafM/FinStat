@@ -232,7 +232,8 @@ td strong {
 .table-responsive,
 .paycheck-table-container,
 .admin-table-container,
-.card-table-wrapper {
+.card-table-wrapper,
+.lending-table-card {
   overflow-x: auto !important;
   -webkit-overflow-scrolling: touch;
 }

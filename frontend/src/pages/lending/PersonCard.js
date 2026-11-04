@@ -27,7 +27,7 @@ const PersonCard = ({ person }) => {
       <div className="person-card-stats">
         <div>
           <div className="person-card-stat-label">Total Outstanding</div>
-          <div className="person-card-stat-val" style={{ color: owes > 0 ? '#4f46e5' : '#059669' }}>
+          <div className="person-card-stat-val" style={{ color: owes > 0 ? '#009879' : '#059669' }}>
             {formatCurrency(owes)}
           </div>
         </div>

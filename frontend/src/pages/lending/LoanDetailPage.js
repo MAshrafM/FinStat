@@ -144,7 +144,7 @@ const LoanDetailPage = () => {
       <div style={{ marginBottom: '16px' }}>
         <Link
           to={loan.person?._id ? `/lending/persons/${loan.person._id}` : '/lending'}
-          style={{ textDecoration: 'none', color: '#4f46e5', fontSize: '0.9rem' }}
+          style={{ textDecoration: 'none', color: '#009879', fontSize: '0.9rem', fontWeight: 500 }}
         >
           ← Back to {personName}
         </Link>
@@ -203,20 +203,19 @@ const LoanDetailPage = () => {
           <div className="lending-kpi-title">Remaining Balance</div>
           <div
             className="lending-kpi-value"
-            style={{ color: balance > 0 ? '#4f46e5' : '#059669', fontSize: '1.8rem' }}
+            style={{ color: balance > 0 ? '#009879' : '#059669', fontSize: '1.8rem' }}
           >
             {formatCurrency(balance)}
           </div>
           <div className="lending-kpi-sub">
             Status:{' '}
             <span
-              className={`person-card-badge ${
-                loan.status === 'Active'
+              className={`person-card-badge ${loan.status === 'Active'
                   ? 'badge-active'
                   : loan.status === 'Repaid'
-                  ? 'badge-repaid'
-                  : 'badge-writtenoff'
-              }`}
+                    ? 'badge-repaid'
+                    : 'badge-writtenoff'
+                }`}
             >
               {loan.status}
             </span>
@@ -251,7 +250,11 @@ const LoanDetailPage = () => {
         <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 600 }}>Transaction History & Ledger</h2>
       </div>
 
-      <div className="lending-table-card">
+      <div className="lending-scroll-hint" aria-hidden="true">
+        <span>↔ Scroll horizontally to view full ledger columns</span>
+      </div>
+
+      <div className="table-container lending-table-card">
         <table className="lending-table">
           <thead>
             <tr>
@@ -295,7 +298,7 @@ const LoanDetailPage = () => {
                       {tx.type === 'borrow' ? `+ ${formatCurrency(txAmount)}` : `- ${formatCurrency(txAmount)}`}
                     </td>
                     <td style={{ fontWeight: 600, color: '#1e293b' }}>{formatCurrency(runningBal)}</td>
-                    <td>{tx.note || '—'}</td>
+                    <td className="cell-wrap">{tx.note || '—'}</td>
                     <td style={{ textAlign: 'right' }}>
                       <button
                         type="button"

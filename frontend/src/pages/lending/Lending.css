@@ -25,6 +25,7 @@
 .lending-header-actions {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .lending-btn {
@@ -35,27 +36,30 @@
   border: 1px solid transparent;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   transition: all 0.2s ease-in-out;
+  font-size: 0.9rem;
 }
 
 .lending-btn-primary {
-  background-color: #4f46e5;
+  background-color: #009879;
   color: #ffffff;
 }
 
 .lending-btn-primary:hover:not(:disabled) {
-  background-color: #4338ca;
+  background-color: #007a61;
 }
 
 .lending-btn-secondary {
-  background-color: #f1f5f9;
+  background-color: #ffffff;
   color: #334155;
   border-color: #cbd5e1;
 }
 
 .lending-btn-secondary:hover:not(:disabled) {
-  background-color: #e2e8f0;
+  background-color: #f8fafc;
+  border-color: #94a3b8;
 }
 
 .lending-btn:disabled {
@@ -164,25 +168,31 @@
 }
 
 .person-card-badge {
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
 .badge-active {
-  background: #eef2ff;
-  color: #4338ca;
+  background: #e6f5f1;
+  color: #007a61;
+  border: 1px solid #a7f3d0;
 }
 
 .badge-repaid {
   background: #ecfdf5;
   color: #047857;
+  border: 1px solid #6ee7b7;
 }
 
 .badge-writtenoff {
   background: #fef2f2;
   color: #b91c1c;
+  border: 1px solid #fecaca;
 }
 
 .person-card-stats {
@@ -204,39 +214,72 @@
   color: #0f172a;
 }
 
+/* Horizontal Scroll Container for Tables */
 .lending-table-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  overflow: hidden;
+  border-radius: 10px;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 24px;
+}
+
+.lending-scroll-hint {
+  display: none;
+  font-size: 0.8rem;
+  color: #007a61;
+  background-color: #f0fdf9;
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
 }
 
 .lending-table {
   width: 100%;
+  min-width: 680px;
   border-collapse: collapse;
   text-align: left;
 }
 
 .lending-table th {
-  background: #f8fafc;
+  background-color: #009879;
+  color: #ffffff;
   padding: 12px 16px;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: #64748b;
-  border-bottom: 1px solid #e2e8f0;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid #007a61;
+  white-space: nowrap;
 }
 
 .lending-table td {
-  padding: 14px 16px;
+  padding: 13px 16px;
   border-bottom: 1px solid #f1f5f9;
   font-size: 0.9rem;
   color: #334155;
+  white-space: nowrap;
 }
 
-.lending-table tr:hover {
-  background: #f8fafc;
+.lending-table td.cell-wrap {
+  white-space: normal;
+  min-width: 160px;
+  max-width: 320px;
+  word-break: break-word;
+}
+
+.lending-table tbody tr:hover {
+  background-color: #f0fdf9;
+}
+
+.lending-table tbody tr:last-of-type {
+  border-bottom: 2px solid #009879;
 }
 
 .lending-progress-bg {
@@ -249,7 +292,7 @@
 }
 
 .lending-progress-fill {
-  background: #10b981;
+  background: #009879;
   height: 100%;
   border-radius: 9999px;
   transition: width 0.3s ease;
@@ -340,6 +383,14 @@
   box-sizing: border-box;
 }
 
+.lending-form-group input:focus,
+.lending-form-group select:focus,
+.lending-form-group textarea:focus {
+  outline: none;
+  border-color: #009879;
+  box-shadow: 0 0 0 3px rgba(0, 152, 121, 0.15);
+}
+
 .lending-modal-footer {
   padding: 12px 20px;
   background: #f8fafc;
@@ -347,4 +398,54 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+/* Mobile & Tablet Responsiveness */
+@media (max-width: 768px) {
+  .lending-page {
+    padding: 16px 12px;
+  }
+
+  .lending-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .lending-header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .lending-header-actions .lending-btn {
+    width: 100%;
+  }
+
+  .lending-kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .lending-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .lending-filters {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .lending-select {
+    flex: 1;
+  }
+
+  .lending-scroll-hint {
+    display: flex;
+  }
+
+  .lending-modal-content {
+    max-width: 95vw;
+  }
 }

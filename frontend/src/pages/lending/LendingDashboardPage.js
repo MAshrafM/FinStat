@@ -153,7 +153,7 @@ const LendingDashboardPage = () => {
       <div className="lending-kpi-grid">
         <div className="lending-kpi-card">
           <div className="lending-kpi-title">Total Receivables</div>
-          <div className="lending-kpi-value" style={{ color: '#4f46e5' }}>
+          <div className="lending-kpi-value" style={{ color: '#009879' }}>
             {formatCurrency((summary?.totalOutstanding || 0) / 100)}
           </div>
           <div className="lending-kpi-sub">Active outstanding loans</div>
@@ -238,7 +238,11 @@ const LendingDashboardPage = () => {
             </div>
           </div>
 
-          <div className="lending-table-card">
+          <div className="lending-scroll-hint" aria-hidden="true">
+            <span>↔ Scroll horizontally to view full loan details</span>
+          </div>
+
+          <div className="table-container lending-table-card">
             <table className="lending-table">
               <thead>
                 <tr>
@@ -274,7 +278,7 @@ const LendingDashboardPage = () => {
                         <td>{new Date(loan.createdAt).toLocaleDateString()}</td>
                         <td>{formatCurrency(borrowed)}</td>
                         <td style={{ color: '#059669' }}>{formatCurrency(repaid)}</td>
-                        <td style={{ fontWeight: 600, color: balance > 0 ? '#4f46e5' : '#64748b' }}>
+                        <td style={{ fontWeight: 600, color: balance > 0 ? '#009879' : '#64748b' }}>
                           {formatCurrency(balance)}
                         </td>
                         <td style={{ width: '160px' }}>
