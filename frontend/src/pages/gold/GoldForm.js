@@ -10,9 +10,10 @@ const GoldForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         price: '',
         paid: '',
         seller: '',
-        status: 'hold',
+                status: 'hold',
         sellingPrice: '',
         sellingDate: '',
+        destinationAccount: 'Cash',
     });
 
     useEffect(() => {
@@ -25,9 +26,10 @@ const GoldForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                 price: initialData.price || '',
                 paid: initialData.paid || '',
                 seller: initialData.seller || '',
-                status: initialData.status || 'hold',
+                                status: initialData.status || 'hold',
                 sellingPrice: initialData.sellingPrice || '',
                 sellingDate: initialData.sellingDate ? new Date(initialData.sellingDate).toISOString().split('T')[0] : '',
+                destinationAccount: initialData.destinationAccount || 'Cash',
             });
         }
     }, [initialData, isEdit]);
@@ -53,13 +55,14 @@ const GoldForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             payload.seller = formData.seller.trim();
         }
 
-        if (formData.status === 'sold') {
+                if (formData.status === 'sold') {
             if (formData.sellingPrice !== '' && formData.sellingPrice !== undefined && formData.sellingPrice !== null) {
                 payload.sellingPrice = parseFloat(formData.sellingPrice);
             }
             if (formData.sellingDate) {
                 payload.sellingDate = formData.sellingDate;
             }
+            payload.destinationAccount = formData.destinationAccount || 'Cash';
         }
 
         onFormSubmit(payload);
@@ -80,10 +83,18 @@ const GoldForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                     <option value="sold">Sold</option>
                 </select>
             </div>
-            {formData.status === 'sold' && (
+                        {formData.status === 'sold' && (
                 <>
                     <div className="form-group"><label>Selling Price</label><input type="number" step="any" name="sellingPrice" value={formData.sellingPrice} onChange={handleChange} required /></div>
                     <div className="form-group"><label>Selling Date</label><input type="date" name="sellingDate" value={formData.sellingDate} onChange={handleChange} required /></div>
+                    <div className="form-group">
+                        <label>Deposit Proceeds To</label>
+                        <select name="destinationAccount" value={formData.destinationAccount || 'Cash'} onChange={handleChange}>
+                            <option value="Cash">Cash Ledger</option>
+                            <option value="Bank">Bank Account</option>
+                            <option value="Prepaid">Prepaid Card</option>
+                        </select>
+                    </div>
                 </>
             )}
             <button type="submit" className="action-button">{isEdit ? 'Update' : 'Create'} Log</button>

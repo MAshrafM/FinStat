@@ -55,7 +55,8 @@ const CertificateDetailPage = () => {
 
   // Withdraw Modal State
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [withdrawalReason, setWithdrawalReason] = useState('');
+    const [withdrawalReason, setWithdrawalReason] = useState('');
+  const [destinationAccount, setDestinationAccount] = useState('Bank');
   const [confirmedCheckbox, setConfirmedCheckbox] = useState(false);
   const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
 
@@ -122,10 +123,11 @@ const CertificateDetailPage = () => {
 
     try {
       setIsSubmittingWithdraw(true);
-      await withdrawCertificate(id, {
+            await withdrawCertificate(id, {
         withdrawalDate: new Date().toISOString(),
         withdrawalReason: withdrawalReason.trim() || undefined,
         confirmWithdrawal: true,
+        destinationAccount,
       });
       showToast('Certificate marked as withdrawn', 'success');
       setShowWithdrawModal(false);
@@ -481,6 +483,27 @@ const CertificateDetailPage = () => {
                   {formatCurrency((cert.amount || 0) + (liveAccrual?.accruedInterest ?? cert.accruedInterest ?? 0))}
                 </strong>
               </div>
+            </div>
+
+                        <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+                Deposit Proceeds To:
+              </label>
+              <select
+                value={destinationAccount}
+                onChange={(e) => setDestinationAccount(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <option value="Bank">Bank Account</option>
+                <option value="Cash">Cash Ledger</option>
+                <option value="Prepaid">Prepaid Card</option>
+              </select>
             </div>
 
             <div style={{ marginBottom: '16px' }}>

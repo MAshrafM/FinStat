@@ -289,9 +289,10 @@ const PaycheckFormPage = () => {
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   // Form State
-  const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({
     type: 'Cash',
     disbursementType: 'Regular',
+    destinationAccount: 'Bank',
     period: new Date().toISOString().slice(0, 7), // "YYYY-MM"
     payDate: new Date().toISOString().split('T')[0],
     salaryProfile: '',
@@ -589,9 +590,10 @@ const PaycheckFormPage = () => {
     }
 
     const normalizedPayDate = normalizePayDateInput(formData.payDate);
-    const payload = {
+        const payload = {
       type: formData.disbursementType === 'Prepaid' ? 'Prepaid' : 'Cash',
       disbursementType: formData.disbursementType,
+      destinationAccount: formData.destinationAccount || 'Bank',
       period: formData.period,
       month: formData.period,
       payDate: normalizedPayDate,
@@ -771,7 +773,7 @@ const PaycheckFormPage = () => {
               />
             </div>
 
-            <div className="form-group">
+                        <div className="form-group">
               <label className="form-label">Disbursement Date *</label>
               <input
                 type="date"
@@ -787,6 +789,19 @@ const PaycheckFormPage = () => {
                 }}
                 required
               />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Deposit To Account</label>
+              <select
+                className="form-control"
+                value={formData.destinationAccount || 'Bank'}
+                onChange={(e) => setFormData({ ...formData, destinationAccount: e.target.value })}
+              >
+                <option value="Bank">Bank Account</option>
+                <option value="Cash">Cash Ledger</option>
+                <option value="Prepaid">Prepaid Card</option>
+              </select>
             </div>
 
             {formData.disbursementType === 'Regular' && profiles.length > 0 && (
