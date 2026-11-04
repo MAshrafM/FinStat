@@ -396,4 +396,80 @@ describe('Comprehensive Financial Report Service Unit Tests [FEAT-003]', () => {
     expect(report.loans.topDebtors).toHaveLength(1);
     expect(report.loans.topDebtors[0].personName).toBe('Test Borrower');
   });
+  test('Test 9 (Settlement Anti-Double-Counting): auto-credit expenditures from paycheck/gold/certificate settlements do not inflate Total Spent or distort Net Savings Rate', async () => {
+    // 1. Create a paycheck with 50,000 gross, 40,000 net, 6,000 tax, 3,975 ins, 25 martyrs
+    const paycheck = await Paycheck.create({
+      user: userId,
+      payDate: new Date('2025-02-15T12:00:00.000Z'),
+      period: '2025-02',
+      grossSalary: 50000,
+      netPay: 40000,
+      taxDetails: { actualTax: 6000 },
+      insuranceDetails: { actualEmployeeShare: 3975 },
+      martyrsFund: 25,
+    });
+
+    // 2. Auto-credit settlement expenditures (should be EXCLUDED from totalSpent and spendByCategory)
+    await Expenditure.create([
+      {
+        user: userId,
+        date: new Date('2025-02-15T12:00:00.000Z'),
+        transactionValue: 40000,
+        transactionValueInPiastres: 4000000,
+        transactionType: 'T',
+        paymentMethod: 'Bank',
+        categories: ['Salary'],
+        linkedPaycheckId: paycheck._id,
+      },
+      {
+        user: userId,
+        date: new Date('2025-02-18T12:00:00.000Z'),
+        transactionValue: 20000,
+        transactionValueInPiastres: 2000000,
+        transactionType: 'T',
+        paymentMethod: 'Cash',
+        categories: ['Salary'],
+        linkedGoldId: new mongoose.Types.ObjectId(),
+      },
+      {
+        user: userId,
+        date: new Date('2025-02-20T12:00:00.000Z'),
+        transactionValue: 30000,
+        transactionValueInPiastres: 3000000,
+        transactionType: 'T',
+        paymentMethod: 'Bank',
+        categories: ['Salary'],
+        linkedCertificateId: new mongoose.Types.ObjectId(),
+      },
+      // 3. Genuine expense (outflow): 10,000 EGP in Groceries
+      {
+        user: userId,
+        date: new Date('2025-02-22T12:00:00.000Z'),
+        transactionValue: 10000,
+        transactionValueInPiastres: 1000000,
+        transactionType: 'W',
+        paymentMethod: 'Bank',
+        categories: ['Groceries'],
+      },
+    ]);
+
+    const report = await generateComprehensiveReport(userId, { startYear: 2025, endYear: 2025 });
+
+    // Verify expenditures.totalSpent excludes the 90,000 of auto-credited inflows
+    expect(report.expenditures.totalSpent).toBe(10000);
+
+    // Verify spendByCategory has Groceries: 10,000 and NO Salary category spending
+    const salarySpend = report.expenditures.spendByCategory.find(c => c.category === 'Salary');
+    expect(salarySpend).toBeUndefined();
+
+    const groceriesSpend = report.expenditures.spendByCategory.find(c => c.category === 'Groceries');
+    expect(groceriesSpend).toBeDefined();
+    expect(groceriesSpend.totalSpent).toBe(10000);
+
+    // Total expenses = 10,000 spent + 6,000 tax + 3,975 ins + 25 martyrs = 20,000
+    expect(report.kpi.totalExpenses).toBe(20000);
+
+    // Savings rate = (50,000 gross - 20,000 expenses) / 50,000 * 100 = 60.0%
+    expect(report.kpi.savingsRate).toBe(60.0);
+  });
 });

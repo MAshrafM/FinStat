@@ -272,8 +272,17 @@ router.post('/bulk-delete', auth, validate({ body: bulkDeleteSchema }), asyncHan
       .sort({ date: 1, _id: 1 })
       .session(session);
 
-    if (expenditures.length === 0) {
+        if (expenditures.length === 0) {
       return 0;
+    }
+
+    const linkedDoc = expenditures.find(
+      (e) => e.linkedPaycheckId || e.linkedGoldId || e.linkedCertificateId
+    );
+    if (linkedDoc) {
+      throw new BadRequestError(
+        'Cannot delete auto-generated settlement transactions directly. Please manage or delete the source record (paycheck, gold holding, or certificate).'
+      );
     }
 
     // 2. Revert balances for each expenditure and soft delete
@@ -488,8 +497,14 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
   if (!expenditure) {
     throw new NotFoundError('Expenditure not found');
   }
-  if (expenditure.user.toString() !== req.effectiveUserId.toString()) {
+    if (expenditure.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
+  }
+
+  if (expenditure.linkedPaycheckId || expenditure.linkedGoldId || expenditure.linkedCertificateId) {
+    throw new BadRequestError(
+      'Cannot delete auto-generated settlement transactions directly. Please manage or delete the source record (paycheck, gold holding, or certificate).'
+    );
   }
 
   await executeInTransaction(async (session) => {

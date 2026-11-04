@@ -112,10 +112,14 @@ async function generateComprehensiveReport(userId, options = {}) {
   }
 
   // 2. Expenditures
-  const expenditures = await Expenditure.find({
+    const expenditures = await Expenditure.find({
     user: userObjectId,
     date: { $gte: periodStart, $lte: periodEnd },
     deletedAt: null,
+    linkedPaycheckId: null,
+    linkedGoldId: null,
+    linkedCertificateId: null,
+    transactionType: { $ne: 'T' },
   }).sort({ date: 1 }).lean();
 
   let totalSpent = 0;
@@ -134,12 +138,16 @@ async function generateComprehensiveReport(userId, options = {}) {
     }
   }
 
-  const categoryAgg = await Expenditure.aggregate([
+    const categoryAgg = await Expenditure.aggregate([
     {
       $match: {
         user: userObjectId,
         date: { $gte: periodStart, $lte: periodEnd },
         deletedAt: null,
+        linkedPaycheckId: null,
+        linkedGoldId: null,
+        linkedCertificateId: null,
+        transactionType: { $ne: 'T' },
       },
     },
     { $unwind: { path: '$categories', preserveNullAndEmptyArrays: true } },
@@ -376,13 +384,17 @@ async function generateComprehensiveReport(userId, options = {}) {
   for (const b of budgets) {
     const { startDate, endDate } = getDateRange(b.period, b.year, b.month, b.quarter);
     // Query expenditures strictly within this budget's timeframe
-    const spendResult = await Expenditure.aggregate([
+        const spendResult = await Expenditure.aggregate([
       {
         $match: {
           user: userObjectId,
           date: { $gte: startDate, $lte: endDate },
           categories: b.category,
           deletedAt: null,
+          linkedPaycheckId: null,
+          linkedGoldId: null,
+          linkedCertificateId: null,
+          transactionType: { $ne: 'T' },
         },
       },
       {
