@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import { useData } from '../../context/DataContext';
 import { useToast } from '../../context/ToastContext';
+import AccountSelector from '../../components/common/AccountSelector';
 import './Trades.css';
 
 export const PRESET_BROKERS = [
@@ -195,6 +196,11 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             delete payload.iteration;
             delete payload.shares;
             delete payload.price;
+            if (formData.type === 'TopUp') {
+                payload.sourceAccount = formData.sourceAccount || 'Bank';
+            } else if (formData.type === 'Withdraw') {
+                payload.destinationAccount = formData.destinationAccount || 'Bank';
+            }
         }
 
         onFormSubmit(payload);
@@ -244,6 +250,25 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                     <option value="Split">Stock Split</option>
                 </select>
             </div>
+
+            {formData.type === 'TopUp' && (
+                <AccountSelector
+                    direction="source"
+                    value={formData.sourceAccount || 'Bank'}
+                    onChange={handleChange}
+                    name="sourceAccount"
+                    label="Paid From (Source Account)"
+                />
+            )}
+            {formData.type === 'Withdraw' && (
+                <AccountSelector
+                    direction="destination"
+                    value={formData.destinationAccount || 'Bank'}
+                    onChange={handleChange}
+                    name="destinationAccount"
+                    label="Deposit To (Destination Account)"
+                />
+            )}
 
             {isStockTrade && (!isSellTransaction || isEdit) && (
                 <div className="form-group">

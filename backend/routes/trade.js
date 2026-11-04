@@ -24,6 +24,12 @@ const { wizardCorporateActionSchema } = require('../validationSchemas/corporateA
 const marketPriceService = require('../utils/marketPriceService');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
 const { validateAvailableShares } = require('../utils/tradeValidator');
+const {
+  createExpenditureFromBrokerTopUp,
+  createExpenditureFromBrokerWithdraw,
+  reverseIncomeExpenditure,
+  syncBrokerTradeExpenditure,
+} = require('../utils/incomeBridge');
 
 // @route   GET api/trades
 // @desc    Get all active trades (with pagination)
@@ -212,6 +218,21 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     totalValueInPiastres: toPiastres(validatedBody.totalValue),
   });
   await newTrade.save();
+
+  if (newTrade.type === 'TopUp') {
+    await createExpenditureFromBrokerTopUp({
+      trade: newTrade,
+      sourceAccount: validatedBody.sourceAccount,
+      user: req.effectiveUserId,
+    });
+  } else if (newTrade.type === 'Withdraw') {
+    await createExpenditureFromBrokerWithdraw({
+      trade: newTrade,
+      destinationAccount: validatedBody.destinationAccount,
+      user: req.effectiveUserId,
+    });
+  }
+
   invalidatePortfolioCache(req.effectiveUserId);
   res.status(201).json(newTrade);
 }));
@@ -275,6 +296,13 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     updateData,
     { new: true, runValidators: true }
   );
+  if (trade.linkedExpenditureId) {
+    await syncBrokerTradeExpenditure({
+      trade,
+      updateData: validatedBody,
+      user: req.effectiveUserId,
+    });
+  }
   invalidatePortfolioCache(req.effectiveUserId);
   res.json(trade);
 }));
@@ -289,6 +317,9 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
   const trade = await Trade.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!trade) {
     throw new NotFoundError('Trade not found');
+  }
+  if (trade.linkedExpenditureId) {
+    await reverseIncomeExpenditure(trade.linkedExpenditureId, req.effectiveUserId);
   }
   await trade.softDelete();
   invalidatePortfolioCache(req.effectiveUserId);
@@ -307,6 +338,19 @@ router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandl
     throw new NotFoundError('Soft-deleted trade not found');
   }
   await trade.restore();
+  if (trade.type === 'TopUp') {
+    await createExpenditureFromBrokerTopUp({
+      trade,
+      sourceAccount: trade.sourceAccount,
+      user: req.effectiveUserId,
+    });
+  } else if (trade.type === 'Withdraw') {
+    await createExpenditureFromBrokerWithdraw({
+      trade,
+      destinationAccount: trade.destinationAccount,
+      user: req.effectiveUserId,
+    });
+  }
   invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Trade restored successfully', trade });
 }));
