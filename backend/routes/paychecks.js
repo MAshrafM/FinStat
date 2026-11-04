@@ -23,6 +23,7 @@ const { toPiastres } = require('../utils/currencyUtils');
 const {
   createExpenditureFromPaycheck,
   reverseIncomeExpenditure,
+  syncPaycheckExpenditure,
 } = require('../utils/incomeBridge');
 
 // Helper to extract year from period or string
@@ -426,6 +427,10 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updatePaycheckSc
         { $set: updateData },
         { new: true, runValidators: true, session }
       );
+
+      if (paycheck.linkedExpenditureId) {
+        await syncPaycheckExpenditure(paycheck, updateData, req.effectiveUserId, session);
+      }
 
       const yearsToRecalc = [...new Set([sourceYear, targetYear])];
       for (const year of yearsToRecalc) {
