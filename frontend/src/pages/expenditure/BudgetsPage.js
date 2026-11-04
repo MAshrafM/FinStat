@@ -12,6 +12,8 @@ import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import { FaPlus, FaPencilAlt, FaTrash, FaChartPie, FaHistory, FaCalendarAlt } from 'react-icons/fa';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { useCanModify } from '../../context/AuthContext';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 import './BudgetsPage.css';
 import './RulesPage.css';
 
@@ -22,6 +24,9 @@ const MONTH_NAMES = [
 
 const BudgetsPage = () => {
   const canModify = useCanModify();
+  const { showToast, addToast } = useToast();
+  const notify = showToast || addToast;
+  const [budgetToDelete, setBudgetToDelete] = useState(null);
   const currentDate = new Date();
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
@@ -139,19 +144,24 @@ const BudgetsPage = () => {
       setIsModalOpen(false);
       fetchProgress();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to save budget');
+      if (notify) notify(err.response?.data?.message || 'Failed to save budget', 'error');
     }
   };
 
-  const handleDelete = async (budgetId) => {
+    const handleDelete = (budgetId) => {
     if (!canModify) return;
-    if (window.confirm('Are you sure you want to delete this budget allocation?')) {
-      try {
-        await deleteBudget(budgetId);
-        fetchProgress();
-      } catch (err) {
-        alert('Failed to delete budget');
-      }
+    setBudgetToDelete(budgetId);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!budgetToDelete) return;
+    try {
+      await deleteBudget(budgetToDelete);
+      if (notify) notify('Budget allocation deleted successfully', 'success');
+      setBudgetToDelete(null);
+      fetchProgress();
+    } catch (err) {
+      if (notify) notify('Failed to delete budget', 'error');
     }
   };
 
@@ -611,6 +621,16 @@ const BudgetsPage = () => {
       )}
 
       {/* Create / Edit Budget Modal */}
+            <ConfirmModal
+        isOpen={Boolean(budgetToDelete)}
+        title="Delete Budget Allocation"
+        message="Are you sure you want to delete this budget allocation?"
+        confirmText="Delete"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setBudgetToDelete(null)}
+      />
+
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

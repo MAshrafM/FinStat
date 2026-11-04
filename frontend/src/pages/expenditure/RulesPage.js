@@ -12,10 +12,15 @@ import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import { FaPlus, FaFlask, FaPencilAlt, FaTrash, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { useCanModify } from '../../context/AuthContext';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 import './RulesPage.css';
 
 const RulesPage = () => {
   const canModify = useCanModify();
+  const { showToast, addToast } = useToast();
+  const notify = showToast || addToast;
+  const [ruleToDelete, setRuleToDelete] = useState(null);
   const [rules, setRules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,19 +104,25 @@ const RulesPage = () => {
       setIsModalOpen(false);
       fetchRules();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to save rule');
+      if (notify) notify(err.response?.data?.message || 'Failed to save rule', 'error');
     }
   };
 
-  const handleDeleteRule = async (id) => {
+    const handleDeleteRule = (ruleOrId) => {
     if (!canModify) return;
-    if (window.confirm('Are you sure you want to delete this rule?')) {
-      try {
-        await deleteRule(id);
-        fetchRules();
-      } catch (err) {
-        alert('Failed to delete rule');
-      }
+    const ruleObj = typeof ruleOrId === 'object' ? ruleOrId : rules.find(r => r._id === ruleOrId) || { _id: ruleOrId };
+    setRuleToDelete(ruleObj);
+  };
+
+  const handleConfirmDeleteRule = async () => {
+    if (!ruleToDelete) return;
+    try {
+      await deleteRule(ruleToDelete._id);
+      if (notify) notify('Rule deleted successfully', 'success');
+      setRuleToDelete(null);
+      fetchRules();
+    } catch (err) {
+      if (notify) notify('Failed to delete rule', 'error');
     }
   };
 
@@ -121,7 +132,7 @@ const RulesPage = () => {
       await updateRule(rule._id, { isActive: !rule.isActive });
       fetchRules();
     } catch (err) {
-      alert('Failed to update rule state');
+      if (notify) notify('Failed to update rule state', 'error');
     }
   };
 
@@ -371,6 +382,16 @@ const RulesPage = () => {
           </div>
         </div>
       )}
+
+            <ConfirmModal
+        isOpen={Boolean(ruleToDelete)}
+        title="Delete Categorization Rule"
+        message={`Are you sure you want to delete the rule "${ruleToDelete?.name || ''}"?`}
+        confirmText="Delete Rule"
+        variant="danger"
+        onConfirm={handleConfirmDeleteRule}
+        onCancel={() => setRuleToDelete(null)}
+      />
 
       {/* Test Rule Simulator Modal */}
       {isTestModalOpen && (

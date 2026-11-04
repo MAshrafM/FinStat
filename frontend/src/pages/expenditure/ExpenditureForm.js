@@ -7,6 +7,7 @@ import './Expenditure.css'; // For new styles
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import { getRules } from '../../services/categorizationRuleService';
 import { getCurrencyPrice } from '../../services/currencyService';
+import { useToast } from '../../context/ToastContext';
 
 export const CURRENCY_OPTIONS = [
   { code: 'EGP', label: 'EGP (Egyptian Pound)' },
@@ -41,6 +42,13 @@ const ExpenditureForm = ({
   mode = 'create',
   lastRecord = { bank: 0, cash: 0, prepaid: 0 },
 }) => {
+  let notify = () => {};
+  try {
+    const { showToast, addToast } = useToast();
+    notify = showToast || addToast;
+  } catch {
+    notify = () => {};
+  }
   // Currency and FX state
   const [currency, setCurrency] = useState('EGP');
   const [foreignAmount, setForeignAmount] = useState('');
@@ -314,37 +322,38 @@ const ExpenditureForm = ({
     if (isForeign) {
       const fAmount = parseFloat(foreignAmount);
       if (isNaN(fAmount) || fAmount <= 0) {
-        alert(`Please enter a valid positive foreign amount in ${currency}.`);
+        if (notify) notify(`Please enter a valid positive foreign amount in ${currency}.`, 'error');
         return;
       }
       const rate = parseFloat(exchangeRate);
       if (isNaN(rate) || rate <= 0) {
-        alert('Please enter a valid positive exchange rate.');
+        if (notify) notify('Please enter a valid positive exchange rate.', 'error');
         return;
       }
       value = Number((fAmount * rate).toFixed(2));
     } else {
       if (isNaN(value) || value <= 0) {
-        alert('Please enter a valid positive transaction value.');
+        if (notify) notify('Please enter a valid positive transaction value.', 'error');
         return;
       }
     }
 
     if (isSplit) {
       if (splits.length === 0) {
-        alert('Please add at least one split entry.');
+        if (notify) notify('Please add at least one split entry.', 'error');
         return;
       }
       for (const item of splits) {
         const amt = parseFloat(item.amount);
         if (isNaN(amt) || amt <= 0) {
-          alert('Every split item must have a positive amount.');
+          if (notify) notify('Every split item must have a positive amount.', 'error');
           return;
         }
       }
       if (!isBalanced) {
-        alert(
-          `Sum of split amounts (${totalSplitAmount.toFixed(2)} EGP) must equal total transaction value (${value.toFixed(2)} EGP). Difference: ${splitDifference.toFixed(2)} EGP.`
+                if (notify) notify(
+          `Sum of split amounts (${totalSplitAmount.toFixed(2)} EGP) must equal total transaction value (${value.toFixed(2)} EGP). Difference: ${splitDifference.toFixed(2)} EGP.`,
+          'error'
         );
         return;
       }

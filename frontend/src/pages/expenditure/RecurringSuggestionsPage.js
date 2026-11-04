@@ -13,11 +13,16 @@ import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import { FaSyncAlt, FaCalendarAlt, FaCheck, FaTimes, FaRedoAlt } from 'react-icons/fa';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { useCanModify } from '../../context/AuthContext';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 import './RecurringSuggestionsPage.css';
 import './RulesPage.css'; // For common subnav and modal styles
 
 const RecurringSuggestionsPage = () => {
   const canModify = useCanModify();
+  const { showToast, addToast } = useToast();
+  const notify = showToast || addToast;
+  const [suggestionToDismiss, setSuggestionToDismiss] = useState(null);
   const [activeTab, setActiveTab] = useState('pending'); // 'pending' | 'accepted' | 'history'
   const [pendingSuggestions, setPendingSuggestions] = useState([]);
   const [acceptedSuggestions, setAcceptedSuggestions] = useState([]);
@@ -60,10 +65,10 @@ const RecurringSuggestionsPage = () => {
     setIsScanning(true);
     try {
       const res = await triggerDetection();
-      alert(`Pattern scan complete! Processed ${res.count || 0} suggestion(s).`);
+            if (notify) notify(`Pattern scan complete! Processed ${res.count || 0} suggestion(s).`, 'success');
       loadData();
     } catch (err) {
-      alert('Failed to run recurring pattern scan.');
+      if (notify) notify('Failed to run recurring pattern scan.', 'error');
     } finally {
       setIsScanning(false);
     }
@@ -92,19 +97,24 @@ const RecurringSuggestionsPage = () => {
       setAcceptingItem(null);
       loadData();
     } catch (err) {
-      alert('Failed to accept suggestion');
+      if (notify) notify('Failed to accept suggestion', 'error');
     }
   };
 
-  const handleReject = async (id) => {
+    const handleReject = (id) => {
     if (!canModify) return;
-    if (window.confirm('Dismiss this recurring suggestion?')) {
-      try {
-        await rejectSuggestion(id);
-        loadData();
-      } catch (err) {
-        alert('Failed to dismiss suggestion');
-      }
+    setSuggestionToDismiss(id);
+  };
+
+  const handleConfirmDismiss = async () => {
+    if (!suggestionToDismiss) return;
+    try {
+      await rejectSuggestion(suggestionToDismiss);
+      if (notify) notify('Recurring suggestion dismissed', 'info');
+      setSuggestionToDismiss(null);
+      loadData();
+    } catch (err) {
+      if (notify) notify('Failed to dismiss suggestion', 'error');
     }
   };
 
@@ -333,6 +343,16 @@ const RecurringSuggestionsPage = () => {
       )}
 
       {/* Confirmation & Edit Modal when accepting */}
+            <ConfirmModal
+        isOpen={Boolean(suggestionToDismiss)}
+        title="Dismiss Suggestion"
+        message="Are you sure you want to dismiss this recurring pattern suggestion?"
+        confirmText="Dismiss"
+        variant="warning"
+        onConfirm={handleConfirmDismiss}
+        onCancel={() => setSuggestionToDismiss(null)}
+      />
+
       {acceptingItem && (
         <div className="modal-overlay" onClick={() => setAcceptingItem(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
