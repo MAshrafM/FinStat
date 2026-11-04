@@ -1,6 +1,7 @@
 // frontend/src/pages/currency/CurrencyForm.js
 import React, { useState, useEffect } from 'react';
 import { currencyMap } from '../../context/CurrContext';
+import AccountSelector from '../../components/common/AccountSelector';
 
 const CURRENCY_OPTIONS = Object.keys(currencyMap);
 
@@ -10,6 +11,7 @@ const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         amount: '',
         price: '',
         date: new Date().toISOString().split('T')[0],
+        sourceAccount: initialData?.sourceAccount || 'Bank',
     });
 
     useEffect(() => {
@@ -19,6 +21,7 @@ const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                 amount: initialData.amount || '',
                 price: initialData.price || '',
                 date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : '',
+                sourceAccount: initialData.sourceAccount || 'Bank',
             });
         }
     }, [initialData, isEdit]);
@@ -33,6 +36,7 @@ const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             ...formData,
             amount: parseFloat(formData.amount),
             price: parseFloat(formData.price),
+            sourceAccount: formData.sourceAccount || 'Bank',
         });
     };
 
@@ -51,6 +55,13 @@ const CurrencyForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             <div className="form-group"><label>Principal Amount</label><input type="number" step="any" name="amount" value={formData.amount} onChange={handleChange} required /></div>
             <div className="form-group"><label>Price Paid</label><input type="number" step="any" name="price" placeholder="e.g., 51.0" value={formData.price} onChange={handleChange} required /></div>
             <div className="form-group"><label>Date</label><input type="date" name="date" value={formData.date} onChange={handleChange} required /></div>
+            <AccountSelector
+                direction="source"
+                value={formData.sourceAccount || 'Bank'}
+                onChange={handleChange}
+                name="sourceAccount"
+                label="Paid From (Source Account)"
+            />
             <button type="submit" className="action-button">{isEdit ? 'Update' : 'Create'} Currency</button>
         </form>
     );

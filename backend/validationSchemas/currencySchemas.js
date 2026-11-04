@@ -10,6 +10,7 @@ const createSchema = z.object({
   purchaseRate: z.coerce.number({ message: 'Purchase rate must be a valid number' }).positive('Purchase rate must be positive').optional(),
   currentRate: z.coerce.number().min(0).optional(),
   rateSource: z.enum(['CIB', 'fallback', 'manual']).optional(),
+  sourceAccount: z.enum(['Bank', 'Cash']).optional(),
 }).strict();
 
 const updateSchema = z.object({
@@ -24,6 +25,7 @@ const updateSchema = z.object({
   purchaseRate: z.coerce.number({ message: 'Purchase rate must be a valid number' }).positive('Purchase rate must be positive').optional(),
   currentRate: z.coerce.number().min(0).optional(),
   rateSource: z.enum(['CIB', 'fallback', 'manual']).optional(),
+  sourceAccount: z.enum(['Bank', 'Cash']).optional(),
 }).strict();
 
 const revalueSchema = z.object({

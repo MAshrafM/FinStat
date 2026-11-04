@@ -19,6 +19,11 @@ const { toPiastres } = require('../utils/currencyUtils');
 const marketPriceService = require('../utils/marketPriceService');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
 const {
+  createExpenditureFromCurrencyPurchase,
+  reverseIncomeExpenditure,
+  syncCurrencyExpenditure,
+} = require('../utils/incomeBridge');
+const {
   normalizeCurrencyCode,
   fetchLatestRates,
   revalueCurrencyHolding,
@@ -102,6 +107,13 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
   }
 
   await newCurrency.save();
+
+  await createExpenditureFromCurrencyPurchase({
+    currency: newCurrency,
+    sourceAccount: validatedBody.sourceAccount,
+    user: req.effectiveUserId,
+  });
+
   invalidatePortfolioCache(req.effectiveUserId);
   res.status(201).json(enrichCurrencyHolding(newCurrency));
 }));
@@ -227,6 +239,14 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     // Keep existing valuation
   }
 
+  if (currency.linkedExpenditureId) {
+    await syncCurrencyExpenditure({
+      currency,
+      updateData: validatedBody,
+      user: req.effectiveUserId,
+    });
+  }
+
   invalidatePortfolioCache(req.effectiveUserId);
   res.json(enrichCurrencyHolding(currency));
 }));
@@ -245,6 +265,10 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
   if (currency.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
+  if (currency.linkedExpenditureId) {
+    await reverseIncomeExpenditure(currency.linkedExpenditureId, req.effectiveUserId);
+  }
+
   await currency.softDelete();
   invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Currency deleted successfully' });
@@ -262,6 +286,13 @@ router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandl
     throw new NotFoundError('Soft-deleted currency not found');
   }
   await currency.restore();
+
+  await createExpenditureFromCurrencyPurchase({
+    currency,
+    sourceAccount: currency.sourceAccount,
+    user: req.effectiveUserId,
+  });
+
   invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Currency restored successfully', currency: enrichCurrencyHolding(currency) });
 }));

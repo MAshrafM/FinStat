@@ -64,6 +64,12 @@ const CurrencySchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  linkedExpenditureId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Expenditure',
+    default: null,
+    index: true,
+  },
 }, {
   timestamps: true,
 });
