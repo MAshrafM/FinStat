@@ -26,7 +26,8 @@ const ASSET_COLORS = {
 };
 
 const RebalancingPage = () => {
-  const canModify = useCanModify();
+  const canModifyHook = useCanModify();
+  const canModify = typeof canModifyHook === 'boolean' ? canModifyHook : (canModifyHook?.canModify ?? true);
   const navigate = useNavigate();
   const { addToast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -117,20 +118,34 @@ const RebalancingPage = () => {
     }
   };
 
-  const handleApplyTrade = (suggestion) => {
+    const handleApplyTrade = (suggestion) => {
     if (!canModify) return;
     // Advisory shortcut: opens relevant trade logging form pre-filled
     const cat = suggestion.assetType;
+    const action = suggestion.action === 'Sell' ? 'Sell' : 'Buy';
+    const prefill = {
+      action,
+      type: action,
+      ticker: suggestion.ticker || '',
+      stockCode: suggestion.ticker || '',
+      shares: suggestion.shares || undefined,
+      price: suggestion.price || undefined,
+      totalValue: suggestion.amount || undefined,
+      amount: suggestion.amount || undefined,
+    };
+
     if (cat === 'stocks') {
-      navigate('/trades/new');
+      navigate('/trades/add', { state: { prefill } });
     } else if (cat === 'mutualFunds') {
-      navigate('/mutual-funds/new');
+      navigate('/mutual-funds/new', { state: { prefill } });
     } else if (cat === 'gold') {
-      navigate('/gold-wallet/new');
+      navigate('/gold-wallet/new', { state: { prefill } });
     } else if (cat === 'certificates') {
-      navigate('/certificates/new');
+      navigate('/certificates/new', { state: { prefill } });
     } else if (cat === 'cash') {
-      navigate('/trades/new');
+      navigate('/trades/add', { state: { prefill: { ...prefill, type: action === 'Buy' ? 'TopUp' : 'Withdraw' } } });
+    } else {
+      navigate('/trades/add', { state: { prefill } });
     }
   };
 

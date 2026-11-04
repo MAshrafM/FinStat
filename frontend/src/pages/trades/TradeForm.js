@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { formatCurrency } from '../../utils/formatters';
 import { useData } from '../../context/DataContext';
+import { useToast } from '../../context/ToastContext';
 import './Trades.css';
 
 export const PRESET_BROKERS = [
@@ -17,6 +18,8 @@ export const PRESET_BROKERS = [
 
 const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const { openPosData, tradesData } = useData();
+    const { showToast, addToast } = useToast();
+    const notify = showToast || addToast;
     const [selectedBrokerOption, setSelectedBrokerOption] = useState(() => {
         const b = initialData?.broker || 'Thndr';
         return PRESET_BROKERS.includes(b) ? b : 'Other';
@@ -26,16 +29,16 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         return PRESET_BROKERS.includes(b) ? '' : b;
     });
 
-    const [formData, setFormData] = useState({
-        date: new Date().toISOString().split('T')[0],
+        const [formData, setFormData] = useState({
+        date: initialData?.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         broker: initialData?.broker || 'Thndr',
-        type: 'Buy',
-        stockCode: '',
-        shares: '',
-        price: '',
-        fees: '',
-        totalValue: 0,
-        iteration: '',
+        type: initialData?.type || 'Buy',
+        stockCode: initialData?.stockCode || '',
+        shares: initialData?.shares !== undefined ? String(initialData.shares) : '',
+        price: initialData?.price !== undefined ? String(initialData.price) : '',
+        fees: initialData?.fees !== undefined ? String(initialData.fees) : '',
+        totalValue: initialData?.totalValue || 0,
+        iteration: initialData?.iteration || '',
     });
 
     // Get stock info for selected stock code (filtered by broker)
@@ -51,25 +54,26 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const selectedStockInfo = getSelectedStockInfo(formData.stockCode);
     //console.log('Selected Stock Info:', selectedStockInfo);
 
-    useEffect(() => {
-        if (isEdit && initialData) {
+        useEffect(() => {
+        if (initialData && Object.keys(initialData).length > 0) {
             const b = initialData.broker || 'Thndr';
             const isPreset = PRESET_BROKERS.includes(b);
             setSelectedBrokerOption(isPreset ? b : 'Other');
             setCustomBroker(isPreset ? '' : b);
-            setFormData({
-                date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : '',
+            setFormData(prev => ({
+                ...prev,
+                date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : prev.date,
                 broker: b,
-                type: initialData.type || 'Buy',
-                stockCode: initialData.stockCode || '',
-                shares: initialData.shares || '',
-                price: initialData.price || '',
-                fees: initialData.fees || '',
-                totalValue: initialData.totalValue || 0,
-                iteration: initialData.iteration || '',
-            });
+                type: initialData.type || prev.type || 'Buy',
+                stockCode: initialData.stockCode !== undefined ? initialData.stockCode : prev.stockCode,
+                shares: initialData.shares !== undefined ? String(initialData.shares) : prev.shares,
+                price: initialData.price !== undefined ? String(initialData.price) : prev.price,
+                fees: initialData.fees !== undefined ? String(initialData.fees) : prev.fees,
+                totalValue: initialData.totalValue !== undefined ? initialData.totalValue : prev.totalValue,
+                iteration: initialData.iteration !== undefined ? initialData.iteration : prev.iteration,
+            }));
         }
-    }, [initialData, isEdit]);
+    }, [initialData]);
 
     // Effect to auto-calculate iteration for new Buy trades
     useEffect(() => {
@@ -159,9 +163,9 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const resolvedBroker = (selectedBrokerOption === 'Other' ? customBroker : formData.broker).trim();
+                const resolvedBroker = (selectedBrokerOption === 'Other' ? customBroker : formData.broker).trim();
         if (!resolvedBroker) {
-            alert('Please select or specify a valid broker name.');
+            if (notify) notify('Please select or specify a valid broker name.', 'error');
             return;
         }
 
@@ -170,8 +174,8 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             const sharesToSell = parseFloat(formData.shares) || 0;
             const availableShares = selectedStockInfo ? parseFloat(selectedStockInfo.currentShares) || 0 : 0;
 
-            if (sharesToSell > availableShares) {
-                alert(`Cannot sell ${sharesToSell} shares. You only have ${availableShares} shares available.`);
+                        if (sharesToSell > availableShares) {
+                if (notify) notify(`Cannot sell ${sharesToSell} shares. You only have ${availableShares} shares available.`, 'error');
                 return;
             }
         }
