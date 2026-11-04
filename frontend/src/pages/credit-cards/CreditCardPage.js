@@ -13,6 +13,8 @@ import CreditCardSubNav from '../../components/creditCards/CreditCardSubNav';
 import UtilizationWidget from '../../components/creditCards/UtilizationWidget';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { useCanModify } from '../../context/AuthContext';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/formatters';
 import '../trades/Trades.css'; // Reuse styles
 import './CreditCardPage.css'; // Custom styles for this page
@@ -20,6 +22,10 @@ import '../../components/Table.css';
 
 const CreditCardPage = () => {
   const canModify = useCanModify();
+  const { showToast, addToast } = useToast();
+  const notify = showToast || addToast;
+  const [transactionToPay, setTransactionToPay] = useState(null);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
   const { creditCardsSummary, refetchCreditSummary } = useCreditData();
   const [cards, setCards] = useState([]);
   const [selectedCardId, setSelectedCardId] =  useState('all');
@@ -129,16 +135,24 @@ const CreditCardPage = () => {
   }, [selectedCardId, aggregateAllCardsData, loadCardData]);
 
 
-  const handleFullPayment = async (transactionId) => {
+    const handleFullPayment = (transactionId) => {
     if (!canModify) return;
-    if (window.confirm('Are you sure you want to mark this as fully paid?')) {
-      await makeFullPayment({ transactionId, paymentSource: 'Bank', createExpenditure: true });
-      // Refresh data based on current selection
+    setTransactionToPay(transactionId);
+  };
+
+  const handleConfirmFullPayment = async () => {
+    if (!transactionToPay) return;
+    try {
+      await makeFullPayment({ transactionId: transactionToPay, paymentSource: 'Bank', createExpenditure: true });
+      if (notify) notify('Marked transaction as fully paid', 'success');
+      setTransactionToPay(null);
       if (selectedCardId === 'all') {
         aggregateAllCardsData();
       } else {
         loadCardData();
       }
+    } catch (err) {
+      if (notify) notify('Failed to process full payment', 'error');
     }
   };
 
@@ -155,21 +169,25 @@ const CreditCardPage = () => {
     setIsEditModalOpen(true); // Open the edit modal
   };
 
-const handleDelete = async (transactionId) => {
+const handleDelete = (transactionId) => {
   if (!canModify) return;
-  if (window.confirm('Are you sure you want to permanently delete this transaction?')) {
-    try {
-      await deleteTransaction(transactionId);
-      // Refresh data based on current selection
-        if (selectedCardId === 'all') {
-          aggregateAllCardsData();
-        } else {
-          loadCardData();
-        }
-    } catch (err) {
-      console.error("Failed to delete transaction:", err);
-      alert("Could not delete the transaction.");
+  setTransactionToDelete(transactionId);
+};
+
+const handleConfirmDelete = async () => {
+  if (!transactionToDelete) return;
+  try {
+    await deleteTransaction(transactionToDelete);
+    if (notify) notify('Transaction deleted successfully', 'success');
+    setTransactionToDelete(null);
+    if (selectedCardId === 'all') {
+      aggregateAllCardsData();
+    } else {
+      loadCardData();
     }
+  } catch (err) {
+    console.error("Failed to delete transaction:", err);
+    if (notify) notify("Could not delete the transaction.", 'error');
   }
 };
 
@@ -462,6 +480,26 @@ const totalPartial = transactionHistory.reduce((sum, tx) => {
         </tbody>
       </table>
     </div>
+
+            <ConfirmModal
+        isOpen={Boolean(transactionToPay)}
+        title="Mark as Fully Paid"
+        message="Are you sure you want to mark this transaction as fully paid?"
+        confirmText="Pay Full"
+        variant="primary"
+        onConfirm={handleConfirmFullPayment}
+        onCancel={() => setTransactionToPay(null)}
+      />
+
+      <ConfirmModal
+        isOpen={Boolean(transactionToDelete)}
+        title="Delete Transaction"
+        message="Are you sure you want to permanently delete this transaction?"
+        confirmText="Delete"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setTransactionToDelete(null)}
+      />
 
       <AddTransactionModal
         isOpen={isTransactionModalOpen}

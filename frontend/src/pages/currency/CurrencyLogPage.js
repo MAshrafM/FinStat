@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getCurrency, deleteCurrency, revalueCurrency } from '../../services/currencyService';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
+import ConfirmModal from '../../components/common/ConfirmModal';
 import { FaEdit, FaTrash, FaEye, FaSync, FaPlus, FaCheckCircle, FaExclamationCircle, FaUserEdit } from 'react-icons/fa';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { useCanModify } from '../../context/AuthContext';
@@ -13,7 +14,8 @@ const CurrencyLogPage = () => {
     const { showToast } = useToast();
     const [currencyList, setCurrencyList] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isRevaluing, setIsRevaluing] = useState(false);
+        const [isRevaluing, setIsRevaluing] = useState(false);
+    const [holdingToDelete, setHoldingToDelete] = useState(null);
 
     const fetchCurrencyData = useCallback(async () => {
         try {
@@ -51,17 +53,21 @@ const CurrencyLogPage = () => {
         }
     };
 
-    const handleDelete = async (id) => {
+        const handleDelete = (id) => {
         if (!canModify) return;
-        if (window.confirm('Are you sure you want to delete this currency holding?')) {
-            try {
-                await deleteCurrency(id);
-                showToast('Currency entry deleted successfully', 'success');
-                setCurrencyList(prev => prev.filter(c => c._id !== id));
-            } catch (err) {
-                console.error('Failed to delete currency:', err);
-                showToast(err.response?.data?.message || 'Failed to delete currency', 'error');
-            }
+        setHoldingToDelete(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!holdingToDelete) return;
+        try {
+            await deleteCurrency(holdingToDelete);
+            showToast('Currency entry deleted successfully', 'success');
+            setCurrencyList(prev => prev.filter(c => c._id !== holdingToDelete));
+            setHoldingToDelete(null);
+        } catch (err) {
+            console.error('Failed to delete currency:', err);
+            showToast(err.response?.data?.message || 'Failed to delete currency', 'error');
         }
     };
 
@@ -288,7 +294,16 @@ const CurrencyLogPage = () => {
                         )}
                     </tbody>
                 </table>
-            </div>
+                        </div>
+            <ConfirmModal
+                isOpen={Boolean(holdingToDelete)}
+                title="Delete Currency Entry"
+                message="Are you sure you want to delete this currency holding?"
+                confirmText="Delete"
+                variant="danger"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setHoldingToDelete(null)}
+            />
         </div>
     );
 };

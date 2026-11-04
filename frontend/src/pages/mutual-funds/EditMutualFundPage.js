@@ -3,9 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getTradeById, updateTrade } from '../../services/mutualFundService';
 import MutualFundForm from './MutualFundForm';
+import { useToast } from '../../context/ToastContext';
 
 const EditMutualFundPage = () => {
     const navigate = useNavigate();
+    const { showToast, addToast } = useToast();
+    const notify = showToast || addToast;
     const { id } = useParams();
     const [initialData, setInitialData] = useState(null);
 
@@ -21,7 +24,7 @@ const EditMutualFundPage = () => {
             navigate('/mutual-funds');
         } catch (err) {
             console.error("Failed to update transaction:", err);
-            alert('Error updating transaction. See console for details.');
+            if (notify) notify(err.response?.data?.message || err.message || 'Error updating transaction', 'error');
         }
     };
 

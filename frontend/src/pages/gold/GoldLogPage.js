@@ -6,9 +6,14 @@ import { formatDate, formatCurrency } from '../../utils/formatters';
 import { FaEdit, FaTrash, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import PaginationControls from '../../components/PaginationControls';
 import ProtectedAction from '../../components/common/ProtectedAction';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 import '../trades/Trades.css'; // Reuse styles
 
 const GoldLogPage = () => {
+    const { showToast, addToast } = useToast();
+    const notify = showToast || addToast;
+    const [logToDelete, setLogToDelete] = useState(null);
     const [logs, setLogs] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -31,11 +36,19 @@ const GoldLogPage = () => {
         fetchLogs(currentPage, filterStatus, sortConfig.key, sortConfig.direction);
     }, [currentPage, filterStatus, sortConfig.key, sortConfig.direction, fetchLogs]);
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this log?')) {
-            await deleteGoldLog(id);
-            // Refetch with current settings
+        const handleDelete = (id) => {
+        setLogToDelete(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!logToDelete) return;
+        try {
+            await deleteGoldLog(logToDelete);
+            if (notify) notify('Gold log deleted successfully', 'success');
+            setLogToDelete(null);
             fetchLogs(currentPage, filterStatus, sortConfig.key, sortConfig.direction);
+        } catch (err) {
+            if (notify) notify('Failed to delete gold log', 'error');
         }
     };
 
@@ -150,6 +163,15 @@ const GoldLogPage = () => {
                 </table>
             </div>
             <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                    <ConfirmModal
+                isOpen={Boolean(logToDelete)}
+                title="Delete Gold Log"
+                message="Are you sure you want to delete this gold log?"
+                confirmText="Delete"
+                variant="danger"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setLogToDelete(null)}
+            />
         </div>
     );
 };

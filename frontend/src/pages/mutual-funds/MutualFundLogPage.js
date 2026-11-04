@@ -5,11 +5,16 @@ import { formatDate, formatCurrency } from '../../utils/formatters';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import PaginationControls from '../../components/PaginationControls';
 import ProtectedAction from '../../components/common/ProtectedAction';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 import { useCanModify } from '../../context/AuthContext';
 import '../trades/Trades.css'; // Reuse the same CSS as the stock trades page
 
 const MutualFundLogPage = () => {
     const canModify = useCanModify();
+    const { showToast, addToast } = useToast();
+    const notify = showToast || addToast;
+    const [tradeToDelete, setTradeToDelete] = useState(null);
     const [trades, setTrades] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -29,16 +34,21 @@ const MutualFundLogPage = () => {
         loadTrades(currentPage, selectType);
     }, [currentPage, selectType]);
 
-    const handleDelete = async (id) => {
+        const handleDelete = (id) => {
         if (!canModify) return;
-        if (window.confirm('Are you sure you want to delete this transaction?')) {
-            try {
-                await deleteTrade(id);
-                loadTrades(currentPage, selectType); // Refresh the list
-            } catch (err) {
-                console.error("Failed to delete transaction:", err);
-                alert('Failed to delete transaction.');
-            }
+        setTradeToDelete(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!tradeToDelete) return;
+        try {
+            await deleteTrade(tradeToDelete);
+            if (notify) notify('Mutual fund transaction deleted', 'success');
+            setTradeToDelete(null);
+            loadTrades(currentPage, selectType);
+        } catch (err) {
+            console.error("Failed to delete transaction:", err);
+            if (notify) notify('Failed to delete transaction', 'error');
         }
     };
 
@@ -153,8 +163,16 @@ const MutualFundLogPage = () => {
                 </table>
             </div>
             <PaginationControls page={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                    <ConfirmModal
+                isOpen={Boolean(tradeToDelete)}
+                title="Delete Mutual Fund Transaction"
+                message="Are you sure you want to delete this transaction?"
+                confirmText="Delete"
+                variant="danger"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setTradeToDelete(null)}
+            />
         </div>
     );
 };
-
 export default MutualFundLogPage;

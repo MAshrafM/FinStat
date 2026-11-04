@@ -4,6 +4,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getCurrencyById, getRateHistory, deleteCurrency } from '../../services/currencyService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
+import ConfirmModal from '../../components/common/ConfirmModal';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -49,7 +50,8 @@ const CurrencyDetailPage = () => {
   const [currency, setCurrency] = useState(null);
   const [rateHistory, setRateHistory] = useState([]);
   const [timeframe, setTimeframe] = useState('30'); // '7', '30', '90', '180', 'all'
-  const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const fetchDetails = useCallback(async () => {
     try {
@@ -72,15 +74,18 @@ const CurrencyDetailPage = () => {
     fetchDetails();
   }, [fetchDetails]);
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this currency holding?')) {
-      try {
-        await deleteCurrency(id);
-        showToast('Currency holding deleted successfully', 'success');
-        navigate('/currency');
-      } catch (err) {
-        showToast(err.response?.data?.message || 'Failed to delete holding', 'error');
-      }
+    const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteCurrency(id);
+      showToast('Currency holding deleted successfully', 'success');
+      setShowDeleteModal(false);
+      navigate('/currency');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to delete holding', 'error');
     }
   };
 
@@ -368,10 +373,20 @@ const CurrencyDetailPage = () => {
           </div>
         </div>
 
-        <div style={{ height: '320px', position: 'relative' }}>
+                <div style={{ height: '320px', position: 'relative' }}>
           <Line data={chartData} options={chartOptions} />
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete Currency Holding"
+        message="Are you sure you want to delete this currency holding?"
+        confirmText="Delete"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowDeleteModal(false)}
+      />
     </div>
   );
 };

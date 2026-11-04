@@ -10,6 +10,7 @@ import ComponentTable from '../../components/salary/ComponentTable';
 import { useToast } from '../../context/ToastContext';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { useCanModify } from '../../context/AuthContext';
+import ConfirmModal from '../../components/common/ConfirmModal';
 import './SalaryProfile.css';
 
 const SalaryProfilePage = () => {
@@ -17,6 +18,7 @@ const SalaryProfilePage = () => {
   const isMobile = window.innerWidth <= 768;
   const { addToast } = useToast();
 
+  const [profileToDelete, setProfileToDelete] = useState(null);
   const [profile, setProfile] = useState(null);
   const [allProfiles, setAllProfiles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,12 +74,17 @@ const SalaryProfilePage = () => {
     }
   };
 
-  const handleDeleteProfile = async (profileId) => {
+    const handleDeleteProfile = (profileId) => {
     if (!canModify) return;
-    if (!window.confirm('Are you sure you want to delete this salary profile?')) return;
+    setProfileToDelete(profileId);
+  };
+
+  const handleConfirmDeleteProfile = async () => {
+    if (!profileToDelete) return;
     try {
-      await deleteSalaryProfile(profileId);
+      await deleteSalaryProfile(profileToDelete);
       addToast('Profile deleted successfully', 'success');
+      setProfileToDelete(null);
       loadData();
     } catch (err) {
       addToast('Failed to delete profile', 'error');
@@ -322,7 +329,16 @@ const SalaryProfilePage = () => {
             })}
           </div>
         </div>
-      )}
+            )}
+      <ConfirmModal
+        isOpen={Boolean(profileToDelete)}
+        title="Delete Salary Profile"
+        message="Are you sure you want to delete this salary profile?"
+        confirmText="Delete"
+        variant="danger"
+        onConfirm={handleConfirmDeleteProfile}
+        onCancel={() => setProfileToDelete(null)}
+      />
     </div>
   );
 };

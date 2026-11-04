@@ -5,8 +5,13 @@ import { getProfile, deleteHistoryRecord  } from '../../services/salaryService';
 import { formatCurrency } from '../../utils/formatters';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import '../../components/Table.css'; // Reuse the nice table styles
+import ConfirmModal from '../../components/common/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 const SalaryHistory = () => {
+  const { showToast, addToast } = useToast();
+  const notify = showToast || addToast;
+  const [historyToDelete, setHistoryToDelete] = useState(null);
   const [profile, setProfile] = useState(null);
   const isMobile = window.innerWidth <= 768;
   useEffect(() => {
@@ -19,10 +24,19 @@ const SalaryHistory = () => {
       .catch((err) => console.error('Failed to load salary history profile:', err));
   };
 
-  const handleDelete = async (historyId) => {
-    if (window.confirm('Are you sure you want to delete this historical record? This cannot be undone.')) {
-      await deleteHistoryRecord(historyId);
-      loadProfile(); // Refresh the data
+    const handleDelete = (historyId) => {
+    setHistoryToDelete(historyId);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!historyToDelete) return;
+    try {
+      await deleteHistoryRecord(historyToDelete);
+      if (notify) notify('Salary history record deleted', 'success');
+      setHistoryToDelete(null);
+      loadProfile();
+    } catch (err) {
+      if (notify) notify('Failed to delete salary history record', 'error');
     }
   };
 
@@ -91,6 +105,15 @@ const SalaryHistory = () => {
           </tbody>
         </table>
       </div>
+          <ConfirmModal
+        isOpen={Boolean(historyToDelete)}
+        title="Delete Salary History Record"
+        message="Are you sure you want to delete this historical record? This cannot be undone."
+        confirmText="Delete"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setHistoryToDelete(null)}
+      />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getCertificateById, getAccruedInterest, withdrawCertificate, deleteCertificate } from '../../services/certificateService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
+import ConfirmModal from '../../components/common/ConfirmModal';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -54,7 +55,8 @@ const CertificateDetailPage = () => {
   const [refreshingAccrual, setRefreshingAccrual] = useState(false);
 
   // Withdraw Modal State
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [withdrawalReason, setWithdrawalReason] = useState('');
   const [destinationAccount, setDestinationAccount] = useState('Bank');
   const [confirmedCheckbox, setConfirmedCheckbox] = useState(false);
@@ -106,15 +108,18 @@ const CertificateDetailPage = () => {
     return () => clearInterval(interval);
   }, [refreshAccrualOnly]);
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this certificate?')) {
-      try {
-        await deleteCertificate(id);
-        showToast('Certificate deleted successfully', 'success');
-        navigate('/certificates');
-      } catch (err) {
-        showToast(err.response?.data?.message || 'Failed to delete certificate', 'error');
-      }
+    const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteCertificate(id);
+      showToast('Certificate deleted successfully', 'success');
+      setShowDeleteModal(false);
+      navigate('/certificates');
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to delete certificate', 'error');
     }
   };
 
@@ -417,6 +422,16 @@ const CertificateDetailPage = () => {
       </div>
 
       {/* Withdrawal Impact Preview Modal */}
+            <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete Certificate"
+        message="Are you sure you want to delete this certificate?"
+        confirmText="Delete"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowDeleteModal(false)}
+      />
+
       {showWithdrawModal && (
         <div style={{
           position: 'fixed',

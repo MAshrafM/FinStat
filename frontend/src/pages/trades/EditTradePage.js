@@ -3,9 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getTradeById, updateTrade } from '../../services/tradeService';
 import TradeForm from './TradeForm';
+import { useToast } from '../../context/ToastContext';
 
 const EditTradePage = () => {
   const navigate = useNavigate();
+  const { showToast, addToast } = useToast();
+  const notify = showToast || addToast;
   const { id } = useParams();
   const [initialData, setInitialData] = useState(null);
 
@@ -21,7 +24,7 @@ const EditTradePage = () => {
       navigate('/trades');
     } catch (err) {
       console.error("Failed to update trade:", err);
-      alert(err.response?.data?.message || err.message || 'Error updating trade. See console for details.');
+      if (notify) notify(err.response?.data?.message || err.message || 'Error updating trade', 'error');
     }
   };
 

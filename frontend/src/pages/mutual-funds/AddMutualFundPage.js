@@ -3,16 +3,19 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createTrade } from '../../services/mutualFundService';
 import MutualFundForm from './MutualFundForm';
+import { useToast } from '../../context/ToastContext';
 
 const AddMutualFundPage = () => {
     const navigate = useNavigate();
+    const { showToast, addToast } = useToast();
+    const notify = showToast || addToast;
     const handleFormSubmit = async (formData) => {
         try {
             await createTrade(formData);
             navigate('/mutual-funds');
         } catch (err) {
             console.error("Failed to create transaction:", err);
-            alert('Error creating transaction. See console for details.');
+            if (notify) notify(err.response?.data?.message || err.message || 'Error creating transaction', 'error');
         }
     };
     return (

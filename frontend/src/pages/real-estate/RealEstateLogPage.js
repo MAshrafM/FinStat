@@ -23,6 +23,8 @@ import {
   FaChartLine,
 } from 'react-icons/fa';
 import ProtectedAction from '../../components/common/ProtectedAction';
+import ConfirmModal from '../../components/common/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 import { useCanModify } from '../../context/AuthContext';
 import './RealEstate.css';
 
@@ -31,6 +33,9 @@ const PROPERTY_TYPES = ['all', 'Residential', 'Commercial', 'Villa', 'Land', 'Ot
 const RealEstateLogPage = () => {
   const navigate = useNavigate();
   const canModify = useCanModify();
+  const { showToast, addToast } = useToast();
+  const notify = showToast || addToast;
+  const [propertyToDelete, setPropertyToDelete] = useState(null);
   const [properties, setProperties] = useState([]);
   const [summary, setSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,15 +65,21 @@ const RealEstateLogPage = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleDelete = async (id, name) => {
+    const handleDelete = (id, name) => {
     if (!canModify) return;
-    if (window.confirm(`Are you sure you want to delete "${name}"?`)) {
-      try {
-        await deleteRealEstate(id);
-        fetchData();
-      } catch (err) {
-        console.error('Failed to delete property:', err);
-      }
+    setPropertyToDelete({ id, name });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!propertyToDelete) return;
+    try {
+      await deleteRealEstate(propertyToDelete.id);
+      if (notify) notify('Real estate property deleted successfully', 'success');
+      setPropertyToDelete(null);
+      fetchData();
+    } catch (err) {
+      console.error('Failed to delete property:', err);
+      if (notify) notify('Failed to delete property', 'error');
     }
   };
 
@@ -527,6 +538,15 @@ const RealEstateLogPage = () => {
           </ProtectedAction>
         </div>
       )}
+              <ConfirmModal
+          isOpen={Boolean(propertyToDelete)}
+          title="Delete Real Estate Property"
+          message={`Are you sure you want to delete "${propertyToDelete?.name || ''}"?`}
+          confirmText="Delete"
+          variant="danger"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setPropertyToDelete(null)}
+        />
       </div>
     </div>
   );
