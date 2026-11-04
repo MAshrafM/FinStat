@@ -196,3 +196,7 @@ describe('ExpenditureForm - Multi-Currency Selector & Foreign Amount Tests', () 
     expect(convertedEgpValue).toHaveTextContent(/7,237\.5/);
   });
 });
+
+jest.mock('../../../context/ToastContext', () => ({
+  useToast: () => ({ showToast: jest.fn(), addToast: jest.fn() }),
+}));

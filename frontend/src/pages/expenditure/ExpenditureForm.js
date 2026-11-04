@@ -42,13 +42,8 @@ const ExpenditureForm = ({
   mode = 'create',
   lastRecord = { bank: 0, cash: 0, prepaid: 0 },
 }) => {
-  let notify = () => {};
-  try {
-    const { showToast, addToast } = useToast();
-    notify = showToast || addToast;
-  } catch {
-    notify = () => {};
-  }
+  const { showToast, addToast } = useToast();
+  const notify = showToast || addToast;
   // Currency and FX state
   const [currency, setCurrency] = useState('EGP');
   const [foreignAmount, setForeignAmount] = useState('');
