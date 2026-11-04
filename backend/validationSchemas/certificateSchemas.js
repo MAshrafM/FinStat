@@ -53,6 +53,7 @@ const withdrawSchema = z.object({
   ),
   withdrawalReason: optionalString('Withdrawal reason'),
   confirmWithdrawal: z.boolean().optional(),
+  destinationAccount: z.enum(['Bank', 'Cash', 'Prepaid']).optional(),
 }).strict();
 
 const listQuerySchema = z.object({

@@ -6,6 +6,7 @@ const { generateAccessToken } = require('../../utils/tokenUtils');
 const app = require('../../server');
 const User = require('../../models/User');
 const Gold = require('../../models/Gold');
+const Expenditure = require('../../models/Expenditure');
 
 jest.setTimeout(60000);
 
@@ -123,5 +124,79 @@ describe('Step 4A.3: [AUD-CORR-005] Gold Aggregation Null Safety & Schema Valida
 
     expect(res.status).toBe(400);
     expect(JSON.stringify(res.body)).toMatch(/selling/i);
+  });
+  describe('Step 7B.1b-i: [FEAT-002, GAP-003] Gold Liquidation Settlement Bridge', () => {
+    it('creates linked Expenditure with linkedGoldId and credits chosen account when gold is sold', async () => {
+      const res = await request(app)
+        .post('/api/golds')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          date: '2026-03-01',
+          item: 'Gold Ingot 24k',
+          karat: 24,
+          weight: 10,
+          price: 3000,
+          paid: 30000,
+          status: 'sold',
+          sellingPrice: 3500,
+          sellingDate: '2026-03-10',
+          destinationAccount: 'Bank',
+        });
+
+      expect(res.status).toBe(201);
+      const goldId = res.body._id;
+      const linkedExpId = res.body.linkedExpenditureId;
+      expect(linkedExpId).toBeDefined();
+
+      const linkedExp = await Expenditure.findById(linkedExpId);
+      expect(linkedExp).toBeDefined();
+      expect(linkedExp.transactionType).toBe('T');
+      expect(linkedExp.paymentMethod).toBe('Bank');
+      // 10 grams * 3500 sellingPrice = 35000 EGP
+      expect(linkedExp.transactionValue).toBe(35000);
+      expect(linkedExp.linkedGoldId.toString()).toBe(goldId.toString());
+      expect(linkedExp.bank).toBe(35000);
+    });
+
+    it('rolls back linked Expenditure balance impact when sold gold holding is deleted', async () => {
+      const createRes = await request(app)
+        .post('/api/golds')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          date: '2026-04-01',
+          item: 'Gold Bar 24k For Deletion',
+          karat: 24,
+          weight: 5,
+          price: 3000,
+          paid: 15000,
+          status: 'sold',
+          sellingPrice: 4000,
+          sellingDate: '2026-04-10',
+          destinationAccount: 'Cash',
+        });
+
+      expect(createRes.status).toBe(201);
+      const goldId = createRes.body._id;
+      const linkedExpId = createRes.body.linkedExpenditureId;
+      expect(linkedExpId).toBeDefined();
+
+      const beforeExp = await Expenditure.findById(linkedExpId);
+      expect(beforeExp.deletedAt).toBeNull();
+
+      // Delete sold gold
+      const delRes = await request(app)
+        .delete(`/api/golds/${goldId}`)
+        .set('Authorization', `Bearer ${token}`);
+      expect(delRes.status).toBe(200);
+
+      // Verify linked expenditure is soft-deleted
+      const afterExp = await Expenditure.findById(linkedExpId);
+      expect(afterExp.deletedAt).not.toBeNull();
+
+      // Verify previous balance does not include the deleted 20,000 cash proceeds
+      const { calculatePreviousBalance } = require('../../utils/ledgerHelpers');
+      const prevBal = await calculatePreviousBalance(user._id, new Date('2026-04-15T00:00:00.000Z'), null);
+      expect(prevBal.cash).toBe(0);
+    });
   });
 });

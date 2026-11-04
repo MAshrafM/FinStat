@@ -57,6 +57,7 @@ const createPaycheckSchema = z.object({
   type: z.enum(ALLOWED_PAYCHECK_TYPES, {
     message: `Type must be one of: ${ALLOWED_PAYCHECK_TYPES.join(', ')}`,
   }).optional(),
+  destinationAccount: z.enum(['Bank', 'Cash', 'Prepaid']).optional(),
   disbursementType: z.enum(DISBURSEMENT_TYPES).optional(),
   multiplier: preprocessNumeric(1).optional(),
   unitRate: preprocessNumeric(0).optional(),
@@ -114,6 +115,7 @@ const updatePaycheckSchema = z.object({
   type: z.enum(ALLOWED_PAYCHECK_TYPES, {
     message: `Type must be one of: ${ALLOWED_PAYCHECK_TYPES.join(', ')}`,
   }).optional(),
+  destinationAccount: z.enum(['Bank', 'Cash', 'Prepaid']).optional(),
   disbursementType: z.enum(DISBURSEMENT_TYPES).optional(),
   multiplier: preprocessNumeric(1).optional(),
   unitRate: preprocessNumeric(0).optional(),

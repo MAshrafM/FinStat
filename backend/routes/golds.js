@@ -18,6 +18,10 @@ const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
 const marketPriceService = require('../utils/marketPriceService');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
+const {
+  createExpenditureFromGoldSale,
+  reverseIncomeExpenditure,
+} = require('../utils/incomeBridge');
 
 // @route   GET api/golds
 // @desc    Get all gold logs (with pagination)
@@ -154,6 +158,9 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     sellingPriceInPiastres: toPiastres(validatedBody.sellingPrice),
   });
   await newLog.save();
+  if (newLog.status === 'sold') {
+    await createExpenditureFromGoldSale(newLog, validatedBody.destinationAccount, req.effectiveUserId);
+  }
   invalidatePortfolioCache(req.effectiveUserId);
   res.status(201).json(newLog);
 }));
@@ -199,6 +206,15 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     updateData,
     { new: true, runValidators: true }
   );
+
+  if (log.status === 'sold' && !log.linkedExpenditureId) {
+    await createExpenditureFromGoldSale(log, validatedBody.destinationAccount, req.effectiveUserId);
+  } else if (log.status === 'hold' && log.linkedExpenditureId) {
+    await reverseIncomeExpenditure(log.linkedExpenditureId, req.effectiveUserId);
+    log.linkedExpenditureId = null;
+    await log.save();
+  }
+
   invalidatePortfolioCache(req.effectiveUserId);
   res.json(log);
 }));
@@ -214,6 +230,11 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
   if (!log) {
     throw new NotFoundError('Gold log not found');
   }
+
+  if (log.linkedExpenditureId) {
+    await reverseIncomeExpenditure(log.linkedExpenditureId, req.effectiveUserId);
+  }
+
   await log.softDelete();
   invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Log deleted successfully' });

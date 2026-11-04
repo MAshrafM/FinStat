@@ -28,6 +28,7 @@ const createSchema = z.object({
     (val) => (val === '' || val === null || val === undefined ? undefined : val),
     dateStringSchema.optional()
   ),
+  destinationAccount: z.enum(['Bank', 'Cash', 'Prepaid']).optional(),
 })
   .strict()
   .refine(
@@ -77,6 +78,7 @@ const updateSchema = z.object({
     (val) => (val === '' || val === null || val === undefined ? undefined : val),
     dateStringSchema.optional()
   ),
+  destinationAccount: z.enum(['Bank', 'Cash', 'Prepaid']).optional(),
 }).strict()
   .refine(
     (data) => {
@@ -103,18 +105,33 @@ const updateSchema = z.object({
     }
   );
 
-const paramsSchema = paramsIdSchema;
-
+/**
+ * Schema for gold query parameters (list and metrics)
+ */
 const querySchema = paginationQuerySchema.extend({
-  status: sanitizeQueryParam(z.string({ message: 'Status filter must be a string' }).trim().optional()),
-  sortBy: sanitizeQueryParam(z.string({ message: 'SortBy must be a string' }).trim().optional()),
-  sortOrder: sanitizeQueryParam(z.enum(['asc', 'desc'], { message: 'SortOrder must be asc or desc' }).optional()),
-});
+  status: z.preprocess(
+    sanitizeQueryParam,
+    z.enum(ALLOWED_GOLD_STATUS, {
+      message: `Status must be one of: ${ALLOWED_GOLD_STATUS.join(', ')}`,
+    }).optional()
+  ),
+  karat: z.preprocess(
+    (val) => {
+      const sanitized = sanitizeQueryParam(val);
+      return sanitized !== undefined ? Number(sanitized) : undefined;
+    },
+    z.number({ message: 'Karat must be a valid number' }).optional()
+  ),
+  search: z.preprocess(
+    sanitizeQueryParam,
+    z.string().trim().optional()
+  ),
+}).strict();
 
 module.exports = {
   createSchema,
   updateSchema,
-  paramsSchema,
   querySchema,
+  paramsIdSchema,
+  ALLOWED_GOLD_STATUS,
 };
-

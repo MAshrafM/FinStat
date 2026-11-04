@@ -20,6 +20,10 @@ const {
 } = require('../validationSchemas/paycheckSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
+const {
+  createExpenditureFromPaycheck,
+  reverseIncomeExpenditure,
+} = require('../utils/incomeBridge');
 
 // Helper to extract year from period or string
 const extractYear = (period, fallbackYear) => {
@@ -262,6 +266,8 @@ router.post('/', auth, validate({ body: createPaycheckSchema }), asyncHandler(as
 
       const saved = await newPaycheck.save({ session });
       savedId = saved._id;
+      const targetAccount = body.destinationAccount || (body.type === 'Cash' ? 'Cash' : (body.type === 'Prepaid' ? 'Prepaid' : undefined));
+      await createExpenditureFromPaycheck(saved, targetAccount, req.effectiveUserId, session);
 
       // Recalculate year chain so all prior/cumulative YTDs are in strict chronological order
       await recalculateYearlyPaychecksChain(req.effectiveUserId, targetYear, session);
@@ -464,6 +470,9 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
   const session = await mongoose.startSession();
   try {
     await session.withTransaction(async () => {
+      if (paycheck.linkedExpenditureId) {
+        await reverseIncomeExpenditure(paycheck.linkedExpenditureId, req.effectiveUserId, session);
+      }
       await paycheck.softDelete(session);
       await recalculateYearlyPaychecksChain(req.effectiveUserId, targetYear, session);
     });

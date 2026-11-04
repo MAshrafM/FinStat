@@ -6,6 +6,7 @@ const { createUserWithToken } = require('../helpers/authFixtures');
 const app = require('../../server');
 const Paycheck = require('../../models/Paycheck');
 const SalaryProfile = require('../../models/SalaryProfile');
+const Expenditure = require('../../models/Expenditure');
 
 jest.setTimeout(60000);
 
@@ -621,6 +622,120 @@ describe('Step 5B.1a: [AUD-TEST-001] Paychecks API Integration Tests', () => {
       expect(Array.isArray(items)).toBe(true);
       const historical = items.find((p) => p.month === '2024-11');
       expect(historical).toBeDefined();
+
+    });
+
+    describe('Step 7B.1b-i: [FEAT-002, GAP-003] Unified Cash Flow Settlement Bridge Integration', () => {
+      it('creates linked Expenditure with transactionType T, linkedPaycheckId, and credits Bank when POST /api/paychecks with destinationAccount Bank', async () => {
+        const res = await request(app)
+          .post('/api/paychecks')
+          .set('Authorization', managerAuth)
+          .send({
+            period: '2026-05',
+            payDate: '2026-05-15',
+            grossSalary: 25000,
+            netPay: 20000,
+            disbursementType: 'Regular',
+            destinationAccount: 'Bank',
+          });
+
+        expect(res.status).toBe(201);
+        expect(res.body._id).toBeDefined();
+        expect(res.body.linkedExpenditureId).toBeDefined();
+
+        const linkedExp = await Expenditure.findById(res.body.linkedExpenditureId);
+        expect(linkedExp).toBeDefined();
+        expect(linkedExp.transactionType).toBe('T');
+        expect(linkedExp.paymentMethod).toBe('Bank');
+        expect(linkedExp.transactionValue).toBe(20000);
+        expect(linkedExp.linkedPaycheckId.toString()).toBe(res.body._id.toString());
+        expect(linkedExp.bank).toBe(20000);
+      });
+
+      it('creates linked Expenditure with default account derived from type when destinationAccount omitted', async () => {
+        const res = await request(app)
+          .post('/api/paychecks')
+          .set('Authorization', managerAuth)
+          .send({
+            period: '2026-06',
+            payDate: '2026-06-15',
+            grossSalary: 15000,
+            netPay: 12000,
+            type: 'Cash',
+            disbursementType: 'Regular',
+          });
+
+        expect(res.status).toBe(201);
+        expect(res.body.linkedExpenditureId).toBeDefined();
+
+        const linkedExp = await Expenditure.findById(res.body.linkedExpenditureId);
+        expect(linkedExp).toBeDefined();
+        expect(linkedExp.paymentMethod).toBe('Cash');
+        expect(linkedExp.transactionValue).toBe(12000);
+      });
+
+      it('does NOT create linked Expenditure when ENABLE_UNIFIED_CASH_FLOW=false', async () => {
+        const originalEnv = process.env.ENABLE_UNIFIED_CASH_FLOW;
+        process.env.ENABLE_UNIFIED_CASH_FLOW = 'false';
+        try {
+          const res = await request(app)
+            .post('/api/paychecks')
+            .set('Authorization', managerAuth)
+            .send({
+              period: '2026-07',
+              payDate: '2026-07-15',
+              grossSalary: 15000,
+              netPay: 12000,
+              disbursementType: 'Regular',
+            });
+
+          expect(res.status).toBe(201);
+          expect(res.body.linkedExpenditureId).toBeFalsy();
+
+          const linkedExps = await Expenditure.find({ user: managerUser._id, linkedPaycheckId: res.body._id });
+          expect(linkedExps.length).toBe(0);
+        } finally {
+          process.env.ENABLE_UNIFIED_CASH_FLOW = originalEnv;
+        }
+      });
+
+      it('soft-deletes linked Expenditure and rolls back balance via propagateBalanceChanges when paycheck is deleted', async () => {
+        const createRes = await request(app)
+          .post('/api/paychecks')
+          .set('Authorization', managerAuth)
+          .send({
+            period: '2026-08',
+            payDate: '2026-08-15',
+            grossSalary: 30000,
+            netPay: 24000,
+            disbursementType: 'Regular',
+            destinationAccount: 'Bank',
+          });
+
+        expect(createRes.status).toBe(201);
+        const paycheckId = createRes.body._id;
+        const linkedExpId = createRes.body.linkedExpenditureId;
+        expect(linkedExpId).toBeDefined();
+
+        const beforeExp = await Expenditure.findById(linkedExpId);
+        expect(beforeExp.deletedAt).toBeNull();
+
+        const { calculatePreviousBalance } = require('../../utils/ledgerHelpers');
+        const balBefore = await calculatePreviousBalance(managerUser._id, new Date('2026-08-17T00:00:00.000Z'), null);
+        expect(balBefore.bank).toBe(24000);
+
+        const delRes = await request(app)
+          .delete(`/api/paychecks/${paycheckId}`)
+          .set('Authorization', managerAuth);
+        expect(delRes.status).toBe(200);
+
+        const afterExp = await Expenditure.findById(linkedExpId);
+        expect(afterExp.deletedAt).not.toBeNull();
+
+        const balAfter = await calculatePreviousBalance(managerUser._id, new Date('2026-08-17T00:00:00.000Z'), null);
+        expect(balAfter.bank).toBe(0);
+      });
+
     });
   });
 });

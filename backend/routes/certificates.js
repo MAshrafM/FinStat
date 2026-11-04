@@ -17,6 +17,10 @@ const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
 const {
+  createExpenditureFromCertificatePayout,
+  reverseIncomeExpenditure,
+} = require('../utils/incomeBridge');
+const {
   addMonthsClamped,
   calculateAccruedInterest,
   calculateNextPayoutDate,
@@ -180,6 +184,17 @@ router.post('/:id/withdraw', auth, validate({ params: paramsSchema, body: withdr
   }
 
   await certificate.save();
+
+  const principalInPiastres = certificate.amountInPiastres || toPiastres(certificate.amount);
+  const earnedInterestInPiastres = accrualAtWithdrawal?.accruedInterestInPiastres || toPiastres(accrualAtWithdrawal?.accruedInterest || 0);
+  const totalPayoutInPiastres = principalInPiastres + earnedInterestInPiastres;
+
+  await createExpenditureFromCertificatePayout(
+    certificate,
+    totalPayoutInPiastres,
+    validatedBody.destinationAccount,
+    req.effectiveUserId
+  );
   invalidatePortfolioCache(req.effectiveUserId);
 
   res.json({
@@ -237,6 +252,9 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
   const certificate = await Certificate.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!certificate) {
     throw new NotFoundError('Certificate not found');
+  }
+  if (certificate.linkedExpenditureId) {
+    await reverseIncomeExpenditure(certificate.linkedExpenditureId, req.effectiveUserId);
   }
   await certificate.softDelete();
   invalidatePortfolioCache(req.effectiveUserId);

@@ -9,6 +9,7 @@ const { connect, clearDatabase, closeDatabase } = require('../helpers/testDb');
 const { createUserWithToken } = require('../helpers/authFixtures');
 const User = require('../../models/User');
 const Certificate = require('../../models/Certificate');
+const Expenditure = require('../../models/Expenditure');
 
 jest.setTimeout(60000);
 
@@ -306,6 +307,73 @@ describe('Step 5B.1b: [AUD-TEST-001] Certificates API Integration Tests', () => 
         .send({ confirmWithdrawal: true });
       expect(res.status).toBe(404);
       expect(res.body.message).toMatch(/not found/i);
+    });
+    describe('Step 7B.1b-i: [FEAT-002, GAP-003] Certificate Withdrawal Settlement Bridge', () => {
+      it('creates linked Expenditure of principal plus accrued interest with linkedCertificateId when withdrawn', async () => {
+        const certRes = await request(app)
+          .post('/api/certificates')
+          .set('Authorization', `Bearer ${managerToken}`)
+          .send({
+            name: 'Settlement CD A',
+            amount: 100000,
+            interest: 12,
+            period: 12,
+            startDate: '2025-01-01T00:00:00.000Z',
+            payoutInterval: 'annually',
+          });
+        expect(certRes.status).toBe(201);
+        const certId = certRes.body._id;
+
+        const withdrawRes = await request(app)
+          .post(`/api/certificates/${certId}/withdraw`)
+          .set('Authorization', `Bearer ${managerToken}`)
+          .send({
+            confirmWithdrawal: true,
+            withdrawalDate: '2025-07-01T00:00:00.000Z',
+          });
+        expect(withdrawRes.status).toBe(200);
+
+        const linkedExp = await Expenditure.findOne({ linkedCertificateId: certId });
+        expect(linkedExp).toBeDefined();
+        expect(linkedExp.transactionType).toBe('T');
+        expect(linkedExp.paymentMethod).toBe('Bank');
+        expect(linkedExp.transactionValue).toBeGreaterThan(100000);
+        expect(linkedExp.bank).toBe(linkedExp.transactionValue);
+
+        const updatedCert = await Certificate.findById(certId);
+        expect(updatedCert.linkedExpenditureId.toString()).toBe(linkedExp._id.toString());
+      });
+
+      it('credits Cash ledger when destinationAccount is Cash upon certificate withdrawal', async () => {
+        const certRes = await request(app)
+          .post('/api/certificates')
+          .set('Authorization', `Bearer ${managerToken}`)
+          .send({
+            name: 'Settlement CD B',
+            amount: 50000,
+            interest: 10,
+            period: 6,
+            startDate: '2025-01-01T00:00:00.000Z',
+            payoutInterval: 'monthly',
+          });
+        expect(certRes.status).toBe(201);
+        const certId = certRes.body._id;
+
+        const withdrawRes = await request(app)
+          .post(`/api/certificates/${certId}/withdraw`)
+          .set('Authorization', `Bearer ${managerToken}`)
+          .send({
+            confirmWithdrawal: true,
+            destinationAccount: 'Cash',
+            withdrawalDate: '2025-04-01T00:00:00.000Z',
+          });
+        expect(withdrawRes.status).toBe(200);
+
+        const linkedExp = await Expenditure.findOne({ linkedCertificateId: certId });
+        expect(linkedExp).toBeDefined();
+        expect(linkedExp.paymentMethod).toBe('Cash');
+        expect(linkedExp.cash).toBe(linkedExp.transactionValue);
+      });
     });
   });
 });
