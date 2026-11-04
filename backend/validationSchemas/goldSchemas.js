@@ -109,21 +109,15 @@ const updateSchema = z.object({
  * Schema for gold query parameters (list and metrics)
  */
 const querySchema = paginationQuerySchema.extend({
-  status: z.preprocess(
-    sanitizeQueryParam,
+  status: sanitizeQueryParam(
     z.enum(ALLOWED_GOLD_STATUS, {
       message: `Status must be one of: ${ALLOWED_GOLD_STATUS.join(', ')}`,
     }).optional()
   ),
-  karat: z.preprocess(
-    (val) => {
-      const sanitized = sanitizeQueryParam(val);
-      return sanitized !== undefined ? Number(sanitized) : undefined;
-    },
-    z.number({ message: 'Karat must be a valid number' }).optional()
+  karat: sanitizeQueryParam(
+    z.coerce.number({ message: 'Karat must be a valid number' }).optional()
   ),
-  search: z.preprocess(
-    sanitizeQueryParam,
+  search: sanitizeQueryParam(
     z.string().trim().optional()
   ),
 }).strict();
@@ -132,6 +126,7 @@ module.exports = {
   createSchema,
   updateSchema,
   querySchema,
+  paramsSchema: paramsIdSchema,
   paramsIdSchema,
   ALLOWED_GOLD_STATUS,
 };

@@ -22,6 +22,11 @@ jest.mock('../../middleware/auth', () => (req, res, next) => {
 jest.mock('../../models/Certificate');
 jest.mock('../../models/Gold');
 jest.mock('../../models/Trade');
+jest.mock('../../utils/incomeBridge', () => ({
+  createExpenditureFromCertificatePayout: jest.fn().mockResolvedValue(null),
+  createExpenditureFromGoldSale: jest.fn().mockResolvedValue(null),
+  reverseIncomeExpenditure: jest.fn().mockResolvedValue(null),
+}));
 jest.mock('../../utils/portfolioService', () => ({
   invalidatePortfolioCache: jest.fn(),
 }));
