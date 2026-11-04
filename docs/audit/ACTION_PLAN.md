@@ -139,7 +139,7 @@ graph LR
 | **Phase 6B** | Schema & UI Hygiene | `SIMP-008`, `SIMP-009`, `GAP-007`, `GAP-008`, `GAP-010`, `AUD-ARCH-003` | 1.5 days | Yes (with 6A) | `[x] COMPLETE` |
 | **Phase 7A** | Multi-Module Reporting & Comprehensive Export | `FEAT-003`, `GAP-006`, `AUD-TEST-DEBT-001` | 2 days | Yes (with 7B) | `[x] COMPLETE` |
 | **Phase 7A.5** | Lending Tracker (P2P Personal Loans & Receivables) | FEAT-005 (Lending) | 1 day | No | `[x] COMPLETE` |
-| **Phase 7B** | Financial Bridges & Secondary UI Hygiene | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003`, `AUD-UI-DEBT-002` | 2 days | Yes (with 7A) | `[ ] NOT STARTED` |
+| **Phase 7B** | Financial Bridges & Secondary UI Hygiene | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003`, `AUD-UI-DEBT-002` | 2 days | Yes (with 7A) | `[x] COMPLETE` |
 | **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[ ] NOT STARTED` |
 | **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[ ] NOT STARTED` |
 | **Phase 8A** | Backend Service Decoupling | `AUD-ARCH-002` | 2.5 days | No | `[ ] NOT STARTED` |
@@ -1721,9 +1721,9 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 3 files.
 * **Actions**: Add destination cash account selector to paycheck, gold sale, and CD payout forms; atomically credit account balance.
 * **Definition of Done (DoD)**:
-  - [ ] Logging 10,000 EGP paycheck credits selected Bank Account balance by 10,000 EGP.
-  - [ ] Liquidating gold credits chosen cash account.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Logging 10,000 EGP paycheck credits selected Bank Account balance by 10,000 EGP.
+  - [x] Liquidating gold credits chosen cash account.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1736,8 +1736,8 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 2 files.
 * **Actions**: Add "Execute Trade" button next to rebalance suggestions pre-filling ticker, action, shares, and price into `TradeForm`.
 * **Definition of Done (DoD)**:
-  - [ ] Clicking "Execute Trade" navigates to trade ticket pre-filled with recommended order details.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Clicking "Execute Trade" navigates to trade ticket pre-filled with recommended order details.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
@@ -1763,18 +1763,18 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 15 files.
 * **Actions**: Replace remaining legacy `window.confirm()` and `alert()` calls across secondary administrative, configuration, and secondary log screens with styled, accessible `<ConfirmModal />` and `useToast` notifications.
 * **Definition of Done (DoD)**:
-  - [ ] Zero raw `window.confirm()` or `alert()` calls remaining across the frontend application.
-  - [ ] All destructive deletions across secondary/admin modules require explicit accessible `<ConfirmModal />` confirmation.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Zero raw `window.confirm()` or `alert()` calls remaining across the frontend application.
+  - [x] All destructive deletions across secondary/admin modules require explicit accessible `<ConfirmModal />` confirmation.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
 ### Phase 7B Verification Gate
 *(Expected verification timeout: < 120s)*
-- [ ] Income logging atomically credits target bank balance.
-- [ ] Rebalance recommendation opens pre-filled trade ticket.
-- [ ] All 14 secondary/administrative confirmation dialogs migrated to `<ConfirmModal />` with 0 remaining raw alerts.
-- [ ] **Phase 7B Signed Off**: `[ ] YES` | Date: `__________`
+- [x] Income logging atomically credits target bank balance.
+- [x] Rebalance recommendation opens pre-filled trade ticket.
+- [x] All 14 secondary/administrative confirmation dialogs migrated to `<ConfirmModal />` with 0 remaining raw alerts.
+- [x] **Phase 7B Signed Off**: `[x] YES` | Date: `2026-11-04`
 
 ---
 
@@ -2022,7 +2022,7 @@ cd d:/Projects/FinStat/frontend && npm run build
 | **AUD-TEST-002** | Void of Frontend Component & User-Journey Test Coverage | **Phase 5B, Step 5B.2** |
 | **AUD-TEST-DEBT-001** | Substituted 5C Edge-Case Tests Closed in Dedicated Test Strengthening Session | **Phase 7A, Step 7A.0 (Resolved)** |
 | **AUD-ARCH-004** | Eager Loading of Context Providers in ProtectedRoute (Jest Suspense Timing) | **Phase 6A, Step 6A.1 & Pre-Phase 7A Review** |
-| **AUD-UI-DEBT-002** | 14 Secondary & Administrative Legacy Confirmation Dialogs Deferred from 6B.2 | **Phase 7B, Step 7B.3** |
+| **AUD-UI-DEBT-002** | 14 Secondary & Administrative Legacy Confirmation Dialogs Deferred from 6B.2 | **Phase 7B, Step 7B.3 (Resolved)** |
 | **SIMP-001** | Purge Abandoned Legacy Paycheck CRUD Subsystem | **Phase 1, Step 1.8** |
 | **SIMP-002** | Consolidate Twin Calendar & Fiscal Year Analysis Pages | **Phase 6A, Step 6A.3** |
 | **SIMP-003** | Unify Redundant Home Launcher (`/dashboard`) with Profile Summary | **Phase 6A, Step 6A.1** |
@@ -2040,10 +2040,10 @@ cd d:/Projects/FinStat/frontend && npm run build
 | **FEAT-003** | Financial Data Portability & Official Tax Summary Reports | **Phase 7A, Step 7A.2** |
 | **GAP-005** | Total Absence of CSV and Excel File Import | **Phase 7A, Step 7A.1** |
 | **GAP-006** | Total Absence of Data Export & Tax Summary Reporting | **Phase 7A, Step 7A.2** |
-| **FEAT-002** | Unified Cash Flow Settlement Bridge (Income Auto-Deposit) | **Phase 7B, Step 7B.1** |
-| **FEAT-004** | Closed-Loop Rebalancing Execution with Trade Order Pre-filling | **Phase 7B, Step 7B.2** |
-| **GAP-001** | Rebalancing Action Link is a Non-Prefilled Dead End | **Phase 7B, Step 7B.2** |
-| **GAP-003** | Inter-Module Cash Flow Disconnect: Income Does Not Flow to Bank | **Phase 7B, Step 7B.1** |
+| **FEAT-002** | Unified Cash Flow Settlement Bridge (Income Auto-Deposit) | **Phase 7B, Step 7B.1 (Resolved)** |
+| **FEAT-004** | Closed-Loop Rebalancing Execution with Trade Order Pre-filling | **Phase 7B, Step 7B.2 (Resolved)** |
+| **GAP-001** | Rebalancing Action Link is a Non-Prefilled Dead End | **Phase 7B, Step 7B.2 (Resolved)** |
+| **GAP-003** | Inter-Module Cash Flow Disconnect: Income Does Not Flow to Bank | **Phase 7B, Step 7B.1 (Resolved)** |
 | **FEAT-005 (Lending)** | Peer-to-Peer Personal Loans & Receivables Tracker | **Phase 7A.5** |
 | **FEAT-005** | Forward-Looking Bill Scheduler & Due Date Alerting | **Phase 7C, Step 7C.1** |
 | **FEAT-006** | Soft-Delete Recycle Bin & 10-Second Deletion Undo | **Phase 7C, Step 7C.2** |
