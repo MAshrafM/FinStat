@@ -1,5 +1,6 @@
 // frontend/src/pages/gold/GoldForm.js
 import React, { useState, useEffect } from 'react';
+import AccountSelector from '../../components/common/AccountSelector';
 
 const GoldForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const [formData, setFormData] = useState({
@@ -65,6 +66,7 @@ const GoldForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             payload.destinationAccount = formData.destinationAccount || 'Cash';
         }
 
+        payload.sourceAccount = formData.sourceAccount || 'Bank';
         onFormSubmit(payload);
     };
 
@@ -77,6 +79,13 @@ const GoldForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             <div className="form-group"><label>Price per Gram</label><input type="number" step="any" name="price" value={formData.price} onChange={handleChange} required /></div>
             <div className="form-group"><label>Total Amount Paid</label><input type="number" step="any" name="paid" value={formData.paid} onChange={handleChange} required /></div>
             <div className="form-group"><label>Seller (Optional)</label><input type="text" name="seller" value={formData.seller} onChange={handleChange} /></div>
+            <AccountSelector
+                direction="source"
+                value={formData.sourceAccount || 'Bank'}
+                onChange={handleChange}
+                name="sourceAccount"
+                label="Paid From (Source Account)"
+            />
             <div className="form-group"><label>Status</label>
                 <select name="status" value={formData.status} onChange={handleChange} required>
                     <option value="hold">Hold</option>

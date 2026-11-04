@@ -64,6 +64,12 @@ const GoldSchema = new mongoose.Schema({
     default: null,
     index: true,
   },
+  linkedPurchaseExpenditureId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Expenditure',
+    default: null,
+    index: true,
+  },
 }, {
   timestamps: true,
 });

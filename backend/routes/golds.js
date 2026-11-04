@@ -20,7 +20,9 @@ const marketPriceService = require('../utils/marketPriceService');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
 const {
   createExpenditureFromGoldSale,
+  createExpenditureFromGoldPurchase,
   reverseIncomeExpenditure,
+  syncGoldPurchaseExpenditure,
 } = require('../utils/incomeBridge');
 
 // @route   GET api/golds
@@ -158,6 +160,11 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     sellingPriceInPiastres: toPiastres(validatedBody.sellingPrice),
   });
   await newLog.save();
+  await createExpenditureFromGoldPurchase({
+    gold: newLog,
+    sourceAccount: validatedBody.sourceAccount,
+    user: req.effectiveUserId,
+  });
   if (newLog.status === 'sold') {
     await createExpenditureFromGoldSale(newLog, validatedBody.destinationAccount, req.effectiveUserId);
   }
@@ -215,6 +222,14 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     await log.save();
   }
 
+  if (log.linkedPurchaseExpenditureId) {
+    await syncGoldPurchaseExpenditure({
+      gold: log,
+      updateData: validatedBody,
+      user: req.effectiveUserId,
+    });
+  }
+
   invalidatePortfolioCache(req.effectiveUserId);
   res.json(log);
 }));
@@ -231,6 +246,9 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
     throw new NotFoundError('Gold log not found');
   }
 
+  if (log.linkedPurchaseExpenditureId) {
+    await reverseIncomeExpenditure(log.linkedPurchaseExpenditureId, req.effectiveUserId);
+  }
   if (log.linkedExpenditureId) {
     await reverseIncomeExpenditure(log.linkedExpenditureId, req.effectiveUserId);
   }
@@ -252,6 +270,14 @@ router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandl
     throw new NotFoundError('Soft-deleted gold log not found');
   }
   await log.restore();
+  await createExpenditureFromGoldPurchase({
+    gold: log,
+    sourceAccount: log.sourceAccount,
+    user: req.effectiveUserId,
+  });
+  if (log.status === 'sold') {
+    await createExpenditureFromGoldSale(log, log.destinationAccount, req.effectiveUserId);
+  }
   invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Gold log restored successfully', log });
 }));

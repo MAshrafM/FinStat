@@ -28,6 +28,7 @@ const createSchema = z.object({
     (val) => (val === '' || val === null || val === undefined ? undefined : val),
     dateStringSchema.optional()
   ),
+  sourceAccount: z.enum(['Bank', 'Cash']).optional(),
   destinationAccount: z.enum(['Bank', 'Cash', 'Prepaid']).optional(),
 })
   .strict()
@@ -78,6 +79,7 @@ const updateSchema = z.object({
     (val) => (val === '' || val === null || val === undefined ? undefined : val),
     dateStringSchema.optional()
   ),
+  sourceAccount: z.enum(['Bank', 'Cash']).optional(),
   destinationAccount: z.enum(['Bank', 'Cash', 'Prepaid']).optional(),
 }).strict()
   .refine(
