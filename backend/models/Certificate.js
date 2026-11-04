@@ -6,7 +6,7 @@ const softDeletePlugin = require('../utils/softDeletePlugin');
 const CertificateSchema = new mongoose.Schema({
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User', // Reference to User model
+    ref: 'User',
     required: true,
   },
   name: {
@@ -14,19 +14,19 @@ const CertificateSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  period: { // Stored in months for consistent calculations
+  period: {
     type: Number,
     required: true,
   },
-  amount: { // The principal amount invested (EGP)
+  amount: {
     type: Number,
     required: true,
   },
-  amountInPiastres: { // Internal value in piastres (1 EGP = 100 piastres)
+  amountInPiastres: {
     type: Number,
     default: 0,
   },
-  interest: { // The annual interest rate (e.g., 18.5 for 18.5%)
+  interest: {
     type: Number,
     required: true,
   },
@@ -70,6 +70,12 @@ const CertificateSchema = new mongoose.Schema({
     default: null,
     trim: true,
   },
+  linkedExpenditureId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Expenditure',
+    default: null,
+    index: true,
+  },
 }, {
   timestamps: true,
 });
@@ -84,10 +90,5 @@ CertificateSchema.pre('save', function (next) {
 });
 
 CertificateSchema.plugin(softDeletePlugin);
-
-// Compound indexes
-CertificateSchema.index({ user: 1, startDate: -1 });
-CertificateSchema.index({ user: 1, maturityDate: 1, status: 1 });
-CertificateSchema.index({ user: 1, deletedAt: 1 });
 
 module.exports = mongoose.model('Certificate', CertificateSchema);

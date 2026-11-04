@@ -185,6 +185,12 @@ const PaycheckSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  linkedExpenditureId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Expenditure',
+    default: null,
+    index: true,
+  },
   notes: {
     type: String,
     trim: true,
