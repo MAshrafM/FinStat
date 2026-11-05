@@ -1809,7 +1809,9 @@ cd d:/Projects/FinStat/frontend && npm run build
 *(Expected verification timeout: < 120s)*
 - [x] All 6 asset module buy/sell/coupon transactions automatically generate linked ledger records.
 - [x] Deletion cascades properly reverse balance impacts, and dependency guards block premature buy deletions.
-- [x] Comprehensive report strictly isolates capital deployments from living expenses.
+- [x] Comprehensive report strictly isolates capital deployments from living expenses without distorting manual entries.
+- [x] Full-stack verification gate passing: 250 / 250 tests (100% GREEN) across 20 test suites (14 backend, 6 frontend).
+- [x] Technical debt closure: Capped `/api/paychecks/all` at 1000 lean records, resolving `5C-followup-paychecks-all`.
 - [x] **Phase 7C.0 Signed Off**: `[x] YES` | Date: `2026-11-05`
 
 ---
