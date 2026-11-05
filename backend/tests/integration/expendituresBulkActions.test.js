@@ -330,70 +330,47 @@ describe('Step 6B.4: [GAP-008] Bulk Actions on Expenditures Integration Tests', 
       const unchanged = await Expenditure.findById(otherExp._id);
       expect(unchanged.deletedAt).toBeNull();
     });
-    it('rejects bulk-delete and single-delete containing any auto-credit Expenditure (linkedPaycheckId, linkedGoldId, or linkedCertificateId) with HTTP 400', async () => {
-      const dummyId = new mongoose.Types.ObjectId();
+    describe('Phase 7C.0 Bridge Delete Guards [FEAT-002]', () => {
+      const bridgeFields = [
+        'linkedPaycheckId',
+        'linkedGoldId',
+        'linkedCertificateId',
+        'linkedTradeId',
+        'linkedCurrencyId',
+        'linkedMfTradeId',
+      ];
 
-      const paycheckExp = await Expenditure.create({
-        user: managerUser._id,
-        date: new Date('2024-05-10'),
-        bank: 5000,
-        transactionValue: 5000,
-        transactionType: 'T',
-        paymentMethod: 'Bank',
-        categories: ['Salary'],
-        linkedPaycheckId: dummyId,
-      });
+      it.each(bridgeFields)(
+        'rejects bulk-delete and single-delete containing auto-generated bridge Expenditure (%s) with HTTP 400',
+        async (field) => {
+          const dummyId = new mongoose.Types.ObjectId();
+          const exp = await Expenditure.create({
+            user: managerUser._id,
+            date: new Date('2024-05-15'),
+            bank: 5000,
+            transactionValue: 5000,
+            transactionType: 'T',
+            paymentMethod: 'Bank',
+            categories: ['Investment'],
+            [field]: dummyId,
+          });
 
-      const goldExp = await Expenditure.create({
-        user: managerUser._id,
-        date: new Date('2024-05-11'),
-        bank: 3000,
-        transactionValue: 3000,
-        transactionType: 'T',
-        paymentMethod: 'Bank',
-        categories: ['Salary'],
-        linkedGoldId: dummyId,
-      });
+          // 1. Bulk-delete rejection
+          const bulkRes = await request(app)
+            .post('/api/expenditures/bulk-delete')
+            .set('Authorization', managerAuth)
+            .send({ ids: [exp._id.toString()] });
+          expect(bulkRes.status).toBe(400);
+          expect(bulkRes.body.message).toMatch(/auto-generated/i);
 
-      const certExp = await Expenditure.create({
-        user: managerUser._id,
-        date: new Date('2024-05-12'),
-        bank: 4000,
-        transactionValue: 4000,
-        transactionType: 'T',
-        paymentMethod: 'Bank',
-        categories: ['Salary'],
-        linkedCertificateId: dummyId,
-      });
-
-      // 1. Bulk-delete rejects batch with linkedPaycheckId
-      const bulkResPaycheck = await request(app)
-        .post('/api/expenditures/bulk-delete')
-        .set('Authorization', managerAuth)
-        .send({ ids: [paycheckExp._id.toString()] });
-      expect(bulkResPaycheck.status).toBe(400);
-      expect(bulkResPaycheck.body.message).toMatch(/auto-generated/i);
-
-      // 2. Bulk-delete rejects batch with linkedGoldId
-      const bulkResGold = await request(app)
-        .post('/api/expenditures/bulk-delete')
-        .set('Authorization', managerAuth)
-        .send({ ids: [goldExp._id.toString()] });
-      expect(bulkResGold.status).toBe(400);
-
-      // 3. Bulk-delete rejects batch with linkedCertificateId
-      const bulkResCert = await request(app)
-        .post('/api/expenditures/bulk-delete')
-        .set('Authorization', managerAuth)
-        .send({ ids: [certExp._id.toString()] });
-      expect(bulkResCert.status).toBe(400);
-
-      // 4. Single-delete rejects auto-credit expenditure
-      const singleRes = await request(app)
-        .delete(`/api/expenditures/${paycheckExp._id}`)
-        .set('Authorization', managerAuth);
-      expect(singleRes.status).toBe(400);
-      expect(singleRes.body.message).toMatch(/auto-generated/i);
+          // 2. Single-delete rejection
+          const singleRes = await request(app)
+            .delete(`/api/expenditures/${exp._id}`)
+            .set('Authorization', managerAuth);
+          expect(singleRes.status).toBe(400);
+          expect(singleRes.body.message).toMatch(/auto-generated/i);
+        }
+      );
     });
   });
 });

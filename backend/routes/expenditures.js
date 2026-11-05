@@ -28,6 +28,7 @@ const { toPiastres } = require('../utils/currencyUtils');
 const { evaluateRules } = require('../utils/ruleEngine');
 const { validateSplits } = require('../utils/splitValidator');
 const { resolveExchangeRate } = require('../utils/exchangeRateResolver');
+const { isBridgeRecord } = require('../utils/incomeBridge');
 
 // @route   GET api/expenditures/recurring
 // @desc    Get all active expenditures marked as recurring
@@ -277,7 +278,7 @@ router.post('/bulk-delete', auth, validate({ body: bulkDeleteSchema }), asyncHan
     }
 
     const linkedDoc = expenditures.find(
-      (e) => e.linkedPaycheckId || e.linkedGoldId || e.linkedCertificateId
+      isBridgeRecord
     );
     if (linkedDoc) {
       throw new BadRequestError(
@@ -501,7 +502,7 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
     throw new ForbiddenError('User not authorized');
   }
 
-  if (expenditure.linkedPaycheckId || expenditure.linkedGoldId || expenditure.linkedCertificateId) {
+  if (isBridgeRecord(expenditure)) {
     throw new BadRequestError(
       'Cannot delete auto-generated settlement transactions directly. Please manage or delete the source record (paycheck, gold holding, or certificate).'
     );
