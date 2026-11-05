@@ -281,4 +281,31 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
     const chartData = JSON.parse(doughnut.textContent);
     expect(chartData.labels).toContain('Receivables');
   });
+  test('Test 9: renders Capital Deployed KPI stat card when totalCapitalDeployed is present [FEAT-002]', async () => {
+    const reportWithCapitalDeployments = {
+      ...mockReportData,
+      kpi: {
+        ...mockReportData.kpi,
+        totalCapitalDeployed: 95000,
+      },
+      expenditures: {
+        ...mockReportData.expenditures,
+        capitalDeployments: {
+          totalCapitalDeployed: 95000,
+          count: 3,
+        },
+      },
+    };
+
+    apiClient.get.mockResolvedValueOnce(reportWithCapitalDeployments);
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Comprehensive Financial Report')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Capital Deployed')).toBeInTheDocument();
+    expect(screen.getByText('$95,000.00')).toBeInTheDocument();
+  });
 });

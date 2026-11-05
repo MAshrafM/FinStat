@@ -302,6 +302,12 @@ const ComprehensiveReportPage = () => {
           <div className="kpi-stat-value">{formatCurrency(kpi.totalExpenses || 0)}</div>
         </div>
         <div className="kpi-stat-card">
+          <div className="kpi-stat-label">Capital Deployed</div>
+          <div className="kpi-stat-value" style={{ color: '#0284c7' }}>
+            {formatCurrency(kpi.totalCapitalDeployed || 0)}
+          </div>
+        </div>
+        <div className="kpi-stat-card">
           <div className="kpi-stat-label">Savings Rate</div>
           <div className="kpi-stat-value success">{kpi.savingsRate || 0}%</div>
         </div>
