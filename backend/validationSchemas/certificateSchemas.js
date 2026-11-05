@@ -17,6 +17,8 @@ const createSchema = z.object({
     (val) => (val === '' || val === null || val === undefined ? undefined : val),
     dateStringSchema.optional()
   ),
+  autoReinvest: z.boolean().optional(),
+  sourceAccount: z.enum(['Bank', 'Cash']).optional(),
 }).strict();
 
 const updateSchema = z.object({
@@ -44,6 +46,8 @@ const updateSchema = z.object({
     dateStringSchema.optional()
   ),
   withdrawalReason: optionalString('Withdrawal reason'),
+  autoReinvest: z.boolean().optional(),
+  sourceAccount: z.enum(['Bank', 'Cash']).optional(),
 }).strict();
 
 const withdrawSchema = z.object({

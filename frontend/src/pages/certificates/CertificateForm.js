@@ -1,5 +1,6 @@
 // frontend/src/pages/certificates/CertificateForm.js
 import React, { useState, useEffect } from 'react';
+import AccountSelector from '../../components/common/AccountSelector';
 
 const CertificateForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const [formData, setFormData] = useState({
@@ -10,6 +11,8 @@ const CertificateForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => 
         payoutInterval: 'monthly',
         lastPayoutDate: '',
         startDate: new Date().toISOString().split('T')[0],
+        sourceAccount: initialData?.sourceAccount || 'Bank',
+        autoReinvest: Boolean(initialData?.autoReinvest),
     });
     const [validationError, setValidationError] = useState('');
 
@@ -23,6 +26,8 @@ const CertificateForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => 
                 payoutInterval: initialData.payoutInterval || 'monthly',
                 lastPayoutDate: initialData.lastPayoutDate ? new Date(initialData.lastPayoutDate).toISOString().split('T')[0] : '',
                 startDate: initialData.startDate ? new Date(initialData.startDate).toISOString().split('T')[0] : '',
+                sourceAccount: initialData.sourceAccount || 'Bank',
+                autoReinvest: Boolean(initialData.autoReinvest),
             });
         }
     }, [initialData, isEdit]);
@@ -53,6 +58,8 @@ const CertificateForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => 
 
         onFormSubmit({
             ...formData,
+            sourceAccount: formData.sourceAccount || 'Bank',
+            autoReinvest: Boolean(formData.autoReinvest),
             period: parseInt(formData.period, 10),
             amount: parseFloat(formData.amount),
             interest: parseFloat(formData.interest),
@@ -115,6 +122,26 @@ const CertificateForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => 
                 <small style={{ color: '#6b7280', display: 'block', marginTop: '4px', fontSize: '12px' }}>
                     The date of the last interest disbursement. If no payout has occurred yet, leave blank (accrual starts from start date).
                 </small>
+            </div>
+
+            <AccountSelector
+                direction="source"
+                value={formData.sourceAccount || 'Bank'}
+                onChange={handleChange}
+                name="sourceAccount"
+                label="Paid From (Source Account)"
+            />
+
+            <div className="form-group checkbox-group">
+                <label>
+                    <input
+                        type="checkbox"
+                        name="autoReinvest"
+                        checked={formData.autoReinvest}
+                        onChange={(e) => setFormData({ ...formData, autoReinvest: e.target.checked })}
+                    />
+                    {' '}Auto-Reinvest Interest (Suppress periodic ledger payouts)
+                </label>
             </div>
 
             <button type="submit" className="action-button">{isEdit ? 'Update' : 'Create'} Certificate</button>

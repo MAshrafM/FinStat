@@ -76,6 +76,16 @@ const CertificateSchema = new mongoose.Schema({
     default: null,
     index: true,
   },
+  autoReinvest: {
+    type: Boolean,
+    default: false,
+  },
+  linkedPurchaseExpenditureId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Expenditure',
+    default: null,
+    index: true,
+  },
 }, {
   timestamps: true,
 });

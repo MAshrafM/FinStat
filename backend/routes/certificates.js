@@ -18,7 +18,9 @@ const { toPiastres } = require('../utils/currencyUtils');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
 const {
   createExpenditureFromCertificatePayout,
+  createExpenditureFromCertificatePurchase,
   reverseIncomeExpenditure,
+  syncCertificatePurchaseExpenditure,
 } = require('../utils/incomeBridge');
 const {
   addMonthsClamped,
@@ -112,6 +114,11 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     amountInPiastres: toPiastres(validatedBody.amount),
   });
   await newCertificate.save();
+  await createExpenditureFromCertificatePurchase({
+    certificate: newCertificate,
+    sourceAccount: validatedBody.sourceAccount,
+    user: req.effectiveUserId,
+  });
   invalidatePortfolioCache(req.effectiveUserId);
   res.status(201).json(enrichCertificate(newCertificate));
 }));
@@ -238,6 +245,14 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
     updateData,
     { new: true, runValidators: true }
   );
+  if (certificate.linkedPurchaseExpenditureId) {
+    await syncCertificatePurchaseExpenditure({
+      certificate,
+      updateData: validatedBody,
+      user: req.effectiveUserId,
+    });
+  }
+
   invalidatePortfolioCache(req.effectiveUserId);
   res.json(enrichCertificate(certificate));
 }));
@@ -252,6 +267,9 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
   const certificate = await Certificate.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
   if (!certificate) {
     throw new NotFoundError('Certificate not found');
+  }
+  if (certificate.linkedPurchaseExpenditureId) {
+    await reverseIncomeExpenditure(certificate.linkedPurchaseExpenditureId, req.effectiveUserId);
   }
   if (certificate.linkedExpenditureId) {
     await reverseIncomeExpenditure(certificate.linkedExpenditureId, req.effectiveUserId);
@@ -273,6 +291,11 @@ router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandl
     throw new NotFoundError('Soft-deleted certificate not found');
   }
   await certificate.restore();
+  await createExpenditureFromCertificatePurchase({
+    certificate,
+    sourceAccount: certificate.sourceAccount,
+    user: req.effectiveUserId,
+  });
   invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Certificate restored successfully', certificate: enrichCertificate(certificate) });
 }));
