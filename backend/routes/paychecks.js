@@ -297,7 +297,7 @@ router.get('/all', auth, asyncHandler(async (req, res) => {
   const paychecks = await Paycheck.find({
     user: req.effectiveUserId,
     deletedAt: null,
-  }).sort({ period: -1, month: -1, payDate: -1, date: -1, createdAt: -1 });
+  }).sort({ period: -1, month: -1, payDate: -1, date: -1, createdAt: -1 }).limit(1000).lean();
 
   res.json(paychecks);
 }));
