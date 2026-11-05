@@ -22,6 +22,9 @@ const createSchema = z.object({
   totalValue: z.coerce.number({
     message: 'Total value is required and must be a valid number',
   }),
+  sourceAccount: z.enum(['Bank', 'Cash']).optional(),
+  destinationAccount: z.enum(['Bank', 'Cash', 'Prepaid']).optional(),
+  autoReinvest: z.boolean().optional(),
 }).strict();
 
 const updateSchema = z.object({
@@ -44,6 +47,9 @@ const updateSchema = z.object({
   price: z.coerce.number({ message: 'Price must be a valid number' }).optional(),
   fees: z.coerce.number({ message: 'Fees must be a valid number' }).optional(),
   totalValue: z.coerce.number({ message: 'Total value must be a valid number' }).optional(),
+  sourceAccount: z.enum(['Bank', 'Cash']).optional(),
+  destinationAccount: z.enum(['Bank', 'Cash', 'Prepaid']).optional(),
+  autoReinvest: z.boolean().optional(),
 }).strict();
 
 const paramsSchema = paramsIdSchema;

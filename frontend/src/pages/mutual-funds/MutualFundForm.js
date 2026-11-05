@@ -1,18 +1,22 @@
 // frontend/src/pages/mutual-funds/MutualFundForm.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { formatCurrency } from '../../utils/formatters';
-import { getMutualFundByCode, getAllMutualFundTrades } from '../../services/mutualFundService'; // Add these service functions
+import { getMutualFundByCode, getAllMutualFundTrades } from '../../services/mutualFundService';
+import AccountSelector from '../../components/common/AccountSelector'; // Add these service functions
 
 const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const [formData, setFormData] = useState({
-        date: new Date().toISOString().split('T')[0],
-        name: '',
-        code: '',
-        type: 'Buy',
-        units: '',
-        price: '',
-        fees: '',
-        totalValue: 0,
+        date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        name: initialData.name || '',
+        code: initialData.code || '',
+        type: initialData.type || 'Buy',
+        units: initialData.units || '',
+        price: initialData.price || '',
+        fees: initialData.fees || '',
+        totalValue: initialData.totalValue || 0,
+        sourceAccount: initialData.sourceAccount || 'Bank',
+        destinationAccount: initialData.destinationAccount || 'Bank',
+        autoReinvest: initialData.autoReinvest || false,
     });
 
     const [codeSearching, setCodeSearching] = useState(false);
@@ -69,6 +73,9 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                 price: initialData.price || '',
                 fees: initialData.fees || '',
                 totalValue: initialData.totalValue || 0,
+                sourceAccount: initialData.sourceAccount || 'Bank',
+                destinationAccount: initialData.destinationAccount || 'Bank',
+                autoReinvest: initialData.autoReinvest || false,
             });
         }
     }, [initialData, isEdit]);
@@ -171,6 +178,9 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             price: parseFloat(formData.price) || 0,
             fees: parseFloat(formData.fees) || 0,
             totalValue: parseFloat(formData.totalValue) || 0,
+            sourceAccount: formData.sourceAccount || 'Bank',
+            destinationAccount: formData.destinationAccount || 'Bank',
+            autoReinvest: Boolean(formData.autoReinvest),
         });
     };
 
@@ -313,7 +323,43 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                                 required 
                             />
                         </div>
+
+                        <div className="form-group">
+                            <AccountSelector
+                                direction="destination"
+                                value={formData.destinationAccount || 'Bank'}
+                                onChange={(val) => setFormData(prev => ({ ...prev, destinationAccount: val }))}
+                                label="Destination Account (Coupon Deposited)"
+                                disabled={Boolean(formData.autoReinvest)}
+                            />
+                        </div>
+
+                        <div className="form-group checkbox-group" style={{ margin: '1rem 0' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                <input
+                                    type="checkbox"
+                                    name="autoReinvest"
+                                    checked={Boolean(formData.autoReinvest)}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, autoReinvest: e.target.checked }))}
+                                />
+                                <span>Auto-Reinvest Coupon (Compound Units)</span>
+                            </label>
+                            <small style={{ color: '#6b7280', display: 'block', marginTop: '0.25rem' }}>
+                                When enabled, coupon proceeds are reinvested into fund units rather than deposited to your liquid accounts.
+                            </small>
+                        </div>
                     </>
+                )}
+
+                {formData.type === 'Buy' && (
+                    <div className="form-group">
+                        <AccountSelector
+                            direction="source"
+                            value={formData.sourceAccount || 'Bank'}
+                            onChange={(val) => setFormData(prev => ({ ...prev, sourceAccount: val }))}
+                            label="Source Account (Funds Withdrawn)"
+                        />
+                    </div>
                 )}
 
                 {isTrade && (

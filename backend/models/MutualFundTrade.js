@@ -54,6 +54,16 @@ const MutualFundTradeSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  linkedExpenditureId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Expenditure',
+    default: null,
+    index: true,
+  },
+  autoReinvest: {
+    type: Boolean,
+    default: false,
+  },
 }, {
   timestamps: true,
 });

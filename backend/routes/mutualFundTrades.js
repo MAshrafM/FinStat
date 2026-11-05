@@ -7,7 +7,13 @@ const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError, ForbiddenError } = require('../utils/errors');
+const { NotFoundError, ForbiddenError, BadRequestError } = require('../utils/errors');
+const {
+  createExpenditureFromMfBuy,
+  createExpenditureFromMfCoupon,
+  reverseMfTradeExpenditure,
+  syncMfTradeExpenditure,
+} = require('../utils/incomeBridge');
 const {
   createSchema,
   updateSchema,
@@ -108,6 +114,19 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
     totalValueInPiastres: toPiastres(validatedBody.totalValue),
   });
   await newTrade.save();
+  if (newTrade.type === 'Buy') {
+    await createExpenditureFromMfBuy({
+      mfTrade: newTrade,
+      sourceAccount: validatedBody.sourceAccount,
+      user: req.effectiveUserId,
+    });
+  } else if (newTrade.type === 'Coupon') {
+    await createExpenditureFromMfCoupon({
+      mfTrade: newTrade,
+      destinationAccount: validatedBody.destinationAccount,
+      user: req.effectiveUserId,
+    });
+  }
   invalidatePortfolioCache(req.effectiveUserId);
   res.status(201).json(newTrade);
 }));
@@ -212,6 +231,13 @@ router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }),
   }
 
   trade = await MutualFundTrade.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+  await syncMfTradeExpenditure({
+    mfTrade: trade,
+    updateData,
+    sourceAccount: validatedBody.sourceAccount,
+    destinationAccount: validatedBody.destinationAccount,
+    user: req.effectiveUserId,
+  });
   invalidatePortfolioCache(req.effectiveUserId);
   res.json(trade);
 }));
@@ -230,6 +256,24 @@ router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(asy
   if (trade.user.toString() !== req.effectiveUserId.toString()) {
     throw new ForbiddenError('User not authorized');
   }
+
+  if (trade.type === 'Buy') {
+    const userTrades = await MutualFundTrade.find({
+      user: req.effectiveUserId,
+      code: trade.code,
+      deletedAt: null,
+    });
+    let netUnits = 0;
+    for (const t of userTrades) {
+      if (t.type === 'Buy') netUnits += (t.units || 0);
+      else if (t.type === 'Sell') netUnits -= (t.units || 0);
+    }
+    if (netUnits < (trade.units || 0)) {
+      throw new BadRequestError('Cannot delete Buy trade: subsequent sell transactions depend on these units');
+    }
+  }
+
+  await reverseMfTradeExpenditure(trade._id, req.effectiveUserId);
   await trade.softDelete();
   invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Trade deleted successfully' });
@@ -247,6 +291,17 @@ router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandl
     throw new NotFoundError('Soft-deleted trade not found');
   }
   await trade.restore();
+  if (trade.type === 'Buy') {
+    await createExpenditureFromMfBuy({
+      mfTrade: trade,
+      user: req.effectiveUserId,
+    });
+  } else if (trade.type === 'Coupon' && trade.autoReinvest !== true) {
+    await createExpenditureFromMfCoupon({
+      mfTrade: trade,
+      user: req.effectiveUserId,
+    });
+  }
   invalidatePortfolioCache(req.effectiveUserId);
   res.json({ msg: 'Trade restored successfully', trade });
 }));
