@@ -140,6 +140,7 @@ graph LR
 | **Phase 7A** | Multi-Module Reporting & Comprehensive Export | `FEAT-003`, `GAP-006`, `AUD-TEST-DEBT-001` | 2 days | Yes (with 7B) | `[x] COMPLETE` |
 | **Phase 7A.5** | Lending Tracker (P2P Personal Loans & Receivables) | FEAT-005 (Lending) | 1 day | No | `[x] COMPLETE` |
 | **Phase 7B** | Financial Bridges & Secondary UI Hygiene | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003`, `AUD-UI-DEBT-002` | 2 days | Yes (with 7A) | `[x] COMPLETE` |
+| **Phase 7C.0** | Bridge Expansion (Bidirectional Asset Settlement) | `FEAT-002` | 1.5 days | No | `[x] COMPLETE` |
 | **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[ ] NOT STARTED` |
 | **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[ ] NOT STARTED` |
 | **Phase 8A** | Backend Service Decoupling | `AUD-ARCH-002` | 2.5 days | No | `[ ] NOT STARTED` |
@@ -1775,6 +1776,41 @@ cd d:/Projects/FinStat/frontend && npm run build
 - [x] Rebalance recommendation opens pre-filled trade ticket.
 - [x] All 14 secondary/administrative confirmation dialogs migrated to `<ConfirmModal />` with 0 remaining raw alerts.
 - [x] **Phase 7B Signed Off**: `[x] YES` | Date: `2026-11-04`
+
+---
+
+# Phase 7C.0: Bridge Expansion (Bidirectional Asset Settlement)
+
+---
+
+### Step 7C.0: [FEAT-002] Bidirectional Asset Settlement Bridge
+* **Requires User Input**: No.
+* **Target Files**:
+  * `backend/models/Expenditure.js`, `Trade.js`, `Currency.js`, `Gold.js`, `Certificate.js`, `MutualFundTrade.js`
+  * `backend/validationSchemas/tradeSchemas.js`, `currencySchemas.js`, `goldSchemas.js`, `certificateSchemas.js`, `mutualFundSchemas.js`
+  * `backend/routes/trade.js`, `currency.js`, `golds.js`, `certificates.js`, `mutualFundTrades.js`, `expenditures.js`
+  * `backend/utils/incomeBridge.js`, `backend/services/comprehensiveReportService.js`
+  * `frontend/src/components/common/AccountSelector.js`
+  * `frontend/src/pages/trades/TradeForm.js`, `currency/CurrencyForm.js`, `gold/GoldForm.js`, `certificates/CertificateForm.js`, `mutual-funds/MutualFundForm.js`, `reports/ComprehensiveReportPage.js`
+* **Actions**: Wire bidirectional cash settlements across 6 asset models (Stock Broker TopUp/Withdraw, FX Purchase, Gold Purchase, CD Purchase/Interest, Mutual Fund Buy/Coupon), consolidate delete guards via `isBridgeRecord`, and partition living expenses from capital deployments in comprehensive reporting.
+* **Definition of Done (DoD)**:
+  - [x] Settle stock broker TopUp (Bank/Cash debit) and Withdraw (Bank/Cash/Prepaid credit).
+  - [x] Settle foreign currency purchase (Bank/Cash debit at historical cost).
+  - [x] Settle gold purchase (Bank/Cash debit) while preserving liquidation credit flow.
+  - [x] Settle CD purchase (Bank/Cash debit) and periodic interest payout with `autoReinvest` toggle.
+  - [x] Settle mutual fund Buy (Bank/Cash debit) and cash coupon payout with `autoReinvest` toggle and cascade deletion guard.
+  - [x] Consolidate single and bulk delete guards via `isBridgeRecord`.
+  - [x] Partition living expenses from capital deployments in comprehensive report with zero user-entry distortion.
+  - [x] Appended entry to `CHANGELOG.md`.
+
+---
+
+### Phase 7C.0 Verification Gate
+*(Expected verification timeout: < 120s)*
+- [x] All 6 asset module buy/sell/coupon transactions automatically generate linked ledger records.
+- [x] Deletion cascades properly reverse balance impacts, and dependency guards block premature buy deletions.
+- [x] Comprehensive report strictly isolates capital deployments from living expenses.
+- [x] **Phase 7C.0 Signed Off**: `[x] YES` | Date: `2026-11-05`
 
 ---
 
