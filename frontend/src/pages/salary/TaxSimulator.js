@@ -1,7 +1,6 @@
 // frontend/src/pages/salary/TaxSimulator.js
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { simulateSalary } from '../../services/taxService';
-import { formatCurrency } from '../../utils/formatters';
 import './TaxSimulator.css';
 
 const PRESET_SALARIES = [10000, 25000, 40000, 60000, 100000, 150000];
@@ -11,14 +10,12 @@ const TaxSimulator = () => {
   const [isAnnual, setIsAnnual] = useState(false);
   const [showEmployerCost, setShowEmployerCost] = useState(false);
   const [simulation, setSimulation] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Run simulation calculation
   const runSimulation = useCallback(async (salaryAmount) => {
     if (!salaryAmount || salaryAmount <= 0) return;
     try {
-      setLoading(true);
       setError(null);
       const res = await simulateSalary({
         grossSalary: Number(salaryAmount),
@@ -27,8 +24,6 @@ const TaxSimulator = () => {
       setSimulation(res.data || res);
     } catch (err) {
       setError(err?.response?.data?.message || err.message || 'Simulation error');
-    } finally {
-      setLoading(false);
     }
   }, []);
 
