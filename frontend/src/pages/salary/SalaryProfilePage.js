@@ -1,7 +1,7 @@
 // frontend/src/pages/salary/SalaryProfilePage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHistory, FaEdit, FaUserEdit, FaPlus, FaTrash, FaCheck, FaCalculator } from 'react-icons/fa';
+import { FaHistory, FaEdit, FaUserEdit, FaPlus, FaTrash, FaCheck, FaCalculator, FaSlidersH } from 'react-icons/fa';
 import { getProfile, saveProfile } from '../../services/salaryService';
 import { getSalaryProfiles, deleteSalaryProfile, setDefaultSalaryProfile } from '../../services/salaryProfileService';
 import { formatCurrency } from '../../utils/formatters';
@@ -192,6 +192,9 @@ const SalaryProfilePage = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <Link to="/salary/simulator" className="nav-button" style={{ backgroundColor: '#0d9488' }}>
+            <FaSlidersH /> Tax Simulator
+          </Link>
           <Link to="/salary/paychecks/new" className="nav-button" style={{ backgroundColor: '#2c3e50' }}>
             <FaCalculator /> Paycheck Calculator
           </Link>

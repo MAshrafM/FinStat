@@ -31,6 +31,7 @@ const PayrollAnalyticsPage = React.lazy(() => import('./pages/analysis/PayrollAn
 
 // Social Insurance & Taxes (User & Admin)
 const PayrollRulesHub = React.lazy(() => import('./pages/salary/PayrollRulesHub'));
+const TaxSimulator = React.lazy(() => import('./pages/salary/TaxSimulator'));
 const TaxConfigPage = React.lazy(() => import('./pages/admin/TaxConfigPage'));
 const InsuranceConfigPage = React.lazy(() => import('./pages/admin/InsuranceConfigPage'));
 const BackupPage = React.lazy(() => import('./pages/admin/BackupPage'));
@@ -154,6 +155,7 @@ function App() {
 
                 {/* Social Insurance & Taxes (Canonical & Legacy Redirects) */}
                 <Route path="/salary/rules" element={<PayrollRulesHub />} />
+                <Route path="/salary/simulator" element={<TaxSimulator />} />
                 <Route path="/social-insurance" element={<Navigate to="/salary/rules?tab=insurance" replace />} />
                 <Route path="/taxes" element={<Navigate to="/salary/rules?tab=taxes" replace />} />
 

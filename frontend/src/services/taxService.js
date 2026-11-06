@@ -20,3 +20,7 @@ export const getBrackets = (yearOrOptions = {}, options = {}) => {
 export const updateBrackets = (brackets, options = {}) =>
   apiClient.put(API_URL, { brackets }, options);
 
+export const simulateSalary = (data, options = {}) =>
+  apiClient.post(`${API_URL}/simulate`, data, options);
+
+

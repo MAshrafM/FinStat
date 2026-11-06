@@ -1,6 +1,6 @@
 // frontend/src/pages/salary/PayrollRulesHub.js
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { formatCurrency } from '../../utils/formatters';
 import { getBrackets } from '../../services/taxService';
 import { getPaychecks } from '../../services/paycheckService';
@@ -258,6 +258,25 @@ const PayrollRulesHub = ({ initialTab }) => {
           >
             🛡️ Social Insurance Rules
           </button>
+          <Link
+            to="/salary/simulator"
+            style={{
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              background: '#2563EB',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            ⚡ Tax & Salary Simulator
+          </Link>
         </div>
       </div>
 
