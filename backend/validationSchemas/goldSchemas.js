@@ -2,6 +2,19 @@ const { z } = require('zod');
 const { paramsIdSchema, paginationQuerySchema, dateStringSchema, sanitizeQueryParam, optionalString } = require('./commonSchemas');
 
 const ALLOWED_GOLD_STATUS = ['hold', 'sold'];
+const ALLOWED_GOLD_STATUS_QUERY = ['hold', 'sold', 'all'];
+const ALLOWED_GOLD_SORT_FIELDS = [
+  'date',
+  'item',
+  'karat',
+  'weight',
+  'price',
+  'paid',
+  'sellingPrice',
+  'sellingDate',
+  'status',
+  'createdAt',
+];
 
 /**
  * Schema for creating a Gold holding record
@@ -112,8 +125,8 @@ const updateSchema = z.object({
  */
 const querySchema = paginationQuerySchema.extend({
   status: sanitizeQueryParam(
-    z.enum(ALLOWED_GOLD_STATUS, {
-      message: `Status must be one of: ${ALLOWED_GOLD_STATUS.join(', ')}`,
+    z.enum(ALLOWED_GOLD_STATUS_QUERY, {
+      message: `Status must be one of: ${ALLOWED_GOLD_STATUS_QUERY.join(', ')}`,
     }).optional()
   ),
   karat: sanitizeQueryParam(
@@ -121,6 +134,16 @@ const querySchema = paginationQuerySchema.extend({
   ),
   search: sanitizeQueryParam(
     z.string().trim().optional()
+  ),
+  sortBy: sanitizeQueryParam(
+    z.enum(ALLOWED_GOLD_SORT_FIELDS, {
+      message: `Sort field must be one of: ${ALLOWED_GOLD_SORT_FIELDS.join(', ')}`,
+    }).optional()
+  ),
+  sortOrder: sanitizeQueryParam(
+    z.enum(['asc', 'desc'], {
+      message: 'Sort order must be asc or desc',
+    }).optional()
   ),
 }).strict();
 

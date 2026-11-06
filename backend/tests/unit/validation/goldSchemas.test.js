@@ -86,5 +86,33 @@ describe('Gold Validation Schemas (Unit Tests)', () => {
     expect(result.success).toBe(true);
     expect(result.data.sellingPrice).toBe(3850);
   });
+
+  describe('querySchema', () => {
+    it('should validate valid query with sortBy and sortOrder', () => {
+      const query = {
+        page: '1',
+        limit: '20',
+        status: 'all',
+        sortBy: 'date',
+        sortOrder: 'desc',
+      };
+      const result = querySchema.safeParse(query);
+      expect(result.success).toBe(true);
+      expect(result.data.status).toBeUndefined(); // 'all' is sanitized to undefined
+      expect(result.data.sortBy).toBe('date');
+      expect(result.data.sortOrder).toBe('desc');
+      expect(result.data.page).toBe(1);
+    });
+
+    it('should validate query with hold and sold status', () => {
+      expect(querySchema.safeParse({ status: 'hold' }).success).toBe(true);
+      expect(querySchema.safeParse({ status: 'sold' }).success).toBe(true);
+    });
+
+    it('should reject invalid sortOrder or unrecognized query keys', () => {
+      expect(querySchema.safeParse({ sortOrder: 'random' }).success).toBe(false);
+      expect(querySchema.safeParse({ unknownKey: 'foo' }).success).toBe(false);
+    });
+  });
 });
 
