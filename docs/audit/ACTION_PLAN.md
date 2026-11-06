@@ -142,7 +142,7 @@ graph LR
 | **Phase 7B** | Financial Bridges & Secondary UI Hygiene | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003`, `AUD-UI-DEBT-002` | 2 days | Yes (with 7A) | `[x] COMPLETE` |
 | **Phase 7C.0** | Bridge Expansion (Bidirectional Asset Settlement) | `FEAT-002` | 1.5 days | No | `[x] COMPLETE` |
 | **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[x] COMPLETE` |
-| **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[ ] NOT STARTED` |
+| **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[x] COMPLETE` |
 | **Phase 8A** | Backend Service Decoupling | `AUD-ARCH-002` | 2.5 days | No | `[ ] NOT STARTED` |
 | **Phase 8B** | Frontend Architecture Decomposition | `AUD-ARCH-001` | 1.5 days | Yes (with 8C) | `[ ] NOT STARTED` |
 | **Phase 8C** | Enterprise Features | `FEAT-009`, `FEAT-010` | 2 days | Yes (with 8B) | `[ ] NOT STARTED` |
@@ -1874,8 +1874,8 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 3 files.
 * **Actions**: Plot net worth converted to 24K gold grams and USD; chart historical Central Bank of Egypt exchange rate fluctuations.
 * **Definition of Done (DoD)**:
-  - [ ] Chart displays net worth purchasing power in physical gold grams over time.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Chart displays net worth purchasing power in physical gold grams over time.
+  - [x] Appended entry to CHANGELOG.md.
 
 ---
 
@@ -1889,16 +1889,16 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 3 files.
 * **Actions**: Sandbox slider evaluating Law 175/2023 gross-to-net salary, insurance caps, and bracket steps in real time without persisting records.
 * **Definition of Done (DoD)**:
-  - [ ] Real-time gross salary slider models exact monthly net pay and tax deductions instantly.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Real-time gross salary slider models exact monthly net pay and tax deductions instantly.
+  - [x] Appended entry to CHANGELOG.md.
 
 ---
 
 ### Phase 7D Verification Gate
 *(Expected verification timeout: < 120s)*
-- [ ] Gold purchasing power analytics plot correctly over historical timeline.
-- [ ] Tax sandbox slider models Law 175/2023 in real time.
-- [ ] **Phase 7D Signed Off**: `[ ] YES` | Date: `__________`
+- [x] Gold purchasing power analytics plot correctly over historical timeline.
+- [x] Tax sandbox slider models Law 175/2023 in real time.
+- [x] **Phase 7D Signed Off**: [x] YES | Date: 2026-11-06
 
 ---
 

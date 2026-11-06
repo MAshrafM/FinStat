@@ -236,3 +236,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Full 25-suite green pass across 314 tests (64 new + 250 baseline, 100% green in-band with zero open handles).
   - Updated `CHANGELOG.md` and `docs/audit/ACTION_PLAN.md`.
   - Authored comprehensive walkthrough artifact `phase_7c_walkthrough.md`.
+### Added - Phase 7D: Analytics & Simulation (Purchasing Power & Tax Modeler)
+- Step 7D.1a: [FEAT-007, GAP-014] Multi-Currency Purchasing Power & Gold Analytics Backend:
+  - Created ackend/services/fxService.js with calculatePurchasingPower(userId, options) computing portfolio net worth in nominal EGP, 24K physical gold grams, and USD.
+  - Implemented 90-day chronological timeline using historical gold prices and CIB foreign exchange rates with live rate fallbacks.
+  - Implemented mark-to-market valuation for foreign currency cash and bank holdings (GAP-014).
+  - Mounted GET /api/golds/purchasing-power in ackend/routes/golds.js (viewer-accessible, no admin guard).
+  - Backed by integration test suite ackend/tests/integration/purchasingPowerApi.test.js (12/12 passed).
+- Step 7D.1b: [FEAT-007, GAP-014] Purchasing Power Chart Frontend & Navigation Shortcuts:
+  - Authored rontend/src/services/goldService.js getPurchasingPower client method.
+  - Created rontend/src/pages/analytics/PurchasingPowerChart.js and PurchasingPowerChart.css featuring an interactive Line chart with single Y-axis metric toggle ([Gold Grams (24K)] | [USD ($)] | [Nominal EGP]), timeframe selectors (30D, 90D, 1Y, ALL), KPI summary cards, and mark-to-market foreign currency holdings table.
+  - Mounted route /analytics/purchasing-power in rontend/src/App.js.
+  - Added navigation shortcuts in rontend/src/pages/gold/GoldLogPage.js and rontend/src/pages/DashboardSummary.js.
+  - Backed by unit test suite rontend/src/pages/analytics/__tests__/PurchasingPowerChart.test.js (11/11 passed).
+- Step 7D.2a: [FEAT-008] Egyptian Statutory Tax & Salary Modeler Backend:
+  - Authored Zod schema simulateSalarySchema in ackend/validationSchemas/taxSchemas.js validating gross salary and statutory options.
+  - Created pure calculation engine simulateSalaryScenario in ackend/services/taxSimulationService.js evaluating Law 175/2023 progressive tax brackets across all 7 tiers, Law 148/2019 Social Insurance employee (11%) and employer (18.75%) contributions with statutory cap escalation, personal exemption deduction, and Law 4/2021 Martyrs\' Families Fund (0.05%) under a strict zero-persistence invariant.
+  - Mounted POST /api/tax-brackets/simulate in ackend/routes/taxBrackets.js with authentication and Zod schema validation (accessible to viewers).
+  - Backed by integration test suite ackend/tests/integration/taxSimulationApi.test.js (13/13 passed, verifying zero DB mutations via spies).
+- Step 7D.2b: [FEAT-008] Interactive Tax & Salary Simulator Frontend:
+  - Authored rontend/src/services/taxService.js simulateSalary client method.
+  - Created rontend/src/pages/salary/TaxSimulator.js and TaxSimulator.css with real-time range slider (3k–200k EGP), numeric salary input, quick preset pills (10k, 25k, 40k, 60k, 100k, 150k), monthly/annual toggle, KPI summary cards, progressive bracket tier breakdown table, statutory deductions waterfall table, and expandable employer total cost view.
+  - Mounted route /salary/simulator in rontend/src/App.js.
+  - Added navigation shortcuts in rontend/src/pages/salary/PayrollRulesHub.js and rontend/src/pages/salary/SalaryProfilePage.js.
+  - Backed by unit test suite rontend/src/pages/salary/__tests__/TaxSimulator.test.js (11/11 passed).
+- Step 7D.3: Verification Gate & Phase 7D Sign-Off:
+  - Full 29-suite green regression pass across 361 tests (25 new backend + 22 new frontend + 238 baseline backend + 76 baseline frontend, 100% green in-band with zero open handles).
+  - Updated CHANGELOG.md and docs/audit/ACTION_PLAN.md.
