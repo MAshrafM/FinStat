@@ -2,12 +2,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getTrades, deleteTrade } from '../../services/tradeService';
+import apiClient from '../../services/apiClient';
+import { BASE_API_URL } from '../../config/api';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { FaEdit, FaTrash, FaPlus, FaBolt } from 'react-icons/fa';
 import PaginationControls from '../../components/PaginationControls';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import DebouncedSearchInput from '../../components/common/DebouncedSearchInput';
+import UndoToast from '../../components/common/UndoToast';
 import { useToast } from '../../context/ToastContext';
 import '../../components/Table.css';
 import './Trades.css';
@@ -22,6 +25,7 @@ const TradeLogPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [deletingTradeId, setDeletingTradeId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deletedUndoItem, setDeletedUndoItem] = useState(null);
 
   const loadTrades = useCallback((page, broker, search) => {
     setIsLoading(true);
@@ -55,17 +59,33 @@ const TradeLogPage = () => {
 
   const handleConfirmDelete = async () => {
     if (!deletingTradeId) return;
+    const targetId = deletingTradeId;
+    const targetTrade = trades.find((t) => t._id === targetId);
     setIsDeleting(true);
     try {
-      await deleteTrade(deletingTradeId);
-      showToast('Trade deleted successfully', 'success');
+      await deleteTrade(targetId);
       setDeletingTradeId(null);
       loadTrades(currentPage, brokerFilter, searchTerm);
+      setDeletedUndoItem({
+        id: targetId,
+        message: targetTrade ? `Deleted trade "${targetTrade.stockCode || targetTrade.type}"` : 'Trade deleted',
+      });
     } catch (err) {
       console.error("Failed to delete trade:", err);
       showToast(err.response?.data?.message || 'Failed to delete trade.', 'error');
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleUndoDelete = async () => {
+    if (!deletedUndoItem) return;
+    try {
+      await apiClient.post(`${BASE_API_URL}/trades/${deletedUndoItem.id}/restore`);
+      showToast('Trade restored successfully', 'success');
+      loadTrades(currentPage, brokerFilter, searchTerm);
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to restore trade.', 'error');
     }
   };
 
@@ -203,6 +223,14 @@ const TradeLogPage = () => {
         isLoading={isDeleting}
         onConfirm={handleConfirmDelete}
         onCancel={() => !isDeleting && setDeletingTradeId(null)}
+      />
+
+      <UndoToast
+        isOpen={Boolean(deletedUndoItem)}
+        message={deletedUndoItem?.message || 'Trade deleted'}
+        duration={10}
+        onUndo={handleUndoDelete}
+        onDismiss={() => setDeletedUndoItem(null)}
       />
     </div>
   );

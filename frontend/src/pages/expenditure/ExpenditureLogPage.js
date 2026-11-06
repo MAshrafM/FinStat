@@ -8,6 +8,9 @@ import {
   bulkUpdateCategory,
   bulkDeleteExpenditures,
 } from '../../services/expenditureService';
+import apiClient from '../../services/apiClient';
+import { BASE_API_URL } from '../../config/api';
+import UndoToast from '../../components/common/UndoToast';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { FaPencilAlt, FaTrash, FaUniversity, FaMoneyBillWave, FaCreditCard, FaWallet, FaPlus } from 'react-icons/fa';
 import '../../components/Table.css'; // Reuse table styles
@@ -39,6 +42,7 @@ const ExpenditureLogPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deletedUndoItem, setDeletedUndoItem] = useState(null);
   const [latestHolding, setLatestHolding] = useState({ bank: 0, cash: 0, prepaid: 0 });
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [targetCategory, setTargetCategory] = useState(EXPENDITURE_CATEGORIES[0]?.name || 'Groceries');
@@ -164,18 +168,35 @@ const ExpenditureLogPage = () => {
 
   const handleConfirmDelete = async () => {
     if (!deletingId) return;
+    const targetId = deletingId;
+    const targetItem = expenditures.find((e) => e._id === targetId);
     setIsDeleting(true);
     try {
-      await deleteExpenditure(deletingId);
-      showToast('Expenditure deleted successfully', 'success');
+      await deleteExpenditure(targetId);
       setDeletingId(null);
       loadExpenditures(currentPage, selectedType);
       loadLatestHolding();
+      setDeletedUndoItem({
+        id: targetId,
+        message: targetItem ? `Deleted "${targetItem.description || targetItem.categories?.[0] || 'Expenditure'}"` : 'Expenditure deleted',
+      });
     } catch (err) {
       console.error('Failed to delete expenditure:', err);
       showToast(err.response?.data?.message || 'Failed to delete expenditure', 'error');
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleUndoDelete = async () => {
+    if (!deletedUndoItem) return;
+    try {
+      await apiClient.post(`${BASE_API_URL}/expenditures/${deletedUndoItem.id}/restore`);
+      showToast('Expenditure restored successfully', 'success');
+      loadExpenditures(currentPage, selectedType);
+      loadLatestHolding();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to restore expenditure', 'error');
     }
   };
 
@@ -699,6 +720,14 @@ const ExpenditureLogPage = () => {
         isLoading={isBulkDeleting}
         onConfirm={handleConfirmBulkDelete}
         onCancel={() => !isBulkDeleting && setShowBulkDeleteModal(false)}
+      />
+
+      <UndoToast
+        isOpen={Boolean(deletedUndoItem)}
+        message={deletedUndoItem?.message || 'Expenditure deleted'}
+        duration={10}
+        onUndo={handleUndoDelete}
+        onDismiss={() => setDeletedUndoItem(null)}
       />
     </div>
   );
