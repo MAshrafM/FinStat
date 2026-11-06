@@ -42,6 +42,7 @@ const EditExpenditurePage = React.lazy(() => import('./pages/expenditure/EditExp
 const ExpenditureAnalysisPage = React.lazy(() => import('./pages/expenditure/ExpenditureAnalysisPage'));
 const RulesPage = React.lazy(() => import('./pages/expenditure/RulesPage'));
 const RecurringSuggestionsPage = React.lazy(() => import('./pages/expenditure/RecurringSuggestionsPage'));
+const RecurringBills = React.lazy(() => import('./pages/expenditure/RecurringBills'));
 const BudgetsPage = React.lazy(() => import('./pages/expenditure/BudgetsPage'));
 
 // Trades
@@ -160,6 +161,7 @@ function App() {
                 <Route path="/expenditures/rules" element={<RulesPage />} />
                 <Route path="/expenditures/budgets" element={<BudgetsPage />} />
                 <Route path="/expenditures/recurring" element={<RecurringSuggestionsPage />} />
+                <Route path="/expenditures/bills" element={<RecurringBills />} />
                 <Route path="/expenditure-analysis" element={<ExpenditureAnalysisPage />} />
 
                 {/* Investment Asset Classes (Canonical & Legacy Redirects) */}

@@ -1,16 +1,19 @@
 // frontend/src/pages/Dashboard.js
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaRedo, FaPlus, FaArrowRight } from 'react-icons/fa';
+import { FaRedo, FaPlus, FaArrowRight, FaCalendarCheck } from 'react-icons/fa';
 import DashboardSummary from './DashboardSummary';
 import AppLauncher from '../components/dashboard/AppLauncher';
 import { getRecurringSuggestions } from '../services/recurringSuggestionService';
+import { getUpcomingBills } from '../services/recurringBillService';
 import { useCanModify } from '../context/AuthContext';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const { canModify } = useCanModify();
   const [pendingRecurCount, setPendingRecurCount] = useState(0);
+  const [upcomingBillsCount, setUpcomingBillsCount] = useState(0);
+  const [upcomingBillsTotal, setUpcomingBillsTotal] = useState(0);
   const [launcher, setLauncher] = useState({ open: false, tab: 'create' });
 
   useEffect(() => {
@@ -19,6 +22,16 @@ const Dashboard = () => {
         setPendingRecurCount(res?.total || 0);
       })
       .catch(() => setPendingRecurCount(0));
+
+    getUpcomingBills({ days: 3 })
+      .then((res) => {
+        setUpcomingBillsCount(res?.upcomingCount || 0);
+        setUpcomingBillsTotal(res?.totalDue || 0);
+      })
+      .catch(() => {
+        setUpcomingBillsCount(0);
+        setUpcomingBillsTotal(0);
+      });
   }, []);
 
   const openLauncher = useCallback((tab = 'create') => {
@@ -58,6 +71,25 @@ const Dashboard = () => {
             </div>
             <Link to="/expenditures/recurring" className="dash-alert-action">
               Review now <FaArrowRight aria-hidden="true" />
+            </Link>
+          </div>
+        )}
+
+        {upcomingBillsCount > 0 && (
+          <div className="dash-alert dash-alert-bills" role="status" data-testid="upcoming-bills-banner">
+            <div className="dash-alert-main">
+              <span className="dash-alert-icon">
+                <FaCalendarCheck aria-hidden="true" />
+              </span>
+              <div>
+                <strong>
+                  {upcomingBillsCount} upcoming bill{upcomingBillsCount === 1 ? '' : 's'} due soon ({upcomingBillsTotal.toLocaleString()} EGP)
+                </strong>
+                <p>Review bills due in the next 3 days and record payments.</p>
+              </div>
+            </div>
+            <Link to="/expenditures/bills" className="dash-alert-action">
+              Pay bills <FaArrowRight aria-hidden="true" />
             </Link>
           </div>
         )}
