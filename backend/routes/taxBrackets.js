@@ -7,7 +7,8 @@ const authorize = require('../middleware/authorize');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
 const { ForbiddenError } = require('../utils/errors');
-const { updateSchema } = require('../validationSchemas/taxSchemas');
+const { updateSchema, simulateSalarySchema } = require('../validationSchemas/taxSchemas');
+const taxSimulationService = require('../services/taxSimulationService');
 const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
 
@@ -58,6 +59,14 @@ router.get('/', auth, asyncHandler(async (req, res) => {
   }
 
   res.json(taxInfo);
+}));
+
+// @route   POST api/tax-brackets/simulate
+// @desc    Simulate gross-to-net salary, progressive taxes, and deductions (zero DB persistence)
+router.post('/simulate', auth, validate({ body: simulateSalarySchema }), asyncHandler(async (req, res) => {
+  const validatedBody = getValidated(req, 'body');
+  const result = await taxSimulationService.simulateSalaryScenario(validatedBody);
+  res.json(result);
 }));
 
 // @route   PUT api/tax-brackets

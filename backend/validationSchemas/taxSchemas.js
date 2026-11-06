@@ -18,9 +18,18 @@ const updateSchema = z.object({
     .min(1, 'At least one tax bracket level is required'),
 }).strict();
 
+const simulateSalarySchema = z.object({
+  grossSalary: z.number({ required_error: 'Gross salary is required' }).positive('Gross salary must be greater than zero'),
+  year: z.number().int().optional(),
+  customPersonalExemption: z.number().min(0).max(1000000).optional(),
+  includeInsurance: z.boolean().optional(),
+  includeMartyrsFund: z.boolean().optional(),
+}).strict();
+
 module.exports = {
   createSchema: updateSchema,
   updateSchema,
+  simulateSalarySchema,
   paramsSchema: undefined,
   querySchema: undefined,
 };
