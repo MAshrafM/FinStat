@@ -13,7 +13,6 @@ import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import ProtectedAction from '../../components/common/ProtectedAction';
-import { useCanModify } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import './RecurringBills.css';
 
@@ -43,7 +42,6 @@ const INITIAL_FORM = {
 };
 
 const RecurringBills = () => {
-  const { canModify } = useCanModify();
   const { showToast, addToast } = useToast();
   const notify = showToast || addToast;
 
