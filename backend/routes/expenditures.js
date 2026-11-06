@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Expenditure = require('../models/Expenditure');
+const RecurringBill = require('../models/RecurringBill');
 const CategorizationRule = require('../models/CategorizationRule');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
@@ -14,6 +15,10 @@ const {
   querySchema,
   bulkCategorySchema,
   bulkDeleteSchema,
+  createRecurringBillSchema,
+  updateRecurringBillSchema,
+  payRecurringBillSchema,
+  queryUpcomingBillsSchema,
 } = require('../validationSchemas/expenditureSchemas');
 const { getValidated } = require('../utils/requestHelpers');
 const {
@@ -314,6 +319,223 @@ router.post('/bulk-delete', auth, validate({ body: bulkDeleteSchema }), asyncHan
     success: true,
     deletedCount,
   });
+}));
+
+// ==========================================
+// RECURRING BILLS & SCHEDULER [FEAT-005, GAP-009]
+// ==========================================
+
+const parseToMiddayUtc = (dateInput) => {
+  const d = new Date(dateInput);
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 12, 0, 0, 0));
+};
+
+function advanceNextDueDate(currentDate, frequency, dueDay) {
+  const d = new Date(currentDate);
+  if (frequency === 'weekly') {
+    return new Date(d.getTime() + 7 * 24 * 60 * 60 * 1000);
+  }
+
+  let targetYear = d.getUTCFullYear();
+  let targetMonth = d.getUTCMonth();
+
+  if (frequency === 'monthly') targetMonth += 1;
+  else if (frequency === 'quarterly') targetMonth += 3;
+  else if (frequency === 'yearly') targetYear += 1;
+
+  // Normalize month overflow
+  const normalizedDate = new Date(Date.UTC(targetYear, targetMonth, 1));
+  const year = normalizedDate.getUTCFullYear();
+  const month = normalizedDate.getUTCMonth();
+
+  // Days in target month: day 0 of following month
+  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const clampedDay = Math.min(dueDay, daysInMonth);
+
+  return new Date(Date.UTC(year, month, clampedDay, 12, 0, 0, 0));
+}
+
+// @route   GET api/expenditures/bills/upcoming
+// @desc    Get upcoming bills due within N days (default: 3 days)
+router.get('/bills/upcoming', auth, validate({ query: queryUpcomingBillsSchema }), asyncHandler(async (req, res) => {
+  const { days = 3 } = getValidated(req, 'query');
+  const now = new Date();
+  const threshold = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+
+  const bills = await RecurringBill.find({
+    user: req.effectiveUserId,
+    deletedAt: null,
+    isActive: true,
+    nextDueDate: { $lte: threshold },
+  }).sort({ nextDueDate: 1, _id: 1 }).lean();
+
+  const totalDue = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
+  res.json({
+    bills,
+    upcomingCount: bills.length,
+    totalDue,
+  });
+}));
+
+// @route   GET api/expenditures/bills
+// @desc    List all recurring bills for current user
+router.get('/bills', auth, asyncHandler(async (req, res) => {
+  const query = { user: req.effectiveUserId, deletedAt: null };
+  if (req.query.isActive !== undefined) {
+    query.isActive = req.query.isActive === 'true';
+  }
+  const bills = await RecurringBill.find(query).sort({ nextDueDate: 1, _id: 1 }).lean();
+  res.json({ bills });
+}));
+
+// @route   POST api/expenditures/bills
+// @desc    Create a new recurring bill schedule
+router.post('/bills', auth, validate({ body: createRecurringBillSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const body = getValidated(req, 'body');
+  const amountInPiastres = Math.round(body.amount * 100);
+  const nextDueDate = parseToMiddayUtc(body.nextDueDate);
+
+  const bill = await RecurringBill.create({
+    ...body,
+    user: req.effectiveUserId,
+    amountInPiastres,
+    nextDueDate,
+  });
+
+  res.status(201).json({ msg: 'Recurring bill created successfully', bill });
+}));
+
+// @route   GET api/expenditures/bills/:id
+// @desc    Get single recurring bill by ID
+router.get('/bills/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  const { id } = getValidated(req, 'params');
+  const bill = await RecurringBill.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
+  if (!bill) {
+    throw new NotFoundError('Recurring bill not found');
+  }
+  res.json({ bill });
+}));
+
+// @route   PUT api/expenditures/bills/:id
+// @desc    Update recurring bill configuration
+router.put('/bills/:id', auth, validate({ params: paramsSchema, body: updateRecurringBillSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const body = getValidated(req, 'body');
+
+  const bill = await RecurringBill.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
+  if (!bill) {
+    throw new NotFoundError('Recurring bill not found');
+  }
+
+  if (body.amount !== undefined) {
+    body.amountInPiastres = Math.round(body.amount * 100);
+  }
+  if (body.nextDueDate !== undefined) {
+    body.nextDueDate = parseToMiddayUtc(body.nextDueDate);
+  }
+
+  Object.assign(bill, body);
+  await bill.save();
+
+  res.json({ msg: 'Recurring bill updated successfully', bill });
+}));
+
+// @route   DELETE api/expenditures/bills/:id
+// @desc    Soft delete a recurring bill schedule
+router.delete('/bills/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const bill = await RecurringBill.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
+  if (!bill) {
+    throw new NotFoundError('Recurring bill not found');
+  }
+  await bill.softDelete();
+  res.json({ msg: 'Recurring bill soft-deleted successfully' });
+}));
+
+// @route   POST api/expenditures/bills/:id/pay
+// @desc    Atomically pay a recurring bill, create expenditure, propagate balance, and advance schedule
+router.post('/bills/:id/pay', auth, validate({ params: paramsSchema, body: payRecurringBillSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const body = getValidated(req, 'body') || {};
+
+  const bill = await RecurringBill.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
+  if (!bill) {
+    throw new NotFoundError('Recurring bill not found');
+  }
+
+  const paymentDate = body.paymentDate ? parseToMiddayUtc(body.paymentDate) : parseToMiddayUtc(new Date());
+  const paymentMethod = body.paymentMethod || bill.paymentMethod || 'Bank';
+  const opKey = `log${paymentMethod}Op`;
+
+  const result = await executeInTransaction(async (session) => {
+    const expenditure = new Expenditure({
+      user: req.effectiveUserId,
+      date: paymentDate,
+      transactionValue: bill.amount,
+      transactionValueInPiastres: bill.amountInPiastres,
+      transactionType: 'W', // Explicit 'W' (living expense) (🔴-2)
+      autoGenerated: false, // User-confirmed, NOT a bridge record (🔴-2)
+      bridgeDirection: null,
+      linkedRecurringBillId: bill._id,
+      categories: [bill.category], // Array matching Expenditure schema (🟢-4)
+      description: `Bill Payment: ${bill.name}`,
+      paymentMethod,
+      [opKey]: '-',
+      isRecurring: true,
+    });
+
+    const prevBalances = await calculatePreviousBalance(req.effectiveUserId, expenditure.date, null, session);
+    const deltas = calculateSignedDeltas(expenditure);
+
+    const updatedRunningBalances = {
+      bank: prevBalances.bank,
+      cash: prevBalances.cash,
+      prepaid: prevBalances.prepaid,
+    };
+    const updatedRunningBalancesInPiastres = {
+      bank: prevBalances.bankInPiastres,
+      cash: prevBalances.cashInPiastres,
+      prepaid: prevBalances.prepaidInPiastres,
+    };
+
+    for (const { account, delta, deltaInPiastres } of deltas) {
+      updatedRunningBalances[account] = (updatedRunningBalances[account] || 0) + delta;
+      updatedRunningBalancesInPiastres[account] = (updatedRunningBalancesInPiastres[account] || 0) + deltaInPiastres;
+    }
+
+    expenditure.runningBalances = updatedRunningBalances;
+    expenditure.runningBalancesInPiastres = updatedRunningBalancesInPiastres;
+    expenditure.bank = updatedRunningBalances.bank;
+    expenditure.bankInPiastres = updatedRunningBalancesInPiastres.bank;
+    expenditure.cash = updatedRunningBalances.cash;
+    expenditure.cashInPiastres = updatedRunningBalancesInPiastres.cash;
+    expenditure.prepaid = updatedRunningBalances.prepaid;
+    expenditure.prepaidInPiastres = updatedRunningBalancesInPiastres.prepaid;
+
+    await expenditure.save({ session });
+    await propagateBalanceChanges(req.effectiveUserId, deltas, expenditure.date, expenditure._id, session);
+
+    bill.lastPaidDate = expenditure.date;
+    bill.lastExpenditureId = expenditure._id;
+    bill.nextDueDate = advanceNextDueDate(bill.nextDueDate, bill.frequency, bill.dueDay);
+    await bill.save({ session });
+
+    return { expenditure, bill };
+  });
+
+  res.json({ msg: 'Bill paid successfully', expenditure: result.expenditure, bill: result.bill });
 }));
 
 // @route   GET api/expenditures/:id

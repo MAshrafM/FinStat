@@ -258,6 +258,81 @@ const bulkDeleteSchema = z
   })
   .strict();
 
+/**
+ * Recurring Bill Schemas [FEAT-005, GAP-009]
+ */
+const ALLOWED_BILL_FREQUENCIES = ['weekly', 'monthly', 'quarterly', 'yearly'];
+const ALLOWED_BILL_PAYMENT_METHODS = ['Bank', 'Cash', 'Prepaid'];
+
+const createRecurringBillSchema = z
+  .object({
+    name: z
+      .string({ message: 'Bill name is required' })
+      .trim()
+      .min(1, 'Bill name cannot be empty')
+      .max(100, 'Bill name cannot exceed 100 characters'),
+    category: z
+      .string({ message: 'Category is required' })
+      .trim()
+      .min(1, 'Category cannot be empty')
+      .max(100, 'Category cannot exceed 100 characters'),
+    amount: z
+      .number({ message: 'Amount is required and must be a number' })
+      .positive('Amount must be greater than 0'),
+    frequency: z.enum(ALLOWED_BILL_FREQUENCIES, {
+      message: 'Frequency must be weekly, monthly, quarterly, or yearly',
+    }).default('monthly'),
+    dueDay: z
+      .number({ message: 'dueDay must be a number' })
+      .int('dueDay must be an integer')
+      .min(1, 'dueDay must be at least 1')
+      .max(31, 'dueDay cannot exceed 31'),
+    nextDueDate: dateStringSchema,
+    paymentMethod: z.enum(ALLOWED_BILL_PAYMENT_METHODS, {
+      message: 'Payment method must be Bank, Cash, or Prepaid',
+    }).default('Bank'),
+    reminderDaysBefore: z
+      .number()
+      .int()
+      .min(1)
+      .max(30)
+      .default(3)
+      .optional(),
+    isActive: z.boolean().default(true).optional(),
+    notes: optionalString('Notes'),
+  })
+  .strict();
+
+const updateRecurringBillSchema = z
+  .object({
+    name: z.string().trim().min(1).max(100).optional(),
+    category: z.string().trim().min(1).max(100).optional(),
+    amount: z.number().positive().optional(),
+    frequency: z.enum(ALLOWED_BILL_FREQUENCIES).optional(),
+    dueDay: z.number().int().min(1).max(31).optional(),
+    nextDueDate: dateStringSchema.optional(),
+    paymentMethod: z.enum(ALLOWED_BILL_PAYMENT_METHODS).optional(),
+    reminderDaysBefore: z.number().int().min(1).max(30).optional(),
+    isActive: z.boolean().optional(),
+    notes: optionalString('Notes'),
+  })
+  .strict();
+
+const payRecurringBillSchema = z
+  .object({
+    paymentDate: dateStringSchema.optional(),
+    paymentMethod: z.enum(ALLOWED_BILL_PAYMENT_METHODS).optional(),
+  })
+  .strict()
+  .optional()
+  .default({});
+
+const queryUpcomingBillsSchema = z
+  .object({
+    days: z.coerce.number().int().min(1).max(60).default(3).optional(),
+  })
+  .strip();
+
 module.exports = {
   createSchema,
   updateSchema,
@@ -266,4 +341,8 @@ module.exports = {
   splitItemSchema,
   bulkCategorySchema,
   bulkDeleteSchema,
+  createRecurringBillSchema,
+  updateRecurringBillSchema,
+  payRecurringBillSchema,
+  queryUpcomingBillsSchema,
 };
