@@ -237,6 +237,28 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
   res.status(201).json(newTrade);
 }));
 
+// @route   GET api/trades/deleted
+// @desc    Get soft-deleted trades [FEAT-006, GAP-004]
+router.get('/deleted', auth, asyncHandler(async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 25));
+  const skip = (page - 1) * limit;
+
+  const query = { user: req.effectiveUserId, deletedAt: { $ne: null } };
+  const total = await Trade.countDocuments(query);
+  const trades = await Trade.find(query)
+    .sort({ deletedAt: -1, _id: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  res.json({
+    data: trades,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  });
+}));
+
 // @route   GET api/trades/:id
 // @desc    Get a single trade by ID
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
