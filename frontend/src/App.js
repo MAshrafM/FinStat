@@ -89,6 +89,7 @@ const ReconciliationPage = React.lazy(() => import('./pages/credit-cards/Reconci
 // Security & Access Control
 const SecuritySettingsPage = React.lazy(() => import('./pages/security/SecuritySettingsPage'));
 const SettingsPage = React.lazy(() => import('./pages/profile/SettingsPage'));
+const RecycleBin = React.lazy(() => import('./pages/profile/RecycleBin'));
 
 // Advanced Portfolio & Corporate Actions
 const CorporateActionWizard = React.lazy(() => import('./pages/trades/CorporateActionWizard'));
@@ -121,6 +122,7 @@ function App() {
                 <Route path="/summary" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/settings/recycle-bin" element={<RecycleBin />} />
                 <Route path="/security" element={<SecuritySettingsPage />} />
                 <Route path="/corporate-actions" element={<CorporateActionsList />} />
                 <Route path="/corporate-actions/wizard" element={<CorporateActionWizard />} />

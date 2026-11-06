@@ -1,6 +1,6 @@
 // frontend/src/pages/profile/SettingsPage.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { Sliders, Save, CheckCircle, HelpCircle, ArrowLeft } from 'lucide-react';
+import { Sliders, Save, CheckCircle, HelpCircle, ArrowLeft, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getUserProfile, updateUserProfile } from '../../services/userService';
 import { useToast } from '../../context/ToastContext';
@@ -156,6 +156,23 @@ const SettingsPage = () => {
           </button>
         </div>
       </form>
+
+      <div className="settings-card" style={{ marginTop: '2rem' }}>
+        <div className="settings-section">
+          <div className="section-title">
+            <Trash2 size={20} className="section-icon" />
+            <h2>Data Safety & Soft-Delete Recycle Bin</h2>
+          </div>
+          <p className="section-description">
+            Recover soft-deleted expenditures and investment trades with automated ledger balance re-propagation and bridge restoration.
+          </p>
+          <div style={{ marginTop: '1.25rem' }}>
+            <Link to="/settings/recycle-bin" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }} data-testid="link-recycle-bin">
+              <Trash2 size={16} /> Open Recycle Bin
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
