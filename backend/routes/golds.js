@@ -17,6 +17,7 @@ const {
 const { getValidated } = require('../utils/requestHelpers');
 const { toPiastres } = require('../utils/currencyUtils');
 const marketPriceService = require('../utils/marketPriceService');
+const fxService = require('../services/fxService');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
 const {
   createExpenditureFromGoldSale,
@@ -143,6 +144,18 @@ router.get('/price', auth, asyncHandler(async (req, res) => {
   const forceRefresh = req.query.refresh === 'true';
   const result = await marketPriceService.getGoldPrices({ forceRefresh });
   res.json(result.data);
+}));
+
+// @route   GET api/golds/purchasing-power
+// @desc    Get portfolio net worth purchasing power in 24K gold grams and USD, timeline & forex positions
+router.get('/purchasing-power', auth, asyncHandler(async (req, res) => {
+  const forceRefresh = req.query.refresh === 'true';
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : undefined;
+  const result = await fxService.calculatePurchasingPower(req.effectiveUserId, { forceRefresh, limit });
+  res.json({
+    success: true,
+    ...result,
+  });
 }));
 
 // @route   POST api/golds
