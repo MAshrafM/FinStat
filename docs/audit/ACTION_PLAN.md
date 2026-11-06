@@ -141,7 +141,7 @@ graph LR
 | **Phase 7A.5** | Lending Tracker (P2P Personal Loans & Receivables) | FEAT-005 (Lending) | 1 day | No | `[x] COMPLETE` |
 | **Phase 7B** | Financial Bridges & Secondary UI Hygiene | `FEAT-002`, `FEAT-004`, `GAP-001`, `GAP-003`, `AUD-UI-DEBT-002` | 2 days | Yes (with 7A) | `[x] COMPLETE` |
 | **Phase 7C.0** | Bridge Expansion (Bidirectional Asset Settlement) | `FEAT-002` | 1.5 days | No | `[x] COMPLETE` |
-| **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[ ] NOT STARTED` |
+| **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[x] COMPLETE` |
 | **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[ ] NOT STARTED` |
 | **Phase 8A** | Backend Service Decoupling | `AUD-ARCH-002` | 2.5 days | No | `[ ] NOT STARTED` |
 | **Phase 8B** | Frontend Architecture Decomposition | `AUD-ARCH-001` | 1.5 days | Yes (with 8C) | `[ ] NOT STARTED` |
@@ -1846,17 +1846,17 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 4 files.
 * **Actions**: Add `isDeleted: true` soft-delete flag; show 10-second Undo snackbar; provide Recycle Bin view with single-click restore.
 * **Definition of Done (DoD)**:
-  - [ ] Deleting transaction shows 10-second Undo toast; clicking Undo cancels deletion.
-  - [ ] Soft-deleted items restorable from Recycle Bin.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Deleting transaction shows 10-second Undo toast; clicking Undo cancels deletion.
+  - [x] Soft-deleted items restorable from Recycle Bin.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
 ### Phase 7C Verification Gate
 *(Expected verification timeout: < 120s)*
-- [ ] Bill scheduler alerts on upcoming due dates.
-- [ ] Deleting an expense triggers 10s undo banner and routes to Recycle Bin.
-- [ ] **Phase 7C Signed Off**: `[ ] YES` | Date: `__________`
+- [x] Bill scheduler alerts on upcoming due dates.
+- [x] Deleting an expense triggers 10s undo banner and routes to Recycle Bin.
+- [x] **Phase 7C Signed Off**: `[x] YES` | Date: `2026-11-06`
 
 ---
 
