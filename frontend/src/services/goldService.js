@@ -30,3 +30,7 @@ export const updateGoldLog = (id, data, options = {}) =>
 export const deleteGoldLog = (id, options = {}) =>
   apiClient.delete(`${API_URL}/${id}`, options);
 
+export const getPurchasingPower = (options = {}) =>
+  apiClient.get(`${API_URL}/purchasing-power`, options);
+
+

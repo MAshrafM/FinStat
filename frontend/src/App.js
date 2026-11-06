@@ -62,6 +62,7 @@ const GoldLogPage = React.lazy(() => import('./pages/gold/GoldLogPage'));
 const AddGoldPage = React.lazy(() => import('./pages/gold/AddGoldPage'));
 const EditGoldPage = React.lazy(() => import('./pages/gold/EditGoldPage'));
 const GoldSummaryPage = React.lazy(() => import('./pages/gold/GoldSummaryPage'));
+const PurchasingPowerChart = React.lazy(() => import('./pages/analytics/PurchasingPowerChart'));
 
 // Certificates
 const CertificateLogPage = React.lazy(() => import('./pages/certificates/CertificateLogPage'));
@@ -180,6 +181,7 @@ function App() {
                 <Route path="/gold-wallet/new" element={<AddGoldPage />} />
                 <Route path="/gold-wallet/edit/:id" element={<EditGoldPage />} />
                 <Route path="/gold-wallet/summary" element={<GoldSummaryPage />} />
+                <Route path="/analytics/purchasing-power" element={<PurchasingPowerChart />} />
                 <Route path="/certificates" element={<CertificateLogPage />} />
                 <Route path="/certificates/:id" element={<CertificateDetailPage />} />
                 <Route path="/certificates/new" element={<AddCertificatePage />} />

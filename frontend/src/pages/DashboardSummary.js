@@ -859,9 +859,14 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
             <h2>Your holdings</h2>
             <p>Current value, money invested and performance by asset class.</p>
           </div>
-          <Link to="/portfolio" className="dash-text-btn">
-            Open portfolio <FaArrowRight aria-hidden="true" />
-          </Link>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <Link to="/analytics/purchasing-power" className="dash-text-btn">
+              Purchasing power <FaArrowRight aria-hidden="true" />
+            </Link>
+            <Link to="/portfolio" className="dash-text-btn">
+              Open portfolio <FaArrowRight aria-hidden="true" />
+            </Link>
+          </div>
         </div>
 
         <div className="dash-holdings-grid">

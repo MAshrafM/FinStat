@@ -78,6 +78,11 @@ const GoldLogPage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                 <h1>Gold Wallet Log</h1>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <Link to="/analytics/purchasing-power" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none' }}>
+                        Purchasing Power Analytics
+                    </Link>
+                </div>
                 <ProtectedAction tooltip="View-only access">
                     <Link to="/gold-wallet/new" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none' }}>
                         + Add Gold Entry
