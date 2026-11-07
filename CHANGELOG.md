@@ -263,3 +263,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Step 7D.3: Verification Gate & Phase 7D Sign-Off:
   - Full 29-suite green regression pass across 361 tests (25 new backend + 22 new frontend + 238 baseline backend + 76 baseline frontend, 100% green in-band with zero open handles).
   - Updated CHANGELOG.md and docs/audit/ACTION_PLAN.md.
+
+### Refactored - Phase 8A: Backend Service Decoupling (AUD-ARCH-002)
+- Step 8A.1a: [AUD-ARCH-002] Decoupled Paycheck Domain Logic into `payrollService.js`:
+  - Extracted 14 core paycheck domain operations from `backend/routes/paychecks.js` into pure domain service `backend/services/payrollService.js`: preview calculation, transactional creation with bridge expenditure, chronological YTD chain recalculation, legacy key purging on updates, soft-deletion reversal, and pagination.
+  - Refactored `backend/routes/paychecks.js` into a thin controller validating request schemas via Zod, enforcing role authorizations, and delegating exclusively to `payrollService`.
+  - Zero direct Mongoose database queries remain in `backend/routes/paychecks.js`.
+  - Backed by unit test suite `backend/tests/unit/services/payrollService.test.js` (15/15 passed in `testDb`).
+- Step 8A.1b: [AUD-ARCH-002] Decoupled Trade Execution Domain Logic into `tradeExecutionService.js`:
+  - Extracted 11 core trading operations from `backend/routes/trade.js` into pure domain service `backend/services/tradeExecutionService.js`: paginated trade queries, non-paginated lean trade fetches with truncation detection, portfolio summary with cost-basis and corporate actions, stock split & bonus issue wizards, market prices resolution, trade execution with share availability validation, settlement bridge synchronization, and soft-delete/restore lifecycles.
+  - Refactored `backend/routes/trade.js` into a thin controller delegating exclusively to `tradeExecutionService`.
+  - Zero direct Mongoose database queries remain in `backend/routes/trade.js`.
+  - Backed by unit test suite `backend/tests/unit/services/tradeExecutionService.test.js` (15/15 passed in `testDb`).
+- Step 8A.1c: [AUD-ARCH-002] Decoupled Expenditure & Balance Domain Logic into `ledgerService.js`:
+  - Extracted 19 core ledger operations from `backend/routes/expenditures.js` into pure domain service `backend/services/ledgerService.js`: recurring template retrieval, lean non-paginated fetches, latest balance snapshots, paginated expenditure filtering, currency & exchange rate resolution, split validation & rule categorization, transactional balance propagation, bulk category updates, ACID bulk deletions, recurring bills scheduling & upcoming queries, bill payment with schedule advancement, and soft-delete/restore lifecycles with bridge guard invariants.
+  - Refactored `backend/routes/expenditures.js` into a thin controller delegating exclusively to `ledgerService`.
+  - Zero direct Mongoose database queries remain in `backend/routes/expenditures.js`.
+  - Backed by unit test suite `backend/tests/unit/services/ledgerService.test.js` (19/19 passed in `testDb`).
+- Step 8A.2: Full Regression Verification Gate & Sign-Off:
+  - Definition of Done grep verified zero direct database calls (`find`, `findById`, `countDocuments`, `create`, `save`, `updateMany`, `findOneAndUpdate`) across all 3 routers.
+  - Full 32-suite green regression pass across 410 tests (49 new service unit tests + 361 baseline tests: 312 backend + 98 frontend, 100% green in-band with zero open handles).
+  - Updated `CHANGELOG.md` and `docs/audit/ACTION_PLAN.md`.
+

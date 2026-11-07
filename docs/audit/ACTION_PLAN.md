@@ -143,7 +143,7 @@ graph LR
 | **Phase 7C.0** | Bridge Expansion (Bidirectional Asset Settlement) | `FEAT-002` | 1.5 days | No | `[x] COMPLETE` |
 | **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[x] COMPLETE` |
 | **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[x] COMPLETE` |
-| **Phase 8A** | Backend Service Decoupling | `AUD-ARCH-002` | 2.5 days | No | `[ ] NOT STARTED` |
+| **Phase 8A** | Backend Service Decoupling | `AUD-ARCH-002` | 2.5 days | No | `[x] COMPLETE` |
 | **Phase 8B** | Frontend Architecture Decomposition | `AUD-ARCH-001` | 1.5 days | Yes (with 8C) | `[ ] NOT STARTED` |
 | **Phase 8C** | Enterprise Features | `FEAT-009`, `FEAT-010` | 2 days | Yes (with 8B) | `[ ] NOT STARTED` |
 
@@ -1919,17 +1919,17 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 6 files.
 * **Actions**: Move business logic, tax formulas, trade position checks, and account balance arithmetic out of router callbacks into isolated domain service classes.
 * **Definition of Done (DoD)**:
-  - [ ] Express route handlers contain zero database queries or math calculations (controllers validate input and call services).
-  - [ ] Services covered by >90% isolated unit test coverage without HTTP mocks.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Express route handlers contain zero database queries or math calculations (controllers validate input and call services).
+  - [x] Services covered by >90% isolated unit test coverage without HTTP mocks.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
 ### Phase 8A Verification Gate
 *(Expected verification timeout: < 120s)*
-- [ ] Controllers delegate 100% of calculation and storage logic to domain services.
-- [ ] Isolated unit tests pass without HTTP request mocking.
-- [ ] **Phase 8A Signed Off**: `[ ] YES` | Date: `__________`
+- [x] Controllers delegate 100% of calculation and storage logic to domain services.
+- [x] Isolated unit tests pass without HTTP request mocking.
+- [x] **Phase 8A Signed Off**: `[x] YES` | Date: `2026-11-07`
 
 ---
 
