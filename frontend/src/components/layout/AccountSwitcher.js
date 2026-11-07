@@ -1,6 +1,6 @@
 // frontend/src/components/layout/AccountSwitcher.js
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronUp, Users, ShieldAlert, ArrowLeftRight, X, TrendingUp } from 'lucide-react';
+import { ChevronUp, Users, X, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getSwitchableAccounts, getFamilyRollup } from '../../services/userService';
 import './AccountSwitcher.css';
@@ -14,14 +14,12 @@ const AccountSwitcher = ({ isExpanded = true }) => {
   const {
     user,
     isDelegatedSession,
-    originalUser,
     switchAccount,
     switchBackToPrimary,
   } = useAuth();
 
   const [isOpen, setIsOpen] = useState(false);
   const [accounts, setAccounts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
 
   // Rollup Modal State
@@ -35,15 +33,12 @@ const AccountSwitcher = ({ isExpanded = true }) => {
   const loadAccounts = useCallback(async () => {
     if (!user?.id) return;
     try {
-      setIsLoading(true);
       const res = await getSwitchableAccounts();
       if (res && res.accounts) {
         setAccounts(res.accounts);
       }
     } catch (err) {
       console.error('[AccountSwitcher] Failed to fetch switchable accounts:', err);
-    } finally {
-      setIsLoading(false);
     }
   }, [user?.id]);
 
