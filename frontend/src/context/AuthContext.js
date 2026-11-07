@@ -1,6 +1,7 @@
 // frontend/src/context/AuthContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { logoutUser as apiLogoutUser } from '../services/authService';
+import { switchAccountApi } from '../services/userService';
 
 const AUTH_CHANGE_EVENT = 'app:auth-change';
 
@@ -53,6 +54,10 @@ export const AuthProvider = ({ children }) => {
   const isManager = role === 'manager';
   const isAuthenticated = Boolean(token && user);
 
+  // FEAT-009 Delegated account switching state
+  const isDelegatedSession = Boolean(user?.isDelegatedSession || user?.delegatedFrom);
+  const originalUser = user?.delegatedFrom || null;
+
   // Login handler
   const login = useCallback((newToken, newUser) => {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -63,6 +68,24 @@ export const AuthProvider = ({ children }) => {
     setUser(newUser || null);
     dispatchAuthChange(newUser || null);
   }, []);
+
+  // Switch account context (FEAT-009)
+  const switchAccount = useCallback(async (targetUserId) => {
+    const res = await switchAccountApi(targetUserId);
+    if (res && res.token && res.user) {
+      login(res.token, res.user);
+      return res;
+    }
+    return res;
+  }, [login]);
+
+  // Switch back to primary account (FEAT-009)
+  const switchBackToPrimary = useCallback(async () => {
+    if (!originalUser) {
+      throw new Error('No active delegated session to return from');
+    }
+    return switchAccount(originalUser);
+  }, [originalUser, switchAccount]);
 
   // Logout handler
   const logout = useCallback(async () => {
@@ -135,11 +158,31 @@ export const AuthProvider = ({ children }) => {
       isAdmin,
       isManager,
       isAuthenticated,
+      isDelegatedSession,
+      originalUser,
       login,
       logout,
       updateUser,
+      switchAccount,
+      switchBackToPrimary,
     }),
-    [user, token, role, canModify, isViewer, isAdmin, isManager, isAuthenticated, login, logout, updateUser]
+    [
+      user,
+      token,
+      role,
+      canModify,
+      isViewer,
+      isAdmin,
+      isManager,
+      isAuthenticated,
+      isDelegatedSession,
+      originalUser,
+      login,
+      logout,
+      updateUser,
+      switchAccount,
+      switchBackToPrimary,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

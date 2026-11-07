@@ -37,3 +37,48 @@ export const updateAdminUserProfile = async (userId, profileData) => {
   const response = await apiClient.put(`${API_URL}/${userId}/profile`, profileData);
   return unwrap(response);
 };
+
+/**
+ * Multi-tenant Delegated Account Switcher (FEAT-009)
+ */
+
+/**
+ * Fetch switchable accounts (primary self, managed dependents, and active delegations)
+ */
+export const getSwitchableAccounts = async () => {
+  const response = await apiClient.get(`${API_URL}/switchable-accounts`);
+  return unwrap(response);
+};
+
+/**
+ * Switch session context to target user account
+ */
+export const switchAccountApi = async (targetUserId) => {
+  const response = await apiClient.post(`${API_URL}/switch-account`, { targetUserId });
+  return unwrap(response);
+};
+
+/**
+ * Fetch consolidated family office net worth rollup across all accessible accounts
+ */
+export const getFamilyRollup = async () => {
+  const response = await apiClient.get(`${API_URL}/family-rollup`);
+  return unwrap(response);
+};
+
+/**
+ * Grant a new account delegation to an authorized delegate
+ */
+export const createDelegation = async (delegationData) => {
+  const response = await apiClient.post(`${API_URL}/delegations`, delegationData);
+  return unwrap(response);
+};
+
+/**
+ * Revoke an existing account delegation
+ */
+export const revokeDelegation = async (delegationId) => {
+  const response = await apiClient.put(`${API_URL}/delegations/${delegationId}/revoke`);
+  return unwrap(response);
+};
+
