@@ -37,7 +37,7 @@ const HoldingsGrid = ({ holdings = [], totalCurrent = 0, canModify = false }) =>
             <article key={asset.key} className={`dash-holding-card tone-${asset.tone}`}>
               <div className="dash-holding-head">
                 <span className="dash-holding-icon">
-                  <Icon aria-hidden="true" />
+                  {Icon ? <Icon aria-hidden="true" /> : null}
                 </span>
                 <div className="dash-holding-title">
                   <h3>{asset.name}</h3>
