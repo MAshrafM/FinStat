@@ -285,3 +285,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Full 32-suite green regression pass across 410 tests (49 new service unit tests + 361 baseline tests: 312 backend + 98 frontend, 100% green in-band with zero open handles).
   - Updated `CHANGELOG.md` and `docs/audit/ACTION_PLAN.md`.
 
+### Refactored - Phase 8B: Frontend Architecture Decomposition (AUD-ARCH-001)
+- Step 8B.1a: [AUD-ARCH-001] Extracted `useDashboardData` Hook, `NetWorthHero`, and `DashboardKpiStrip`:
+  - Extracted 8-context subscriptions, async multi-entity queries, memoized financial calculations, and derived view-models from `DashboardSummary.js` into dedicated headless hook `frontend/src/pages/dashboard/useDashboardData.js`.
+  - Extracted hero headline and quick-launch launcher trigger into `frontend/src/pages/dashboard/NetWorthHero.js` wrapped in `React.memo`.
+  - Extracted 4-metric executive performance KPI strip into `frontend/src/pages/dashboard/DashboardKpiStrip.js` wrapped in `React.memo`.
+  - Backed by unit test suites `useDashboardData.test.js` (12/12 passed), `NetWorthHero.test.js` (7/7 passed), and `DashboardKpiStrip.test.js` (5/5 passed).
+- Step 8B.1b: [AUD-ARCH-001] Extracted `AssetAllocationDonut` and `HoldingsGrid` Widgets:
+  - Extracted interactive Doughnut chart, metric toggler (Current vs Invested), and legend drill-down into `frontend/src/pages/dashboard/AssetAllocationDonut.js` with internal `chartMode` state isolation, eliminating re-renders of parent and sibling widgets.
+  - Extracted 8-card responsive multi-asset holdings portfolio grid into `frontend/src/pages/dashboard/HoldingsGrid.js` with defensive icon handling and role-based action permissions.
+  - Backed by unit test suites `AssetAllocationDonut.test.js` (7/7 passed) and `HoldingsGrid.test.js` (8/8 passed).
+- Step 8B.1c: [AUD-ARCH-001] Extracted `BudgetPulseCard`, `SavingsForexCard`, and `ReportsGrid`:
+  - Extracted monthly budget category progress tracking with dynamic alert thresholds into `frontend/src/pages/dashboard/BudgetPulseCard.js`.
+  - Extracted liquid reserves, active certificates, mark-to-market foreign currency, and real estate summaries into `frontend/src/pages/dashboard/SavingsForexCard.js`.
+  - Extracted quick action cards, 8-card report analytics directory, and dashboard footnotes into `frontend/src/pages/dashboard/ReportsGrid.js`.
+  - Backed by unit test suites `DashboardPanels.test.js` (8/8 passed) and `ReportsGrid.test.js` (5/5 passed).
+- Step 8B.1d: [AUD-ARCH-001] Refactored `DashboardSummary.js` Coordinator to 110 Lines:
+  - Decomposed 1,116-line monolith into a lean 110-line coordinator strictly under the 120-line DoD cap (90.1% reduction).
+  - Preserved all 10 canonical BEM container CSS classes: `.dash-content`, `.dash-hero`, `.dash-hero-card`, `.dash-kpis`, `.dash-launch-grid`, `.dash-allocation`, `.dash-holdings-grid`, `.dash-two-col`, `.dash-reports-grid`, `.dash-footnote`.
+  - Backed by coordinator integration test suite `DashboardSummary.test.js` (6/6 passed), verifying loading skeleton, error banner, 10 canonical CSS classes, memoization isolation, line count <= 120, and unhydrated context safety.
+- Step 8B.2: Full Regression Verification Gate & Sign-Off:
+  - Full 40-suite green regression pass across 468 tests (58 net new frontend tests across 8 suites + 98 baseline frontend tests across 11 suites + 312 backend tests across 21 suites, 100% green in-band with zero open handles).
+  - Signed off Phase 8B Verification Gate in `docs/audit/ACTION_PLAN.md` and updated `CHANGELOG.md`.
+

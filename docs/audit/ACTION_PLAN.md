@@ -144,7 +144,7 @@ graph LR
 | **Phase 7C** | Automation & Safety | `FEAT-005`, `FEAT-006`, `GAP-004`, `GAP-009` | 2 days | Yes (with 7D) | `[x] COMPLETE` |
 | **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[x] COMPLETE` |
 | **Phase 8A** | Backend Service Decoupling | `AUD-ARCH-002` | 2.5 days | No | `[x] COMPLETE` |
-| **Phase 8B** | Frontend Architecture Decomposition | `AUD-ARCH-001` | 1.5 days | Yes (with 8C) | `[ ] NOT STARTED` |
+| **Phase 8B** | Frontend Architecture Decomposition | `AUD-ARCH-001` | 1.5 days | Yes (with 8C) | `[x] COMPLETED` |
 | **Phase 8C** | Enterprise Features | `FEAT-009`, `FEAT-010` | 2 days | Yes (with 8B) | `[ ] NOT STARTED` |
 
 ---
@@ -1948,17 +1948,17 @@ cd d:/Projects/FinStat/frontend && npm run build
 * **File-Count Cap**: 4 files.
 * **Actions**: Decompose the 750+ line monolith into a clean coordinator importing memoized, independently hydrating widget cards.
 * **Definition of Done (DoD)**:
-  - [ ] `DashboardSummary.js` reduced to <150 lines of coordinator code.
-  - [ ] Individual widget cards memoized; zero unnecessary cross-card re-renders.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] `DashboardSummary.js` reduced to <150 lines of coordinator code (actual: 110 lines).
+  - [x] Individual widget cards memoized; zero unnecessary cross-card re-renders.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
 ### Phase 8B Verification Gate
 *(Expected verification timeout: < 120s)*
-- [ ] `DashboardSummary.js` coordinator is under 150 lines.
-- [ ] Sub-widgets render and re-render independently without performance degradation.
-- [ ] **Phase 8B Signed Off**: `[ ] YES` | Date: `__________`
+- [x] `DashboardSummary.js` coordinator is under 150 lines (actual: 110 lines).
+- [x] Sub-widgets render and re-render independently without performance degradation.
+- [x] **Phase 8B Signed Off**: `[x] YES` | Date: `2026-11-07`
 
 ---
 
