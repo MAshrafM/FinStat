@@ -59,6 +59,15 @@ describe('Sub-step 8A.1b: Trade Execution Service Unit Tests [AUD-ARCH-002]', ()
     });
     expect(resSearch.data.length).toBe(1);
     expect(resSearch.data[0].stockCode).toBe('COMI');
+
+    // Query TopUp type
+    await Trade.create({ user: userId, broker: 'Thndr', type: 'TopUp', totalValue: 1000, date: new Date('2026-01-04') });
+    const resTopUp = await tradeExecutionService.listTrades({
+      userId,
+      query: { broker: 'TopUp', page: 1, limit: 10 },
+    });
+    expect(resTopUp.data.length).toBe(1);
+    expect(resTopUp.data[0].type).toBe('TopUp');
   });
 
   // Test 2: getAllTrades returns non-paginated lean trades with X-Truncated detection at limit cap
@@ -115,6 +124,10 @@ describe('Sub-step 8A.1b: Trade Execution Service Unit Tests [AUD-ARCH-002]', ()
 
     expect(result.corporateAction).toBeDefined();
     expect(result.corporateAction.type).toBe('split');
+
+    await expect(
+      tradeExecutionService.executeStockSplit({ userId, ticker: 'COMI', broker: 'Thndr', splitRatio: 2, splitDate: '2026-02-01', canModify: false })
+    ).rejects.toThrow(ForbiddenError);
   });
 
   // Test 5: executeCorporateAction applies bonus issue / stock split corporate action wizard
@@ -145,6 +158,14 @@ describe('Sub-step 8A.1b: Trade Execution Service Unit Tests [AUD-ARCH-002]', ()
 
     expect(result.corporateAction).toBeDefined();
     expect(result.corporateAction.type).toBe('bonus');
+
+    await expect(
+      tradeExecutionService.executeCorporateAction({
+        userId,
+        data: { stockCode: 'EAST', broker: 'Thndr', type: 'bonus', ratio: 0.5, effectiveDate: '2026-02-01' },
+        canModify: false,
+      })
+    ).rejects.toThrow(ForbiddenError);
   });
 
   // Test 6: getMarketPrices fetches market prices via marketPriceService
@@ -330,12 +351,25 @@ describe('Sub-step 8A.1b: Trade Execution Service Unit Tests [AUD-ARCH-002]', ()
       id: topUp._id,
       data: {
         totalValue: 7000,
+        price: 10,
+        fees: 2,
       },
       canModify: true,
     });
 
     expect(updated.totalValue).toBe(7000);
     expect(updated.totalValueInPiastres).toBe(700000);
+    expect(updated.priceInPiastres).toBe(1000);
+    expect(updated.feesInPiastres).toBe(200);
+
+    // Error cases
+    await expect(
+      tradeExecutionService.updateTrade({ userId, id: new mongoose.Types.ObjectId(), data: { totalValue: 1000 }, canModify: true })
+    ).rejects.toThrow(NotFoundError);
+
+    await expect(
+      tradeExecutionService.updateTrade({ userId, id: topUp._id, data: { totalValue: 1000 }, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
   });
 
   // Test 15: deleteTrade and restoreTrade manage lifecycle and bridge expenditure
@@ -352,6 +386,15 @@ describe('Sub-step 8A.1b: Trade Execution Service Unit Tests [AUD-ARCH-002]', ()
       canModify: true,
     });
 
+    // Delete error cases
+    await expect(
+      tradeExecutionService.deleteTrade({ userId, id: new mongoose.Types.ObjectId(), canModify: true })
+    ).rejects.toThrow(NotFoundError);
+
+    await expect(
+      tradeExecutionService.deleteTrade({ userId, id: topUp._id, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
+
     const deleteRes = await tradeExecutionService.deleteTrade({
       userId,
       id: topUp._id,
@@ -362,6 +405,15 @@ describe('Sub-step 8A.1b: Trade Execution Service Unit Tests [AUD-ARCH-002]', ()
     const softDeleted = await Trade.findById(topUp._id);
     expect(softDeleted.deletedAt).not.toBeNull();
 
+    // Restore error cases
+    await expect(
+      tradeExecutionService.restoreTrade({ userId, id: new mongoose.Types.ObjectId(), canModify: true })
+    ).rejects.toThrow(NotFoundError);
+
+    await expect(
+      tradeExecutionService.restoreTrade({ userId, id: topUp._id, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
+
     const restoreRes = await tradeExecutionService.restoreTrade({
       userId,
       id: topUp._id,
@@ -371,5 +423,16 @@ describe('Sub-step 8A.1b: Trade Execution Service Unit Tests [AUD-ARCH-002]', ()
 
     const restored = await Trade.findById(topUp._id);
     expect(restored.deletedAt).toBeNull();
+
+    // Withdraw trade lifecycle test for bridge branch coverage
+    const withdraw = await tradeExecutionService.createTrade({
+      userId,
+      data: { broker: 'Thndr', type: 'Withdraw', totalValue: 1500, destinationAccount: 'Cash', date: new Date('2026-01-02') },
+      canModify: true,
+    });
+    await tradeExecutionService.deleteTrade({ userId, id: withdraw._id, canModify: true });
+    await tradeExecutionService.restoreTrade({ userId, id: withdraw._id, canModify: true });
+    const restoredWithdraw = await Trade.findById(withdraw._id);
+    expect(restoredWithdraw.deletedAt).toBeNull();
   });
 });

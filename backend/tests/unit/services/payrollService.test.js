@@ -64,6 +64,11 @@ describe('Sub-step 8A.1a: Payroll Service Unit Tests [AUD-ARCH-002]', () => {
     const dbConfig = await payrollService.resolveTaxConfig(2024);
     expect(dbConfig.personalExemption).toBe(15000);
     expect(dbConfig.brackets[0].to).toBe(40000);
+
+    // Custom tax passed directly
+    const customTax = { brackets: [{ from: 0, to: 50000, rate: 0 }], personalExemption: 10000 };
+    const customRes = await payrollService.resolveTaxConfig(2024, customTax);
+    expect(customRes).toBe(customTax);
   });
 
   // Test 4: resolveInsuranceConfig resolves active DB config or statutory fallback
@@ -71,6 +76,11 @@ describe('Sub-step 8A.1a: Payroll Service Unit Tests [AUD-ARCH-002]', () => {
     const fallbackConfig = await payrollService.resolveInsuranceConfig(2024);
     expect(fallbackConfig.employeeShare).toBe(11);
     expect(fallbackConfig.maxInsurableIncome).toBe(12600);
+
+    // Custom insurance passed directly
+    const customIns = { employeeShare: 14, employerShare: 18.75, minInsurableIncome: 2000, maxInsurableIncome: 14000 };
+    const customInsRes = await payrollService.resolveInsuranceConfig(2024, customIns);
+    expect(customInsRes).toBe(customIns);
 
     // Seed active DB config
     await SocialInsurance.create({
@@ -322,6 +332,19 @@ describe('Sub-step 8A.1a: Payroll Service Unit Tests [AUD-ARCH-002]', () => {
     // Confirm bridge expenditure was synced
     const bridgeExp = await Expenditure.findById(created.linkedExpenditureId);
     expect(bridgeExp.description).toContain('Updated salary');
+
+    // Error cases
+    await expect(
+      payrollService.updatePaycheck({ userId, id: new mongoose.Types.ObjectId(), data: { grossSalary: 1000 }, canModify: true })
+    ).rejects.toThrow(NotFoundError);
+
+    await expect(
+      payrollService.updatePaycheck({ userId: new mongoose.Types.ObjectId(), id: created._id, data: { grossSalary: 1000 }, canModify: true })
+    ).rejects.toThrow(ForbiddenError);
+
+    await expect(
+      payrollService.updatePaycheck({ userId, id: created._id, data: { grossSalary: 1000 }, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
   });
 
   // Test 15: deletePaycheck soft-deletes and reverses bridge; restorePaycheck restores record
@@ -334,6 +357,19 @@ describe('Sub-step 8A.1a: Payroll Service Unit Tests [AUD-ARCH-002]', () => {
 
     const bridgeExpId = created.linkedExpenditureId;
 
+    // Error cases for delete
+    await expect(
+      payrollService.deletePaycheck({ userId, id: new mongoose.Types.ObjectId(), canModify: true })
+    ).rejects.toThrow(NotFoundError);
+
+    await expect(
+      payrollService.deletePaycheck({ userId: new mongoose.Types.ObjectId(), id: created._id, canModify: true })
+    ).rejects.toThrow(ForbiddenError);
+
+    await expect(
+      payrollService.deletePaycheck({ userId, id: created._id, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
+
     const delRes = await payrollService.deletePaycheck({ userId, id: created._id, canModify: true });
     expect(delRes.msg).toBe('Paycheck removed');
 
@@ -343,6 +379,15 @@ describe('Sub-step 8A.1a: Payroll Service Unit Tests [AUD-ARCH-002]', () => {
     // Bridge expenditure reversed (soft-deleted)
     const reversedBridge = await Expenditure.findById(bridgeExpId);
     expect(reversedBridge.deletedAt).toBeDefined();
+
+    // Error cases for restore
+    await expect(
+      payrollService.restorePaycheck({ userId, id: new mongoose.Types.ObjectId(), canModify: true })
+    ).rejects.toThrow(NotFoundError);
+
+    await expect(
+      payrollService.restorePaycheck({ userId, id: created._id, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
 
     // Restore paycheck
     const restoreRes = await payrollService.restorePaycheck({ userId, id: created._id, canModify: true });

@@ -88,6 +88,10 @@ describe('Sub-step 8A.1c: Ledger Service Unit Tests [AUD-ARCH-002]', () => {
     });
     expect(resCategory.data.length).toBe(1);
     expect(resCategory.data[0].categories).toContain('Transport');
+
+    // Query transactionType and isRecurring
+    const resW = await ledgerService.listExpenditures({ userId, query: { type: 'W', isRecurring: false } });
+    expect(resW.data.length).toBe(2);
   });
 
   // Test 5: createExpenditure calculates deltas and propagates running balances
@@ -99,16 +103,35 @@ describe('Sub-step 8A.1c: Ledger Service Unit Tests [AUD-ARCH-002]', () => {
         transactionValue: 500,
         paymentMethod: 'Bank',
         transactionType: 'W',
-        categories: ['Groceries'],
+        splits: [{ category: 'Groceries', amount: 500 }],
         logBankOp: '-',
       },
-      userRole: 'manager',
+      userRole: 'admin',
       canModify: true,
     });
 
     expect(created._id).toBeDefined();
     expect(created.transactionValueInPiastres).toBe(50000);
     expect(created.runningBalances.bank).toBe(-500);
+    expect(created.categories).toContain('Groceries');
+
+    // Foreign currency creation
+    const usdCreated = await ledgerService.createExpenditure({
+      userId,
+      data: {
+        date: new Date('2026-01-01'),
+        currency: 'USD',
+        foreignAmount: 100,
+        exchangeRateSnapshot: 50,
+        paymentMethod: 'Bank',
+        transactionType: 'W',
+        logBankOp: '-',
+      },
+      userRole: 'admin',
+      canModify: true,
+    });
+    expect(usdCreated.transactionValue).toBe(5000);
+    expect(usdCreated.transactionValueInPiastres).toBe(500000);
   });
 
   // Test 6: createExpenditure rejects with ForbiddenError when canModify is false
@@ -143,6 +166,10 @@ describe('Sub-step 8A.1c: Ledger Service Unit Tests [AUD-ARCH-002]', () => {
     expect(result.modifiedCount).toBe(2);
     const updated = await Expenditure.findById(e1._id);
     expect(updated.categories).toContain('Utilities');
+
+    await expect(
+      ledgerService.bulkUpdateCategory({ userId, ids: [e1._id], category: 'X', canModify: false })
+    ).rejects.toThrow(ForbiddenError);
   });
 
   // Test 8: bulkDeleteExpenditures soft-deletes and reverts balances in transaction
@@ -157,6 +184,13 @@ describe('Sub-step 8A.1c: Ledger Service Unit Tests [AUD-ARCH-002]', () => {
       data: { date: new Date('2026-01-02'), transactionValue: 200, transactionType: 'W', paymentMethod: 'Bank', logBankOp: '-' },
       canModify: true,
     });
+
+    await expect(
+      ledgerService.bulkDeleteExpenditures({ userId, ids: [e1._id], canModify: false })
+    ).rejects.toThrow(ForbiddenError);
+
+    const emptyResult = await ledgerService.bulkDeleteExpenditures({ userId, ids: [], canModify: true });
+    expect(emptyResult.deletedCount).toBe(0);
 
     const result = await ledgerService.bulkDeleteExpenditures({
       userId,
@@ -238,6 +272,10 @@ describe('Sub-step 8A.1c: Ledger Service Unit Tests [AUD-ARCH-002]', () => {
 
     expect(result.bill._id).toBeDefined();
     expect(result.bill.amountInPiastres).toBe(35050);
+
+    await expect(
+      ledgerService.createRecurringBill({ userId, data: { name: 'Gym', amount: 350 }, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
   });
 
   // Test 13: getRecurringBillById returns bill or throws NotFoundError
@@ -277,12 +315,20 @@ describe('Sub-step 8A.1c: Ledger Service Unit Tests [AUD-ARCH-002]', () => {
     const updated = await ledgerService.updateRecurringBill({
       userId,
       id: bill._id,
-      data: { amount: 250 },
+      data: { amount: 250, nextDueDate: '2026-04-15' },
       canModify: true,
     });
 
     expect(updated.bill.amount).toBe(250);
     expect(updated.bill.amountInPiastres).toBe(25000);
+
+    await expect(
+      ledgerService.updateRecurringBill({ userId, id: bill._id, data: { amount: 250 }, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
+
+    await expect(
+      ledgerService.updateRecurringBill({ userId, id: new mongoose.Types.ObjectId(), data: { amount: 250 }, canModify: true })
+    ).rejects.toThrow(NotFoundError);
   });
 
   // Test 15: deleteRecurringBill soft-deletes the bill
@@ -297,6 +343,14 @@ describe('Sub-step 8A.1c: Ledger Service Unit Tests [AUD-ARCH-002]', () => {
       dueDay: 20,
       nextDueDate: new Date(),
     });
+
+    await expect(
+      ledgerService.deleteRecurringBill({ userId, id: bill._id, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
+
+    await expect(
+      ledgerService.deleteRecurringBill({ userId, id: new mongoose.Types.ObjectId(), canModify: true })
+    ).rejects.toThrow(NotFoundError);
 
     const res = await ledgerService.deleteRecurringBill({ userId, id: bill._id, canModify: true });
     expect(res.msg).toBe('Recurring bill soft-deleted successfully');
@@ -319,6 +373,14 @@ describe('Sub-step 8A.1c: Ledger Service Unit Tests [AUD-ARCH-002]', () => {
       paymentMethod: 'Bank',
     });
 
+    await expect(
+      ledgerService.payRecurringBill({ userId, id: bill._id, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
+
+    await expect(
+      ledgerService.payRecurringBill({ userId, id: new mongoose.Types.ObjectId(), canModify: true })
+    ).rejects.toThrow(NotFoundError);
+
     const result = await ledgerService.payRecurringBill({
       userId,
       id: bill._id,
@@ -329,6 +391,46 @@ describe('Sub-step 8A.1c: Ledger Service Unit Tests [AUD-ARCH-002]', () => {
     expect(result.expenditure).toBeDefined();
     expect(result.expenditure.transactionType).toBe('W');
     expect(result.bill.nextDueDate.toISOString()).toContain('2026-04-05');
+
+    // Test weekly and quarterly schedules
+    const weeklyBill = await RecurringBill.create({
+      user: userId,
+      name: 'Weekly Meal',
+      amount: 100,
+      amountInPiastres: 10000,
+      frequency: 'weekly',
+      dueDay: 1,
+      nextDueDate: new Date('2026-03-01T12:00:00.000Z'),
+      category: 'Food',
+    });
+    const weeklyRes = await ledgerService.payRecurringBill({ userId, id: weeklyBill._id, canModify: true });
+    expect(weeklyRes.bill.nextDueDate.toISOString()).toContain('2026-03-08');
+
+    const quarterlyBill = await RecurringBill.create({
+      user: userId,
+      name: 'Water',
+      amount: 150,
+      amountInPiastres: 15000,
+      frequency: 'quarterly',
+      dueDay: 1,
+      nextDueDate: new Date('2026-01-01T12:00:00.000Z'),
+      category: 'Utilities',
+    });
+    const quarterlyRes = await ledgerService.payRecurringBill({ userId, id: quarterlyBill._id, canModify: true });
+    expect(quarterlyRes.bill.nextDueDate.toISOString()).toContain('2026-04-01');
+
+    const yearlyBill = await RecurringBill.create({
+      user: userId,
+      name: 'Annual Subscription',
+      amount: 1200,
+      amountInPiastres: 120000,
+      frequency: 'yearly',
+      dueDay: 1,
+      nextDueDate: new Date('2026-01-01T12:00:00.000Z'),
+      category: 'Services',
+    });
+    const yearlyRes = await ledgerService.payRecurringBill({ userId, id: yearlyBill._id, canModify: true });
+    expect(yearlyRes.bill.nextDueDate.toISOString()).toContain('2027-01-01');
   });
 
   // Test 17: getDeletedExpenditures excludes bridge records
@@ -376,12 +478,26 @@ describe('Sub-step 8A.1c: Ledger Service Unit Tests [AUD-ARCH-002]', () => {
       id: created._id,
       data: {
         transactionValue: 300,
+        splits: [{ category: 'Food', amount: 300 }],
       },
       canModify: true,
     });
 
     expect(updated.transactionValue).toBe(300);
     expect(updated.runningBalances.bank).toBe(-300);
+
+    // Error cases
+    await expect(
+      ledgerService.updateExpenditure({ userId, id: created._id, data: { transactionValue: 300 }, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
+
+    await expect(
+      ledgerService.updateExpenditure({ userId, id: new mongoose.Types.ObjectId(), data: { transactionValue: 300 }, canModify: true })
+    ).rejects.toThrow(NotFoundError);
+
+    await expect(
+      ledgerService.updateExpenditure({ userId: new mongoose.Types.ObjectId(), id: created._id, data: { transactionValue: 300 }, canModify: true })
+    ).rejects.toThrow(ForbiddenError);
   });
 
   // Test 19: deleteExpenditure and restoreExpenditure manage lifecycle and reject bridge records
@@ -398,9 +514,49 @@ describe('Sub-step 8A.1c: Ledger Service Unit Tests [AUD-ARCH-002]', () => {
       canModify: true,
     });
 
+    // Delete error cases
+    await expect(
+      ledgerService.deleteExpenditure({ userId, id: created._id, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
+
+    await expect(
+      ledgerService.deleteExpenditure({ userId, id: new mongoose.Types.ObjectId(), canModify: true })
+    ).rejects.toThrow(NotFoundError);
+
+    await expect(
+      ledgerService.deleteExpenditure({ userId: new mongoose.Types.ObjectId(), id: created._id, canModify: true })
+    ).rejects.toThrow(ForbiddenError);
+
     await ledgerService.deleteExpenditure({ userId, id: created._id, canModify: true });
     const softDeleted = await Expenditure.findById(created._id);
     expect(softDeleted.deletedAt).not.toBeNull();
+
+    // Restore error cases
+    await expect(
+      ledgerService.restoreExpenditure({ userId, id: created._id, canModify: false })
+    ).rejects.toThrow(ForbiddenError);
+
+    await expect(
+      ledgerService.restoreExpenditure({ userId, id: new mongoose.Types.ObjectId(), canModify: true })
+    ).rejects.toThrow(NotFoundError);
+
+    // Bridge rejection tests
+    const bridgeExp = await Expenditure.create({
+      user: userId,
+      date: new Date(),
+      transactionValue: 1000,
+      transactionType: 'W',
+      autoGenerated: true,
+      linkedPaycheckId: new mongoose.Types.ObjectId(),
+    });
+    await expect(
+      ledgerService.deleteExpenditure({ userId, id: bridgeExp._id, canModify: true })
+    ).rejects.toThrow(BadRequestError);
+
+    await bridgeExp.softDelete();
+    await expect(
+      ledgerService.restoreExpenditure({ userId, id: bridgeExp._id, canModify: true })
+    ).rejects.toThrow(BadRequestError);
 
     await ledgerService.restoreExpenditure({ userId, id: created._id, canModify: true });
     const restored = await Expenditure.findById(created._id);
