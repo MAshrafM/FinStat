@@ -1,174 +1,60 @@
 // backend/routes/trade.js
 const express = require('express');
 const router = express.Router();
-const Trade = require('../models/Trade');
-const axios = require('axios');
-const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError, ForbiddenError, BadRequestError } = require('../utils/errors');
+const tradeExecutionService = require('../services/tradeExecutionService');
 const {
   createSchema,
   updateSchema,
   paramsSchema,
   querySchema,
 } = require('../validationSchemas/tradeSchemas');
-const { getValidated, escapeRegex } = require('../utils/requestHelpers');
-const { toPiastres } = require('../utils/currencyUtils');
-const User = require('../models/User');
-const CorporateAction = require('../models/CorporateAction');
-const { calculateCostBasis } = require('../utils/costBasisEngine');
-const { applyCorporateActions, createSplitWizard } = require('../utils/corporateActionEngine');
 const { wizardCorporateActionSchema } = require('../validationSchemas/corporateActionSchemas');
-const marketPriceService = require('../utils/marketPriceService');
-const { invalidatePortfolioCache } = require('../utils/portfolioService');
-const { validateAvailableShares } = require('../utils/tradeValidator');
-const {
-  createExpenditureFromBrokerTopUp,
-  createExpenditureFromBrokerWithdraw,
-  reverseIncomeExpenditure,
-  syncBrokerTradeExpenditure,
-} = require('../utils/incomeBridge');
+const { getValidated } = require('../utils/requestHelpers');
 
 // @route   GET api/trades
 // @desc    Get all active trades (with pagination)
 router.get('/', auth, validate({ query: querySchema }), asyncHandler(async (req, res) => {
-  const { page, limit, broker, search } = getValidated(req, 'query');
-  const skip = (page - 1) * limit;
-
-  const query = { user: req.effectiveUserId, deletedAt: null };
-  if (broker && broker !== 'TopUp') {
-    query.broker = broker;
-  } else if (broker === 'TopUp') {
-    query.type = 'TopUp';
-  }
-
-  if (search && search.trim()) {
-    const safeSearch = escapeRegex(search).slice(0, 100);
-    query.stockCode = { $regex: safeSearch, $options: 'i' };
-  }
-
-  const trades = await Trade.find(query).sort({ date: -1, createdAt: -1 }).skip(skip).limit(limit);
-  const total = await Trade.countDocuments(query);
-  res.json({
-    data: trades,
-    totalPages: Math.ceil(total / limit),
-    page,
+  const result = await tradeExecutionService.listTrades({
+    userId: req.effectiveUserId,
+    query: getValidated(req, 'query'),
   });
+  res.json(result);
 }));
 
 // @route   GET api/trades/all
 // @desc    Get all active trades without pagination (clamped to 1000 lean docs)
 router.get('/all', auth, asyncHandler(async (req, res) => {
-  const requestedLimit = parseInt(req.query.limit, 10);
-  const limit = Number.isFinite(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, 1000) : 1000;
-  const raw = await Trade.find({ user: req.effectiveUserId, deletedAt: null })
-    .sort({ createdAt: -1 })
-    .limit(limit + 1)
-    .lean();
-  const truncated = raw.length > limit;
-  if (truncated) raw.pop();
+  const { trades, truncated } = await tradeExecutionService.getAllTrades({
+    userId: req.effectiveUserId,
+    requestedLimit: req.query.limit,
+  });
   res.setHeader('X-Truncated', truncated ? 'true' : 'false');
-  res.json(raw);
+  res.json(trades);
 }));
 
 // @route   GET api/trades/summary
 // @desc    Get a summary of trades grouped by broker, stock, and iteration with cost-basis and corporate actions
 router.get('/summary', auth, asyncHandler(async (req, res) => {
-  const userObjectId = new mongoose.Types.ObjectId(req.effectiveUserId);
-  const userDoc = await User.findById(userObjectId).select('costBasisMethod');
-  const costBasisMethod = userDoc?.costBasisMethod || 'average';
-
-  const [corporateActions, rawTrades] = await Promise.all([
-    CorporateAction.find({ user: userObjectId, deletedAt: null }),
-    Trade.find({ user: userObjectId, deletedAt: null }).sort({ date: 1, createdAt: 1 }),
-  ]);
-
-  const adjustedTrades = applyCorporateActions(rawTrades, corporateActions);
-
-  // Group by broker, stockCode, iteration
-  const groupMap = new Map();
-  for (const t of adjustedTrades) {
-    if (!t.stockCode) continue;
-    const iter = t.iteration !== undefined && t.iteration !== null ? t.iteration : 0;
-    const key = `${t.broker}_${t.stockCode}_${iter}`;
-    if (!groupMap.has(key)) {
-      groupMap.set(key, {
-        broker: t.broker,
-        stockCode: t.stockCode,
-        iteration: iter,
-        trades: [],
-      });
-    }
-    groupMap.get(key).trades.push(t);
-  }
-
-  const summary = [];
-  for (const group of groupMap.values()) {
-    const iterTrades = group.trades;
-    const costResult = calculateCostBasis(iterTrades, costBasisMethod);
-
-    const firstTradeDate = iterTrades[0]?.date || null;
-    const lastTradeDate = iterTrades[iterTrades.length - 1]?.date || null;
-    const tradeCount = iterTrades.length;
-
-    summary.push({
-      _id: {
-        broker: group.broker,
-        stockCode: group.stockCode,
-        iteration: group.iteration,
-      },
-      costBasisMethod,
-      totalBuyValue: costResult.totalBuyValue,
-      totalSellValue: costResult.totalSellValue,
-      totalDividendValue: costResult.totalDividendValue,
-      totalSharesBought: costResult.totalSharesBought,
-      totalSharesSold: costResult.totalSharesSold,
-      totalSharesDividend: costResult.totalSharesDividend,
-      totalFees: costResult.totalFees,
-      tradeCount,
-      firstTradeDate,
-      lastTradeDate,
-      currentShares: costResult.currentShares,
-      averageBuyPrice: costResult.averageBuyPrice,
-      adjustedAvgPrice: costResult.adjustedAvgPrice,
-      costOfSoldShares: costResult.costOfSoldShares,
-      netBreakEvenPrice: costResult.netBreakEvenPrice,
-      tradingPL: costResult.tradingPL,
-      dividendIncome: costResult.totalDividendValue,
-      totalRealizedReturn: costResult.totalRealizedReturn,
-      totDeals: Number((costResult.totalBuyValue - (costResult.totalSellValue + costResult.totalDividendValue)).toFixed(2)),
-      investedAmountRemaining: costResult.remainingCostBasis,
-      status: costResult.currentShares === 0 ? 'Closed' : 'Open',
-    });
-  }
-
-  // Sort summary
-  summary.sort((a, b) => {
-    if (a._id.stockCode < b._id.stockCode) return -1;
-    if (a._id.stockCode > b._id.stockCode) return 1;
-    return new Date(b.lastTradeDate) - new Date(a.lastTradeDate);
+  const summary = await tradeExecutionService.getPortfolioSummary({
+    userId: req.effectiveUserId,
   });
-
   res.json(summary);
 }));
 
 // @route   POST api/trades/split
 // @desc    Log a stock split trade + corporate action record
 router.post('/split', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
-  if (!req.canModify) {
-    throw new ForbiddenError('Viewers have read-only access');
-  }
   const body = getValidated(req, 'body');
-  const result = await createSplitWizard(req.effectiveUserId, {
-    stockCode: body.stockCode,
+  const result = await tradeExecutionService.executeStockSplit({
+    userId: req.effectiveUserId,
+    ticker: body.stockCode,
     broker: body.broker,
-    type: 'split',
-    ratio: body.splitRatio || 1,
-    effectiveDate: body.date,
-    notes: 'Logged via Trade Split entry',
-    logTrade: true,
+    splitRatio: body.splitRatio,
+    splitDate: body.date,
+    canModify: req.canModify,
   });
   res.status(201).json(result);
 }));
@@ -176,205 +62,91 @@ router.post('/split', auth, validate({ body: createSchema }), asyncHandler(async
 // @route   POST api/trades/corporate-action/wizard
 // @desc    Wizard endpoint to apply split or bonus issue retroactively
 router.post('/corporate-action/wizard', auth, validate({ body: wizardCorporateActionSchema }), asyncHandler(async (req, res) => {
-  if (!req.canModify) {
-    throw new ForbiddenError('Viewers have read-only access');
-  }
   const body = getValidated(req, 'body');
-  const result = await createSplitWizard(req.effectiveUserId, body);
+  const result = await tradeExecutionService.executeCorporateAction({
+    userId: req.effectiveUserId,
+    data: body,
+    canModify: req.canModify,
+  });
   res.status(201).json(result);
 }));
 
+// @route   GET api/trades/market-prices
+// @desc    Get stock market prices
 router.get('/market-prices', auth, asyncHandler(async (req, res) => {
   const forceRefresh = req.query.refresh === 'true';
-  const result = await marketPriceService.getStockPrices({ forceRefresh });
-  res.json(result.data);
+  const data = await tradeExecutionService.getMarketPrices({ forceRefresh });
+  res.json(data);
 }));
 
 // @route   POST api/trades
 // @desc    Create a new trade
 router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req, res) => {
-  if (!req.canModify) {
-    throw new ForbiddenError('Viewers have read-only access');
-  }
-  const validatedBody = getValidated(req, 'body');
-
-  if (validatedBody.type === 'Sell') {
-    const validation = await validateAvailableShares(
-      req.effectiveUserId,
-      validatedBody.broker,
-      validatedBody.stockCode,
-      validatedBody.shares
-    );
-    if (!validation.valid) {
-      throw new BadRequestError(validation.message);
-    }
-  }
-
-  const newTrade = new Trade({
-    ...validatedBody,
-    user: req.effectiveUserId,
-    priceInPiastres: toPiastres(validatedBody.price),
-    feesInPiastres: toPiastres(validatedBody.fees),
-    totalValueInPiastres: toPiastres(validatedBody.totalValue),
+  const newTrade = await tradeExecutionService.createTrade({
+    userId: req.effectiveUserId,
+    data: getValidated(req, 'body'),
+    canModify: req.canModify,
   });
-  await newTrade.save();
-
-  if (newTrade.type === 'TopUp') {
-    await createExpenditureFromBrokerTopUp({
-      trade: newTrade,
-      sourceAccount: validatedBody.sourceAccount,
-      user: req.effectiveUserId,
-    });
-  } else if (newTrade.type === 'Withdraw') {
-    await createExpenditureFromBrokerWithdraw({
-      trade: newTrade,
-      destinationAccount: validatedBody.destinationAccount,
-      user: req.effectiveUserId,
-    });
-  }
-
-  invalidatePortfolioCache(req.effectiveUserId);
   res.status(201).json(newTrade);
 }));
 
 // @route   GET api/trades/deleted
 // @desc    Get soft-deleted trades [FEAT-006, GAP-004]
 router.get('/deleted', auth, asyncHandler(async (req, res) => {
-  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-  const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 25));
-  const skip = (page - 1) * limit;
-
-  const query = { user: req.effectiveUserId, deletedAt: { $ne: null } };
-  const total = await Trade.countDocuments(query);
-  const trades = await Trade.find(query)
-    .sort({ deletedAt: -1, _id: -1 })
-    .skip(skip)
-    .limit(limit);
-
-  res.json({
-    data: trades,
-    total,
-    page,
-    totalPages: Math.ceil(total / limit),
+  const result = await tradeExecutionService.getDeletedTrades({
+    userId: req.effectiveUserId,
+    page: req.query.page,
+    limit: req.query.limit,
   });
+  res.json(result);
 }));
 
 // @route   GET api/trades/:id
 // @desc    Get a single trade by ID
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
   const { id } = getValidated(req, 'params');
-  const trade = await Trade.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
-  if (!trade) {
-    throw new NotFoundError('Trade not found');
-  }
+  const trade = await tradeExecutionService.getTradeById({
+    userId: req.effectiveUserId,
+    id,
+  });
   res.json(trade);
 }));
 
 // @route   PUT api/trades/:id
 // @desc    Update a trade
 router.put('/:id', auth, validate({ params: paramsSchema, body: updateSchema }), asyncHandler(async (req, res) => {
-  if (!req.canModify) {
-    throw new ForbiddenError('Viewers have read-only access');
-  }
   const { id } = getValidated(req, 'params');
-  const validatedBody = getValidated(req, 'body');
-
-  let trade = await Trade.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
-  if (!trade) {
-    throw new NotFoundError('Trade not found');
-  }
-
-  const targetType = validatedBody.type !== undefined ? validatedBody.type : trade.type;
-  if (targetType === 'Sell') {
-    const targetBroker = validatedBody.broker || trade.broker;
-    const targetStock = validatedBody.stockCode || trade.stockCode;
-    const targetShares = validatedBody.shares !== undefined ? validatedBody.shares : trade.shares;
-
-    const validation = await validateAvailableShares(
-      req.effectiveUserId,
-      targetBroker,
-      targetStock,
-      targetShares,
-      trade._id
-    );
-    if (!validation.valid) {
-      throw new BadRequestError(validation.message);
-    }
-  }
-
-  const updateData = { ...validatedBody };
-  if (validatedBody.price !== undefined) {
-    updateData.priceInPiastres = toPiastres(validatedBody.price);
-  }
-  if (validatedBody.fees !== undefined) {
-    updateData.feesInPiastres = toPiastres(validatedBody.fees);
-  }
-  if (validatedBody.totalValue !== undefined) {
-    updateData.totalValueInPiastres = toPiastres(validatedBody.totalValue);
-  }
-
-  trade = await Trade.findOneAndUpdate(
-    { _id: id, user: req.effectiveUserId, deletedAt: null },
-    updateData,
-    { new: true, runValidators: true }
-  );
-  if (trade.linkedExpenditureId) {
-    await syncBrokerTradeExpenditure({
-      trade,
-      updateData: validatedBody,
-      user: req.effectiveUserId,
-    });
-  }
-  invalidatePortfolioCache(req.effectiveUserId);
+  const trade = await tradeExecutionService.updateTrade({
+    userId: req.effectiveUserId,
+    id,
+    data: getValidated(req, 'body'),
+    canModify: req.canModify,
+  });
   res.json(trade);
 }));
 
 // @route   DELETE api/trades/:id
 // @desc    Soft delete a trade
 router.delete('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
-  if (!req.canModify) {
-    throw new ForbiddenError('Viewers have read-only access');
-  }
   const { id } = getValidated(req, 'params');
-  const trade = await Trade.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
-  if (!trade) {
-    throw new NotFoundError('Trade not found');
-  }
-  if (trade.linkedExpenditureId) {
-    await reverseIncomeExpenditure(trade.linkedExpenditureId, req.effectiveUserId);
-  }
-  await trade.softDelete();
-  invalidatePortfolioCache(req.effectiveUserId);
-  res.json({ msg: 'Trade deleted successfully' });
+  const result = await tradeExecutionService.deleteTrade({
+    userId: req.effectiveUserId,
+    id,
+    canModify: req.canModify,
+  });
+  res.json(result);
 }));
 
 // @route   POST api/trades/:id/restore
 // @desc    Restore a soft-deleted trade
 router.post('/:id/restore', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
-  if (!req.canModify) {
-    throw new ForbiddenError('Viewers have read-only access');
-  }
   const { id } = getValidated(req, 'params');
-  const trade = await Trade.findOne({ _id: id, user: req.effectiveUserId, deletedAt: { $ne: null } });
-  if (!trade) {
-    throw new NotFoundError('Soft-deleted trade not found');
-  }
-  await trade.restore();
-  if (trade.type === 'TopUp') {
-    await createExpenditureFromBrokerTopUp({
-      trade,
-      sourceAccount: trade.sourceAccount,
-      user: req.effectiveUserId,
-    });
-  } else if (trade.type === 'Withdraw') {
-    await createExpenditureFromBrokerWithdraw({
-      trade,
-      destinationAccount: trade.destinationAccount,
-      user: req.effectiveUserId,
-    });
-  }
-  invalidatePortfolioCache(req.effectiveUserId);
-  res.json({ msg: 'Trade restored successfully', trade });
+  const result = await tradeExecutionService.restoreTrade({
+    userId: req.effectiveUserId,
+    id,
+    canModify: req.canModify,
+  });
+  res.json(result);
 }));
 
 module.exports = router;
