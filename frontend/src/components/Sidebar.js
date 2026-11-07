@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import AccountSwitcher from './layout/AccountSwitcher';
 import './Sidebar.css';
 
 const HUB_DEFINITIONS = [
@@ -328,8 +329,9 @@ const Sidebar = () => {
           })}
         </nav>
 
-        {/* Dedicated Logout Button */}
+        {/* Account Switcher & Dedicated Logout Button */}
         <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <AccountSwitcher isExpanded={isCurrentlyExpanded} />
           <button
             onClick={handleLogout}
             className="sidebar-logout-btn"
