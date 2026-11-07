@@ -20,6 +20,7 @@ const {
   delegationParamsSchema,
 } = require('../validationSchemas/userSchemas');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
+const portfolioService = require('../utils/portfolioService');
 
 const getClientIp = (req) => {
   const forwarded = req.headers['x-forwarded-for'];
@@ -466,6 +467,117 @@ router.put(
       success: true,
       message: 'Delegation successfully revoked',
       delegation,
+    });
+  })
+);
+
+// @route   GET /api/users/family-rollup
+// @desc    Consolidated family office net worth, assets, and liabilities rollup
+// @access  Private
+router.get(
+  '/family-rollup',
+  auth,
+  asyncHandler(async (req, res) => {
+    const primaryUserId = req.user.delegatedFrom || req.user.id;
+    const primaryUser = await User.findById(primaryUserId).select('-password -totpSecret -backupCodes');
+    if (!primaryUser) {
+      throw new NotFoundError('Primary user account not found');
+    }
+
+    // 1. Gather all accessible family accounts
+    const membersList = [];
+
+    // Primary Self
+    membersList.push({
+      user: primaryUser,
+      relationship: 'self',
+      isSelf: true,
+      permissions: 'full_access',
+    });
+
+    // Managed dependents (users where managedBy === primaryUserId)
+    const managedUsers = await User.find({ managedBy: primaryUserId }).select(
+      '-password -totpSecret -backupCodes'
+    );
+    for (const m of managedUsers) {
+      membersList.push({
+        user: m,
+        relationship: 'dependent',
+        isSelf: false,
+        isManaged: true,
+        permissions: 'full_access',
+      });
+    }
+
+    // Active delegations where primary user is the delegate
+    const delegations = await AccountDelegation.find({
+      delegate: primaryUserId,
+      status: 'active',
+    }).populate('delegator', '-password -totpSecret -backupCodes');
+
+    for (const d of delegations) {
+      if (d.delegator) {
+        membersList.push({
+          user: d.delegator,
+          relationship: d.relationship || 'other',
+          isSelf: false,
+          isDelegated: true,
+          permissions: d.permissions,
+        });
+      }
+    }
+
+    // 2. Compute individual and consolidated portfolio summaries
+    let consolidatedAssets = 0;
+    let consolidatedDebts = 0;
+    let consolidatedNetWorth = 0;
+    const memberSummaries = [];
+
+    for (const item of membersList) {
+      const u = item.user;
+      let totalAssets = 0;
+      let totalDebts = 0;
+      let netWorth = 0;
+      let holdingsCount = 0;
+
+      try {
+        const summary = await portfolioService.getPortfolioSummary(u._id.toString());
+        totalAssets = Number(summary.totalCurrentValue || 0);
+        holdingsCount = Number(summary.holdingsCount || 0);
+      } catch (err) {
+        totalAssets = 0;
+      }
+
+      netWorth = totalAssets - totalDebts;
+
+      consolidatedAssets += totalAssets;
+      consolidatedDebts += totalDebts;
+      consolidatedNetWorth += netWorth;
+
+      memberSummaries.push({
+        userId: u._id.toString(),
+        username: u.username,
+        fullName: u.fullName || u.username,
+        role: u.role,
+        relationship: item.relationship,
+        permissions: item.permissions,
+        isSelf: !!item.isSelf,
+        isManaged: !!item.isManaged,
+        isDelegated: !!item.isDelegated,
+        totalAssets,
+        totalDebts,
+        netWorth,
+        holdingsCount,
+      });
+    }
+
+    res.json({
+      success: true,
+      consolidatedNetWorth,
+      consolidatedAssets,
+      consolidatedDebts,
+      rollupCount: memberSummaries.length,
+      members: memberSummaries,
     });
   })
 );
