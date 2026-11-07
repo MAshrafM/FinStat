@@ -39,6 +39,18 @@ jest.mock('../HoldingsGrid', () => {
   };
 });
 
+const mockReportsGridRenderSpy = jest.fn();
+jest.mock('../ReportsGrid', () => {
+  const Original = jest.requireActual('../ReportsGrid').default;
+  return {
+    __esModule: true,
+    default: (props) => {
+      mockReportsGridRenderSpy(props);
+      return <Original {...props} />;
+    },
+  };
+});
+
 describe('Step 8B.1d: DashboardSummary Coordinator Integration Tests [AUD-ARCH-001]', () => {
   const mockDashboardData = {
     isLoading: false,
@@ -111,9 +123,10 @@ describe('Step 8B.1d: DashboardSummary Coordinator Integration Tests [AUD-ARCH-0
     expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
   });
 
-  // Test 3: renders full dashboard assembly with all 10 canonical CSS container classes (asserts INV-8B-01)
+  // Test 3: renders full dashboard assembly with all 10 canonical CSS container classes (asserts INV-8B-01) and passes callable onOpenLauncher to ReportsGrid
   test('3. renders full dashboard assembly with all 10 canonical CSS container classes (asserts INV-8B-01)', () => {
-    const { container } = render(<DashboardSummary onOpenLauncher={jest.fn()} />);
+    const launcherSpy = jest.fn();
+    const { container } = render(<DashboardSummary onOpenLauncher={launcherSpy} />);
 
     const canonicalClasses = [
       '.dash-content',
@@ -132,6 +145,14 @@ describe('Step 8B.1d: DashboardSummary Coordinator Integration Tests [AUD-ARCH-0
       const el = container.querySelector(cls);
       expect(el).not.toBeNull();
     });
+
+    // Asserts coordinator passes callable onOpenLauncher to child widgets and verifies invocation
+    expect(mockReportsGridRenderSpy).toHaveBeenCalled();
+    const lastProps = mockReportsGridRenderSpy.mock.calls[0][0];
+    expect(typeof lastProps.onOpenLauncher).toBe('function');
+    lastProps.onOpenLauncher('explore');
+    expect(launcherSpy).toHaveBeenCalledWith('explore');
+    expect(launcherSpy).toHaveBeenCalledTimes(1);
   });
 
   // Test 4: verifies memoization isolation: toggling donut mode does not trigger re-render of NetWorthHero or HoldingsGrid (asserts INV-8B-03 via module spy)
