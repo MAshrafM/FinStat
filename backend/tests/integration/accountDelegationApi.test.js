@@ -234,6 +234,8 @@ describe('Step 8C.1a: Multi-Tenant Account Delegation & Switching Integration Te
     expect(res.status).toBe(200);
     const decoded = jwt.decode(res.body.token);
     expect(decoded.user.role).toBe('viewer');
+    expect(decoded.user.delegationPermissions).toBe('view_only');
+    expect(decoded.user.delegatedFrom).toBe(parentManager._id.toString());
     expect(res.body.user.role).toBe('viewer');
   });
 
