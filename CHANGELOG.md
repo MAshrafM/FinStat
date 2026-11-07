@@ -308,3 +308,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Full 40-suite green regression pass across 468 tests (58 net new frontend tests across 8 suites + 98 baseline frontend tests across 11 suites + 312 backend tests across 21 suites, 100% green in-band with zero open handles).
   - Signed off Phase 8B Verification Gate in `docs/audit/ACTION_PLAN.md` and updated `CHANGELOG.md`.
 
+### Added - Phase 8C: Enterprise Features (FEAT-009)
+- Step 8C.1a: [FEAT-009] Multi-Tenant Account Delegation Model, JWT Token Payload & Switcher Ingress:
+  - Created `backend/models/AccountDelegation.js` Mongoose model with unique pair index `{ delegator: 1, delegate: 1 }` and self-delegation invariant guard (`KS-8C-02`).
+  - Added delegation and account switching validation schemas in `backend/validationSchemas/userSchemas.js` (`switchAccountSchema`, `createDelegationSchema`, `updateDelegationSchema`, `delegationParamsSchema`).
+  - Extended JWT access token generation in `backend/utils/tokenUtils.js` to embed `delegatedFrom`, `isDelegatedSession`, and clamped permissions (`INV-8C-02`, `INV-8C-03`).
+  - Implemented switcher endpoints in `backend/routes/users.js`: `GET /api/users/switchable-accounts`, `POST /api/users/switch-account`, `POST /api/users/delegations`, and `PUT /api/users/delegations/:id/revoke`.
+  - Backed by integration test suite `backend/tests/integration/accountDelegationApi.test.js` (14/14 passed in `testDb`).
+- Step 8C.1b: [FEAT-009] Consolidated Family Office Portfolio Rollup Endpoint:
+  - Implemented `GET /api/users/family-rollup` aggregating primary user, managed dependents, and active delegations.
+  - Aggregates individual asset holdings and debt obligations into `consolidatedNetWorth`, `consolidatedAssets`, and `consolidatedDebts` satisfying mathematical conservation: `consolidatedNetWorth === sum(member.netWorth)` (`INV-8C-04`).
+  - Backed by integration test suite `backend/tests/integration/familyRollupApi.test.js` (8/8 passed in `testDb`).
+- Step 8C.1c1: [FEAT-009] Frontend AuthContext Extension & Service Client:
+  - Extended `frontend/src/context/AuthContext.js` with `isDelegatedSession`, `originalUser`, `switchAccount(targetUserId)`, and `switchBackToPrimary()`.
+  - Extended `frontend/src/services/userService.js` with client methods for switchable accounts, switching, family rollup, and delegation management.
+  - Backed by unit test suite `frontend/src/context/__tests__/AuthContextDelegation.test.js` (4/4 passed).
+- Step 8C.1c2: [FEAT-009] AccountSwitcher Component, Rollup Modal & Sidebar Mounting:
+  - Created `<AccountSwitcher />` component with active user pill, avatar, role badge, popover switcher dropdown, and persistent amber delegation banner with quick return trigger.
+  - Created Family Office Rollup summary modal with consolidated net worth, total assets, total liabilities, and individual family member breakdown cards.
+  - Mounted `<AccountSwitcher />` cleanly in `frontend/src/components/Sidebar.js` footer directly above Sign Out.
+  - Styled with dedicated CSS stylesheet `frontend/src/components/layout/AccountSwitcher.css`.
+  - Backed by component test suite `frontend/src/components/layout/__tests__/AccountSwitcher.test.js` (10/10 passed).
+- Step 8C.1d: Full Regression Verification Gate & Sign-Off:
+  - Per user directive on 2026-11-07, Step 8C.2 (`FEAT-010` Zero-Leak Bank SMS & Text Receipt Parser) was deferred to the future mobile-native app roadmap to leverage device native SMS permissions and capture.
+  - Reconciled full system regression: 504 passing tests across 44 suites (334 backend tests across 23 suites + 170 frontend tests across 21 suites), 100% green with zero open handles.
+  - Signed off Phase 8C Verification Gate in `docs/audit/ACTION_PLAN.md` and updated `CHANGELOG.md`.
+
+

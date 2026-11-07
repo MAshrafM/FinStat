@@ -145,7 +145,7 @@ graph LR
 | **Phase 7D** | Analytics & Simulation | `FEAT-007`, `FEAT-008`, `GAP-014` | 2 days | Yes (with 7C) | `[x] COMPLETE` |
 | **Phase 8A** | Backend Service Decoupling | `AUD-ARCH-002` | 2.5 days | No | `[x] COMPLETE` |
 | **Phase 8B** | Frontend Architecture Decomposition | `AUD-ARCH-001` | 1.5 days | Yes (with 8C) | `[x] COMPLETED` |
-| **Phase 8C** | Enterprise Features | `FEAT-009`, `FEAT-010` | 2 days | Yes (with 8B) | `[ ] NOT STARTED` |
+| **Phase 8C** | Enterprise Features | `FEAT-009`, `FEAT-010` (Deferred) | 2 days | Yes (with 8B) | `[x] COMPLETED` |
 
 ---
 
@@ -1967,21 +1967,24 @@ cd d:/Projects/FinStat/frontend && npm run build
 ---
 
 ### Step 8C.1: [FEAT-009] Multi-Tenant Delegated Account Switcher & Family Office Rollup
+* **Status**: `[x] COMPLETED`
 * **Requires User Input**: Yes (Confirm family office / multi-tenant delegation invitation model and permission roles).
 * **Est. Effort**: 1h
 * **Target Files**:
   * `backend/routes/users.js`
-  * Create `backend/models/AccountDelegation.js`
+  * `backend/models/AccountDelegation.js`
   * `frontend/src/components/layout/AccountSwitcher.js`
 * **File-Count Cap**: 3 files.
 * **Actions**: Allow managers/parents to switch between managed dependent profiles without logging out; provide consolidated family net worth aggregation.
 * **Definition of Done (DoD)**:
-  - [ ] Account switcher dropdown switches active user context instantly.
-  - [ ] Appended entry to `CHANGELOG.md`.
+  - [x] Account switcher dropdown switches active user context instantly.
+  - [x] Appended entry to `CHANGELOG.md`.
 
 ---
 
 ### Step 8C.2: [FEAT-010] Zero-Leak Bank SMS & Text Receipt Parser
+* **Status**: `[DEFERRED to Mobile Native App Roadmap]`
+* **Note**: Per user directive on 2026-11-07, Step 8C.2 is removed from Phase 8C execution and deferred to the future mobile-native app roadmap to leverage native device SMS capture and permissioning APIs.
 * **Requires User Input**: Yes (Provide sample bank SMS formats from major Egyptian banks for parser regex calibration).
 * **Est. Effort**: 1h
 * **Target Files**:
@@ -1998,9 +2001,9 @@ cd d:/Projects/FinStat/frontend && npm run build
 
 ### Phase 8C Verification Gate
 *(Expected verification timeout: < 120s)*
-- [ ] Account switcher allows toggling between primary user and managed dependents.
-- [ ] Bank SMS text parser extracts debit amount and merchant accurately.
-- [ ] **Phase 8C Signed Off**: `[ ] YES` | Date: `__________`
+- [x] Account switcher allows toggling between primary user and managed dependents.
+- [x] Step 8C.2 (Bank SMS Parser) logged as deferred to mobile-native roadmap per user directive.
+- [x] **Phase 8C Signed Off**: `[x] YES` | Date: `2026-11-07`
 
 ---
 
@@ -2092,4 +2095,4 @@ cd d:/Projects/FinStat/frontend && npm run build
 | **GAP-014** | Currency Holdings Lack Historical Mark-to-Market Charting | **Phase 7D, Step 7D.1** |
 | **AUD-ARCH-002** | Fat Router Anti-Pattern & Inconsistent Layer Boundaries | **Phase 8A, Step 8A.1** |
 | **FEAT-009** | Multi-Tenant Delegated Account Switcher & Family Office Rollup | **Phase 8C, Step 8C.1** |
-| **FEAT-010** | Zero-Leak Bank SMS & Text Receipt Parser | **Phase 8C, Step 8C.2** |
+| **FEAT-010** | Zero-Leak Bank SMS & Text Receipt Parser | **Phase 8C, Step 8C.2 (Deferred to Mobile Native App Roadmap)** |
