@@ -27,7 +27,32 @@ const userParamsSchema = z.object({
   id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid user ID'),
 });
 
+const switchAccountSchema = z.object({
+  targetUserId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid target user ID'),
+}).strict();
+
+const createDelegationSchema = z.object({
+  targetUsername: z.string().trim().min(3, 'Target username must be at least 3 characters'),
+  relationship: z.enum(['dependent', 'spouse', 'child', 'parent', 'client', 'accountant', 'other']).optional(),
+  permissions: z.enum(['view_only', 'full_access']).optional(),
+  notes: z.string().trim().max(200, 'Notes too long').optional(),
+}).strict();
+
+const updateDelegationSchema = z.object({
+  status: z.enum(['active', 'pending', 'revoked']).optional(),
+  permissions: z.enum(['view_only', 'full_access']).optional(),
+  notes: z.string().trim().max(200, 'Notes too long').optional(),
+}).strict();
+
+const delegationParamsSchema = z.object({
+  id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid delegation ID'),
+});
+
 module.exports = {
   updateProfileSchema,
   userParamsSchema,
+  switchAccountSchema,
+  createDelegationSchema,
+  updateDelegationSchema,
+  delegationParamsSchema,
 };

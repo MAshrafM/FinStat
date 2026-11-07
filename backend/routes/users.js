@@ -2,16 +2,22 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const AccountDelegation = require('../models/AccountDelegation');
 const auth = require('../middleware/auth');
 const authorize = require('../middleware/authorize');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError, ConflictError, ForbiddenError } = require('../utils/errors');
+const { NotFoundError, ConflictError, ForbiddenError, BadRequestError } = require('../utils/errors');
 const { getValidated } = require('../utils/requestHelpers');
 const { logAudit } = require('../utils/auditLogger');
+const { generateAccessToken } = require('../utils/tokenUtils');
 const {
   updateProfileSchema,
   userParamsSchema,
+  switchAccountSchema,
+  createDelegationSchema,
+  updateDelegationSchema,
+  delegationParamsSchema,
 } = require('../validationSchemas/userSchemas');
 const { invalidatePortfolioCache } = require('../utils/portfolioService');
 
@@ -201,6 +207,265 @@ router.put(
       success: true,
       message: 'User profile updated successfully by admin',
       user: sanitizeUserProfile(updatedUser),
+    });
+  })
+);
+
+// @route   GET /api/users/switchable-accounts
+// @desc    Get all switchable accounts (self, managed dependents, active delegations)
+// @access  Private
+router.get(
+  '/switchable-accounts',
+  auth,
+  asyncHandler(async (req, res) => {
+    const primaryUserId = req.user.delegatedFrom || req.user.id;
+    const primaryUser = await User.findById(primaryUserId).select('-password -totpSecret -backupCodes');
+    if (!primaryUser) {
+      throw new NotFoundError('Primary user not found');
+    }
+
+    const accounts = [];
+
+    // 1. Primary Self Account
+    accounts.push({
+      id: primaryUser._id.toString(),
+      username: primaryUser.username,
+      fullName: primaryUser.fullName || primaryUser.username,
+      role: primaryUser.role,
+      isSelf: true,
+      isCurrent: req.user.id === primaryUser._id.toString(),
+      relationship: 'self',
+      permissions: 'full_access',
+    });
+
+    // 2. Managed Dependents (users where managedBy === primaryUserId)
+    const managedUsers = await User.find({ managedBy: primaryUserId }).select(
+      '_id username fullName role managedBy'
+    );
+    for (const m of managedUsers) {
+      accounts.push({
+        id: m._id.toString(),
+        username: m.username,
+        fullName: m.fullName || m.username,
+        role: m.role,
+        isManaged: true,
+        relationship: 'dependent',
+        permissions: 'full_access',
+        isCurrent: req.user.id === m._id.toString(),
+      });
+    }
+
+    // 3. Active Delegations where primary user is the delegate
+    const delegations = await AccountDelegation.find({
+      delegate: primaryUserId,
+      status: 'active',
+    }).populate('delegator', '_id username fullName role');
+
+    for (const d of delegations) {
+      if (d.delegator) {
+        accounts.push({
+          id: d.delegator._id.toString(),
+          username: d.delegator.username,
+          fullName: d.delegator.fullName || d.delegator.username,
+          role: d.permissions === 'view_only' ? 'viewer' : d.delegator.role,
+          isDelegated: true,
+          relationship: d.relationship || 'other',
+          permissions: d.permissions || 'view_only',
+          delegationId: d._id.toString(),
+          isCurrent: req.user.id === d.delegator._id.toString(),
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      accounts,
+      isDelegatedSession: Boolean(req.user.isDelegatedSession || req.user.delegatedFrom),
+      primaryUserId,
+    });
+  })
+);
+
+// @route   POST /api/users/switch-account
+// @desc    Switch active session to managed dependent or delegated account
+// @access  Private
+router.post(
+  '/switch-account',
+  auth,
+  validate({ body: switchAccountSchema }),
+  asyncHandler(async (req, res) => {
+    const { targetUserId } = getValidated(req, 'body');
+    const primaryUserId = req.user.delegatedFrom || req.user.id;
+
+    // A. Switching back to primary account
+    if (targetUserId === primaryUserId.toString()) {
+      const primaryUser = await User.findById(primaryUserId).select('-password -totpSecret -backupCodes');
+      if (!primaryUser) throw new NotFoundError('Primary account not found');
+
+      const token = generateAccessToken(primaryUser);
+      return res.json({
+        success: true,
+        message: `Switched back to primary account @${primaryUser.username}`,
+        token,
+        user: {
+          id: primaryUser._id.toString(),
+          username: primaryUser.username,
+          role: primaryUser.role,
+          fullName: primaryUser.fullName,
+        },
+      });
+    }
+
+    // B. Switching to managed dependent
+    const managedUser = await User.findOne({ _id: targetUserId, managedBy: primaryUserId }).select(
+      '-password -totpSecret -backupCodes'
+    );
+    if (managedUser) {
+      const token = generateAccessToken(managedUser, {
+        delegatedFrom: primaryUserId,
+        permissions: 'full_access',
+      });
+      return res.json({
+        success: true,
+        message: `Switched to managed account @${managedUser.username}`,
+        token,
+        user: {
+          id: managedUser._id.toString(),
+          username: managedUser.username,
+          role: managedUser.role,
+          fullName: managedUser.fullName,
+          isDelegatedSession: true,
+          delegatedFrom: primaryUserId.toString(),
+        },
+      });
+    }
+
+    // C. Switching to active delegated account
+    const delegation = await AccountDelegation.findOne({
+      delegator: targetUserId,
+      delegate: primaryUserId,
+      status: 'active',
+    });
+
+    if (delegation) {
+      const targetUser = await User.findById(targetUserId).select('-password -totpSecret -backupCodes');
+      if (!targetUser) throw new NotFoundError('Delegated user account not found');
+
+      const effectiveRole = delegation.permissions === 'view_only' ? 'viewer' : targetUser.role;
+      const token = generateAccessToken(targetUser, {
+        delegatedFrom: primaryUserId,
+        permissions: delegation.permissions,
+      });
+
+      return res.json({
+        success: true,
+        message: `Switched to delegated account @${targetUser.username}`,
+        token,
+        user: {
+          id: targetUser._id.toString(),
+          username: targetUser.username,
+          role: effectiveRole,
+          fullName: targetUser.fullName,
+          isDelegatedSession: true,
+          delegatedFrom: primaryUserId.toString(),
+          delegationPermissions: delegation.permissions,
+        },
+      });
+    }
+
+    // D. Unauthorized switch attempt
+    throw new ForbiddenError('You do not have delegation access to switch to this account');
+  })
+);
+
+// @route   POST /api/users/delegations
+// @desc    Create new account delegation
+// @access  Private
+router.post(
+  '/delegations',
+  auth,
+  validate({ body: createDelegationSchema }),
+  asyncHandler(async (req, res) => {
+    const { targetUsername, relationship, permissions, notes } = getValidated(req, 'body');
+
+    const delegateUser = await User.findOne({ username: targetUsername });
+    if (!delegateUser) {
+      throw new NotFoundError(`User @${targetUsername} not found`);
+    }
+
+    if (delegateUser._id.toString() === req.user.id.toString()) {
+      throw new BadRequestError('Self-delegation is not allowed');
+    }
+
+    const existing = await AccountDelegation.findOne({
+      delegator: req.user.id,
+      delegate: delegateUser._id,
+    });
+    if (existing) {
+      throw new ConflictError('Delegation already exists for this user');
+    }
+
+    const delegation = await AccountDelegation.create({
+      delegator: req.user.id,
+      delegate: delegateUser._id,
+      relationship: relationship || 'dependent',
+      permissions: permissions || 'view_only',
+      notes,
+      status: 'active',
+    });
+
+    logAudit({
+      userId: req.user.id,
+      targetUserId: delegateUser._id,
+      action: 'create_delegation',
+      success: true,
+      ip: getClientIp(req),
+      userAgent: req.headers['user-agent'] || 'unknown',
+    });
+
+    res.status(201).json({
+      success: true,
+      message: `Delegation granted to @${delegateUser.username}`,
+      delegation,
+    });
+  })
+);
+
+// @route   PUT /api/users/delegations/:id/revoke
+// @desc    Revoke an active delegation
+// @access  Private
+router.put(
+  '/delegations/:id/revoke',
+  auth,
+  validate({ params: delegationParamsSchema }),
+  asyncHandler(async (req, res) => {
+    const { id } = getValidated(req, 'params');
+
+    const delegation = await AccountDelegation.findOne({
+      _id: id,
+      $or: [{ delegator: req.user.id }, { delegate: req.user.id }],
+    });
+
+    if (!delegation) {
+      throw new NotFoundError('Delegation record not found');
+    }
+
+    delegation.status = 'revoked';
+    await delegation.save();
+
+    logAudit({
+      userId: req.user.id,
+      targetUserId: delegation.delegate,
+      action: 'revoke_delegation',
+      success: true,
+      ip: getClientIp(req),
+      userAgent: req.headers['user-agent'] || 'unknown',
+    });
+
+    res.json({
+      success: true,
+      message: 'Delegation successfully revoked',
+      delegation,
     });
   })
 );

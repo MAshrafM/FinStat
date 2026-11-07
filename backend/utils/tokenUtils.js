@@ -45,15 +45,27 @@ const hashToken = (rawToken) => {
 
 /**
  * Generates a short-lived (15m) JWT access token.
+ * Supports delegated session metadata and permission clamping.
  */
-const generateAccessToken = (user) => {
+const generateAccessToken = (user, delegationMeta = null) => {
+  const isViewOnly = delegationMeta?.permissions === 'view_only';
+  const role = isViewOnly ? 'viewer' : (user.role || 'viewer');
+
+  const userPayload = {
+    id: user._id ? user._id.toString() : user.id,
+    role,
+    username: user.username,
+    managedBy: user.managedBy ? user.managedBy.toString() : null,
+  };
+
+  if (delegationMeta && delegationMeta.delegatedFrom) {
+    userPayload.delegatedFrom = delegationMeta.delegatedFrom.toString();
+    userPayload.isDelegatedSession = true;
+    userPayload.delegationPermissions = delegationMeta.permissions || 'view_only';
+  }
+
   const payload = {
-    user: {
-      id: user._id ? user._id.toString() : user.id,
-      role: user.role || 'viewer',
-      username: user.username,
-      managedBy: user.managedBy ? user.managedBy.toString() : null,
-    },
+    user: userPayload,
   };
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
 };
