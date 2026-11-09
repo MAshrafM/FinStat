@@ -65,4 +65,20 @@ The following anti-patterns are mechanically blocked by linters (`.stylelintrc.j
 - **App Repo Untracked**: `frontend/tests/visual/baseline/` is `.gitignore`'d in the app repo. Zero baseline PNGs are tracked in `main`.
 - **Manifest Integrity**: `verify-baseline-manifest.js` enforces that all 325 images have $\ge 1000$ bytes, non-1x1 dimensions, and match SHA-256 hashes in `manifest.json`.
 
+---
+
+## Multi-theme door-preservation (D22)
+
+Multi-theme (T2 user-selectable accents, T3 light/dark/high-contrast) is deferred to a post-Phase-14 initiative. The plan preserves the door through four constraints. **Do not close the door without a recorded plan amendment.**
+
+1. **`tokens.css` scoped blocks.** `tokens.js --write` emits `:root[data-fs-theme="dark"] { ... }`, not flat `:root { ... }`. Adding a new theme is a generator addition (new block), not a selector rewrite. If you find flat `:root` in `tokens.css`, the generator has regressed — fix `tokens.js`, regenerate, never hand-edit `tokens.css`.
+
+2. **Attribute-existence CSS selectors.** Any CSS rule that gates on theme uses `[data-fs-theme]` (existence) — e.g. `html[data-fs-theme] body { ... }`. The value-specific form `[data-fs-theme="dark"]` is used **only** inside `tokens.css` to scope a theme's token block. Everywhere else (theme.css, theme-components.css, index.css, page CSS), use the existence form. Reason: `[data-fs-theme="dark"]` stops matching when the attribute value changes; the page falls back to unstyled defaults.
+
+3. **Theme-aware chart palette.** `chartTheme.js` exports `getChartPalette()` reading `--fs-chart-grey-1..4` and `--fs-positive|negative|warning` via `getComputedStyle(document.documentElement)` at chart render time. No hardcoded palette in the returned function. Test-mode fallback (`process.env.NODE_ENV === 'test'` or `window.__VISUAL_TEST__`) returns dark-theme constants so jsdom tests pass. The ESLint override in `.eslintrc.json` still bans `#14b8a6` inside `chartTheme.js` — accent must never be a chart series.
+
+4. **Phase 12 preserves the attribute.** Cleanup deletes the allowlist conditional (the logic that decided *whether* to apply the theme attribute). The attribute itself (`<html data-fs-theme="dark">`) stays applied on every route. Deleting the attribute entirely would require re-adding the application path when T2/T3 launches.
+
+**Cost of violation:** generator rewrite, ~50-file specificity audit, `chartTheme.js` refactor plus 5 chart re-verifications, attribute-path re-addition — estimated 2–3 phases of rework when a future multi-theme initiative launches. Violations are caught at walkthrough and reject the PR.
+
 

@@ -1,17 +1,25 @@
 # FinStat — UI/UX Overhaul
 
-**Action Plan & Progress Tracker — v10.1 (ESLint .eslintignore Ratchet & CI Visual Job Alignment)**
+**Action Plan & Progress Tracker — v10.2 (Multi-theme door preservation, D22)**
 
 | Field | Value |
 | :--- | :--- |
-| Version | 10.1 |
-| Revised | 2026-11-09 |
-| Supersedes | v10 (2026-11-09), v9, v8, v7, v6, v5, v4, v3, v2, v1 |
+| Version | 10.2 |
+| Revised | 2026-11-10 |
+| Supersedes | v10.1 (2026-11-09), v10, v9, v8, v7, v6, v5, v4, v3, v2, v1 |
 | Direction | Flat graphite, one neutral action style, no accent hue, IBM Plex Sans. Chosen by the developer in 1B (D12–D18) |
 | Acceptance target | Three reference frames in `docs/UI-UX_Plan/reference/`, two or three variants each, with stress data |
 | Scope | Presentation only. No route, API, calculation, permission, or schema changes. |
 | Input | `docs/UI-UX_Plan/Comments.md` (review rounds 1–6) + Post-Audit Architecture (Phases 7A–8C) |
 | Working model | AI agents implement; the developer reviews, signs off, and performs manual verification. No time estimates are tracked. |
+
+**What changed in v10.2 (Multi-theme door preservation, D22)**
+
+1. **D22 recorded:** Multi-theme (T2 accent picker and T3 light/dark/high-contrast) remains deferred to a post-Phase-14 initiative, but four architectural constraints protect the door — scoped `tokens.css` blocks, attribute-existence CSS selectors, theme-aware `chartTheme.js`, and preserved attribute application through Phase 12 cleanup. Cost today: ~30 lines across Phase 2A and 3A. Cost if omitted: 2–3 phases of rework when the initiative launches.
+2. **Phase 2A tasks amended:** `tokens.css` emits `:root[data-fs-theme="dark"]` blocks (not flat `:root`); `index.css` body rule uses `html[data-fs-theme]` (attribute-existence, not attribute-value); all other `data-fs-theme="dark"` selectors converted to the two-prescribed-forms rule.
+3. **Phase 3A tasks amended:** `chartTheme.js` exports `getChartPalette()` reading CSS custom properties via `getComputedStyle`; four chart grey tokens added to `tokens.json` (per §4.9.2, unchanged measurement column); ESLint chartTheme override still bans `#14b8a6`.
+4. **Phase 12 task clarified:** delete the allowlist conditional but preserve `<html data-fs-theme="dark">` application unconditionally.
+5. **`AGENTS.md` gains a "Multi-theme door-preservation" section** — the four constraints become non-negotiable for future agents.
 
 **What changed in v10.1 (ESLint .eslintignore Ratchet & CI Visual Job Alignment)**
 
@@ -683,6 +691,7 @@ Charts must not rely on colour alone, and `canvas` elements need an `aria-label`
 | D19 | Mobile table pattern: dense data tables render as compact-expand vertical cards at ≤ 768px with break-word overflow. Horizontal scroll preserved only for tables ≥ 12 columns where the card pattern does not fit | Product owner | 2026-11-09 | [x] approved in 1B |
 | D20 | Chrome plane darker than page: --fs-surface-sunken becomes #0c0d0f (1.044:1 darker than --fs-bg). The shell reads as a recessed frame; the 1 px border remains load-bearing | Product owner | 2026-11-09 | [x] approved in 1B |
 | D21 | Baseline storage is a local git repository at frontend/tests/visual/baseline/. Baselines are not committed to the app repo and not cloned by CI; the folder is .gitignore'd. Developer runs npx playwright test --project=visual locally before each phase merge and attaches the diff report to the walkthrough. Rationale: (a) main deploys to production via Vercel, and a 30–50 MB committed baseline folder bloats every deploy and every PR branch; (b) D11 already places manual verification with the developer; (c) a local git repo preserves per-route history via git log. Trade-off: I13's "pixel-identical" invariant and §7.1's "zero diff" gate shift from CI-enforced to walkthrough-evidenced; the developer is the sole guarantor of the legacy-route safety net. | Product owner | 2026-11-13 | [x] approved |
+| D22 | Multi-theme architecture is deferred; the door is preserved by four constraints. (1) tokens.css generates scoped :root[data-fs-theme="<name>"] blocks, not flat :root — a new theme is a generator addition, not a selector rewrite. (2) Theme-gating CSS rules use [data-fs-theme] (attribute-existence) so body rules apply regardless of the attribute value; :root[data-fs-theme="dark"] (specific value) is used only inside tokens.css to scope a theme's token block. (3) chartTheme.js reads --fs-chart-grey-1..4 and --fs-positive|negative|warning via getComputedStyle(document.documentElement) at chart render time; no hardcoded hex in the palette. A test-mode fallback returns the dark-theme constants so jest/jsdom tests pass. (4) Phase 12 deletes the allowlist conditional but preserves <html data-fs-theme="dark"> application unconditionally; the mechanism survives the cleanup. Cost today: ~30 lines across Phase 2A and 3A. Cost if omitted: generator rewrite, ~50-file specificity audit, chartTheme.js refactor plus 5 chart re-verifications, and attribute-path re-addition — estimated 2–3 phases of rework. | Product owner | 2026-11-10 | [x] approved |
 
 #### 4.13.1 Options considered and rejected
 
@@ -1409,6 +1418,9 @@ New files: `frontend/src/styles/tokens.css`, `frontend/src/styles/theme.css`, an
 - [ ] Import `tokens.css`, `theme.css`, and `theme-components.css` once in `frontend/src/index.js`, in that order, after `index.css`.
 - [ ] In `index.css`, add **only** the two gated rules from §4.14: `color-scheme` and the `body` background/colour under `html[data-fs-theme="dark"]`. Do **not** change the default `body` values.
 - [ ] Verify `/dashboard` renders unchanged and every unmigrated route still looks light.
+- [ ] D22 constraint 1 — tokens.css scoped block: tokens.js --write emits :root[data-fs-theme="dark"] { ... }, not flat :root { ... }. Verify with grep "^:root" frontend/src/styles/tokens.css → matches :root[data-fs-theme="dark"], not bare :root.
+- [ ] D22 constraint 2a — index.css body rule: the gated body rule uses html[data-fs-theme] body { ... } (attribute-existence), not html[data-fs-theme="dark"] body. Verify with grep "data-fs-theme" frontend/src/index.css → shows [data-fs-theme] on the body rule. Specificity is (0,1,2) in both forms — no cascade change.
+- [ ] D22 constraint 2b — selector audit: grep all of frontend/src/styles/tokens.css, theme.css, theme-components.css, and index.css for data-fs-theme="dark" and confirm each occurrence is :root[data-fs-theme="dark"] inside tokens.css (specific theme token block). Any occurrence elsewhere (html[data-fs-theme="dark"] in theme.css, theme-components.css, or index.css) is a D22 violation and must be converted to [data-fs-theme].
 
 **Exit gate 2A:** `tokens.css`, `theme.css`, and `theme-components.css` compile and are imported; `tokens.js --check` passes for `tokens.css` and §4.9; `theme.css` and `theme-components.css` contain no literal colour; no route changes appearance; toggling `document.documentElement.dataset.fsTheme` on any page changes `body` background and text colour only; the three frames load all three files and are covered by the visual fixture.
 
@@ -1503,6 +1515,9 @@ New file: `frontend/src/styles/chartTheme.js`
   - `DashboardKpiStrip.test.js` (1 test — `DashboardKpiStrip` metrics and delta formatting)
   - `useDashboardData.test.js` (2 tests — `useDashboardData` aggregation, memoization, and calculations)
   *(All 10 tests must remain 100% green).*
+- [ ] D22 constraint 3 — theme-aware chartTheme.js: exports getChartPalette() that reads --fs-chart-grey-1..4 and --fs-positive|negative|warning via getComputedStyle(document.documentElement). Returns hex strings (Chart.js cannot consume var() directly). Test-mode fallback: when process.env.NODE_ENV === 'test' or window.__VISUAL_TEST__ is set, return the dark-theme constants so jsdom-based tests pass. ESLint override still bans #14b8a6 inside chartTheme.js (accent never a chart series, per §4.3.2 rule 6).
+- [ ] Add four chart grey tokens to tokens.json: --fs-chart-grey-1: #8b929b, --fs-chart-grey-2: #b8bec6, --fs-chart-grey-3: #6a7078, --fs-chart-grey-4: #d5d9dd. These join §4.9.2's existing measurement rows without changing the values or the §4.9 dark-theme contrast table. Multi-theme will add a light-theme column when T3 launches.
+- [ ] Verify getChartPalette() returns the expected dark-theme hexes in the test environment and in the rendered dashboard. Capture both: expect(getChartPalette().greys[0]).toBe('#8b929b') in jest; DevTools shows --fs-chart-grey-1 on <html> in the browser.
 
 **Accepted-diff register (3A).** Grid and information order must be identical; chrome, type, and colour may differ only for the reasons below.
 
@@ -1897,7 +1912,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 12A — Cleanup and consolidation
 
-- [ ] Delete the allowlist and gating: every route gets `.fs-page` and `data-fs-theme="dark"` unconditionally.
+- [ ] Delete the allowlist conditional (which routes receive data-fs-theme). Preserve <html data-fs-theme="dark"> application unconditionally — the attribute stays applied on every route; only the logic that decided whether to apply it is removed. This preserves the multi-theme mechanism per D22 constraint 4.
 - [ ] Merge `theme-components.css` into `theme.css` and delete the legacy shared rules it shadowed. One hand-written theme file remains, alongside generated `tokens.css` (E1, K1).
 - [ ] Convert or delete the 11 shared legacy CSS files (see §4.16 and §8.1: `components/Table.css`, `components/Form.css`, `components/Modal.css`, `components/common/ConfirmModal.css`, `components/common/ViewOnlyBanner.css`, `components/common/ProtectedAction.css`, `components/PaginationControls.css`, `components/SummaryRow.css`, `components/AnalysisCard.css`, `components/salary/ComponentTable.css`, `components/common/UndoToast.css`) by migrating any remaining selectors into `theme.css` with tokenized values and zeroing out raw hex and `!important`.
 - [ ] Remove the now-dead toggle code from `ProtectedRoute` and the per-page attribute handling from `LandingPage`.
@@ -2422,6 +2437,7 @@ Append one row per sub-phase. Never edit past rows.
 | — | 2026-11-09 | Plan revised to v10: baseline storage moved to A5-Local (D21; local git repo, .gitignore'd in app repo, 0 images in main); I13 and §7.1 reframed to walkthrough-evidenced with Playwright diff report; 1C 68-byte stub baselines replaced with real screenshots (20–200 KB, manifest verified); verify-baseline-manifest.js added to §9.2. | 1C (Tooling) | None | — |
 | — | 2026-11-09 | Plan revised to v10.1: progressive `.eslintignore` (116 legacy files) added to prevent CI=true CRA build failures while enabling strict "error" rules for anti-slop; CI visual job removed under A5-Local (D21) in favor of local walkthrough evidence; updated §6.5, §7.1, §9.2, and §6.7–§6.14 task lists. | 1C (Tooling) | None | — |
 | 1C | 2026-11-10 | Tooling, deterministic harness, calc fixtures, and repository hygiene completed: anti-slop stylelint AST + ratchet, lint-tones.js, strict ESLint rules with progressive .eslintignore (116 legacy files; CI=true build clean), testid-guard.js, 8 calculation characterization fixtures, A5-Local visual baseline architecture (325 real PNGs, manifest verified, local git repo, junction linked), zero production UI changes. | 2A (Tokens) | None | eb820d4 (merged to main) |
+| — | 2026-11-10 | Plan revised to v10.2: D22 added (multi-theme door preservation via four constraints in Phases 2A, 3A, 12); §13 deferred entry expanded; Phase 2A tasks amended (scoped tokens.css, attribute-existence selectors); Phase 3A tasks amended (theme-aware chartTheme.js, four chart grey tokens); Phase 12 task clarified (delete conditional, preserve attribute); AGENTS.md gains Multi-theme section. | Phase 2A planning | None | phase-ui-1c-tooling (pre-merge) |
 
 ```
 Sub-phase:   1A
@@ -2535,7 +2551,7 @@ Merge SHA:   <sha>
 
 | Item | Reason | Revisit when |
 | :--- | :--- | :--- |
-| Light/dark theme toggle | Dark-only flat graphite for v1 (D1). The gating mechanism is theme-agnostic, so this is a palette decision, not a rewrite | After Phase 14 |
+| Multi-theme and multi-accent architecture (D22) | Dark-only v1 (D1). Three tiers are deferred: T1 (single accent value swap via tokens.json) is available immediately after Phase 14 — ~30 min. T2 (user-selectable accents) and T3 (light/dark/high-contrast themes) are separate post-overhaul initiatives. The plan preserves the door via the four D22 constraints; violating any of them turns T2/T3 into a rewrite. | After Phase 14, as a scoped initiative |
 | **Category colour in the log** | Removed by D14; replaced by a text prefix or group-by (G3). If the §1.3 timed task regresses materially, revisit the cue, not the palette | After Phase 4 analytics |
 | **Accent colour** | D14 rejects an accent hue; reintroducing one is a brand decision, not a page-level change | Post-release brand review |
 | **Third-party design skills** (antislop, UIdetox, Taste Skill) | They are instructions agents obey, usually unpinned; the deterministic stylelint rules cover the same patterns and block rather than advise | If a vetted, commit-pinned skill is trialled in 1C |
