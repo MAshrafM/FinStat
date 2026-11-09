@@ -21,7 +21,7 @@ jest.mock('../../../context/AuthContext', () => ({
 
 jest.mock('react-router-dom', () => ({
   Link: ({ children, to, ...props }) => <a href={to} {...props}>{children}</a>,
-}));
+}), { virtual: true });
 
 describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => {
   const mockShowToast = jest.fn();
@@ -66,7 +66,7 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
   test('1. renders paycheck log page with both canonical and deprecated paycheck entries', async () => {
     render(<PaycheckLog />);
 
-    expect(screen.getByText('Paycheck Log')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Paycheck Log' })).toBeInTheDocument();
 
     await waitFor(() => {
       // Canonical record
@@ -85,11 +85,10 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
     await waitFor(() => {
       // 12,000 + 10,000 = 22,000
       expect(getPaychecks).toHaveBeenCalled();
+      // Verify filter buttons for both years exist
+      expect(screen.getByRole('button', { name: '2025' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '2024' })).toBeInTheDocument();
     });
-
-    // Verify filter buttons for both years exist
-    expect(screen.getByRole('button', { name: '2025' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '2024' })).toBeInTheDocument();
   });
 
   test('3. opens accessible ConfirmModal instead of window.confirm when delete button clicked', async () => {
@@ -110,7 +109,7 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
     expect(confirmSpy).not.toHaveBeenCalled();
 
     // ConfirmModal must be rendered
-    expect(screen.getByText('Delete Paycheck')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Delete Paycheck' })).toBeInTheDocument();
     expect(screen.getByText(/Are you sure you want to delete this paycheck entry/i)).toBeInTheDocument();
 
     confirmSpy.mockRestore();
@@ -147,13 +146,13 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
     const deleteButtons = screen.getAllByTitle('Delete paycheck entry');
     fireEvent.click(deleteButtons[0]);
 
-    expect(screen.getByText('Delete Paycheck')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Delete Paycheck' })).toBeInTheDocument();
 
     const cancelBtn = screen.getByRole('button', { name: 'Cancel' });
     fireEvent.click(cancelBtn);
 
     await waitFor(() => {
-      expect(screen.queryByText('Delete Paycheck')).not.toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: 'Delete Paycheck' })).not.toBeInTheDocument();
       expect(deletePaycheck).not.toHaveBeenCalled();
     });
   });

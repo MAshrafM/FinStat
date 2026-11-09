@@ -119,7 +119,8 @@ describe('Step 5B.2: [AUD-TEST-002] PaycheckFormPage User Journey & Statutory Ve
     });
 
     // Profile select dropdown should have selected the default profile id
-    const profileSelect = container.querySelector('select.form-control');
+    const selects = container.querySelectorAll('select.form-control');
+    const profileSelect = Array.from(selects).find(s => Array.from(s.options).some(o => o.value === 'prof_corp_lead')) || selects[1];
     expect(profileSelect).not.toBeNull();
     expect(profileSelect.value).toBe('prof_corp_lead');
 

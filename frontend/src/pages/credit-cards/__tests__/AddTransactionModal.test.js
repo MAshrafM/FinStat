@@ -46,7 +46,7 @@ describe('AddTransactionModal - Multi-Currency Selector Tests', () => {
     expect(screen.getByLabelText(/total amount \(egp\)/i)).toBeInTheDocument();
 
     // Foreign amount input and confirmation card should NOT be present
-    expect(screen.queryByLabelText(/foreign amount/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/amount \(usd\)/i)).not.toBeInTheDocument();
     expect(screen.queryByTestId('conversion-confirmation-card')).not.toBeInTheDocument();
   });
 
@@ -68,7 +68,7 @@ describe('AddTransactionModal - Multi-Currency Selector Tests', () => {
     fireEvent.change(currencySelect, { target: { value: 'USD' } });
 
     expect(currencySelect.value).toBe('USD');
-    expect(screen.getByLabelText(/foreign amount \(usd\)/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/amount \(usd\)/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/exchange rate/i)).toBeInTheDocument();
     expect(screen.getByTestId('conversion-confirmation-card')).toBeInTheDocument();
   });
@@ -96,7 +96,7 @@ describe('AddTransactionModal - Multi-Currency Selector Tests', () => {
     fireEvent.change(rateInput, { target: { value: '50.00' } });
 
     // Enter 200 USD
-    const foreignInput = screen.getByLabelText(/foreign amount \(usd\)/i);
+    const foreignInput = screen.getByLabelText(/amount \(usd\)/i);
     fireEvent.change(foreignInput, { target: { value: '200' } });
 
     // Converted EGP equivalent should be 10,000 EGP
@@ -140,7 +140,7 @@ describe('AddTransactionModal - Multi-Currency Selector Tests', () => {
     fireEvent.change(currencySelect, { target: { value: 'USD' } });
 
     // Enter foreign amount
-    const foreignInput = screen.getByLabelText(/foreign amount \(usd\)/i);
+    const foreignInput = screen.getByLabelText(/amount \(usd\)/i);
     fireEvent.change(foreignInput, { target: { value: '100' } });
 
     // Enter rate
