@@ -2421,7 +2421,7 @@ Append one row per sub-phase. Never edit past rows.
 | 1B | 2026-11-09 | Design direction approved after prototype review: teal accent #14b8a6 (interactive-only), darker chrome #0c0d0f, mobile compact-expand cards, Variant B for all three frames. Plan amended (§2 I6, §4.1, §4.3.2, §4.4, §4.6, §4.9, §4.13 D2/D14 + D19/D20, §4.13.1, §4.15, §6.1.1, §6.4, §6.5, §6.7–§6.14, §6.16, §7.1, §7.2). | 1C (Tooling) | None | 46f75aa (merged to main) |
 | — | 2026-11-09 | Plan revised to v10: baseline storage moved to A5-Local (D21; local git repo, .gitignore'd in app repo, 0 images in main); I13 and §7.1 reframed to walkthrough-evidenced with Playwright diff report; 1C 68-byte stub baselines replaced with real screenshots (20–200 KB, manifest verified); verify-baseline-manifest.js added to §9.2. | 1C (Tooling) | None | — |
 | — | 2026-11-09 | Plan revised to v10.1: progressive `.eslintignore` (116 legacy files) added to prevent CI=true CRA build failures while enabling strict "error" rules for anti-slop; CI visual job removed under A5-Local (D21) in favor of local walkthrough evidence; updated §6.5, §7.1, §9.2, and §6.7–§6.14 task lists. | 1C (Tooling) | None | — |
-| 1C | 2026-11-10 | Tooling, deterministic harness, calc fixtures, and repository hygiene completed: anti-slop stylelint AST + ratchet, lint-tones.js, strict ESLint rules with progressive .eslintignore (116 legacy files; CI=true build clean), testid-guard.js, 8 calculation characterization fixtures, A5-Local visual baseline architecture (325 real PNGs, manifest verified, local git repo, junction linked), zero production UI changes. | 2A (Tokens) | None | 0179015 |
+| 1C | 2026-11-10 | Tooling, deterministic harness, calc fixtures, and repository hygiene completed: anti-slop stylelint AST + ratchet, lint-tones.js, strict ESLint rules with progressive .eslintignore (116 legacy files; CI=true build clean), testid-guard.js, 8 calculation characterization fixtures, A5-Local visual baseline architecture (325 real PNGs, manifest verified, local git repo, junction linked), zero production UI changes. | 2A (Tokens) | None | eb820d4 (merged to main) |
 
 ```
 Sub-phase:   1A
@@ -2462,7 +2462,7 @@ Visual diff: zero (zero production styling changes)
 Fixtures:    unchanged (8 characterization fixtures established)
 Screenshots: 325 real baselines stored in local repo (A5-Local, D21)
 Branch:      phase-ui-1c-tooling
-Merge SHA:   0179015
+Merge SHA:   eb820d4 (merged to main)
 ```
 
 ### Sub-phase note template
