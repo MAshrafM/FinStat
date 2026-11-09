@@ -1,0 +1,33 @@
+{
+  "domain": "real-estate",
+  "calculation": "Net Operating Income, Yields, ROI & Capital Appreciation",
+  "scenarios": [
+    {
+      "name": "Residential Rental Unit in New Cairo",
+      "input": {
+        "purchasePrice": 2500000,
+        "acquisitionClosingCosts": 125000,
+        "currentMarketValuation": 3200000,
+        "annualGrossRentalIncome": 240000,
+        "annualOperatingExpenses": {
+          "maintenance": 15000,
+          "propertyTax": 8000,
+          "insurance": 4000,
+          "managementFee": 12000
+        }
+      },
+      "expected": {
+        "totalCostBasis": 2625000,
+        "totalOperatingExpenses": 39000,
+        "netOperatingIncome": 201000,
+        "grossRentalYieldPct": 9.6,
+        "netRentalYieldPct": 7.66,
+        "cashOnCashRoiPct": 7.66,
+        "capitalAppreciation": 700000,
+        "totalReturn": 901000,
+        "totalReturnPct": 34.32
+      }
+    }
+  ]
+}
+

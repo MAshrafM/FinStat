@@ -1,0 +1,39 @@
+{
+  "ignoreFiles": ["src/styles/tokens.css"],
+  "rules": {
+    "color-no-hex": true,
+    "color-named": "never",
+    "function-disallowed-list": ["rgb", "rgba", "hsl", "hsla"],
+    "declaration-no-important": true,
+    "declaration-property-value-disallowed-list": {
+      "backdrop-filter": ["/./"],
+      "-webkit-backdrop-filter": ["/./"],
+      "background": ["/gradient\\(/"],
+      "background-image": ["/gradient\\(/"],
+      "mask": ["/gradient\\(/"],
+      "mask-image": ["/gradient\\(/"],
+      "-webkit-mask": ["/gradient\\(/"],
+      "-webkit-mask-image": ["/gradient\\(/"],
+      "border-image": ["/gradient\\(/"],
+      "border-image-source": ["/gradient\\(/"],
+      "background-clip": ["text"],
+      "-webkit-background-clip": ["text"],
+      "filter": ["/blur\\(|drop-shadow\\(/"],
+      "-webkit-filter": ["/blur\\(|drop-shadow\\(/"],
+      "border-top-left-radius": ["/./"],
+      "border-top-right-radius": ["/./"],
+      "border-bottom-left-radius": ["/./"],
+      "border-bottom-right-radius": ["/./"],
+      "border-start-start-radius": ["/./"],
+      "border-start-end-radius": ["/./"],
+      "border-end-start-radius": ["/./"],
+      "border-end-end-radius": ["/./"]
+    },
+    "declaration-property-value-allowed-list": {
+      "border-radius": ["/^(0|var\\(--fs-radius-(sm|md|lg|pill)\\))( (0|var\\(--fs-radius-(sm|md|lg|pill)\\))){0,3}$/"],
+      "box-shadow": ["none", "/^var\\(--fs-shadow\\)$/"],
+      "text-shadow": ["none"]
+    }
+  }
+}
+

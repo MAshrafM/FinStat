@@ -100,10 +100,122 @@ jobs:
         env:
           CI: true
 
+  frontend-tests:
+    name: Frontend Unit & Calculation Tests
+    runs-on: ubuntu-latest
+    needs: syntax-and-lint
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run Frontend Tests (In-Band)
+        working-directory: frontend
+        run: |
+          npm test -- --watchAll=false
+          npx jest --runInBand tests/a11y/expectNoA11yViolations.test.js
+          npx jest --runInBand tests/calculations.spec.js
+        env:
+          CI: true
+
+  frontend-lint:
+    name: Frontend Anti-Slop, Ratchet & ESLint Gate
+    runs-on: ubuntu-latest
+    needs: syntax-and-lint
+
+    steps:
+      - name: Checkout Code (Full History for Merge-Base Diffing)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Check Token Tables & Font Budget
+        run: |
+          node frontend/scripts/tokens.js --check --tables
+          node frontend/scripts/tokens.js --check --fonts
+
+      - name: Run Tone & Accent Linter
+        run: node frontend/scripts/lint-tones.js
+
+      - name: Run Stylelint Ratchet
+        run: node frontend/scripts/lint-ratchet.js
+
+      - name: Run Test-ID & Aria-Label Guard
+        run: node frontend/scripts/testid-guard.js
+
+      - name: Run Route Allowlist Assertion
+        run: node frontend/scripts/ui-coverage.js --assert-allowlist
+
+      - name: Run Changed-Files ESLint Gate (§7.1 & §9.2)
+        working-directory: frontend
+        run: |
+          CHANGED_FILES=$(git diff --name-only origin/main HEAD -- 'src/**/*.js' 'src/**/*.jsx' || true)
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "Linting changed JS files with --max-warnings=0:"
+            echo "$CHANGED_FILES"
+            npx eslint $CHANGED_FILES --max-warnings=0
+          else
+            echo "No JS files modified against origin/main. Checking App.js as proxy."
+            npx eslint src/App.js --max-warnings=0
+          fi
+
+  frontend-visual-pr-subset:
+    name: Playwright Visual PR Subset (Docker Container)
+    runs-on: ubuntu-latest
+    needs: [frontend-build, frontend-tests, frontend-lint]
+    container:
+      image: mcr.microsoft.com/playwright:v1.49.0-jammy
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install serve for production hosting
+        run: npm install -g serve
+
+      - name: Build Frontend Application Bundle
+        working-directory: frontend
+        run: npm run build
+        env:
+          CI: true
+
+      - name: Run Playwright Visual PR Subset
+        working-directory: frontend
+        run: npx playwright test --project=pr-subset
+        env:
+          CI: true
+          PR_SUBSET: true
+
   deploy-production:
     name: Deploy to Production (Vercel)
     runs-on: ubuntu-latest
-    needs: [backend-tests, frontend-build]
+    needs: [backend-tests, frontend-build, frontend-tests, frontend-lint]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:

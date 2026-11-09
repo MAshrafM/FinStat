@@ -59,6 +59,55 @@ function parseRoutes() {
   };
 }
 
+// --- Route Allowlist Assertion (§6.3) ---
+
+function assertAllowlist(customPattern = null) {
+  const routeInfo = parseRoutes();
+  const validRoutePaths = new Set(routeInfo.routes.map(r => r.path));
+
+  let allowlistPatterns = [];
+  const protectedRoutePath = path.join(ROOT_DIR, 'frontend/src/components/ProtectedRoute.js');
+  if (fs.existsSync(protectedRoutePath)) {
+    const prContent = fs.readFileSync(protectedRoutePath, 'utf8');
+    const match = prContent.match(/const\s+THEMED_PATTERNS\s*=\s*\[([\s\S]*?)\];/);
+    if (match) {
+      const items = match[1]
+        .split('\n')
+        .map(l => l.replace(/\/\/.*$/, '').trim())
+        .filter(Boolean)
+        .flatMap(l => l.split(','))
+        .map(s => s.replace(/['"]/g, '').trim())
+        .filter(Boolean);
+      allowlistPatterns = items;
+    }
+  }
+
+  if (customPattern) {
+    allowlistPatterns.push(customPattern);
+  }
+
+  console.log(`[ui-coverage] Asserting allowlist against ${routeInfo.routes.length} defined routes in App.js...`);
+
+  const errors = [];
+  for (const pattern of allowlistPatterns) {
+    if (!validRoutePaths.has(pattern)) {
+      errors.push(`Pattern "${pattern}" does not match any route in App.js (§6.3 rule 1)`);
+    }
+    if (pattern.includes('*')) {
+      errors.push(`Pattern "${pattern}" uses forbidden wildcard prefix matching (§6.3 rule 3)`);
+    }
+  }
+
+  if (errors.length > 0) {
+    console.error(`\n❌ [ui-coverage] Allowlist assertion failed with ${errors.length} error(s):`);
+    errors.forEach(e => console.error(`   - ${e}`));
+    process.exit(1);
+  }
+
+  console.log(`✓ [ui-coverage] Allowlist assertion passed. ${allowlistPatterns.length} pattern(s) verified against App.js routes.`);
+  process.exit(0);
+}
+
 // --- Inline-Style Census (§8.2) ---
 
 function getJsFiles(dir) {
@@ -108,12 +157,24 @@ function main() {
   const args = process.argv.slice(2);
   const doRoutes = args.includes('--routes');
   const doCensus = args.includes('--census');
+  const doAssertAllowlist = args.includes('--assert-allowlist');
 
-  if (!doRoutes && !doCensus) {
+  if (!doRoutes && !doCensus && !doAssertAllowlist) {
     console.log('Usage:');
     console.log('  node frontend/scripts/ui-coverage.js --routes');
     console.log('  node frontend/scripts/ui-coverage.js --census');
+    console.log('  node frontend/scripts/ui-coverage.js --assert-allowlist [--pattern <route-pattern>]');
     process.exit(1);
+  }
+
+  if (doAssertAllowlist) {
+    let customPattern = null;
+    const patIdx = args.indexOf('--pattern');
+    if (patIdx !== -1 && args[patIdx + 1]) {
+      customPattern = args[patIdx + 1];
+    }
+    assertAllowlist(customPattern);
+    return;
   }
 
   if (doRoutes) {

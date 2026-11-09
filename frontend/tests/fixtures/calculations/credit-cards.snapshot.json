@@ -1,0 +1,45 @@
+{
+  "domain": "credit-cards",
+  "calculation": "Installment Schedule Amortization in Piastres",
+  "scenarios": [
+    {
+      "name": "6-Month Installment of 10,000 EGP",
+      "input": {
+        "amount": 10000,
+        "amountInPiastres": 1000000,
+        "paidAmountInPiastres": 333334,
+        "months": 6
+      },
+      "expected": {
+        "baseMonthlyPiastres": 166666,
+        "remainderPiastres": 4,
+        "firstMonthPiastres": 166670,
+        "regularMonthPiastres": 166666,
+        "remainingPrincipalInPiastres": 666666,
+        "remainingPrincipal": 6666.66,
+        "monthsPaid": 2,
+        "remainingMonths": 4
+      }
+    },
+    {
+      "name": "12-Month Installment of 15,500 EGP",
+      "input": {
+        "amount": 15500,
+        "amountInPiastres": 1550000,
+        "paidAmountInPiastres": 0,
+        "months": 12
+      },
+      "expected": {
+        "baseMonthlyPiastres": 129166,
+        "remainderPiastres": 8,
+        "firstMonthPiastres": 129174,
+        "regularMonthPiastres": 129166,
+        "remainingPrincipalInPiastres": 1550000,
+        "remainingPrincipal": 15500.0,
+        "monthsPaid": 0,
+        "remainingMonths": 12
+      }
+    }
+  ]
+}
+

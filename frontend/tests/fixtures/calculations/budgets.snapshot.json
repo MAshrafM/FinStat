@@ -1,0 +1,22 @@
+{
+  "domain": "budgets",
+  "calculation": "Threshold Milestones and Severity Classification (§4.3.1)",
+  "scenarios": [
+    {
+      "name": "Budget Progression Across 0%, 50%, 80%, 100%, 120%",
+      "input": {
+        "monthlyBudget": 10000,
+        "milestones": [0, 3000, 5000, 8000, 10000, 12000]
+      },
+      "expected": [
+        { "spent": 0, "percentage": 0.0, "severity": "neutral", "remaining": 10000, "overBudget": 0 },
+        { "spent": 3000, "percentage": 30.0, "severity": "neutral", "remaining": 7000, "overBudget": 0 },
+        { "spent": 5000, "percentage": 50.0, "severity": "warning", "remaining": 5000, "overBudget": 0 },
+        { "spent": 8000, "percentage": 80.0, "severity": "warning", "remaining": 2000, "overBudget": 0 },
+        { "spent": 10000, "percentage": 100.0, "severity": "negative", "remaining": 0, "overBudget": 0 },
+        { "spent": 12000, "percentage": 120.0, "severity": "negative", "remaining": 0, "overBudget": 2000 }
+      ]
+    }
+  ]
+}
+

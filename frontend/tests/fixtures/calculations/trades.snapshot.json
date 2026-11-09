@@ -1,0 +1,30 @@
+{
+  "domain": "trades",
+  "calculation": "Weighted Average Cost Basis and Split Adjustment",
+  "scenarios": [
+    {
+      "name": "Buy, Split (2:1), Sell with Brokerage Commission",
+      "input": {
+        "trades": [
+          { "action": "BUY", "shares": 100, "price": 50.0, "fees": 25.0 },
+          { "action": "BUY", "shares": 100, "price": 60.0, "fees": 30.0 }
+        ],
+        "splitRatio": 2,
+        "sell": { "shares": 150, "price": 40.0, "fees": 35.0 }
+      },
+      "expected": {
+        "preSplitShares": 200,
+        "preSplitCostBasisTotal": 11055.0,
+        "preSplitAveragePricePerShare": 55.275,
+        "postSplitShares": 400,
+        "postSplitAveragePricePerShare": 27.6375,
+        "sellProceedsNet": 5965.0,
+        "costOfSharesSold": 4145.625,
+        "realizedPnL": 1819.375,
+        "remainingShares": 250,
+        "remainingCostBasis": 6909.375
+      }
+    }
+  ]
+}
+

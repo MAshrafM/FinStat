@@ -1,0 +1,39 @@
+{
+  "domain": "currency",
+  "calculation": "Multi-Currency Conversions and Triangular Cross-Rates",
+  "baseCurrency": "EGP",
+  "scenarios": [
+    {
+      "name": "Triangular Exchange & Portfolio Valuation",
+      "input": {
+        "ratesToEgp": {
+          "USD": 49.50,
+          "EUR": 53.46,
+          "SAR": 13.20,
+          "AED": 13.48
+        },
+        "holdings": {
+          "USD": 5000,
+          "EUR": 3000,
+          "SAR": 10000,
+          "EGP": 150000
+        }
+      },
+      "expected": {
+        "triangularRates": {
+          "EUR_TO_USD": 1.08,
+          "USD_TO_SAR": 3.75,
+          "AED_TO_SAR": 1.0212
+        },
+        "holdingsValueInEgp": {
+          "USD": 247500.0,
+          "EUR": 160380.0,
+          "SAR": 132000.0,
+          "EGP": 150000.0
+        },
+        "totalPortfolioValueEgp": 689880.0
+      }
+    }
+  ]
+}
+

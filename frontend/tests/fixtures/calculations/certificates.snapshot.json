@@ -1,0 +1,40 @@
+{
+  "domain": "certificates",
+  "calculation": "CD Yield, Accrual & Maturity Value",
+  "scenarios": [
+    {
+      "name": "1-Year Certificate at 27% Annual Payout",
+      "input": {
+        "amount": 100000,
+        "amountInPiastres": 10000000,
+        "annualRate": 27.0,
+        "durationMonths": 12,
+        "daysElapsed": 90
+      },
+      "expected": {
+        "annualInterestTotal": 27000.0,
+        "maturityValue": 127000.0,
+        "dailyInterestRate": 0.0007397260273972603,
+        "accruedInterest90Days": 6657.53,
+        "accruedInterestInPiastres": 665753
+      }
+    },
+    {
+      "name": "3-Year Certificate at 23.5% Monthly Payout",
+      "input": {
+        "amount": 250000,
+        "amountInPiastres": 25000000,
+        "annualRate": 23.5,
+        "durationMonths": 36,
+        "daysElapsed": 30
+      },
+      "expected": {
+        "monthlyInterest": 4895.83,
+        "totalInterest3Years": 176250.0,
+        "maturityValue": 426250.0,
+        "accruedInterest30Days": 4828.77
+      }
+    }
+  ]
+}
+

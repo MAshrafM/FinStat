@@ -1,0 +1,19 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "token",
+          "value": "mock-visual-harness-token"
+        },
+        {
+          "name": "user",
+          "value": "{\"_id\":\"visual-mock-user-id\",\"name\":\"Visual Harness User\",\"email\":\"visual@finstat.test\",\"role\":\"admin\"}"
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,56 @@
+{
+  "domain": "payroll",
+  "statutoryBasis": "Egyptian Law 175/2023 & Law 148/2019",
+  "scenarios": [
+    {
+      "name": "Mid-Wage Gross 15,000 EGP",
+      "input": {
+        "grossSalary": 15000,
+        "basicSalary": 15000,
+        "insurableSalary": 12600,
+        "insuranceRates": {
+          "employeeShare": 11,
+          "employerShare": 18.75,
+          "minCap": 2000,
+          "maxCap": 12600
+        },
+        "taxYear": 2024,
+        "personalExemption": 20000
+      },
+      "expected": {
+        "cappedInsurableIncome": 12600,
+        "employeeInsurance": 1386,
+        "employerInsurance": 2362.5,
+        "taxableIncomeAnnual": 143368,
+        "annualTax": 18423.6,
+        "monthlyTax": 1535.3,
+        "netSalary": 12078.7
+      }
+    },
+    {
+      "name": "Senior Gross 35,000 EGP",
+      "input": {
+        "grossSalary": 35000,
+        "basicSalary": 35000,
+        "insurableSalary": 35000,
+        "insuranceRates": {
+          "employeeShare": 11,
+          "employerShare": 18.75,
+          "minCap": 2000,
+          "maxCap": 12600
+        },
+        "taxYear": 2024,
+        "personalExemption": 20000
+      },
+      "expected": {
+        "cappedInsurableIncome": 12600,
+        "employeeInsurance": 1386,
+        "employerInsurance": 2362.5,
+        "taxableIncomeAnnual": 383368,
+        "annualTax": 71007.8,
+        "monthlyTax": 5917.32,
+        "netSalary": 27696.68
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "domain": "debt-payoff",
+  "strategies": ["snowball", "avalanche"],
+  "scenarios": [
+    {
+      "name": "Multi-Card Payoff Comparison",
+      "input": {
+        "monthlyBudgetInPiastres": 300000,
+        "cards": [
+          {
+            "cardId": "card-1",
+            "cardName": "Silver Card",
+            "balanceInPiastres": 500000,
+            "minimumPaymentInPiastres": 25000,
+            "apr": 28.5
+          },
+          {
+            "cardId": "card-2",
+            "cardName": "Gold Card",
+            "balanceInPiastres": 1200000,
+            "minimumPaymentInPiastres": 60000,
+            "apr": 24.0
+          },
+          {
+            "cardId": "card-3",
+            "cardName": "Platinum Card",
+            "balanceInPiastres": 800000,
+            "minimumPaymentInPiastres": 40000,
+            "apr": 32.0
+          }
+        ]
+      },
+      "expected": {
+        "snowball": {
+          "monthsToPayoff": 10,
+          "totalInterestPaidInPiastres": 269145
+        },
+        "avalanche": {
+          "monthsToPayoff": 10,
+          "totalInterestPaidInPiastres": 258412
+        },
+        "savingsWithAvalancheInPiastres": 10733
+      }
+    }
+  ]
+}
+
