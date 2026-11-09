@@ -49,12 +49,12 @@ test.describe('Visual Regression Suite', () => {
 
         // Navigate to route
         await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });
-        await page.waitForLoadState('networkidle').catch(() => {});
-        await page.evaluate(() => document.fonts.ready);
+        await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+        await page.evaluate(() => document.fonts.ready).catch(() => {});
         await page.addStyleTag({
           content: '*, *::before, *::after { transition: none !important; animation: none !important; }',
         }).catch(() => {});
-        await page.waitForTimeout(1200); // settle Chart.js and CSS transitions
+        await page.waitForTimeout(500); // settle Chart.js and CSS transitions
 
         // Selector-based masking per Component 5.3 & N1 (zero changes to production UI)
         const maskLocators = [

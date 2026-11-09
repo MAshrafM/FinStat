@@ -1,17 +1,22 @@
 # FinStat — UI/UX Overhaul
 
-**Action Plan & Progress Tracker — v10 (Baseline Storage & Walkthrough Corrections)**
+**Action Plan & Progress Tracker — v10.1 (ESLint .eslintignore Ratchet & CI Visual Job Alignment)**
 
 | Field | Value |
 | :--- | :--- |
-| Version | 10.0 |
+| Version | 10.1 |
 | Revised | 2026-11-09 |
-| Supersedes | v9 (2026-11-09), v8, v7, v6, v5, v4, v3, v2, v1 |
+| Supersedes | v10 (2026-11-09), v9, v8, v7, v6, v5, v4, v3, v2, v1 |
 | Direction | Flat graphite, one neutral action style, no accent hue, IBM Plex Sans. Chosen by the developer in 1B (D12–D18) |
 | Acceptance target | Three reference frames in `docs/UI-UX_Plan/reference/`, two or three variants each, with stress data |
 | Scope | Presentation only. No route, API, calculation, permission, or schema changes. |
 | Input | `docs/UI-UX_Plan/Comments.md` (review rounds 1–6) + Post-Audit Architecture (Phases 7A–8C) |
 | Working model | AI agents implement; the developer reviews, signs off, and performs manual verification. No time estimates are tracked. |
+
+**What changed in v10.1 (ESLint .eslintignore Ratchet & CI Visual Job Alignment)**
+
+1. **Progressive `.eslintignore` replaced Layer 1 warn:** In Phase 1C, CRA's `react-scripts build` hardcodes fatal escalation of ESLint warnings to errors when `CI=true`. To ensure `npm run build` succeeds under `CI=true` while keeping strict `"error"` enforcement for the anti-slop rules on all touched and new files without violating the 1C zero-production-UI change boundary, pre-existing legacy files (116 files) are isolated in `frontend/.eslintignore`. Each migration phase removes its touched files from `.eslintignore`, creating an irreversible forward ratchet with zero false negatives.
+2. **CI visual regression job removed under A5-Local (D21):** Visual regression baselines reside in a local workstation repository (`D:\Projects\FinStat-visual-baselines`) untracked in GitHub per D21. The CI runner cannot access workstation-local baselines. The `frontend-visual-pr-subset` job in `.github/workflows/ci.yml` is removed. Visual verification is developer-run locally and walkthrough-evidenced per §7.1 and I13, not CI-enforced.
 
 **What changed in v10 (Baseline Storage & Walkthrough Corrections)**
 
@@ -1351,8 +1356,8 @@ Decided once, applied in every phase.
 - [ ] Do **not** install third-party design skills. If one is ever trialled, pin its commit and record the decision in §13.
 - [ ] Add the **ESLint JavaScript rules** (§9.2): `no-restricted-syntax` for inline colour, image, filter, shadow, border, radius, and accent props; hex, named, and functional colour literals (including template literals); and a `CallExpression[callee.property.name=/^create(Linear|Radial|Conic)Gradient$/]` selector that matches any receiver (`ctx`, `context`, `chart.ctx`), plus the four missing jsx-a11y rules. The `chartTheme.js` override **re-declares** that selector instead of switching the rule off, so gradients stay banned there (G8, E3, K7).
 - [ ] Add **jest-axe** and a shared `expectNoA11yViolations` helper for component tests.
-- [ ] Build the **deterministic Playwright harness** (§9.5): route fixtures, frozen clock, masked volatile regions, `storageState` auth, CI-image baselines.
-- [ ] Generate the **initial 325 baselines** (65 routes × 5 widths) inside the CI image, and commit them under `frontend/tests/visual/baseline/`.
+- [ ] Build the **deterministic Playwright harness** (§9.5): route fixtures, frozen clock, masked volatile regions, `storageState` auth, local workstation execution.
+- [ ] Generate the **initial 325 baselines** (65 routes × 5 widths) locally, and store them in the local repository under `frontend/tests/visual/baseline/` linked via junction (A5-Local, D21).
 - [ ] Add the **test-ID guard**: diffs `data-testid` and `aria-label` occurrences before and after.
 - [ ] Add `ui-coverage.js --assert-allowlist` mode (§6.3).
 - [ ] Create **calculation characterization fixtures** for every calc-bearing page (§9.6).
@@ -1361,7 +1366,7 @@ Decided once, applied in every phase.
 
 **Exit gate 1C:**
 - [ ] `git check-ignore` still confirms the 1A fix: the plan is trackable and snapshots are ignored.
-- [ ] CI runs frontend tests, the lint ratchet, ESLint, and the PR subset of visual tests.
+- [ ] CI runs frontend tests, the lint ratchet, ESLint, and the build (authoritative). Visual regression is developer-run locally and walkthrough-evidenced per §7.1 and I13, not CI-enforced.
 - [ ] frontend/tests/visual/baseline/ contains 325 real PNG screenshots (20–200 KB each, confirmed non-stub via file output and manifest.json with sha256 hashes); baselines committed to local git repo (A5-Local, D21) with git log showing initial capture commit; app repo tracks 0 baseline images
 - [ ] Calculation fixtures pass on unchanged code (they describe today's behaviour, not the desired one).
 - [ ] `--assert-allowlist` fails on a deliberately mis-scoped test pattern (negative test).
@@ -1486,6 +1491,7 @@ New file: `frontend/src/styles/chartTheme.js`
   - `NetWorthHero.js` — hero typography, currency toggle, and period delta.
   - `ReportsGrid.js` — card primitives and report links.
   - `SavingsForexCard.js` — card primitives for liquid cash and forex reserves.
+- [ ] Remove converted Dashboard components (`DashboardSummary.js`, `Dashboard.js`, `pages/dashboard/*`) from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] No preload and no JS injection (S2): `swap` plus the size-adjusted fallback is the whole strategy (§4.5). Verify a legacy route issues **zero** font requests, and measure CLS in Lighthouse on `/dashboard` — record the number in §10 and keep it ≤ 0.1.
 - [ ] Apply the series cap: any category chart above six series becomes ranked horizontal bars plus a data table, with the remainder grouped as "Other" (G2, §4.12).
 - [ ] Create `docs/ui-snapshots/accepted-diffs.md` (local, not versioned) listing the accepted colour changes.
@@ -1548,6 +1554,7 @@ Daily-use flow; 185 inline styles across six files.
 - [ ] Add the AD13 line to `CHANGELOG.md`: ordinary expense amounts are neutral; colour now only means something needs attention (§3.2).
 - [ ] Verify split transactions and bulk actions still work on the card layout at 390px.
 - [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
+- [ ] Remove converted Expenditure log components (`ExpenditureLogPage.js`, `ExpenditureSubNav.js`) from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/expenditures` to the allowlist** (one pattern).
 - [ ] Confirm zero diff on every non-allowlisted route.
 
@@ -1557,6 +1564,7 @@ Daily-use flow; 185 inline styles across six files.
 - [ ] `AddExpenditurePage.js` / `EditExpenditurePage.js` — header + container alignment.
 - [ ] Apply the form pattern from §6.4 (labels, errors, validation timing, placeholder colour).
 - [ ] Verify create, edit, validation errors, and navigation.
+- [ ] Remove `ExpenditureForm.js`, `AddExpenditurePage.js`, and `EditExpenditurePage.js` from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/expenditures/new` and `/expenditures/edit/:id`** to the allowlist.
 
 #### 4C — Rules, budgets, recurring, bills, analysis
@@ -1621,6 +1629,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Component-table inline editing states themed.
 - [ ] Verify create, preview, save, edit, validation errors, date normalization, and legacy dual-field fallback paths.
 - [ ] Confirm unit/regression tests for `normalizePayDateInput` pass unchanged.
+- [ ] Remove `PaycheckFormPage.js` from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/salary/paychecks/new` and `/salary/paychecks/edit/:id`.**
 
 #### 5E — History, update, analytics, tax simulator
@@ -1630,6 +1639,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `PayrollAnalyticsPage.js` (5 inline styles) + `CalendarAnalysis.js` / `FiscalAnalysis.js` — token colours, calendar/fiscal cycle chips; no chart exists today.
 - [ ] `TaxSimulator.js` + `TaxSimulator.css` — statutory Egyptian tax bracket simulation cards, progressive slabs visualizer.
 - [ ] Verify cycle query params (`?cycle=calendar|fiscal`) and redirects.
+- [ ] Remove converted salary/history/analytics components from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add the six remaining patterns** (history, edit, history-edit, update, analytics, simulator).
 
 **Exit gate Phase 5:**
@@ -1655,6 +1665,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Unrealised P&L is neutral unless it is the subject of the view, and then uses `Delta` with sign, arrow, and label.
 - [ ] Verify summary cards, holdings table, allocation doughnut at all widths.
 - [ ] Holdings table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
+- [ ] Remove `PortfolioDashboard.js` and `components/portfolio/*` from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/portfolio`.**
 
 #### 6B — Rebalancing & comprehensive reporting
@@ -1664,6 +1675,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `ComprehensiveReportPage.js` + `ComprehensiveReport.css` — multi-module consolidated PDF/Excel report generator, date range selectors, module toggle checkboxes.
 - [ ] Rebalancing drift uses only the threshold recorded in §4.3.1; if none exists, the drift figure is neutral and carries no `Rebalance` label.
 - [ ] Verify empty and error states with the new tokens.
+- [ ] Remove `RebalancingPage.js` and `ComprehensiveReportPage.js` from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/portfolio/rebalancing` and `/reports/financial`.**
 
 **Exit gate Phase 6:** 3 routes themed; charts themed; build/tests/lint/axe/screenshots; zero diff on non-allowlisted routes.
@@ -1684,6 +1696,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `AddTradePage.js` / `EditTradePage.js` headers.
 - [ ] Verify broker presets, custom broker entry, symbol search, validation.
 - [ ] Trade P&L fixtures unchanged.
+- [ ] Remove Trade components (`TradeLogPage.js`, `TradeForm.js`, `TradeSummaryPage.js`, `AddTradePage.js`, `EditTradePage.js`) from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/trades`, `/trades/add`, `/trades/edit/:id`, `/trade-summary`.**
 
 #### 7B — Corporate actions
@@ -1692,6 +1705,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `CorporateActionWizard.css` (14 inline) + `.js` — stepper tokens, step panels, review summary.
 - [ ] Remove the 7 `!important` in the wizard.
 - [ ] Verify wizard navigation, validation, and submit.
+- [ ] Remove Corporate Action components (`CorporateActionsList.js`, `CorporateActionWizard.js`) from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/corporate-actions` and `/corporate-actions/wizard`.**
 
 #### 7C — Mutual funds
@@ -1699,6 +1713,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `MutualFundForm.js` (15) → token form.
 - [ ] `MutualFundLogPage.js`, `MutualFundSummaryPage.js` → dark tables/cards.
 - [ ] Verify create/edit/summary consistency.
+- [ ] Remove Mutual Fund components (`MutualFundForm.js`, `MutualFundLogPage.js`, `MutualFundSummaryPage.js`) from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add the four mutual-fund patterns.**
 
 **Exit gate Phase 7:** 11 entries; wizard stepper matches the dashboard pattern; build/tests/lint/axe/screenshots; zero diff on non-allowlisted routes.
@@ -1744,6 +1759,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Rate/valuation figures use proportional `tabular-nums`, right-aligned.
 - [ ] Verify FX fetch display, conversions, validation.
 - [ ] FX conversion fixtures unchanged.
+- [ ] Remove Currency components from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add the four currency patterns.**
 
 #### 8E — Real estate, all routes
@@ -1754,6 +1770,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `AddRealEstatePage.js` / `EditRealEstatePage.js` header + container alignment.
 - [ ] Verify property cards, yield, and ROI figures are neutral; a yield or ROI takes a tone only on a delta against the target recorded in §4.3.1, and stays neutral when no target exists.
 - [ ] Real-estate yield/ROI fixtures unchanged.
+- [ ] Remove Real Estate components from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add all three real-estate patterns in this branch.** Never theme `/real-estate` before its forms are converted.
 
 **Exit gate Phase 8:**
@@ -1781,6 +1798,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Credit-card, statement, and lending ledger tables render as compact-expand cards at ≤ 768px. Utilization bars keep .fs-progress--* semantics; the accent does not replace severity.
 - [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] Installment schedule fixtures unchanged.
+- [ ] Remove Credit Card dashboard components (`CreditCardPage.js`, `CardInstallmentSchedule.js`, card modals) from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/credit-cards`.**
 
 #### 9B — Statements, debt payoff, reconciliation
@@ -1791,6 +1809,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `CreditCardSubNav.css` — remove the legacy branch now that the cluster is fully converted.
 - [ ] Verify statement generation, payoff projections, reconciliation commit.
 - [ ] Debt payoff projection fixtures unchanged.
+- [ ] Remove `StatementCyclePage.js`, `DebtPayoffPage.js`, and `ReconciliationPage.js` from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add the three remaining patterns.**
 
 #### 9C — Peer-to-Peer Lending (Module 23)
@@ -1800,6 +1819,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `AddLoanPage.js`, `AddRepaymentModal.js` → dark modal + form tokens.
 - [ ] Utilization / remaining balance progress bars use `.fs-progress`.
 - [ ] Verify loan creation, repayments, soft deletion, and counterparty management.
+- [ ] Remove Lending components (`LendingDashboardPage.js`, `LoanDetailPage.js`, `PersonDetailPage.js`, etc.) from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/lending`, `/lending/persons/:id`, `/lending/loans/:id` to allowlist.**
 
 **Exit gate Phase 9:** 7 routes (4 credit cards + 3 lending); thresholds labelled; build/tests/lint/axe/screenshots; zero diff on non-allowlisted routes.
@@ -1819,6 +1839,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Recycle-bin and audit tables render as compact-expand cards at ≤ 768px; audit logs exceed 12 columns and retain horizontal scroll.
 - [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] Verify avatar, form grid, save/cancel, success banner, recycle bin restoration.
+- [ ] Remove `ProfilePage.js`, `SettingsPage.js`, and `RecycleBin.js` from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/profile`, `/settings`, and `/settings/recycle-bin`.**
 
 #### 10B — Security
@@ -1826,6 +1847,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `SecuritySettingsPage.css` — purple heading gradient → plain `--fs-text`; no violet accent.
 - [ ] `SecuritySettingsPage.js` (42) → classes.
 - [ ] Verify 2FA setup/disable, session list, and permission gating.
+- [ ] Remove `SecuritySettingsPage.js` from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/security`.**
 
 #### 10C — Admin family
@@ -1836,6 +1858,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `BackupPage.css` — token pass; restore modal → `.fs-surface-solid`.
 - [ ] Admin modals → shared modal tokens.
 - [ ] Verify role editing, search, backup/restore, tax bracket editing, insurance toggles.
+- [ ] Remove Admin components (`AdminDashboard.js`, `TaxConfigPage.js`, `InsuranceConfigPage.js`, `BackupPage.js`) from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add the four admin patterns.**
 
 **Exit gate Phase 10:**
@@ -1952,12 +1975,12 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 
 ### 7.1 Per-PR (automated where possible)
 
-- [ ] CI build clean on main (authoritative). Local proxy: `npm start` compiles with 0 errors and no new warnings; `npx eslint` on changed files clean (§15).
+- [ ] CI build clean on main (authoritative) via progressive `.eslintignore`; changed files clean. Local proxy: `npm start` compiles with 0 errors and no new warnings; `npx eslint` on changed files clean (§15).
 - [ ] `npx jest --runInBand <touched suites>` green locally (§15); CI runs full suite.
 - [ ] Lint ratchet passes against the merge base: no file's count rose, no new file has a violation, and each allowlisted route's page CSS, `theme.css`, and `theme-components.css` report zero (`tokens.css` is exempt) (§9.2).
 - [ ] Anti-slop lint passes: no `backdrop-filter`, gradient, `background-clip` (prefixed or not) set to `text`, glow, `filter: blur()/drop-shadow()`, `text-shadow`, `mask`, `-webkit-mask`, `-webkit-mask-image`, `mask-image`, `border-image`, `border-image-source`, named or functional colour, or radius longhand; radii within the ceiling, with only `var(--fs-radius-pill)` above 8 px.
 - [ ] `lint-tones.js` passes: no page CSS references a tone token, and no page JSX names one directly (§4.3).
-- [ ] ESLint clean **on changed files**; no new colour-bearing inline style; no new hex literal.
+- [ ] ESLint clean on changed files; converted files removed from `frontend/.eslintignore`; no new colour-bearing inline style; no new hex literal.
 - [ ] jest-axe: 0 serious/critical on touched components.
 - [ ] Playwright axe: 0 serious/critical on touched routes.
 - [ ] test-ID guard: no removed `data-testid`/aria labels.
@@ -2170,6 +2193,9 @@ Adoption is incremental: only pages being migrated in the current sub-phase use 
 4. **New files start at zero.** A file absent from the merge base is linted in full.
 
 This is stricter than changed-files linting where it matters (converted pages) and looser exactly where changed-files linting was wrong (hotfixes). Phase 12 removes the ratchet and runs stylelint repo-wide at zero.
+
+**ESLint ratchet via progressive `.eslintignore`:**
+Because CRA's `react-scripts build` escalates ESLint warnings to fatal errors when `CI=true`, setting anti-slop rules to `warn` fails the build on pre-existing violations. Setting them to `error` without an ignore list would fail the build on ~1,000 legacy inline styles and hex values across unmigrated pages. To guarantee that `CI=true npm run build` compiles with 0 errors and 0 warnings while enforcing strict `"error"` rules for all newly introduced and touched code without violating the Phase 1C zero-production-UI-change boundary, 116 pre-existing legacy UI files are isolated in `frontend/.eslintignore`. Each migration phase removes its touched files from `.eslintignore` as they are refactored to design tokens, ensuring ratcheting forward with zero false negatives.
 
 **ESLint configuration:**
 
@@ -2394,6 +2420,7 @@ Append one row per sub-phase. Never edit past rows.
 | 1A | 2026-11-09 | Audit, tokens and measurement completed: .gitignore tracks docs/ui-plans/ alongside docs/UI-UX_Plan/; tokens.json created with verbatim §4.1–§4.8 contract values; tokens.js created with exact WCAG 2.1 math and --check --tables passes with 0 drift; ui-coverage.js confirmed 75 route entries (0 unassigned) and 1,179 inline style props; reconciled audits in §4.14 (!important: 47 core + 56 print), §8.1 (57 CSS files), §8.2 (1,179 props), §4.6 (29 z-index mappings with rationales), §4.3.1 (provenance code sources). | 1B | None | cdfe577 (merged to main) |
 | 1B | 2026-11-09 | Design direction approved after prototype review: teal accent #14b8a6 (interactive-only), darker chrome #0c0d0f, mobile compact-expand cards, Variant B for all three frames. Plan amended (§2 I6, §4.1, §4.3.2, §4.4, §4.6, §4.9, §4.13 D2/D14 + D19/D20, §4.13.1, §4.15, §6.1.1, §6.4, §6.5, §6.7–§6.14, §6.16, §7.1, §7.2). | 1C (Tooling) | None | 46f75aa (merged to main) |
 | — | 2026-11-09 | Plan revised to v10: baseline storage moved to A5-Local (D21; local git repo, .gitignore'd in app repo, 0 images in main); I13 and §7.1 reframed to walkthrough-evidenced with Playwright diff report; 1C 68-byte stub baselines replaced with real screenshots (20–200 KB, manifest verified); verify-baseline-manifest.js added to §9.2. | 1C (Tooling) | None | — |
+| — | 2026-11-09 | Plan revised to v10.1: progressive `.eslintignore` (116 legacy files) added to prevent CI=true CRA build failures while enabling strict "error" rules for anti-slop; CI visual job removed under A5-Local (D21) in favor of local walkthrough evidence; updated §6.5, §7.1, §9.2, and §6.7–§6.14 task lists. | 1C (Tooling) | None | — |
 
 ```
 Sub-phase:   1A

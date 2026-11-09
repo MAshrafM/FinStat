@@ -5,7 +5,7 @@
   ],
   "rules": {
     "no-restricted-syntax": [
-      "warn",
+      "error",
       {
         "selector": "JSXAttribute[name.name='style'] ObjectExpression > Property[key.name=/^(color|background|backgroundImage|backgroundColor|border|borderTop|borderRight|borderBottom|borderLeft|borderBlock|borderInline|borderColor|borderTopColor|borderRightColor|borderBottomColor|borderLeftColor|borderBlockColor|borderInlineColor|borderRadius|borderTopLeftRadius|borderTopRightRadius|borderBottomLeftRadius|borderBottomRightRadius|borderImage|borderImageSource|boxShadow|textShadow|filter|WebkitFilter|backdropFilter|WebkitBackdropFilter|accentColor|fill|stroke|outline|outlineColor|caretColor|textDecorationColor)$/]",
         "message": "Colour-bearing inline styles are banned. Use a token class, or pass a CSS custom property such as style={{ '--fs-progress': pct }}."
@@ -45,7 +45,7 @@
       "files": ["src/styles/chartTheme.js", "src/constants/categories.js"],
       "rules": {
         "no-restricted-syntax": [
-          "warn",
+          "error",
           {
             "selector": "CallExpression[callee.property.name=/^create(Linear|Radial|Conic)Gradient$/]",
             "message": "Gradients are banned (I14)."
