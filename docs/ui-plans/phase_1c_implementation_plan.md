@@ -1,4 +1,4 @@
-# Phase 1C Implementation Plan — Tooling, Deterministic Harness, and Characterization Fixtures (v4 Reconciled)
+# Phase 1C Implementation Plan — Tooling, Deterministic Harness, and Characterization Fixtures (v5 Reconciled)
 
 ## 1. Overview & Context
 
@@ -100,13 +100,22 @@ Exempts only generated `src/styles/tokens.css`. Enforces strict graphite constra
 
 ### Component 2: ESLint JS AST Guard Rules & Hex Literal Ban
 
-Configured in `frontend/.eslintrc.json` (or `package.json` `eslintConfig`) per §9.2:
+Configured in two layers per §7.1 ("changed files") and §9.2:
+
+- **Layer 1 — `.eslintrc.json` (CRA build proxy)**: All anti-slop AST rules below are configured with severity `"warn"`. CRA's `react-scripts build` runs `eslint-webpack-plugin` across all files in `src/`. Under CI=true, ESLint errors immediately terminate the build. Setting Layer 1 to `"warn"` ensures pre-existing violations across unmigrated legacy files appear as advisory warnings in the build log without blocking compilation, strictly maintaining the **"Zero changes to production UI"** boundary in 1C.
+- **Layer 2 — CI Changed-Files Gate**: Every PR runs the authoritative gate in `.github/workflows/ci.yml`:
+  ```bash
+  npx eslint $(git diff --name-only origin/main -- 'src/**/*.js' 'src/**/*.jsx') --max-warnings=0
+  ```
+  New code and PR-touched files must report **zero warnings and zero errors**. Any newly introduced inline color style, hex literal, or gradient immediately fails CI. (All rules will upgrade globally from `"warn"` to `"error"` in Phase 12 cleanup).
+
+#### Configuration (`frontend/.eslintrc.json`):
 
 ```json
 {
   "rules": {
     "no-restricted-syntax": [
-      "error",
+      "warn",
       {
         "selector": "JSXAttribute[name.name='style'] ObjectExpression > Property[key.name=/^(color|background|backgroundImage|backgroundColor|border|borderTop|borderRight|borderBottom|borderLeft|borderBlock|borderInline|borderColor|borderTopColor|borderRightColor|borderBottomColor|borderLeftColor|borderBlockColor|borderInlineColor|borderRadius|borderTopLeftRadius|borderTopRightRadius|borderBottomLeftRadius|borderBottomRightRadius|borderImage|borderImageSource|boxShadow|textShadow|filter|WebkitFilter|backdropFilter|WebkitBackdropFilter|accentColor|fill|stroke|outline|outlineColor|caretColor|textDecorationColor)$/]",
         "message": "Colour-bearing inline styles are banned. Use a token class, or pass a CSS custom property such as style={{ '--fs-progress': pct }}."
@@ -146,7 +155,7 @@ Configured in `frontend/.eslintrc.json` (or `package.json` `eslintConfig`) per �
       "files": ["src/styles/chartTheme.js", "src/constants/categories.js"],
       "rules": {
         "no-restricted-syntax": [
-          "error",
+          "warn",
           {
             "selector": "CallExpression[callee.property.name=/^create(Linear|Radial|Conic)Gradient$/]",
             "message": "Gradients are banned (I14)."
@@ -170,7 +179,7 @@ Configured in `frontend/.eslintrc.json` (or `package.json` `eslintConfig`) per �
 - **Universal ban**: `#14b8a6` cannot appear in any `.js` or `.jsx` file across `frontend/src/` (enforced by the global `Literal[value=/^#(?:[0-9a-fA-F]{3,4}){1,2}$/]` rule).
 - **Scope discipline (Fix B1 & N6)**: While `chartTheme.js` and `categories.js` have narrow overrides permitting chart palette greys (`#8b929b`, `#b8bec6`, `#6a7078`, `#d5d9dd`), **`#14b8a6` is strictly re-banned** via standard JavaScript regexes with trailing flag:
   `Literal[value=/#14b8a6/i]` and `TemplateElement[value.raw=/#14b8a6/i]`.
-- **Single home**: `#14b8a6` exists literally only in `frontend/src/styles/tokens.json` (source) and `frontend/src/styles/tokens.css` (generated, stylelint-exempt). `theme.css` references it via `var(--fs-accent)` (no hex literal, per §9.2's `color-no-hex` rule).
+- **Single home (N2)**: `#14b8a6` exists literally only in `frontend/src/styles/tokens.json` (source); will be generated into `frontend/src/styles/tokens.css` in Phase 2A (stylelint-exempt). `theme.css` references it via `var(--fs-accent)` (no hex literal, per §9.2's `color-no-hex` rule).
 
 ---
 
@@ -258,13 +267,15 @@ Per §4.7, visual regressions are tested across the 5 mandatory QA widths:
 - `480px` (Large phone / Compact-expand card verification)
 - `390px` (Standard mobile viewport)
 
-#### 5.3 Deterministic Masking Approach (Fix B5)
+#### 5.3 Deterministic Masking Approach (Fix B5, N1)
 - **Zero Production UI Impact in 1C**: 1C makes **zero changes** to production UI components (`pages/`, `components/`).
-- **1C Masking Strategy**: The harness applies masks via Playwright locators:
+- **1C Masking Strategy**: The harness applies masks via Playwright locators targeting specific volatile elements without over-masking:
   - `page.locator('time')`
-  - `page.locator('[data-testid*="date"]')`, `page.locator('[data-testid*="id"]')`
-  - Known volatile text patterns (clock, relative dates, random transaction IDs).
-- **Progression**: `data-visual-mask` DOM attributes are introduced progressively from Phase 3A+ as each individual page is converted.
+  - `page.locator('[data-testid$="-id"]')` (ends with `-id`; replaces over-broad `*=id` to avoid masking valid stable controls like `grid`, `valid`, or `balance-width`)
+  - `page.locator('[data-testid*="timestamp"]')`, `page.locator('[data-testid*="date"]')`
+  - Known volatile text patterns (clock, relative dates, generated mock transaction UUIDs).
+  - Explicit preference: **Under-masking over over-masking** — a false-positive diff in review is far more valuable than a silently masked regression.
+- **Progression**: `data-visual-mask="true"` DOM attributes are introduced progressively from Phase 3A+ as each individual page is converted.
 
 #### 5.4 325 Initial Baselines Generation Task (Fix B3, C3)
 - Execute inside the pinned Playwright Docker container (`mcr.microsoft.com/playwright:v1.49.0-jammy` matching `@playwright/test@1.49.0`):
@@ -336,8 +347,10 @@ The 1C walkthrough and PR must satisfy and prove every item of the v9 §6.5 exit
    - Stylelint **passes**:
      - `border-radius: 0 0 var(--fs-radius-md) var(--fs-radius-md)`
      - `border-radius: var(--fs-radius-pill)`
-7. **ESLint 11-Expression Negative Test Matrix**:
-   - ESLint **fails** each of the following 11 expressions:
+7. **ESLint Two-Layer Enforcement & Negative Test Matrix**:
+   - **7a. ESLint Build-Survival Verification**: `npm run build` succeeds on the clean tree with the new rules (Layer 1 as `"warn"`). Pre-existing violations appear in the build log but do not block compilation.
+   - **7b. Changed-Files Gate Verification**: `npx eslint src/App.js --max-warnings=0` exits 0 (clean file). Modifying a file to add a banned style exits non-zero (fails PR gate).
+   - **7c. 11-Expression Negative Test Matrix**: ESLint catches and flags each of the following 11 expressions:
      1. `ctx.createLinearGradient(`
      2. `chart.ctx.createLinearGradient(`
      3. `canvas.getContext('2d').createRadialGradient(`
@@ -380,9 +393,9 @@ The Phase 1C walkthrough artifact must include actual command executions and cap
    - `git check-ignore -v docs/UI-UX_Plan/UI-UX-PLAN.md` prints nothing (tracked).
    - `git check-ignore -v docs/ui-snapshots/test.png` prints `docs/*` rule (ignored).
    - `git check-ignore -v frontend/tests/visual/baseline/01-dense-table-1440.png` prints nothing (tracked).
-2. **CI Workflow Verification**:
-   - `.github/workflows/ci.yml` capture showing frontend test, lint, tone, ESLint, and PR visual subset jobs.
-   - Run of the CI workflow on a test PR with captured CI log showing all jobs executed.
+2. **CI Workflow Verification (N3)**:
+   - `.github/workflows/ci.yml` capture showing frontend test, lint, tone, ESLint changed-files gate, and PR visual subset jobs.
+   - CI log from the branch's initial push (or a targeted test PR) showing each job's green status.
 3. **Visual Baselines Reproducibility in Docker**:
    - `ls -la frontend/tests/visual/baseline/ | wc -l` = 325 files (plus `.` and `..`).
    - `npx playwright test --project=visual` on unchanged `main` inside Docker (`mcr.microsoft.com/playwright:v1.49.0-jammy`) — 325 passed, 0 diff.
@@ -420,6 +433,14 @@ The Phase 1C walkthrough artifact must include actual command executions and cap
     - `npx stylelint "src/**/*.css"` runs clean on all files except `tokens.css` (which is exempt). Capture the full file list.
 15. **Local Memory Safety (§15)**:
     - `npx jest --runInBand` and `npx playwright test --project=pr-subset` report actual memory peak and confirm neither crashed the workstation.
+16. **ESLint Build-Survival Verification**:
+    - `npm run build` completes successfully with warnings-only ESLint (Layer 1). Capture full build log.
+17. **ESLint Changed-Files Gate**:
+    - `npx eslint <touched files> --max-warnings=0` exits 0 on a clean PR; exits non-zero when a banned pattern is added.
+18. **`.eslintrc` Rule Severity Documented**:
+    - `grep -A5 '"no-restricted-syntax"' frontend/.eslintrc.json` shows the actual severity (`"warn"` for Layer 1 under solution A).
+19. **`.github/workflows/ci.yml` Diff**:
+    - Shows the new changed-files ESLint job, matching v9 §7.1's "ESLint clean on changed files" language.
 
 ---
 
@@ -430,7 +451,7 @@ The Phase 1C walkthrough artifact must include actual command executions and cap
    `stylelint`, `stylelint-config-standard`, `jest-axe`, `@playwright/test@1.49.0`.
 3. Create `frontend/.stylelintrc.json` with verbatim anti-slop rules from §9.2.
 4. Create `frontend/scripts/lint-ratchet.js` and `frontend/scripts/lint-tones.js` (including `--fs-accent` enforcement).
-5. Update ESLint configuration in `frontend/` with AST selectors from §9.2 and strict `/#14b8a6/i` literal ban.
+5. Update ESLint configuration in `frontend/`: rules as `"warn"` in `.eslintrc.json` (Layer 1); add the CI changed-files job to `.github/workflows/ci.yml` running `--max-warnings=0` on PR-touched files (Layer 2).
 6. Create `frontend/tests/a11y/expectNoA11yViolations.js` and verification test.
 7. Create `frontend/scripts/testid-guard.js` and negative test.
 8. Extend `frontend/scripts/ui-coverage.js` with `--assert-allowlist` mode and negative test.
