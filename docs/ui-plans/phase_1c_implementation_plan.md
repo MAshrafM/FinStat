@@ -1,4 +1,4 @@
-# Phase 1C Implementation Plan — Tooling, Deterministic Harness, and Characterization Fixtures
+# Phase 1C Implementation Plan — Tooling, Deterministic Harness, and Characterization Fixtures (v3 Reconciled)
 
 ## 1. Overview & Context
 
@@ -21,19 +21,19 @@
    Anti-Slop Lint      Lint Ratchet &       Calculation         Visual & A11y
    & ESLint Rules      Tones Enforcement    Fixtures            Harness (Playwright)
  ─────────────────   ───────────────────   ───────────────     ──────────────────────
- • stylelint config  • lint-ratchet.js     • Payroll           • routes.js fixture
- • anti-slop regex   • lint-tones.js       • Cards & Debt      • clock.js (fixed)
- • inline style ban    (+ --fs-accent ban) • Trades & Certs    • auth.setup.js
- • #14b8a6 JS ban    • testid-guard.js     • Currency & Budget • visual.spec.js
- • AGENTS.md         • ui-coverage         • calculations test • jest-axe helper
-                       --assert-allowlist
+ • stylelint config  • lint-ratchet.js     • 8 snapshots       • routes.js fixture
+ • anti-slop regex   • lint-tones.js       • byte-identical    • clock.js (fixed)
+ • inline style ban    (+ --fs-accent ban)   assertion         • auth.setup.js
+ • #14b8a6 JS ban    • testid-guard.js     • calc runner       • visual.spec.js (5 QA widths)
+ • AGENTS.md         • ui-coverage         • diff is failure   • 325 baselines committed
+                       --assert-allowlist                      • jest-axe helper
 ```
 
 ---
 
 ### Component 1: Anti-Slop Stylelint, Ratchet & Tone Enforcement
 
-#### 1.1 Stylelint Anti-Slop Config (`frontend/.stylelintrc.json`)
+#### 1.1 Stylelint Anti-Slop Configuration (`frontend/.stylelintrc.json`)
 Exempts only generated `src/styles/tokens.css`. Enforces strict graphite constraints per §9.2:
 ```json
 {
@@ -77,11 +77,12 @@ Exempts only generated `src/styles/tokens.css`. Enforces strict graphite constra
 ```
 
 #### 1.2 Lint Ratchet Script (`frontend/scripts/lint-ratchet.js`)
-- Runs stylelint over the working tree and over `git merge-base HEAD origin/main`.
+- Runs stylelint over the working tree and over `git merge-base HEAD origin/main` (using git archive to a temp directory).
 - Compares per-file violation counts: violation count per file may only decrease or stay the same (F2, S1).
+- A PR fails if any file's count rises above its merge-base count.
 - Any new file absent from merge base must report **0 violations**.
 - Converted/allowlisted files (`theme.css`, `theme-components.css`, allowlisted page CSS) must report **0 violations**.
-- Generated `tokens.css` is exempt.
+- Generated `tokens.css` is exempt. Pre-existing violations on unmigrated files are left untouched until their phase.
 
 #### 1.3 Extended Tone & Accent Linter (`frontend/scripts/lint-tones.js`)
 **Architectural mandate**: Mechanically enforces Invariant I15 and §4.3.2 rule 1 ("Accent is for interactivity only; it is not a brand wash").
@@ -93,13 +94,13 @@ Exempts only generated `src/styles/tokens.css`. Enforces strict graphite constra
 - **Implementation**:
   - Scans all `.css` files under `frontend/src/` (excluding `tokens.css`, `theme.css`, `theme-components.css`).
   - Matches: `/var\(--fs-(?:positive|negative|warning|accent(?:-hover|-active|-text)?)\)/g`.
-  - Exits with non-zero status and prints file, line, and offending token reference upon violation.
+  - Exits non-zero with exact file and line locations if any violation is found.
 
 ---
 
 ### Component 2: ESLint JS AST Guard Rules & Hex Literal Ban
 
-Configured in `frontend/.eslintrc.json` or `package.json` `eslintConfig` per §9.2:
+Configured in `frontend/.eslintrc.json` (or `package.json` `eslintConfig`) per §9.2:
 
 ```json
 {
@@ -151,11 +152,11 @@ Configured in `frontend/.eslintrc.json` or `package.json` `eslintConfig` per §9
             "message": "Gradients are banned (I14)."
           },
           {
-            "selector": "Literal[value=/(?i)#14b8a6/]",
+            "selector": "Literal[value=/#14b8a6/i]",
             "message": "Accent hex #14b8a6 is banned in chartTheme.js and categories.js (§4.3.2 rule 6: chart series never use the accent hue)."
           },
           {
-            "selector": "TemplateElement[value.raw=/(?i)#14b8a6/]",
+            "selector": "TemplateElement[value.raw=/#14b8a6/i]",
             "message": "Accent hex #14b8a6 is banned in template literals."
           }
         ]
@@ -167,85 +168,213 @@ Configured in `frontend/.eslintrc.json` or `package.json` `eslintConfig` per §9
 
 #### Strict `#14b8a6` Hex Literal Enforcement
 - **Universal ban**: `#14b8a6` cannot appear in any `.js` or `.jsx` file across `frontend/src/` (enforced by the global `Literal[value=/^#(?:[0-9a-fA-F]{3,4}){1,2}$/]` rule).
-- **Scope discipline**: While `chartTheme.js` and `categories.js` are granted a narrow exemption to declare chart palette and category hexes, they **explicitly re-ban `#14b8a6`** via AST selectors `Literal[value=/(?i)#14b8a6/]` and `TemplateElement[value.raw=/(?i)#14b8a6/]`.
+- **Scope discipline (Fix B1 & N6)**: While `chartTheme.js` and `categories.js` have narrow overrides permitting chart palette greys (`#8b929b`, `#b8bec6`, `#6a7078`, `#d5d9dd`), **`#14b8a6` is strictly re-banned** via standard JavaScript regexes with trailing flag:
+  `Literal[value=/#14b8a6/i]` and `TemplateElement[value.raw=/#14b8a6/i]`.
 - **Single home**: `#14b8a6` exists exclusively in `frontend/src/styles/tokens.json` and `frontend/src/styles/theme.css`.
 
 ---
 
-### Component 3: Repository Hygiene, Test-ID Guard, and `AGENTS.md`
+### Component 3: Repository Hygiene, Test-ID Guard, A11y Helper, and `AGENTS.md`
 
 1. **`AGENTS.md`** at repository root:
    - Sets project guardrails for AI agents: graphite ramp, teal interactive accent (`#14b8a6`), recessed `#0c0d0f` chrome, mobile compact-expand cards (D19), IBM Plex Sans/Mono.
    - Pointers to canonical reference frames (`docs/UI-UX_Plan/reference/01-dense-table.html`, `02-form.html`, `03-dashboard.html`).
    - Explicit banned patterns list: gradients, blurs, box-shadow glows, unlisted radii, white text on accent, and direct usage of `var(--fs-accent)` in page CSS.
-2. **Test-ID & Aria Label Guard (`frontend/scripts/testid-guard.js`)**:
-   - Diffs occurrences of `data-testid` and `aria-label` across all `.js`/`.jsx` files between HEAD and the merge base.
-   - Prevents accidental deletion or alteration of the 37 `data-testid` and 39 `aria-label` anchors (Invariant I5).
+2. **Test-ID & Aria Label Guard (`frontend/scripts/testid-guard.js`) (N4)**:
+   - Diffs occurrences of `data-testid` and `aria-label` across all `.js`/`.jsx` files between HEAD and merge base.
+   - Rule: No `data-testid` or `aria-label` may be deleted or altered without a corresponding replacement at the same call site (Invariant I5).
+   - Negative test: Deleting a `data-testid` from a test file triggers a non-zero exit.
 3. **`ui-coverage.js --assert-allowlist`**:
    - Validates that every route entry in `App.js` matches the allowlist ownership structure from §6.3.
+   - Negative test: A deliberately mis-scoped test route pattern fails the assertion.
+4. **`jest-axe` Shared Helper (`frontend/tests/a11y/expectNoA11yViolations.js`) (Fix B6)**:
+   - Exports async helper:
+     ```javascript
+     const { axe, toHaveNoViolations } = require('jest-axe');
+     expect.extend(toHaveNoViolations);
+
+     async function expectNoA11yViolations(container, options = {}) {
+       const results = await axe(container, {
+         rules: {
+           region: { enabled: false }, // jsdom container override
+           ...options.rules,
+         },
+       });
+       expect(results).toHaveNoViolations();
+     }
+
+     module.exports = { expectNoA11yViolations };
+     ```
+   - Verified by test suite `frontend/tests/a11y/expectNoA11yViolations.test.js`:
+     - Positive test: Passes on `<button>Click me</button>`.
+     - Negative test: Fails on `<button></button>` (empty button missing accessible name).
 
 ---
 
-### Component 4: Calculation Characterization Fixtures (§9.6, Invariant I3)
+### Component 4: Calculation Characterization Fixtures (§9.6, Invariant I3) (Fix B7)
 
-Preserve current numerical calculations with zero deviation:
-1. **Payroll**: gross $\to$ net, tax brackets, social insurance deductions (`PaycheckFormPage`, `PaycheckTable`, `YearlyTaxTable`).
-2. **Credit Cards**: installment schedule amortization, statement cycle, partial payment interest.
-3. **Debt Payoff**: payoff projections across Avalanche vs Snowball strategies (`DebtPayoffPage`).
-4. **Trades**: trade P&L, fees/charges, corporate-action share adjustments.
-5. **Certificates**: CD maturity values, daily/monthly interest accrual schedule.
-6. **Currency**: multi-currency conversions, portfolio valuation, historical rate triangulation.
-7. **Budgets**: threshold calculation at 0%, 50%, 80%, 100%, 120%.
-8. **Real Estate**: rental yield, ROI, maintenance and acquisition cost totals.
-- Implemented as characterization test suites in `frontend/tests/fixtures/calculations/` executed via single-worker jest/test runner.
+Preserves current numerical calculations with zero deviation:
+1. **8 Target Calculation Domains**:
+   - **Payroll**: gross $\to$ net, tax brackets, social insurance deductions (`PaycheckFormPage`, `PaycheckTable`, `YearlyTaxTable`).
+   - **Credit Cards**: installment schedule amortization, statement cycle, partial payment interest.
+   - **Debt Payoff**: payoff projections across Avalanche vs Snowball strategies (`DebtPayoffPage`).
+   - **Trades**: trade P&L, fees/charges, corporate-action share adjustments.
+   - **Certificates**: CD maturity values, daily/monthly interest accrual schedule.
+   - **Currency**: multi-currency conversions, portfolio valuation, historical rate triangulation.
+   - **Budgets**: threshold calculation at 0%, 50%, 80%, 100%, 120%.
+   - **Real Estate**: rental yield, ROI, maintenance and acquisition cost totals.
+2. **Snapshot Persistence**:
+   - Each domain captures current calculation output as a committed snapshot in:
+     `frontend/tests/fixtures/calculations/<domain>.snapshot.json`
+3. **Runner & Failure Contract**:
+   - Runner `frontend/tests/calculations.spec.js` executes calculations and asserts byte-identical match against committed JSON snapshots (modulo documented floating-point precision).
+   - A diff is a failing PR, never an accepted change.
+   - Negative test: Altering a value in any snapshot causes `calculations.spec.js` to fail.
 
 ---
 
 ### Component 5: Deterministic Playwright Visual Regression Harness (§9.5)
 
-1. **Directory layout**:
-   - `frontend/tests/visual/fixtures/routes.js`: deterministic mock payloads for all rendering routes.
-   - `frontend/tests/visual/fixtures/clock.js`: fixed timestamp helper (`2026-01-15T09:00:00Z`).
-   - `frontend/tests/visual/fixtures/auth.setup.js`: pre-baked `storageState` session (no login round-trip).
-   - `frontend/tests/visual/visual.spec.js`: route $\times$ 5 viewport widths (1440, 1280, 1024, 768, 390).
-   - `frontend/tests/visual/a11y.spec.js`: axe audit per route.
-2. **Automated Masking**:
-   - `data-visual-mask` applied to clock, volatile timestamps, random IDs.
-3. **CI Pipeline Integration (`.github/workflows/ci.yml`)**:
-   - Add frontend test job: `npm test -- --watchAll=false`.
-   - Add PR trigger for frontend jobs.
-   - Add lint ratchet and tones checks.
+#### 5.1 Directory Layout & Baselines Storage (N3)
+Baselines live at `frontend/tests/visual/baseline/` and are tracked by git:
+```
+frontend/tests/visual/
+  fixtures/routes.js        # deterministic mock payloads for 65 routes
+  fixtures/clock.js         # fixed timestamp helper (2026-01-15T09:00:00Z)
+  fixtures/auth.setup.js    # storageState session (no login round-trip)
+  visual.spec.js            # route × 5 mandatory QA widths
+  a11y.spec.js              # axe per route in real browser
+  baseline/                 # 325 reference screenshots generated in pinned Docker image
+```
+
+#### 5.2 Mandatory Viewport Widths (Fix B2)
+Per §4.7, visual regressions are tested across the 5 mandatory QA widths:
+- `1440px` (Desktop wide)
+- `1024px` (Desktop / Tablet landscape)
+- `768px` (Tablet portrait / Compact-expand card threshold)
+- `480px` (Large phone / Compact-expand card verification)
+- `390px` (Standard mobile viewport)
+
+#### 5.3 Deterministic Masking Approach (Fix B5)
+- **Zero Production UI Impact in 1C**: 1C makes **zero changes** to production UI components (`pages/`, `components/`).
+- **1C Masking Strategy**: The harness applies masks via Playwright locators:
+  - `page.locator('time')`
+  - `page.locator('[data-testid*="date"]')`, `page.locator('[data-testid*="id"]')`
+  - Known volatile text patterns (clock, relative dates, random transaction IDs).
+- **Progression**: `data-visual-mask` DOM attributes are introduced progressively from Phase 3A+ as each individual page is converted.
+
+#### 5.4 325 Initial Baselines Generation Task (Fix B3)
+- Execute inside the pinned Playwright Docker container (`mcr.microsoft.com/playwright:v1.49.0-jammy`):
+  `65 routes × 5 widths (1440, 1024, 768, 480, 390) = 325 baselines`.
+- Commit all 325 png files under `frontend/tests/visual/baseline/`.
+- Verify: `npx playwright test --project=visual` reproduces with zero diff against unchanged `main`.
+
+#### 5.5 Playwright Configuration & Environments (N1)
+In `frontend/playwright.config.js`:
+- Local dev execution (§15): Uses `webServer: { command: 'npm start', port: 3000, reuseExistingServer: true }` and sets `window.__VISUAL_TEST__ = true` to disable Chart.js animations.
+- CI execution: Uses `baseURL: 'http://localhost:3000'` against pre-built production build.
+
+#### 5.6 CI Integration & PR Subset Scope (N2)
+In `.github/workflows/ci.yml`:
+- Add frontend test job (`npm test -- --watchAll=false`).
+- PR validation triggers for frontend tests, lint ratchet, tone linter, and ESLint.
+- PR visual subset run:
+  `Touched routes × 5 widths + 5 legacy smoke routes × 2 widths + every legacy route at 1440`.
+- Full 325 matrix runs nightly and on merge to `main`.
 
 ---
 
-## 3. Verification & Acceptance Criteria (§6.5 Exit Gate 1C)
+## 3. Verification & Acceptance Criteria (Verbatim §6.5 1C Exit Gate) (Fix B4)
 
-1. `git check-ignore` confirms `.gitignore` integrity (plan is trackable, snapshots ignored).
-2. `node frontend/scripts/lint-tones.js` exits 0 (verifying no tone tokens and no `var(--fs-accent)` in page CSS).
-3. `node frontend/scripts/lint-ratchet.js` compares cleanly against merge base without failure.
-4. ESLint check passes: zero hex literals in JS components, zero `#14b8a6` in JS files (including `chartTheme.js`).
-5. Negative verification tests pass:
-   - Temporary file with `var(--fs-accent)` causes `lint-tones.js` to fail.
-   - Temporary file with `#14b8a6` in `chartTheme.js` causes ESLint to fail.
-6. `node frontend/scripts/testid-guard.js` confirms zero deleted `data-testid` or `aria-label` attributes.
-7. `node frontend/scripts/ui-coverage.js --assert-allowlist` exits 0.
-8. Calculation characterization test suite passes 100% green against existing code.
-9. CI workflow `.github/workflows/ci.yml` validates frontend test, lint, and PR triggers.
-10. Local workstation memory constraints (§15) respected: tests executed with `--runInBand` / single worker.
+The 1C walkthrough and PR must satisfy and prove every item of the v9 §6.5 exit gate:
+
+1. **Gitignore Hygiene**:
+   - `git check-ignore -v docs/UI-UX_Plan/UI-UX-PLAN.md` prints nothing (plan is trackable).
+   - `git check-ignore -v docs/ui-snapshots/test.png` prints rule (snapshots ignored).
+   - Baselines in `frontend/tests/visual/baseline/` are confirmed tracked.
+2. **CI Pipeline Configuration**:
+   - CI runs frontend tests, the lint ratchet, ESLint, and the PR visual subset.
+3. **Visual Baselines Reproducibility**:
+   - 325 baselines exist in `frontend/tests/visual/baseline/` and reproduce with zero diff on unchanged `main` inside the pinned Playwright Docker image.
+4. **Calculation Characterization Fixtures**:
+   - Characterization snapshots exist in `frontend/tests/fixtures/calculations/<domain>.snapshot.json` for all 8 domains.
+   - `frontend/tests/calculations.spec.js` passes 100% green on unchanged code.
+   - Negative test: Altering a snapshot value fails the runner.
+5. **Coverage Allowlist Guard Negative Test**:
+   - `node frontend/scripts/ui-coverage.js --assert-allowlist` passes on real code.
+   - Fails on a deliberately mis-scoped test pattern (negative test).
+6. **Stylelint 14-Declaration Negative/Positive Test Matrix**:
+   - Stylelint **fails** each of the following 14 declarations:
+     1. `backdrop-filter: blur(4px)`
+     2. `background: linear-gradient(...)`
+     3. `box-shadow: 0 0 20px #fff`
+     4. `border-top-left-radius: 12px`
+     5. `mask: linear-gradient(...)`
+     6. `mask-image: linear-gradient(...)`
+     7. `-webkit-mask-image: linear-gradient(...)`
+     8. `border-image: linear-gradient(...)`
+     9. `border-image-source: linear-gradient(...)`
+     10. `-webkit-background-clip: text`
+     11. `filter: drop-shadow(0 0 12px #fff)`
+     12. `color: white`
+     13. `background: rgba(0, 0, 0, 0.4)`
+     14. `border-radius: 0 0 6px 6px` and `border-radius: var(--fs-radius-md) 40px`
+   - Stylelint **passes**:
+     - `border-radius: 0 0 var(--fs-radius-md) var(--fs-radius-md)`
+     - `border-radius: var(--fs-radius-pill)`
+7. **ESLint 11-Expression Negative Test Matrix**:
+   - ESLint **fails** each of the following 11 expressions:
+     1. `ctx.createLinearGradient(`
+     2. `chart.ctx.createLinearGradient(`
+     3. `canvas.getContext('2d').createRadialGradient(`
+     4. `style={{ backgroundImage: 'linear-gradient(...)' }}`
+     5. `style={{ filter: 'blur(4px)' }}`
+     6. `style={{ textShadow: '0 0 8px #fff' }}`
+     7. `style={{ borderRadius: 12 }}`
+     8. `style={{ accentColor: '#009879' }}`
+     9. `const c = 'white'`
+     10. `const c = 'rgba(0, 0, 0, 0.4)'`
+     11. `const c = 'hsl(0 0% 0%)'`
+     *(plus: `const x = '#14b8a6'` fails in JS components and inside `chartTheme.js` override)*.
+8. **Tone & Accent Linter Negative Tests**:
+   - `node frontend/scripts/lint-tones.js` exits 0 on clean tree.
+   - Fails on `color: var(--fs-negative)` in a page CSS file.
+   - Fails on `color: var(--fs-warning)` in a page CSS file.
+   - Fails on `color: var(--fs-accent)` in a page CSS file.
+   - Passes the same declarations in `theme.css`.
+   - `tokens.css` is exempt.
+9. **Lint Ratchet 3-Way Negative/Positive Test Matrix**:
+   - Fails when a file's violation count rises by +1 above merge base.
+   - Fails a genuinely new file with any stylelint violation.
+   - Passes when a hotfix leaves pre-existing violations untouched.
+10. **Test-ID Guard**:
+    - `node frontend/scripts/testid-guard.js` exits 0 on clean diff.
+    - Fails if an existing `data-testid` or `aria-label` is deleted without replacement.
+11. **`jest-axe` Shared Helper Test**:
+    - `expectNoA11yViolations` passes on `<button>Save</button>`.
+    - Fails on `<button></button>` (unlabeled button).
+12. **`AGENTS.md` Verification**:
+    - File exists at repository root.
+    - References `docs/UI-UX_Plan/reference/01-dense-table.html`, `02-form.html`, and `03-dashboard.html`.
+    - Lists banned patterns (gradients, blur, glows, radius > 8px, white text on accent, `var(--fs-accent)` in page CSS).
 
 ---
 
 ## 4. Execution Steps
 
 1. Create branch `phase-ui-1c-tooling` from `main`.
-2. Install necessary dev dependencies: `stylelint`, `stylelint-config-standard`, `jest-axe`.
+2. Install necessary dev dependencies:
+   `stylelint`, `stylelint-config-standard`, `jest-axe`, `@playwright/test`.
 3. Create `frontend/.stylelintrc.json` with verbatim anti-slop rules from §9.2.
 4. Create `frontend/scripts/lint-ratchet.js` and `frontend/scripts/lint-tones.js` (including `--fs-accent` enforcement).
-5. Update ESLint configuration in `frontend/` with AST selectors from §9.2 and strict `#14b8a6` literal ban.
-6. Create `frontend/scripts/testid-guard.js`.
-7. Extend `frontend/scripts/ui-coverage.js` with `--assert-allowlist` mode.
-8. Author `AGENTS.md` at repo root.
-9. Construct calculation fixtures in `frontend/tests/fixtures/calculations/` and runner.
-10. Setup Playwright visual regression harness structure in `frontend/tests/visual/`.
-11. Update `.github/workflows/ci.yml` to include frontend test & lint jobs on PRs.
-12. Run full verification suite (including negative verification tests) and produce walkthrough artifact.
+5. Update ESLint configuration in `frontend/` with AST selectors from §9.2 and strict `/#14b8a6/i` literal ban.
+6. Create `frontend/tests/a11y/expectNoA11yViolations.js` and verification test.
+7. Create `frontend/scripts/testid-guard.js` and negative test.
+8. Extend `frontend/scripts/ui-coverage.js` with `--assert-allowlist` mode and negative test.
+9. Author `AGENTS.md` at repo root.
+10. Construct calculation fixtures in `frontend/tests/fixtures/calculations/<domain>.snapshot.json` and runner `frontend/tests/calculations.spec.js`.
+11. Setup Playwright visual regression harness in `frontend/tests/visual/` with 5 QA widths and selector masking.
+12. Generate and commit 325 baselines in `frontend/tests/visual/baseline/` inside the pinned Docker image.
+13. Update `.github/workflows/ci.yml` for frontend test/lint jobs and PR visual subset.
+14. Run the full verification suite (including all 14 stylelint, 11 ESLint, 3 ratchet, 3 tone, and testid negative tests).
+15. Produce walkthrough artifact and submit for developer review.
