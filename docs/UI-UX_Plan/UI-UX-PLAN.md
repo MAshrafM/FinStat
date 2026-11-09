@@ -1016,7 +1016,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | :--- | :--- | :--- | :---: | :---: |
 | **1A** | Repo hygiene, audit, inventory, token and contrast tool | `phase-ui-1a-audit` | ☑ | ☑ |
 | **1B** | Design direction: ramp, typeface, three frames, token freeze | `phase-ui-1b-direction` | ☑ | ☑ |
-| **1C** | Tooling, deterministic harness, calc fixtures, gitignore | `phase-ui-1c-tooling` | ☐ | ☐ |
+| **1C** | Tooling, deterministic harness, calc fixtures, gitignore | `phase-ui-1c-tooling` | ☑ | ☑ |
 | **2A** | `tokens.css` (generated) + `theme.css` + `theme-components.css` + `.fs-page` base + gated body | `phase-ui-2a-tokens` | ☐ | ☐ |
 | **2B** | Gated shell and global overlays | `phase-ui-2b-shell` | ☐ | ☐ |
 | **2C** | `App.css` `!important` removal (side branch off 2B, merges before 3A) | `phase-ui-2c-app-css-fix` | ☐ | ☐ |
@@ -1345,36 +1345,36 @@ Decided once, applied in every phase.
 
 #### 1C — Tooling, harness, fixtures, repository hygiene
 
-- [ ] Add the **frontend test job** to `.github/workflows/ci.yml` (`npm test -- --watchAll=false`). Today CI only builds.
-- [ ] Add PR validation: run the frontend jobs on pull requests to `main`, keep the deploy job on `main` only.
-- [ ] Add **stylelint** with `color-no-hex`, `color-named: never`, `function-disallowed-list` (`rgb`, `rgba`, `hsl`, `hsla`), and `declaration-no-important`. Exempt only `src/styles/tokens.css`; `theme.css` and `theme-components.css` are linted in full. `src/constants/categories.js` keeps its ESLint exemption, not a stylelint one.
-- [ ] Extend stylelint with the **anti-slop rules** (§9.2): `backdrop-filter` and `-webkit-backdrop-filter`; `background-clip` and `-webkit-background-clip` set to `text`; `/gradient\(/` on `background`, `background-image`, `mask`, `mask-image`, `-webkit-mask`, `-webkit-mask-image`, `border-image`, and `border-image-source`; `filter` and `-webkit-filter` matching `/blur\(|drop-shadow\(/`; a `border-radius` allowed-list using the per-corner pattern `^(0|var\(--fs-radius-(sm|md|lg|pill)\))( (0|var\(--fs-radius-(sm|md|lg|pill)\))){0,3}$`; `none` / `var(--fs-shadow)` for `box-shadow`; `none` for `text-shadow`; and a ban on every `border-*-radius` longhand (G8, E3, K2).
-- [ ] Add the **lint ratchet** (F2, S1): `frontend/scripts/lint-ratchet.js` runs stylelint over the working tree and again over the merge base (`git merge-base HEAD origin/main`, exported to a temp worktree), reduces both to per-file violation counts, and compares them. It fails when a file's count rises above its merge-base count, when a file that did not exist at the merge base reports any violation, and when a route's page CSS, `theme.css`, or `theme-components.css` is not zero (`tokens.css` is exempt). It never fails a file merely for pre-existing violations.
-- [ ] Commit **no baseline file**. The merge base is the baseline, so parallel phase branches cannot collide on a shared JSON. CI needs `fetch-depth: 0`.
-- [ ] Add **`lint-tones.js`** (E2): fails any `var(--fs-positive)`, `var(--fs-negative)`, or `var(--fs-warning)` in CSS outside the hand-written theme files (`theme.css`, `theme-components.css`); generated `tokens.css` is exempt. That makes I15 mechanical instead of review-only.
-- [ ] Write **`AGENTS.md`** at the repo root: the direction (D13–D18), the three reference-frame paths, the banned patterns, and the rule that a page is matched to a frame rather than invented from the token list.
-- [ ] Do **not** install third-party design skills. If one is ever trialled, pin its commit and record the decision in §13.
-- [ ] Add the **ESLint JavaScript rules** (§9.2): `no-restricted-syntax` for inline colour, image, filter, shadow, border, radius, and accent props; hex, named, and functional colour literals (including template literals); and a `CallExpression[callee.property.name=/^create(Linear|Radial|Conic)Gradient$/]` selector that matches any receiver (`ctx`, `context`, `chart.ctx`), plus the four missing jsx-a11y rules. The `chartTheme.js` override **re-declares** that selector instead of switching the rule off, so gradients stay banned there (G8, E3, K7).
-- [ ] Add **jest-axe** and a shared `expectNoA11yViolations` helper for component tests.
-- [ ] Build the **deterministic Playwright harness** (§9.5): route fixtures, frozen clock, masked volatile regions, `storageState` auth, local workstation execution.
-- [ ] Generate the **initial 325 baselines** (65 routes × 5 widths) locally, and store them in the local repository under `frontend/tests/visual/baseline/` linked via junction (A5-Local, D21).
-- [ ] Add the **test-ID guard**: diffs `data-testid` and `aria-label` occurrences before and after.
-- [ ] Add `ui-coverage.js --assert-allowlist` mode (§6.3).
-- [ ] Create **calculation characterization fixtures** for every calc-bearing page (§9.6).
-- [ ] Add the **zero-diff gate** for non-allowlisted routes (§7.1).
-- [ ] Record the performance budget hook in CI.
+- [x] Add the **frontend test job** to `.github/workflows/ci.yml` (`npm test -- --watchAll=false`). Today CI only builds.
+- [x] Add PR validation: run the frontend jobs on pull requests to `main`, keep the deploy job on `main` only.
+- [x] Add **stylelint** with `color-no-hex`, `color-named: never`, `function-disallowed-list` (`rgb`, `rgba`, `hsl`, `hsla`), and `declaration-no-important`. Exempt only `src/styles/tokens.css`; `theme.css` and `theme-components.css` are linted in full. `src/constants/categories.js` keeps its ESLint exemption, not a stylelint one.
+- [x] Extend stylelint with the **anti-slop rules** (§9.2): `backdrop-filter` and `-webkit-backdrop-filter`; `background-clip` and `-webkit-background-clip` set to `text`; `/gradient\(/` on `background`, `background-image`, `mask`, `mask-image`, `-webkit-mask`, `-webkit-mask-image`, `border-image`, and `border-image-source`; `filter` and `-webkit-filter` matching `/blur\(|drop-shadow\(/`; a `border-radius` allowed-list using the per-corner pattern `^(0|var\(--fs-radius-(sm|md|lg|pill)\))( (0|var\(--fs-radius-(sm|md|lg|pill)\))){0,3}$`; `none` / `var(--fs-shadow)` for `box-shadow`; `none` for `text-shadow`; and a ban on every `border-*-radius` longhand (G8, E3, K2).
+- [x] Add the **lint ratchet** (F2, S1): `frontend/scripts/lint-ratchet.js` runs stylelint over the working tree and again over the merge base (`git merge-base HEAD origin/main`, exported to a temp worktree), reduces both to per-file violation counts, and compares them. It fails when a file's count rises above its merge-base count, when a file that did not exist at the merge base reports any violation, and when a route's page CSS, `theme.css`, or `theme-components.css` is not zero (`tokens.css` is exempt). It never fails a file merely for pre-existing violations.
+- [x] Commit **no baseline file**. The merge base is the baseline, so parallel phase branches cannot collide on a shared JSON. CI needs `fetch-depth: 0`.
+- [x] Add **`lint-tones.js`** (E2): fails any `var(--fs-positive)`, `var(--fs-negative)`, or `var(--fs-warning)` in CSS outside the hand-written theme files (`theme.css`, `theme-components.css`); generated `tokens.css` is exempt. That makes I15 mechanical instead of review-only.
+- [x] Write **`AGENTS.md`** at the repo root: the direction (D13–D18), the three reference-frame paths, the banned patterns, and the rule that a page is matched to a frame rather than invented from the token list.
+- [x] Do **not** install third-party design skills. If one is ever trialled, pin its commit and record the decision in §13.
+- [x] Add the **ESLint JavaScript rules** (§9.2): `no-restricted-syntax` for inline colour, image, filter, shadow, border, radius, and accent props; hex, named, and functional colour literals (including template literals); and a `CallExpression[callee.property.name=/^create(Linear|Radial|Conic)Gradient$/]` selector that matches any receiver (`ctx`, `context`, `chart.ctx`), plus the four missing jsx-a11y rules. The `chartTheme.js` override **re-declares** that selector instead of switching the rule off, so gradients stay banned there (G8, E3, K7).
+- [x] Add **jest-axe** and a shared `expectNoA11yViolations` helper for component tests.
+- [x] Build the **deterministic Playwright harness** (§9.5): route fixtures, frozen clock, masked volatile regions, `storageState` auth, local workstation execution.
+- [x] Generate the **initial 325 baselines** (65 routes × 5 widths) locally, and store them in the local repository under `frontend/tests/visual/baseline/` linked via junction (A5-Local, D21).
+- [x] Add the **test-ID guard**: diffs `data-testid` and `aria-label` occurrences before and after.
+- [x] Add `ui-coverage.js --assert-allowlist` mode (§6.3).
+- [x] Create **calculation characterization fixtures** for every calc-bearing page (§9.6).
+- [x] Add the **zero-diff gate** for non-allowlisted routes (§7.1).
+- [x] Record the performance budget hook in CI.
 
 **Exit gate 1C:**
-- [ ] `git check-ignore` still confirms the 1A fix: the plan is trackable and snapshots are ignored.
-- [ ] CI runs frontend tests, the lint ratchet, ESLint, and the build (authoritative). Visual regression is developer-run locally and walkthrough-evidenced per §7.1 and I13, not CI-enforced.
-- [ ] frontend/tests/visual/baseline/ contains 325 real PNG screenshots (20–200 KB each, confirmed non-stub via file output and manifest.json with sha256 hashes); baselines committed to local git repo (A5-Local, D21) with git log showing initial capture commit; app repo tracks 0 baseline images
-- [ ] Calculation fixtures pass on unchanged code (they describe today's behaviour, not the desired one).
-- [ ] `--assert-allowlist` fails on a deliberately mis-scoped test pattern (negative test).
-- [ ] Lint fails a deliberately added `backdrop-filter: blur(4px)`, `linear-gradient(...)`, `box-shadow: 0 0 20px #fff`, `border-top-left-radius: 12px`, `mask: linear-gradient(...)`, `mask-image: linear-gradient(...)`, `-webkit-mask-image: linear-gradient(...)`, `border-image: linear-gradient(...)`, `border-image-source: linear-gradient(...)`, `-webkit-background-clip: text`, `filter: drop-shadow(0 0 12px #fff)`, `color: white`, `background: rgba(0, 0, 0, 0.4)`, `border-radius: 0 0 6px 6px`, and `border-radius: var(--fs-radius-md) 40px`; and passes `border-radius: 0 0 var(--fs-radius-md) var(--fs-radius-md)` and `border-radius: var(--fs-radius-pill)` (negative and positive tests).
-- [ ] ESLint fails `ctx.createLinearGradient(`, `chart.ctx.createLinearGradient(`, `canvas.getContext('2d').createRadialGradient(`, `style={{ backgroundImage: 'linear-gradient(...)' }}`, `style={{ filter: 'blur(4px)' }}`, `style={{ textShadow: '0 0 8px #fff' }}`, `style={{ borderRadius: 12 }}`, `style={{ accentColor: '#009879' }}`, `const c = 'white'`, `const c = 'rgba(0, 0, 0, 0.4)'`, and `const c = 'hsl(0 0% 0%)'` (negative tests).
-- [ ] `lint-tones.js` fails `color: var(--fs-negative)` in a page CSS file and passes the same declaration in `theme.css`; `tokens.css` is exempt because it defines the tone values (negative test).
-- [ ] The ratchet fails when a file's count rises by one above the merge base, fails a genuinely new file with any violation, and passes when a hotfix leaves pre-existing violations untouched (negative test).
-- [ ] `AGENTS.md` references the three committed frames and the banned patterns.
+- [x] `git check-ignore` still confirms the 1A fix: the plan is trackable and snapshots are ignored.
+- [x] CI runs frontend tests, the lint ratchet, ESLint, and the build (authoritative). Visual regression is developer-run locally and walkthrough-evidenced per §7.1 and I13, not CI-enforced.
+- [x] frontend/tests/visual/baseline/ contains 325 real PNG screenshots (20–200 KB each, confirmed non-stub via file output and manifest.json with sha256 hashes); baselines committed to local git repo (A5-Local, D21) with git log showing initial capture commit; app repo tracks 0 baseline images
+- [x] Calculation fixtures pass on unchanged code (they describe today's behaviour, not the desired one).
+- [x] `--assert-allowlist` fails on a deliberately mis-scoped test pattern (negative test).
+- [x] Lint fails a deliberately added `backdrop-filter: blur(4px)`, `linear-gradient(...)`, `box-shadow: 0 0 20px #fff`, `border-top-left-radius: 12px`, `mask: linear-gradient(...)`, `mask-image: linear-gradient(...)`, `-webkit-mask-image: linear-gradient(...)`, `border-image: linear-gradient(...)`, `border-image-source: linear-gradient(...)`, `-webkit-background-clip: text`, `filter: drop-shadow(0 0 12px #fff)`, `color: white`, `background: rgba(0, 0, 0, 0.4)`, `border-radius: 0 0 6px 6px`, and `border-radius: var(--fs-radius-md) 40px`; and passes `border-radius: 0 0 var(--fs-radius-md) var(--fs-radius-md)` and `border-radius: var(--fs-radius-pill)` (negative and positive tests).
+- [x] ESLint fails `ctx.createLinearGradient(`, `chart.ctx.createLinearGradient(`, `canvas.getContext('2d').createRadialGradient(`, `style={{ backgroundImage: 'linear-gradient(...)' }}`, `style={{ filter: 'blur(4px)' }}`, `style={{ textShadow: '0 0 8px #fff' }}`, `style={{ borderRadius: 12 }}`, `style={{ accentColor: '#009879' }}`, `const c = 'white'`, `const c = 'rgba(0, 0, 0, 0.4)'`, and `const c = 'hsl(0 0% 0%)'` (negative tests).
+- [x] `lint-tones.js` fails `color: var(--fs-negative)` in a page CSS file and passes the same declaration in `theme.css`; `tokens.css` is exempt because it defines the tone values (negative test).
+- [x] The ratchet fails when a file's count rises by one above the merge base, fails a genuinely new file with any violation, and passes when a hotfix leaves pre-existing violations untouched (negative test).
+- [x] `AGENTS.md` references the three committed frames and the banned patterns.
 
 **User-facing acceptance criterion:** none (no production change).
 
@@ -2421,6 +2421,7 @@ Append one row per sub-phase. Never edit past rows.
 | 1B | 2026-11-09 | Design direction approved after prototype review: teal accent #14b8a6 (interactive-only), darker chrome #0c0d0f, mobile compact-expand cards, Variant B for all three frames. Plan amended (§2 I6, §4.1, §4.3.2, §4.4, §4.6, §4.9, §4.13 D2/D14 + D19/D20, §4.13.1, §4.15, §6.1.1, §6.4, §6.5, §6.7–§6.14, §6.16, §7.1, §7.2). | 1C (Tooling) | None | 46f75aa (merged to main) |
 | — | 2026-11-09 | Plan revised to v10: baseline storage moved to A5-Local (D21; local git repo, .gitignore'd in app repo, 0 images in main); I13 and §7.1 reframed to walkthrough-evidenced with Playwright diff report; 1C 68-byte stub baselines replaced with real screenshots (20–200 KB, manifest verified); verify-baseline-manifest.js added to §9.2. | 1C (Tooling) | None | — |
 | — | 2026-11-09 | Plan revised to v10.1: progressive `.eslintignore` (116 legacy files) added to prevent CI=true CRA build failures while enabling strict "error" rules for anti-slop; CI visual job removed under A5-Local (D21) in favor of local walkthrough evidence; updated §6.5, §7.1, §9.2, and §6.7–§6.14 task lists. | 1C (Tooling) | None | — |
+| 1C | 2026-11-10 | Tooling, deterministic harness, calc fixtures, and repository hygiene completed: anti-slop stylelint AST + ratchet, lint-tones.js, strict ESLint rules with progressive .eslintignore (116 legacy files; CI=true build clean), testid-guard.js, 8 calculation characterization fixtures, A5-Local visual baseline architecture (325 real PNGs, manifest verified, local git repo, junction linked), zero production UI changes. | 2A (Tokens) | None | 0179015 |
 
 ```
 Sub-phase:   1A
@@ -2448,6 +2449,20 @@ Fixtures:    unchanged
 Screenshots: n/a (reference frames in docs/UI-UX_Plan/reference/)
 Branch:      phase-ui-1b-direction
 Merge SHA:   46f75aa (merged to main)
+```
+
+```
+Sub-phase:   1C
+Status:      done
+Done:        Anti-slop stylelint AST & lint-ratchet, lint-tones.js (accent & tone restriction), strict ESLint AST error rules with progressive .eslintignore (116 files; CI=true build passes clean with code 0), testid-guard.js, 8 calculation characterization fixtures, Playwright visual harness, A5-Local local baseline storage (325 real PNGs, manifest verified, local repo at D:\Projects\FinStat-visual-baselines linked via junction), zero production UI diff.
+Next:        2A — Core theme & shared UI (Token layer)
+Blocked by:  None
+Allowlist:   none (tooling phase; zero production routing changes)
+Visual diff: zero (zero production styling changes)
+Fixtures:    unchanged (8 characterization fixtures established)
+Screenshots: 325 real baselines stored in local repo (A5-Local, D21)
+Branch:      phase-ui-1c-tooling
+Merge SHA:   0179015
 ```
 
 ### Sub-phase note template
