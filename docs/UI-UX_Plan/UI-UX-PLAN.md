@@ -1004,7 +1004,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | Sub-phase | Scope | Branch | Status | Exit gate |
 | :--- | :--- | :--- | :---: | :---: |
 | **1A** | Repo hygiene, audit, inventory, token and contrast tool | `phase-ui-1a-audit` | ☑ | ☑ |
-| **1B** | Design direction: ramp, typeface, three frames, token freeze | `phase-ui-1b-design` | ☐ | ☐ |
+| **1B** | Design direction: ramp, typeface, three frames, token freeze | `phase-ui-1b-direction` | ☑ | ☑ |
 | **1C** | Tooling, deterministic harness, calc fixtures, gitignore | `phase-ui-1c-tooling` | ☐ | ☐ |
 | **2A** | `tokens.css` (generated) + `theme.css` + `theme-components.css` + `.fs-page` base + gated body | `phase-ui-2a-tokens` | ☐ | ☐ |
 | **2B** | Gated shell and global overlays | `phase-ui-2b-shell` | ☐ | ☐ |
@@ -1300,35 +1300,35 @@ Decided once, applied in every phase.
 
 **Settled inputs** (D13–D18): flat graphite, no accent hue, IBM Plex Sans + Plex Mono, radii 4/6/8, colour only for gain/loss/warning. 1B confirms or amends these; it does not silently reopen them.
 
-- [ ] Freeze `tokens.json`: the graphite ramp (`--fs-bg`, three surface steps, three border values, four text steps), the three tones, and the platform surfaces — scrim, selection, scrollbar, tooltip (§4.1). No alpha in the main surface ramp (surfaces are fully opaque; `--fs-scrim` is the only authorized alpha surface token for modal backdrops), no gradients.
-- [ ] Approve the IBM Plex subset: Sans 400/500/600, Mono 400, latin, woff2, **≤ 90 KB total**, OFL licence committed under `frontend/src/assets/fonts/`.
-- [ ] Author three **reference frames** as static HTML + CSS under `docs/UI-UX_Plan/reference/`:
+- [x] Freeze `tokens.json`: the graphite ramp (`--fs-bg`, three surface steps, three border values, four text steps), the three tones, and the platform surfaces — scrim, selection, scrollbar, tooltip (§4.1). No alpha in the main surface ramp (surfaces are fully opaque; `--fs-scrim` is the only authorized alpha surface token for modal backdrops), no gradients.
+- [x] Approve the IBM Plex subset: Sans 400/500/600, Mono 400, latin, woff2, **≤ 90 KB total**, OFL licence committed under `frontend/src/assets/fonts/`.
+- [x] Author three **reference frames** as static HTML + CSS under `docs/UI-UX_Plan/reference/`:
   - `01-dense-table.html` — a log with 20 rows, filters, pagination, row actions, and a numeric column set.
   - `02-form.html` — a two-column form with required fields, an inline error, a disabled control, and primary/secondary actions.
   - `03-dashboard.html` — summary figures, one table, one chart.
-- [ ] Each frame uses tokens only, shows default/hover/focus/error states, and contains no gradient, blur, glow, or radius above 8 px.
-- [ ] Produce **two or three variants per frame** inside D13–D18, review them side by side, and mark up the chosen one (G7). A single frame is an approval artefact; several are a decision.
-- [ ] Every variant carries **stress data**: a 40-character name, a 9-digit negative (`-123,456,789.00`), a 12-column table at 390 px, an empty state, and an error state (G7).
-- [ ] Review all three at 1440, 1024, and 390 **on a mediocre screen at low brightness**. If the surface steps read flat, widen them here, before the freeze — and re-tune `--fs-border-control` and chart grey 3 in the same pass so both keep 3:1 on the raised surface (G1, E5).
-- [ ] Settle the chrome plane: keep `--fs-surface-sunken` with borders, or choose a darker chrome value, and record the choice in §4.1 (F5).
-- [ ] Choose the category replacement cue for the log — text prefix, group-by control, or both (G3).
-- [ ] Run `tokens.js --check --tables` against the frozen file. Every failure is fixed in `tokens.json`, never in the table. The `tokens.css` comparison starts in 2A.
-- [ ] Sign D12–D18 in §4.13.
-- [ ] Record the options considered and rejected, and why (palette, accent, typeface, radius set).
-- [ ] Confirm the frames are trackable (`git check-ignore` prints nothing; 1A fixed the exception).
-- [ ] Accent scope confirmed — `--fs-accent` `#14b8a6` approved as interactive-only. Focus rings remain neutral (§4.3.2 rule 3).
-- [ ] Discard button semantics confirmed — neutral secondary; "Cancel, safe exit" (no confirmation dialog).
-- [ ] Mobile table pattern confirmed — compact-expand cards at ≤ 768px; break-word overflow; horizontal scroll preserved only for ≥ 12-column tables.
-- [ ] Reference frames finalized — all three rendered with the amended tokens. Variant B is the acceptance target.
-- [ ] `tokens.js --check --tables` exits 0 after adding the four new accent rows and updating `--fs-surface-sunken`.
+- [x] Each frame uses tokens only, shows default/hover/focus/error states, and contains no gradient, blur, glow, or radius above 8 px.
+- [x] Produce **two or three variants per frame** inside D13–D18, review them side by side, and mark up the chosen one (G7). A single frame is an approval artefact; several are a decision.
+- [x] Every variant carries **stress data**: a 40-character name, a 9-digit negative (`-123,456,789.00`), a 12-column table at 390 px, an empty state, and an error state (G7).
+- [x] Review all three at 1440, 1024, and 390 **on a mediocre screen at low brightness**. If the surface steps read flat, widen them here, before the freeze — and re-tune `--fs-border-control` and chart grey 3 in the same pass so both keep 3:1 on the raised surface (G1, E5).
+- [x] Settle the chrome plane: keep `--fs-surface-sunken` with borders, or choose a darker chrome value, and record the choice in §4.1 (F5).
+- [x] Choose the category replacement cue for the log — text prefix, group-by control, or both (G3).
+- [x] Run `tokens.js --check --tables` against the frozen file. Every failure is fixed in `tokens.json`, never in the table. The `tokens.css` comparison starts in 2A.
+- [x] Sign D12–D18 in §4.13.
+- [x] Record the options considered and rejected, and why (palette, accent, typeface, radius set).
+- [x] Confirm the frames are trackable (`git check-ignore` prints nothing; 1A fixed the exception).
+- [x] Accent scope confirmed — `--fs-accent` `#14b8a6` approved as interactive-only. Focus rings remain neutral (§4.3.2 rule 3).
+- [x] Discard button semantics confirmed — neutral secondary; "Cancel, safe exit" (no confirmation dialog).
+- [x] Mobile table pattern confirmed — compact-expand cards at ≤ 768px; break-word overflow; horizontal scroll preserved only for ≥ 12-column tables.
+- [x] Reference frames finalized — all three rendered with the amended tokens. Variant B is the acceptance target.
+- [x] `tokens.js --check --tables` exits 0 after adding the four new accent rows and updating `--fs-surface-sunken`.
 
 **Exit gate 1B:**
-- [ ] Three frames exist, **two or three variants each**, and the chosen variants are committed.
-- [ ] Every frame includes the five stress cases and was reviewed at 1440, 1024 and 390 on a low-brightness screen.
-- [ ] Chrome value recorded; category replacement cue chosen.
-- [ ] Token names and values frozen in `tokens.json`; §4.9 matches it exactly (`tokens.js --check --tables`). The generated `:root` block is compared in 2A.
-- [ ] D12–D18 signed.
-- [ ] No production UI change.
+- [x] Three frames exist, **two or three variants each**, and the chosen variants are committed.
+- [x] Every frame includes the five stress cases and was reviewed at 1440, 1024 and 390 on a low-brightness screen.
+- [x] Chrome value recorded; category replacement cue chosen.
+- [x] Token names and values frozen in `tokens.json`; §4.9 matches it exactly (`tokens.js --check --tables`). The generated `:root` block is compared in 2A.
+- [x] D12–D18 signed.
+- [x] No production UI change.
 
 **User-facing acceptance criterion:** none (design artefact only).
 
