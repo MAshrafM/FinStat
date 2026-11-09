@@ -143,7 +143,7 @@ function generateMarkdownTables(tokens) {
       const fg = resolveHex(item.foreground, tokens);
       const bg = resolveHex(item.background, tokens);
       const ratio = calculateContrast(fg, bg);
-      if (item.pair.includes('--fs-focus-ring` on `--fs-action-bg')) {
+      if (item.pair.includes('--fs-focus-ring')) {
         surfaceVal = `**${ratio}**`;
       } else {
         surfaceVal = ratio;

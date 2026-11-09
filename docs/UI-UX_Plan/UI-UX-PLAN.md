@@ -233,7 +233,7 @@ Tokens freeze at the end of **Phase 1B**. No phase renames a token. New tokens m
 | `--fs-bg` | `#101114` | Page background — flat, single value |
 | `--fs-surface` | `#1a1c20` | Panels, cards, tables, modals |
 | `--fs-surface-raised` | `#22252a` | Nested card, row hover, selected row |
-| `--fs-surface-sunken` | `#0c0d0f` | Panel table header, chrome plane — 1.044:1 darker than `--fs-bg`, always bordered |
+| `--fs-surface-sunken` | `#0c0d0f` | Panel table header, chrome plane — 1.03:1 darker than `--fs-bg`, always bordered |
 | `--fs-border` | `#34383f` | Dividers between regions that already differ — 1.45:1. Not a control boundary; the chrome edge is the one exception (below) |
 | `--fs-border-strong` | `#4a4f57` | Hover emphasis layered **on top of** a control border — 2.07:1, never used alone |
 | `--fs-border-control` | `#6a6f77` | **Control boundaries** — 3.37:1 on surface, 3.73:1 on `--fs-bg` |
@@ -255,9 +255,9 @@ Tokens freeze at the end of **Phase 1B**. No phase renames a token. New tokens m
 - **Flat, always.** The page background is a single declaration: `background: var(--fs-bg);`. No gradient, no radial glow, no texture. Gradients are banned in all app CSS and JS; only the reference frames illustrate them (§9.2).
 - **No blur.** `backdrop-filter` is banned in page CSS and in both hand-written theme files. Surfaces are opaque. The app currently has 42 blur uses; each is removed by its owning sub-phase, and lint blocks new ones from 1C.
 - **Elevation is a step, not a shadow.** `--fs-bg → surface` and `surface → raised` both measure 1.11:1 — visible at panel size, invisible as a separator, and invisible on a mediocre laptop at low brightness. The step groups; the 1 px border bounds; nothing else may. Any state that differs from its default by less than 3:1 also carries a non-colour cue: a selected row gets a 2 px left rule (or a leading checkbox), zebra never appears without row dividers, and hover is never the only sign that a row is interactive (G1).
-- **Chrome is recessed, not elevated (F5, revised in 1B).** `--fs-surface-sunken` `#0c0d0f` is 1.044:1 darker than `--fs-bg`. The step is a hint of depth; the 1 px border remains load-bearing (border-bottom on the navbar, border-right on the sidebar). This is still the one place `--fs-border` is used as a shell edge rather than a divider — the exception to §4.9.2's "fail" status. Inside a panel, the same token renders panel headers darker than `--fs-surface` — a consistent role.
+- **Chrome is recessed, not elevated (F5, revised in 1B).** `--fs-surface-sunken` `#0c0d0f` is 1.03:1 darker than `--fs-bg`. The step is a hint of depth; the 1 px border remains load-bearing (border-bottom on the navbar, border-right on the sidebar). This is still the one place `--fs-border` is used as a shell edge rather than a divider — the exception to §4.9.2's "fail" status. Inside a panel, the same token renders panel headers darker than `--fs-surface` — a consistent role.
 
-**Border rule (WCAG 1.4.11).** A border that is the *only* thing separating a control from its background must reach 3:1. `--fs-border` and `--fs-border-strong` do not. Use `--fs-border-control` on every interactive control boundary, and `--fs-border` only where the surface step already provides the boundary. The chrome edge is the single exception: it is not a control boundary, it is a shell edge, and the fill beside it is 1.04:1 (§4.9.2).
+**Border rule (WCAG 1.4.11).** A border that is the *only* thing separating a control from its background must reach 3:1. `--fs-border` and `--fs-border-strong` do not. Use `--fs-border-control` on every interactive control boundary, and `--fs-border` only where the surface step already provides the boundary. The chrome edge is the single exception: it is not a control boundary, it is a shell edge, and the fill beside it is 1.03:1 (§4.9.2).
 
 **Contrast reference surfaces:** `--fs-bg` `#101114`, `--fs-surface` `#1a1c20`, and `--fs-surface-raised` `#22252a`. Every pair is measured against all three; a value that passes only on the page is not a pass (§4.9 rule 7).
 
@@ -354,7 +354,7 @@ The interface carries one accent hue, reserved exclusively for affordances that 
 
 1. **Accent is interactivity, not meaning.** A button is teal because it is clickable. A badge is not teal because "teal means good". If a status needs a colour, it uses `--fs-positive` / `--fs-negative` / `--fs-warning` via Badge or Delta (§4.3). Never use `--fs-accent` for status.
 2. **The accent is never white-on-teal.** White on `#14b8a6` is 2.51:1 and fails 4.5:1. Text on accent uses `--fs-ink` (§4.3 rule 5 continues to apply).
-3. **Focus rings remain neutral.** On a teal button, the ring is 3px solid `#f2f3f5` at `outline-offset: 2px` — 5.13:1 against the accent, highly visible. If the ring were teal itself it would be 1.6:1 against the button. §4.6's contract is that the ring sits on `--fs-bg`, not on the control it belongs to. The amendment does not change focus ring colour.
+3. **Focus rings remain neutral.** On a teal button, the ring is 3px solid `#f2f3f5` at `outline-offset: 2px` — measured against `--fs-bg` (17.00:1 / 13.85:1), highly visible. If drawn directly on the accent without offset it would be 2.24:1 (failing the 3:1 non-text threshold); if the ring were teal itself it would be 1.6:1 against the button. §4.6's contract is that the ring sits on `--fs-bg`, not on the control it belongs to. The amendment does not change focus ring colour.
 4. **One primary per section.** §4.4's button hierarchy rule still applies. The accent marks the primary; it does not colour every button. Secondary actions are neutral; ghost actions are unfilled; dangerous actions are `--fs-danger` and only inside a confirmation step.
 5. **Focus rings excluded from "all interactive".** The developer's scope decision covers buttons, links, active nav, checked states, and selection affordances — not focus rings, which stay neutral for the visibility reason in rule 3.
 6. **Chart series are never accent.** §4.12's neutral grey ramp plus the three semantic tones remains the complete chart palette. Teal does not appear as a data series.
@@ -439,7 +439,7 @@ outline: var(--fs-focus-ring);
 outline-offset: var(--fs-focus-offset);
 ```
 
-The 2 px gap shows the dark page, so the ring is always measured against `--fs-bg`, never against the control it belongs to. The indicator must never be re-implemented as an inset `box-shadow`, because that moves it back onto the button. Focus rings do not use the accent. §4.3.2 rule 3 explains why: on a teal button, a teal ring would be 1.6:1 against its own surface, invisible. The neutral #f2f3f5 ring is 13.85:1 against --fs-bg and 5.13:1 against --fs-accent — visible everywhere.
+The 2 px gap shows the dark page, so the ring is always measured against `--fs-bg`, never against the control it belongs to. The indicator must never be re-implemented as an inset `box-shadow`, because that moves it back onto the button. Focus rings do not use the accent. §4.3.2 rule 3 explains why: on a teal button, a teal ring would be 1.6:1 against its own surface, invisible; drawn directly on the teal button without offset it would be 2.24:1 (failing the 3:1 non-text threshold). The neutral #f2f3f5 ring is 17.00:1 against --fs-bg and 13.85:1 on raised — visible everywhere.
 
 **Clipping (G4).** A 3 px outline plus a 2 px offset reaches 5 px outside the control's border box. Any ancestor with `overflow: auto | hidden | scroll` clips it — and the app has many: table wrappers, card bodies, tab strips. Two rules:
 
@@ -534,11 +534,9 @@ Emitted by `frontend/scripts/tokens.js` from `frontend/src/styles/tokens.json`, 
 | `--fs-positive` | 5.87 | 6.50 | 5.29 | 4.5 | Pass |
 | `--fs-negative` | 5.30 | 5.87 | 4.78 | 4.5 | Pass |
 | `--fs-warning` | 7.26 | 8.03 | 6.54 | 4.5 | Pass |
-| `--fs-ink` on `--fs-action-bg` `#e8eaed` | 16.02 | — | — | 4.5 | Pass |
 | `--fs-ink` on `--fs-danger` `#d97076` | 6.00 | — | — | 4.5 | Pass |
 | `--fs-ink` on `--fs-positive` `#4fa87c` | 6.64 | — | — | 4.5 | Pass |
 | `--fs-ink` on `--fs-warning` `#cfa24f` | 8.22 | — | — | 4.5 | Pass |
-| White on `--fs-action-bg` | 1.21 | — | — | 4.5 | **Fail — use `--fs-ink`** |
 | `--fs-accent` | 6.85 | 7.58 | 6.18 | 4.5 | Pass |
 | `--fs-ink` on `--fs-accent` #14b8a6 | 7.76 | — | — | 4.5 | Pass |
 | White on `--fs-accent` | 2.49 | — | — | 4.5 | **Fail — use `--fs-ink`** |
@@ -551,7 +549,7 @@ Emitted by `frontend/scripts/tokens.js` from `frontend/src/styles/tokens.json`, 
 | `--fs-border-strong` `#4a4f57` | 2.07 | 2.29 | 1.86 | **Fail — never alone** |
 | `--fs-border-control` `#6a6f77` | 3.37 | 3.73 | **3.04** | Pass — no headroom for a wider ramp |
 | `--fs-focus-ring` `#f2f3f5` | 15.37 | 17.00 | 13.85 | Pass |
-| `--fs-focus-ring` on `--fs-action-bg` | **1.09** | — | — | **Fail on the control — offset required** |
+| `--fs-focus-ring` on `--fs-accent` | **2.24** | — | — | **Fail on the control — offset required** |
 | Step `--fs-bg` → `--fs-surface` | 1.11 | — | — | Grouping only, never a boundary |
 | Step `--fs-surface` → `--fs-surface-raised` | 1.11 | — | — | Grouping only, never a boundary |
 | Action hover `#f5f6f8` | — | 17.46 | — | Pass |
@@ -579,9 +577,9 @@ Emitted by `frontend/scripts/tokens.js` from `frontend/src/styles/tokens.json`, 
 3. The focus ring is solid `#f2f3f5` and is always drawn at `outline-offset: 2px`, so it sits on `--fs-bg`.
 4. `--fs-text-4` is disabled text only. Placeholders use `--fs-text-3`.
 5. Every surface step is 1.11:1 or less, so a step is never the only cue for an interactive boundary or a state change; add the border, the left rule, or the checkbox (§4.1, §6.4).
-6. `--fs-surface-sunken` is 1.04:1 from the page. Chrome is defined by its border, not its fill.
+6. `--fs-surface-sunken` is 1.03:1 from the page. Chrome is defined by its border, not its fill.
 7. **Anything placed on `--fs-surface-raised` is measured there, not on `--fs-surface`.** A control border or chart colour used on a raised row, card, or selected row must still reach 3:1. `--fs-border-control` is **3.04:1** and chart grey 3 is **3.08:1** — both pass by less than 0.1, so widening the ramp in 1B means re-tuning them in the same pass (E5).
-8. **Accent is for interactivity only.** `--fs-accent` reaches 6.48:1 on `--fs-surface` and 7.32:1 on `--fs-bg` — a good non-text contrast for buttons, borders of active states, and checked controls. It fails as text on white and must never be used as a background for white text.
+8. **Accent is for interactivity only.** `--fs-accent` reaches 6.85:1 on `--fs-surface` and 7.58:1 on `--fs-bg` — a good non-text contrast for buttons, borders of active states, and checked controls. It fails as text on white and must never be used as a background for white text.
 
 **Drift check.** `tokens.js --write` regenerates the two tables above from `tokens.json`; from 2A it also regenerates the sentinel-delimited `:root` block in `tokens.css`. CI runs `tokens.js --check --tables` in 1A and the full `tokens.js --check` from 2A, which compares both artefacts and fails on any difference. Editing a hex means editing `tokens.json`, never the Markdown or the CSS (E4, F4, K6).
 
