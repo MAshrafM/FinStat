@@ -21,6 +21,8 @@ describe('Step 5B.1a: [AUD-TEST-001] Paychecks API Integration Tests', () => {
   beforeAll(async () => {
     await connect();
     await Paycheck.init();
+    await SalaryProfile.init();
+    await Expenditure.init();
   });
 
   afterAll(async () => {
@@ -30,6 +32,8 @@ describe('Step 5B.1a: [AUD-TEST-001] Paychecks API Integration Tests', () => {
   beforeEach(async () => {
     await clearDatabase();
     await Paycheck.init();
+    await SalaryProfile.init();
+    await Expenditure.init();
 
     const manager = await createUserWithToken({ role: 'manager', username: 'paycheck_mgr' });
     managerUser = manager.user;

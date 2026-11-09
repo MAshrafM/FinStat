@@ -6,6 +6,7 @@ const { generateAccessToken } = require('../../utils/tokenUtils');
 const app = require('../../server');
 const User = require('../../models/User');
 const Paycheck = require('../../models/Paycheck');
+const Expenditure = require('../../models/Expenditure');
 
 jest.setTimeout(60000);
 
@@ -16,6 +17,7 @@ describe('Step 4B.2: [MF-DEF-004] Paycheck UTC Midday Timezone Normalization & P
   beforeAll(async () => {
     await connect();
     await Paycheck.init();
+    await Expenditure.init();
   });
 
   afterAll(async () => {
@@ -25,6 +27,7 @@ describe('Step 4B.2: [MF-DEF-004] Paycheck UTC Midday Timezone Normalization & P
   beforeEach(async () => {
     await clearDatabase();
     await Paycheck.init();
+    await Expenditure.init();
 
     user = await User.create({
       username: 'tz_paycheck_user',
