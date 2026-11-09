@@ -54,3 +54,15 @@ The following anti-patterns are mechanically blocked by linters (`.stylelintrc.j
 9. **Deleting `data-testid` or `aria-label`**:
    - Existing test IDs and accessibility labels must be preserved (Invariant I5).
 
+---
+
+## 4. Local Verification & Baseline Architecture (A5-Local, D21)
+
+- **Baseline Storage**: Visual regression baselines live in a separate local git repo (`D:\Projects\FinStat-visual-baselines`) linked via Windows directory junction:
+  ```cmd
+  cmd /c mklink /J frontend\tests\visual\baseline D:\Projects\FinStat-visual-baselines
+  ```
+- **App Repo Untracked**: `frontend/tests/visual/baseline/` is `.gitignore`'d in the app repo. Zero baseline PNGs are tracked in `main`.
+- **Manifest Integrity**: `verify-baseline-manifest.js` enforces that all 325 images have $\ge 1000$ bytes, non-1x1 dimensions, and match SHA-256 hashes in `manifest.json`.
+
+

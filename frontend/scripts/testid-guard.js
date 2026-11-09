@@ -58,7 +58,7 @@ function runTestIdGuard() {
   let diffText = '';
   try {
     diffText = execSync(
-      `git diff -U0 ${baseCommit} HEAD -- "frontend/src/**/*.js" "frontend/src/**/*.jsx"`,
+      `git diff -U0 ${baseCommit} -- "frontend/src/**/*.js" "frontend/src/**/*.jsx"`,
       { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 }
     );
   } catch (err) {
