@@ -170,7 +170,7 @@ Configured in `frontend/.eslintrc.json` (or `package.json` `eslintConfig`) per �
 - **Universal ban**: `#14b8a6` cannot appear in any `.js` or `.jsx` file across `frontend/src/` (enforced by the global `Literal[value=/^#(?:[0-9a-fA-F]{3,4}){1,2}$/]` rule).
 - **Scope discipline (Fix B1 & N6)**: While `chartTheme.js` and `categories.js` have narrow overrides permitting chart palette greys (`#8b929b`, `#b8bec6`, `#6a7078`, `#d5d9dd`), **`#14b8a6` is strictly re-banned** via standard JavaScript regexes with trailing flag:
   `Literal[value=/#14b8a6/i]` and `TemplateElement[value.raw=/#14b8a6/i]`.
-- **Single home**: `#14b8a6` exists exclusively in `frontend/src/styles/tokens.json` and `frontend/src/styles/theme.css`.
+- **Single home**: `#14b8a6` exists literally only in `frontend/src/styles/tokens.json` (source) and `frontend/src/styles/tokens.css` (generated, stylelint-exempt). `theme.css` references it via `var(--fs-accent)` (no hex literal, per §9.2's `color-no-hex` rule).
 
 ---
 
@@ -208,6 +208,9 @@ Configured in `frontend/.eslintrc.json` (or `package.json` `eslintConfig`) per �
    - Verified by test suite `frontend/tests/a11y/expectNoA11yViolations.test.js`:
      - Positive test: Passes on `<button>Click me</button>`.
      - Negative test: Fails on `<button></button>` (empty button missing accessible name).
+   - **jsdom Scope & Limitation (C4)**:
+     > [!NOTE]
+     > The helper verifies DOM structure, roles, and accessibility labels, **not contrast or layout**. jsdom has no rendering or layout engine; color-contrast and layout-dependent rules are skipped by axe inside jsdom. Visual color contrast is measured against the real browser in Playwright via `a11y.spec.js` (Component 5). Test authors must not assume `expectNoA11yViolations` clears contrast defects.
 
 ---
 
@@ -263,16 +266,27 @@ Per §4.7, visual regressions are tested across the 5 mandatory QA widths:
   - Known volatile text patterns (clock, relative dates, random transaction IDs).
 - **Progression**: `data-visual-mask` DOM attributes are introduced progressively from Phase 3A+ as each individual page is converted.
 
-#### 5.4 325 Initial Baselines Generation Task (Fix B3)
-- Execute inside the pinned Playwright Docker container (`mcr.microsoft.com/playwright:v1.49.0-jammy`):
+#### 5.4 325 Initial Baselines Generation Task (Fix B3, C3)
+- Execute inside the pinned Playwright Docker container (`mcr.microsoft.com/playwright:v1.49.0-jammy` matching `@playwright/test@1.49.0`):
   `65 routes × 5 widths (1440, 1024, 768, 480, 390) = 325 baselines`.
 - Commit all 325 png files under `frontend/tests/visual/baseline/`.
 - Verify: `npx playwright test --project=visual` reproduces with zero diff against unchanged `main`.
 
-#### 5.5 Playwright Configuration & Environments (N1)
+#### 5.5 Playwright Configuration & Environments (N1, C2)
 In `frontend/playwright.config.js`:
-- Local dev execution (§15): Uses `webServer: { command: 'npm start', port: 3000, reuseExistingServer: true }` and sets `window.__VISUAL_TEST__ = true` to disable Chart.js animations.
-- CI execution: Uses `baseURL: 'http://localhost:3000'` against pre-built production build.
+- Configures `webServer` conditionally for local dev vs CI:
+  ```javascript
+  webServer: {
+    command: process.env.CI
+      ? 'npm run build && npx serve -s build -l 3000'
+      : 'npm start',
+    port: 3000,
+    reuseExistingServer: !process.env.CI,
+  },
+  ```
+- Sets `window.__VISUAL_TEST__ = true` to freeze/disable Chart.js animations and transient effects.
+- Local dev execution (§15): Respects single-worker memory constraints.
+- CI execution: Uses `baseURL: 'http://localhost:3000'` served from production build.
 
 #### 5.6 CI Integration & PR Subset Scope (N2)
 In `.github/workflows/ci.yml`:
@@ -358,13 +372,62 @@ The 1C walkthrough and PR must satisfy and prove every item of the v9 §6.5 exit
     - References `docs/UI-UX_Plan/reference/01-dense-table.html`, `02-form.html`, and `03-dashboard.html`.
     - Lists banned patterns (gradients, blur, glows, radius > 8px, white text on accent, `var(--fs-accent)` in page CSS).
 
+### 3.1 Required Walkthrough Approval Evidence
+
+The Phase 1C walkthrough artifact must include actual command executions and captured output for each of the following 15 verification items:
+
+1. **Gitignore Tracking Verification**:
+   - `git check-ignore -v docs/UI-UX_Plan/UI-UX-PLAN.md` prints nothing (tracked).
+   - `git check-ignore -v docs/ui-snapshots/test.png` prints `docs/*` rule (ignored).
+   - `git check-ignore -v frontend/tests/visual/baseline/01-dense-table-1440.png` prints nothing (tracked).
+2. **CI Workflow Verification**:
+   - `.github/workflows/ci.yml` capture showing frontend test, lint, tone, ESLint, and PR visual subset jobs.
+   - Run of the CI workflow on a test PR with captured CI log showing all jobs executed.
+3. **Visual Baselines Reproducibility in Docker**:
+   - `ls -la frontend/tests/visual/baseline/ | wc -l` = 325 files (plus `.` and `..`).
+   - `npx playwright test --project=visual` on unchanged `main` inside Docker (`mcr.microsoft.com/playwright:v1.49.0-jammy`) — 325 passed, 0 diff.
+4. **Calculation Characterization Fixtures**:
+   - `ls frontend/tests/fixtures/calculations/*.snapshot.json | wc -l` = 8.
+   - `npx jest --runInBand frontend/tests/calculations.spec.js` — 8 passes.
+   - Negative test: Modify one snapshot, re-run, capture failure.
+5. **Coverage Allowlist Guard**:
+   - `node frontend/scripts/ui-coverage.js --assert-allowlist` — passes on real code.
+   - Negative test: Deliberately mis-scope a test pattern, re-run, capture failure.
+6. **Stylelint 14 Negatives & 2 Positives**:
+   - Create one temp CSS file per violation, run stylelint, capture failure for each of the 14 banned declarations.
+   - Run stylelint on the two positive declarations (`border-radius: 0 0 var(--fs-radius-md) var(--fs-radius-md)` and `border-radius: var(--fs-radius-pill)`) — must pass.
+7. **ESLint 11 Expressions & Chart Accent Ban**:
+   - Create one temp JS file per expression, run ESLint, capture failure for each of the 11 banned expressions.
+   - Negative test: Add `const x = '#14b8a6'` to `chartTheme.js` — must fail.
+8. **Tone Linter 5-Way Matrix**:
+   - `node frontend/scripts/lint-tones.js` exits 0 on clean tree.
+   - Create page CSS with `var(--fs-negative)`, `var(--fs-warning)`, `var(--fs-accent)`, `var(--fs-accent-text)` — each fails.
+   - Add the same declarations to `theme.css` — passes. `tokens.css` remains exempt.
+9. **Lint Ratchet 3-Way Matrix**:
+   - Bump a violation count +1 in a page CSS → fails.
+   - Add a new file with `!important` → fails.
+   - Hotfix a file without touching pre-existing violations → passes.
+10. **Test-ID Guard**:
+    - `node frontend/scripts/testid-guard.js` — passes on clean tree.
+    - Negative test: Remove a `data-testid` from a test file → fails.
+11. **`jest-axe` Shared Helper Test**:
+    - `npx jest --runInBand frontend/tests/a11y/expectNoA11yViolations.test.js` — positive on `<button>Save</button>` passes, negative on `<button></button>` fails.
+12. **`AGENTS.md` Guardrail Verification**:
+    - `cat AGENTS.md` — grep for the three reference frame paths (`docs/UI-UX_Plan/reference/01-dense-table.html`, `02-form.html`, `03-dashboard.html`) and banned patterns (gradients, blur, glows, radius > 8px, white text on accent, `var(--fs-accent)` in page CSS).
+13. **Zero Production UI Touched**:
+    - `git status --porcelain frontend/src/pages/ frontend/src/components/` returns completely empty.
+14. **Clean Tree Stylelint Verification**:
+    - `npx stylelint "src/**/*.css"` runs clean on all files except `tokens.css` (which is exempt). Capture the full file list.
+15. **Local Memory Safety (§15)**:
+    - `npx jest --runInBand` and `npx playwright test --project=pr-subset` report actual memory peak and confirm neither crashed the workstation.
+
 ---
 
 ## 4. Execution Steps
 
 1. Create branch `phase-ui-1c-tooling` from `main`.
 2. Install necessary dev dependencies:
-   `stylelint`, `stylelint-config-standard`, `jest-axe`, `@playwright/test`.
+   `stylelint`, `stylelint-config-standard`, `jest-axe`, `@playwright/test@1.49.0`.
 3. Create `frontend/.stylelintrc.json` with verbatim anti-slop rules from §9.2.
 4. Create `frontend/scripts/lint-ratchet.js` and `frontend/scripts/lint-tones.js` (including `--fs-accent` enforcement).
 5. Update ESLint configuration in `frontend/` with AST selectors from §9.2 and strict `/#14b8a6/i` literal ban.
