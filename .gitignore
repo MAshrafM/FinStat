@@ -21,8 +21,10 @@ backend/db_backup_*.xlsx
 backend/read_sheets.js
 .vercel
 
-# docs
-docs
+# docs (ignore general docs, but version UI-UX master plan and per-phase implementation plans)
+docs/*
+!docs/UI-UX_Plan/
+!docs/ui-plans/
 
 #changes
 CHANGELOG.md
