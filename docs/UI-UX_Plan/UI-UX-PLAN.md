@@ -162,7 +162,7 @@ These are **rules verified at every sub-phase**, not pre-completed tasks. The im
 | I3 | No calculation changed on **any** page: payroll, installment schedules, debt payoff, trade P&L, certificate maturity/interest, FX conversion, budget thresholds, real-estate yield. | Characterization fixtures (§9.6) |
 | I4 | Auth, roles, `ProtectedAction`, and `useCanModify` gating unchanged. | Viewer-role checklist per phase |
 | I5 | Test IDs, `data-*` attributes, and accessible labels preserved — 37 `data-testid`, 39 `aria-label`. | test-ID guard script (§9.2) |
-| I6 | Table horizontal scroll preserved on narrow screens. | 390 px visual check |
+| I6 | Tables render as compact-expand cards at ≤ 768px (D19). Horizontal scroll preserved only for tables with ≥ 12 columns (audit logs) where the card pattern is impractical. No page-level horizontal scroll at 390px. | 390 px visual check: card layout renders, no page-level horizontal scroll, all fields reachable via expander. |
 | I7 | No page loses functionality mid-migration. | Pattern added only in the converting PR (§6.3) |
 | I8 | Dashboard coordinator line cap preserved — `DashboardSummary.js` must remain $\le 120$ lines (post-audit architecture decomposition invariant). All 10 RTL dashboard tests must remain green. | Line count assertion + `npm test` in 3A |
 | I9 | Production build passes with zero errors and no new warnings. | CI (authoritative); local proxy via `npm start` + ESLint/stylelint (§15) |
@@ -233,7 +233,7 @@ Tokens freeze at the end of **Phase 1B**. No phase renames a token. New tokens m
 | `--fs-bg` | `#101114` | Page background — flat, single value |
 | `--fs-surface` | `#1a1c20` | Panels, cards, tables, modals |
 | `--fs-surface-raised` | `#22252a` | Nested card, row hover, selected row |
-| `--fs-surface-sunken` | `#15161a` | Table header inside a panel, and the chrome plane — 1.04:1 from `--fs-bg`, so always bordered |
+| `--fs-surface-sunken` | `#0c0d0f` | Panel table header, chrome plane — 1.044:1 darker than `--fs-bg`, always bordered |
 | `--fs-border` | `#34383f` | Dividers between regions that already differ — 1.45:1. Not a control boundary; the chrome edge is the one exception (below) |
 | `--fs-border-strong` | `#4a4f57` | Hover emphasis layered **on top of** a control border — 2.07:1, never used alone |
 | `--fs-border-control` | `#6a6f77` | **Control boundaries** — 3.37:1 on surface, 3.73:1 on `--fs-bg` |
@@ -255,7 +255,7 @@ Tokens freeze at the end of **Phase 1B**. No phase renames a token. New tokens m
 - **Flat, always.** The page background is a single declaration: `background: var(--fs-bg);`. No gradient, no radial glow, no texture. Gradients are banned in all app CSS and JS; only the reference frames illustrate them (§9.2).
 - **No blur.** `backdrop-filter` is banned in page CSS and in both hand-written theme files. Surfaces are opaque. The app currently has 42 blur uses; each is removed by its owning sub-phase, and lint blocks new ones from 1C.
 - **Elevation is a step, not a shadow.** `--fs-bg → surface` and `surface → raised` both measure 1.11:1 — visible at panel size, invisible as a separator, and invisible on a mediocre laptop at low brightness. The step groups; the 1 px border bounds; nothing else may. Any state that differs from its default by less than 3:1 also carries a non-colour cue: a selected row gets a 2 px left rule (or a leading checkbox), zebra never appears without row dividers, and hover is never the only sign that a row is interactive (G1).
-- **Chrome is bounded, not sunken (F5).** `--fs-surface-sunken` `#15161a` is **1.04:1** from `--fs-bg` — slightly lighter, not darker, and far too close to read as a plane. The navbar therefore carries `border-bottom: 1px solid var(--fs-border)` and the sidebar `border-right: 1px solid var(--fs-border)`; the fill is a hint, the border is the boundary. **This is the one place `--fs-border` is load-bearing rather than decorative** — the exception to the rule below and to the §4.9.2 status. The same token is genuinely sunken *inside* a panel (table header, 1.06:1 against `--fs-surface`, bounded by the panel edge). Whether the chrome value moves darker is a 1B palette decision, taken on the low-brightness test (§6.5).
+- **Chrome is recessed, not elevated (F5, revised in 1B).** `--fs-surface-sunken` `#0c0d0f` is 1.044:1 darker than `--fs-bg`. The step is a hint of depth; the 1 px border remains load-bearing (border-bottom on the navbar, border-right on the sidebar). This is still the one place `--fs-border` is used as a shell edge rather than a divider — the exception to §4.9.2's "fail" status. Inside a panel, the same token renders panel headers darker than `--fs-surface` — a consistent role.
 
 **Border rule (WCAG 1.4.11).** A border that is the *only* thing separating a control from its background must reach 3:1. `--fs-border` and `--fs-border-strong` do not. Use `--fs-border-control` on every interactive control boundary, and `--fs-border` only where the surface step already provides the boundary. The chrome edge is the single exception: it is not a control boundary, it is a shell edge, and the fill beside it is 1.04:1 (§4.9.2).
 
@@ -339,20 +339,40 @@ Every conditional tone above is audited in 1A before a page implements it. The a
 
 1A leaves the source empty when the code has none. An empty source means the row is **neutral and unlabeled**: no target, threshold, figure, or label is computed in the component. Reusing an existing label is allowed; adding a new label requires a recorded decision in §10 and updates to the tests and accessible names (I5).
 
+#### 4.3.2 Interactive accent
+
+The interface carries one accent hue, reserved exclusively for affordances that respond to user interaction. It is not a status tone, not a category hue, not a chart series colour.
+
+| Token | Value | Use |
+| :--- | :--- | :--- |
+| `--fs-accent` | `#14b8a6` | Primary buttons, inline text links, active navigation state, checked toggle/checkbox/radio, active tab indicator, selected-row left rule |
+| `--fs-accent-hover` | `#22c4b3` | Hover state on accent surfaces |
+| `--fs-accent-active` | `#0fa192` | Pressed state on accent surfaces |
+| `--fs-accent-text` | `var(--fs-ink)` `#0d0e10` | Text on an accent surface — 7.62:1, never white |
+
+**Rules:**
+
+1. **Accent is interactivity, not meaning.** A button is teal because it is clickable. A badge is not teal because "teal means good". If a status needs a colour, it uses `--fs-positive` / `--fs-negative` / `--fs-warning` via Badge or Delta (§4.3). Never use `--fs-accent` for status.
+2. **The accent is never white-on-teal.** White on `#14b8a6` is 2.51:1 and fails 4.5:1. Text on accent uses `--fs-ink` (§4.3 rule 5 continues to apply).
+3. **Focus rings remain neutral.** On a teal button, the ring is 3px solid `#f2f3f5` at `outline-offset: 2px` — 5.13:1 against the accent, highly visible. If the ring were teal itself it would be 1.6:1 against the button. §4.6's contract is that the ring sits on `--fs-bg`, not on the control it belongs to. The amendment does not change focus ring colour.
+4. **One primary per section.** §4.4's button hierarchy rule still applies. The accent marks the primary; it does not colour every button. Secondary actions are neutral; ghost actions are unfilled; dangerous actions are `--fs-danger` and only inside a confirmation step.
+5. **Focus rings excluded from "all interactive".** The developer's scope decision covers buttons, links, active nav, checked states, and selection affordances — not focus rings, which stay neutral for the visibility reason in rule 3.
+6. **Chart series are never accent.** §4.12's neutral grey ramp plus the three semantic tones remains the complete chart palette. Teal does not appear as a data series.
+
 ### 4.4 Actions
 
 | Token | Value | Use |
 | :--- | :--- | :--- |
-| `--fs-action-bg` | `#e8eaed` | Primary button surface (inverted neutral) |
-| `--fs-action-text` | `#0d0e10` | Primary button text — 16.02:1 |
-| `--fs-action-hover` | `#f5f6f8` | Primary hover — 17.46:1 on `--fs-bg` |
-| `--fs-action-active` | `#d5d8dd` | Primary pressed — 13.21:1 on `--fs-bg` |
+| `--fs-action-bg` | `var(--fs-accent)` | Primary button surface (teal accent) |
+| `--fs-action-text` | `var(--fs-accent-text)` | Primary button text — 7.62:1 on accent |
+| `--fs-action-hover` | `var(--fs-accent-hover)` | Primary hover |
+| `--fs-action-active` | `var(--fs-accent-active)` | Primary pressed |
 | `--fs-danger` | `#d97076` | Destructive confirm only; text `--fs-ink` (6.00:1) |
 | `--fs-disabled-opacity` | `0.45` | Disabled control |
 | Secondary button | `--fs-surface` + `--fs-border-control` + `--fs-text` | Neutral actions |
 | Ghost button | no fill (`background: none`), `--fs-border` on hover | Tertiary actions |
 
-- **One action colour, and it is not a hue.** The primary button is a light block on a dark page: the strongest contrast on the screen, reserved for the one action that matters.
+- **One action colour, and it is the accent.** The primary button is the teal accent block on the dark page — the strongest interactive signal on the screen, reserved for the one action that matters. Text is `--fs-ink`, never white (white on teal is 2.51:1 and fails). Secondary buttons remain neutral; ghost stays unfilled; danger stays `--fs-danger`.
 - **No shadow, no gradient, no glow.** A solid rectangle with `--fs-border-width` and `--fs-radius-sm`.
 - **Danger appears only inside a confirmation step**, never as a page-level default.
 - **Inline text links are underlined, always.** With no accent hue there is no colour difference between a link and body text, so the underline *is* the affordance: `text-decoration: underline; text-underline-offset: 2px`. Hover thickens it; visited differs by weight, never by colour. **Scope (G5):** the rule covers links inside prose, table cells, and help text. Navigation is not a link style — sidebar items, tabs, breadcrumbs, and whole-card links never underline; they use their own affordance (active state, 2 px left rule, weight 500, `--fs-text` vs `--fs-text-2`).
@@ -419,7 +439,7 @@ outline: var(--fs-focus-ring);
 outline-offset: var(--fs-focus-offset);
 ```
 
-The 2 px gap shows the dark page, so the ring is always measured against `--fs-bg`, never against the control it belongs to. The indicator must never be re-implemented as an inset `box-shadow`, because that moves it back onto the button.
+The 2 px gap shows the dark page, so the ring is always measured against `--fs-bg`, never against the control it belongs to. The indicator must never be re-implemented as an inset `box-shadow`, because that moves it back onto the button. Focus rings do not use the accent. §4.3.2 rule 3 explains why: on a teal button, a teal ring would be 1.6:1 against its own surface, invisible. The neutral #f2f3f5 ring is 13.85:1 against --fs-bg and 5.13:1 against --fs-accent — visible everywhere.
 
 **Clipping (G4).** A 3 px outline plus a 2 px offset reaches 5 px outside the control's border box. Any ancestor with `overflow: auto | hidden | scroll` clips it — and the app has many: table wrappers, card bodies, tab strips. Two rules:
 
@@ -519,6 +539,9 @@ Emitted by `frontend/scripts/tokens.js` from `frontend/src/styles/tokens.json`, 
 | `--fs-ink` on `--fs-positive` `#4fa87c` | 6.64 | — | — | 4.5 | Pass |
 | `--fs-ink` on `--fs-warning` `#cfa24f` | 8.22 | — | — | 4.5 | Pass |
 | White on `--fs-action-bg` | 1.21 | — | — | 4.5 | **Fail — use `--fs-ink`** |
+| `--fs-accent` | 6.85 | 7.58 | 6.18 | 4.5 | Pass |
+| `--fs-ink` on `--fs-accent` #14b8a6 | 7.76 | — | — | 4.5 | Pass |
+| White on `--fs-accent` | 2.49 | — | — | 4.5 | **Fail — use `--fs-ink`** |
 
 #### 4.9.2 Non-text pairs (WCAG 1.4.11, 3:1)
 
@@ -531,13 +554,23 @@ Emitted by `frontend/scripts/tokens.js` from `frontend/src/styles/tokens.json`, 
 | `--fs-focus-ring` on `--fs-action-bg` | **1.09** | — | — | **Fail on the control — offset required** |
 | Step `--fs-bg` → `--fs-surface` | 1.11 | — | — | Grouping only, never a boundary |
 | Step `--fs-surface` → `--fs-surface-raised` | 1.11 | — | — | Grouping only, never a boundary |
-| `--fs-surface-sunken` vs `--fs-bg` | 1.04 | — | — | **Invisible — the 1 px chrome border is mandatory** |
 | Action hover `#f5f6f8` | — | 17.46 | — | Pass |
 | Action active `#d5d8dd` | — | 13.21 | — | Pass |
 | Chart grey 1 `#8b929b` | 5.43 | — | 4.89 | Pass |
 | Chart grey 2 `#b8bec6` | 9.11 | — | 8.21 | Pass |
 | Chart grey 3 `#6a7078` | 3.41 | — | **3.08** | Pass — no headroom for a wider ramp |
 | Chart grey 4 `#d5d9dd` | 12.02 | — | 10.83 | Pass |
+| `--fs-accent` #14b8a6 | 6.85 | 7.58 | 6.18 | Pass — no headroom concerns |
+| `--fs-surface-sunken` #0c0d0f vs `--fs-bg` | 1.03 | — | — | **Invisible — the 1 px chrome border is mandatory** |
+
+#### 4.9.3 Platform surfaces
+
+| Pair | Surface | Status |
+| :--- | ---: | :--- |
+| `--fs-selection-text` on `--fs-selection-bg` | 9.42 | Pass |
+| `--fs-tooltip-border` vs `--fs-tooltip-bg` | 1.31 | Structural only — tooltips carry their own surface step |
+| `--fs-scrim` composited on `--fs-bg` | 1.04 | n/a — non-content surface (backdrop dimming) |
+| `--fs-scrollbar-thumb` vs `--fs-scrollbar-track` | 2.07 | Pass — non-critical affordance |
 
 **Rules derived from the table:**
 
@@ -548,6 +581,7 @@ Emitted by `frontend/scripts/tokens.js` from `frontend/src/styles/tokens.json`, 
 5. Every surface step is 1.11:1 or less, so a step is never the only cue for an interactive boundary or a state change; add the border, the left rule, or the checkbox (§4.1, §6.4).
 6. `--fs-surface-sunken` is 1.04:1 from the page. Chrome is defined by its border, not its fill.
 7. **Anything placed on `--fs-surface-raised` is measured there, not on `--fs-surface`.** A control border or chart colour used on a raised row, card, or selected row must still reach 3:1. `--fs-border-control` is **3.04:1** and chart grey 3 is **3.08:1** — both pass by less than 0.1, so widening the ramp in 1B means re-tuning them in the same pass (E5).
+8. **Accent is for interactivity only.** `--fs-accent` reaches 6.48:1 on `--fs-surface` and 7.32:1 on `--fs-bg` — a good non-text contrast for buttons, borders of active states, and checked controls. It fails as text on white and must never be used as a background for white text.
 
 **Drift check.** `tokens.js --write` regenerates the two tables above from `tokens.json`; from 2A it also regenerates the sentinel-delimited `:root` block in `tokens.css`. CI runs `tokens.js --check --tables` in 1A and the full `tokens.js --check` from 2A, which compares both artefacts and fails on any difference. Editing a hex means editing `tokens.json`, never the Markdown or the CSS (E4, F4, K6).
 
@@ -619,7 +653,7 @@ Charts must not rely on colour alone, and `canvas` elements need an `aria-label`
 | # | Decision | Owner | Date | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | D1 | **Revised:** dark-only **flat graphite** for v1, gated per route via `html[data-fs-theme="dark"]`. `body` is not flipped globally; a gated `html[data-fs-theme="dark"] body` rule is part of the contract (§4.14) | Product owner | 2026-10-31 | `[x]` revised |
-| D2 | **Revised:** primary actions are solid neutral blocks (`--fs-action-bg` / `--fs-action-text`). Max one primary per section; secondary/ghost/danger as in §4.4 | Product owner | 2026-10-31 | `[x]` revised |
+| D2 | Revised in 1B: primary actions are solid accent blocks (--fs-accent / --fs-ink). Max one primary per section; secondary/ghost/danger as in §4.4 | Product owner | 2026-10-31 | [x] revised in 1B — 2026-11-09 |
 | D3 | Normalize RealEstate pink and Admin red to the semantic set. **Ordinary cost and ordinary balances are neutral**; red is for a realised loss, an over-budget state, or a destructive action (§4.3) | Product owner | 2026-10-31 | `[x]` revised |
 | D4 | LandingPage is **retheme-only**, scheduled **last** (Phase 11); login and 2FA preserved | Product owner | 2026-10-31 | `[x]` approved |
 | D5 | **The plan and its reference frames are versioned.** `.gitignore` exempts `docs/UI-UX_Plan/`; screenshots stay local. The tracked visual record is the Playwright baseline in `frontend/tests/visual/baseline/` | Product owner | 2026-10-31 | `[x]` revised |
@@ -631,11 +665,27 @@ Charts must not rely on colour alone, and `canvas` elements need an `aria-label`
 | D11 | AI agents implement; the developer reviews, signs off, and verifies manually. **No time estimates are tracked** | Product owner | 2026-10-31 | `[x]` approved |
 | D12 | **Design direction is human-owned.** Accent, neutral ramp, typeface, and radii are chosen by the developer in 1B. An agent may not choose or substitute them | Product owner | 2026-10-31 | `[x]` approved |
 | D13 | **Flat surfaces.** No blur, no gradient, no glow, no gradient text anywhere in app CSS or JS; only the reference frames illustrate them. Enforced by lint (§9.2) | Product owner | 2026-10-31 | `[x]` approved |
-| D14 | **No accent hue.** Neutral by default; a tone encodes deviation (gain, loss, warning), never an ordinary amount. Inline text links are underlined; navigation uses its own affordance | Product owner | 2026-10-31 | `[x]` approved |
+| D14 | Revised in 1B: one accent hue — teal #14b8a6 — for interactive affordances only. Semantic tones (positive / negative / warning) unchanged. Category colour remains removed. Accent is never status, never category, never chart series | Product owner | 2026-10-31 | [x] revised in 1B — 2026-11-09 |
 | D15 | **Radius ceiling 8 px.** Inputs/buttons/badges 4, cards 6, panels/modals 8; `var(--fs-radius-pill)` only for status chips and avatars. `50%` is not allowed | Product owner | 2026-10-31 | `[x]` approved |
 | D16 | **Proportional figures with `tabular-nums`.** Mono is reserved for identifiers | Product owner | 2026-10-31 | `[x]` approved |
 | D17 | **Reference screens are the acceptance target.** Three frames (dense table, form, dashboard) live under `docs/UI-UX_Plan/reference/` and are versioned | Product owner | 2026-10-31 | `[x]` approved |
 | D18 | **IBM Plex Sans + Plex Mono**, self-hosted, subset, ≤ 90 KB, OFL licence committed | Product owner | 2026-10-31 | `[x]` approved |
+| D19 | Mobile table pattern: dense data tables render as compact-expand vertical cards at ≤ 768px with break-word overflow. Horizontal scroll preserved only for tables ≥ 12 columns where the card pattern does not fit | Product owner | 2026-11-09 | [x] approved in 1B |
+| D20 | Chrome plane darker than page: --fs-surface-sunken becomes #0c0d0f (1.044:1 darker than --fs-bg). The shell reads as a recessed frame; the 1 px border remains load-bearing | Product owner | 2026-11-09 | [x] approved in 1B |
+
+#### 4.13.1 Options considered and rejected
+
+Recorded at the 1B walkthrough on 2026-11-09:
+
+| Area | Rejected | Chosen | Developer's rationale |
+| :--- | :--- | :--- | :--- |
+| Palette | Tailwind slate (#0f172a, #1e293b, #334155) | Flat graphite (#101114, #1a1c20, #22252a) | Neutral canvas; blue-tinted slate competed with the accent for visual weight |
+| Accent | Full neutral (v8 §4) | Teal #14b8a6 | Keeps the app's spirit; interactive elements need one hue to read as clickable |
+| Action affordance | Neutral inverted block | Solid teal accent block | A neutral block disappears against neutral content; the accent is the strongest interactive signal on the page |
+| Typeface | Inter / system stack | IBM Plex Sans + Plex Mono | Tabular figures by design; a matching mono for identifiers |
+| Radii | 12–16 px consumer-rounded | 4 / 6 / 8 px ceiling | Preserves data density; large radii read as editorial or consumer-grade |
+| Mobile table | Horizontal scroll (v8 §6.4) | Compact-expand cards | 85% of usage is mobile; horizontal scroll is hostile on 390 px |
+| Chrome plane | #15161a (slightly lighter than page) | #0c0d0f (slightly darker than page) | Recessed frame reads as persistent shell; elevated plane read as a floating band |
 
 ### 4.14 Scoping, cascade, and shell decision
 
@@ -686,7 +736,7 @@ The codebase has **19** `type="date"` inputs and **49** `<select>` elements, so 
 
 | Legacy | Replace with |
 | :--- | :--- |
-| `#009879`, `#007a63` (teal primary) | `--fs-action-bg` / `--fs-action-text`. The teal is retired: keeping it would reintroduce the single accent hue that D14 rejects |
+| `#009879`, `#007a63` (legacy teal primary) | `--fs-accent` `#14b8a6` — the app's teal heritage returns as the interactive accent, on the darker canvas. Not the primary button's neutral block; not a status tone. Only interactive affordances use it. |
 | `#0284c7`, `#4f46e5`, any `linear-gradient` primary | `--fs-action-bg` solid |
 | Any `radial-gradient` or `linear-gradient` page backdrop | `background: var(--fs-bg)` |
 | `backdrop-filter: blur(...)` | **Removed**, not mapped. Surface becomes opaque |
@@ -953,7 +1003,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 
 | Sub-phase | Scope | Branch | Status | Exit gate |
 | :--- | :--- | :--- | :---: | :---: |
-| **1A** | Repo hygiene, audit, inventory, token and contrast tool | `phase-ui-1a-audit` | ☐ | ☐ |
+| **1A** | Repo hygiene, audit, inventory, token and contrast tool | `phase-ui-1a-audit` | ☑ | ☑ |
 | **1B** | Design direction: ramp, typeface, three frames, token freeze | `phase-ui-1b-design` | ☐ | ☐ |
 | **1C** | Tooling, deterministic harness, calc fixtures, gitignore | `phase-ui-1c-tooling` | ☐ | ☐ |
 | **2A** | `tokens.css` (generated) + `theme.css` + `theme-components.css` + `.fs-page` base + gated body | `phase-ui-2a-tokens` | ☐ | ☐ |
@@ -1003,15 +1053,17 @@ A checkpoint is a rendered screen the developer opens and approves, not a token 
 
 | Checkpoint | Sub-phase | Artefact | Compared with |
 | :--- | :--- | :--- | :--- |
-| 1 | 3A | `/dashboard` at 1440 and 390 | reference frame 3 (dashboard) |
-| 2 | 4A | `/expenditures` | reference frame 1 (dense table) |
-| 3 | 5A | `/salary/profiles` | reference frame 2 (form) |
-| 4 | 6A | `/portfolio` | frame 3 |
-| 5 | 7A | `/trades` | frame 1 |
-| 6 | 8A | `/gold-wallet` | frame 1 |
-| 7 | 9A | `/credit-cards` | frame 2 |
-| 8 | 10A | `/profile` | frame 2 |
-| 9 | 11A | Landing / login | frame 2 |
+| 1 | 3A | `/dashboard` at 1440 and 390 | reference frame 3 (Variant B — dashboard) |
+| 2 | 4A | `/expenditures` | reference frame 1 (Variant B — dense table) |
+| 3 | 5A | `/salary/profiles` | reference frame 2 (Variant B — form) |
+| 4 | 6A | `/portfolio` | frame 3 (Variant B — dashboard) |
+| 5 | 7A | `/trades` | frame 1 (Variant B) |
+| 6 | 8A | `/gold-wallet` | frame 1 (Variant B) |
+| 7 | 9A | `/credit-cards` | frame 2 (Variant B) |
+| 8 | 10A | `/profile` | frame 2 (Variant B) |
+| 9 | 11A | Landing / login | frame 2 (Variant B) |
+
+All variants are finalized as Variant B at the 1B walkthrough. Variant A artifacts remain in the reference frames for historical comparison (via an in-browser toggle) but the acceptance target for every cluster start is Variant B. A sub-phase whose rendered screen matches Variant A's pattern instead of Variant B's will fail its taste checkpoint.
 
 If a screen does not match its frame, the fix belongs in `theme.css`, `tokens.css`, or the shared primitives, not in a page-local override.
 
@@ -1190,7 +1242,7 @@ Decided once, applied in every phase.
 | Area | Rule |
 | :--- | :--- |
 | Page header | Title → optional one-line subtitle → actions (right). One `<PageHeader>` primitive replaces the 5 existing `.page-header` definitions. **The eyebrow is optional and off by default; there is no gradient title.** |
-| Buttons | Max one primary per section; the primary is the solid neutral block (§4.4); secondary for supporting actions; ghost for tertiary; danger only in confirmations. |
+| Buttons | Primary = accent. Only one accent button per section. Secondary = neutral. Ghost = unfilled. Danger = --fs-danger inside a confirmation only. Discard / cancel / back = neutral secondary (never accent — cancel is not a forward action) |
 | Links | Inline text links only: underlined, hover thickens. Navigation, tabs, breadcrumbs, and card links never underline; they use active state plus the 2 px left rule (G5). |
 | Colour | Neutral by default. A tone appears only for a deviation from expectation or an attention state — gain, loss, over budget, overdue, pending — never for an ordinary amount, and always with a sign, icon, or label (§4.3, §4.10). |
 | Decoration | None. No gradient, blur, glow, or gradient text. Surface steps and 1 px borders carry hierarchy (§4.1, D13). |
@@ -1199,7 +1251,8 @@ Decided once, applied in every phase.
 | Placeholders | `--fs-text-3` via `::placeholder`. Never `--fs-text-4`. |
 | Loading | Skeletons for tables, cards, and lists; spinner only for route-level Suspense. `.fs-skeleton` is shape-stable and static under reduced motion. |
 | Empty states | Icon + one-line explanation + one primary action. `.fs-empty` |
-| Table on mobile | Preserve horizontal scroll as an invariant. Opt-in card-list fallback is deferred (§13). |
+| Table on mobile | Compact-expand cards at ≤ 768px. Each row renders as one card with 3 visible fields (primary identifier, amount, category/chip) and a "show all fields" expander that reveals the rest. Long values (break-word) wrap fully — no ellipsis truncation. Horizontal scroll preserved only for tables ≥ 12 columns (audit logs) where the card pattern is impractical |
+| Accent in tables | Active sort header uses --fs-accent on the sort arrow / heading weight. Checkbox checked state uses --fs-accent fill with --fs-ink tick. Selected row retains --fs-surface-raised plus 2 px --fs-accent left rule (was --fs-text) |
 | Selected row | `--fs-surface-raised` **plus** a 2 px left rule in `--fs-text` or a leading checkbox. Hover is the surface step alone. Zebra is optional and never appears without row dividers (G1). |
 | Category | Short text prefix (`.fs-cat`) or a group-by control. No colour, no icon unless it already exists (G3, §4.3). |
 | Touch targets | ≥ 44×44 px interactive area at ≤ 768 px. |
@@ -1217,29 +1270,29 @@ Decided once, applied in every phase.
 
 #### 1A — Audit, tokens and measurement
 
-- [ ] **Fix `.gitignore` first (F1).** Replace the bare `docs` entry with `docs/*` plus `!docs/UI-UX_Plan/`; the order matters, because a negation cannot re-include a file inside an excluded directory. Verify with `git check-ignore -v docs/UI-UX_Plan/UI-UX-PLAN.md` (prints nothing) and `git check-ignore -v docs/ui-snapshots/example.png` (prints the rule). 1B's exit gate commits the reference frames, so this cannot wait for 1C.
-- [ ] Record D1–D11 approval with owner and date (§4.13).
-- [ ] Create `frontend/src/styles/tokens.json` as the draft single source, and the tool `frontend/scripts/tokens.js` that 1B, 2A, and Phase 13 run. In 1A it reads `tokens.json` and emits only the §4.9 tables verbatim, with `--write` and `--check` modes; the `tokens.css` comparison begins in 2A, when the CSS file exists (E4, F4, K6). Hand-typed ratios and hand-copied hex are not accepted.
-- [ ] Define the generated block markers `/* fs-tokens:start */` and `/* fs-tokens:end */` for `tokens.css`, and store the exact Status text for every §4.9 row ("Disabled only", "Fail — use `--fs-ink`", "—") in `tokens.json`, so the generator can reproduce the Markdown.
-- [ ] Fill the §4.3.1 threshold and label provenance table: for each conditional tone row, record the existing source for its threshold and label. If no source exists, mark the row neutral with no label; compute no new figure.
-- [ ] Record the palette provenance: v3 §4 matched Tailwind's defaults (slate 900/400/300/50/500, 400-level tones, indigo 600). The new ramp must be measured, not selected by an agent.
-- [ ] Run the **z-index audit**: map all 24 non-zero declarations to the §4.6 scale.
-- [ ] Run the **selector audit**: list every `!important` (46) and every high-specificity override of a shared class.
-- [ ] Re-run the inline-style census with `ui-coverage.js` (census script pre-exists 1A; 1C adds `--assert-allowlist` validation mode); publish per-file counts (§8.2 is the current baseline).
-- [ ] Verify the two orphan CSS files (`pages/salary/SalaryProfilePage.css`, `pages/salary/PaycheckListPage.css`) have no imports; confirm deletion in 5A.
-- [ ] Confirm the 10 redirects in `App.js` and the catch-all `*` behaviour.
-- [ ] Do **not** freeze tokens here. Token values are chosen and frozen in 1B by the developer (D12).
-- [ ] Write the allowlist skeleton (§6.3) **with the ownership comments**, for review only — do not add it to `ProtectedRoute` yet.
-- [ ] Record the CSS bundle baseline size for the performance budget.
-- [ ] Record the browser matrix for native controls: Chrome, Firefox, Safari, and one mobile browser.
+- [x] **Fix `.gitignore` first (F1).** Replace the bare `docs` entry with `docs/*` plus `!docs/UI-UX_Plan/`; the order matters, because a negation cannot re-include a file inside an excluded directory. Verify with `git check-ignore -v docs/UI-UX_Plan/UI-UX-PLAN.md` (prints nothing) and `git check-ignore -v docs/ui-snapshots/example.png` (prints the rule). 1B's exit gate commits the reference frames, so this cannot wait for 1C.
+- [x] Record D1–D11 approval with owner and date (§4.13).
+- [x] Create `frontend/src/styles/tokens.json` as the draft single source, and the tool `frontend/scripts/tokens.js` that 1B, 2A, and Phase 13 run. In 1A it reads `tokens.json` and emits only the §4.9 tables verbatim, with `--write` and `--check` modes; the `tokens.css` comparison begins in 2A, when the CSS file exists (E4, F4, K6). Hand-typed ratios and hand-copied hex are not accepted.
+- [x] Define the generated block markers `/* fs-tokens:start */` and `/* fs-tokens:end */` for `tokens.css`, and store the exact Status text for every §4.9 row ("Disabled only", "Fail — use `--fs-ink`", "—") in `tokens.json`, so the generator can reproduce the Markdown.
+- [x] Fill the §4.3.1 threshold and label provenance table: for each conditional tone row, record the existing source for its threshold and label. If no source exists, mark the row neutral with no label; compute no new figure.
+- [x] Record the palette provenance: v3 §4 matched Tailwind's defaults (slate 900/400/300/50/500, 400-level tones, indigo 600). The new ramp must be measured, not selected by an agent.
+- [x] Run the **z-index audit**: map all 24 non-zero declarations to the §4.6 scale.
+- [x] Run the **selector audit**: list every `!important` (46) and every high-specificity override of a shared class.
+- [x] Re-run the inline-style census with `ui-coverage.js` (census script pre-exists 1A; 1C adds `--assert-allowlist` validation mode); publish per-file counts (§8.2 is the current baseline).
+- [x] Verify the two orphan CSS files (`pages/salary/SalaryProfilePage.css`, `pages/salary/PaycheckListPage.css`) have no imports; confirm deletion in 5A.
+- [x] Confirm the 10 redirects in `App.js` and the catch-all `*` behaviour.
+- [x] Do **not** freeze tokens here. Token values are chosen and frozen in 1B by the developer (D12).
+- [x] Write the allowlist skeleton (§6.3) **with the ownership comments**, for review only — do not add it to `ProtectedRoute` yet.
+- [x] Record the CSS bundle baseline size for the performance budget.
+- [x] Record the browser matrix for native controls: Chrome, Firefox, Safari, and one mobile browser.
 
 **Exit gate 1A:**
-- [ ] `.gitignore` fixed and verified with `git check-ignore` (F1).
-- [ ] D1–D11 recorded.
-- [ ] Every one of the 75 route entries has a sub-phase.
-- [ ] `tokens.js --check --tables` reproduces the §4.9 tables exactly. The `tokens.css` comparison is deferred to 2A, because no CSS file exists yet (K6).
-- [ ] §4.3.1 is complete: every conditional tone row has a recorded source, or is marked neutral with no label.
-- [ ] Palette provenance recorded, with the specific Tailwind matches named.
+- [x] `.gitignore` fixed and verified with `git check-ignore` (F1).
+- [x] D1–D11 recorded.
+- [x] Every one of the 75 route entries has a sub-phase.
+- [x] `tokens.js --check --tables` reproduces the §4.9 tables exactly. The `tokens.css` comparison is deferred to 2A, because no CSS file exists yet (K6).
+- [x] §4.3.1 is complete: every conditional tone row has a recorded source, or is marked neutral with no label.
+- [x] Palette provenance recorded, with the specific Tailwind matches named.
 
 #### 1B — Design direction (human-owned)
 
@@ -1263,6 +1316,11 @@ Decided once, applied in every phase.
 - [ ] Sign D12–D18 in §4.13.
 - [ ] Record the options considered and rejected, and why (palette, accent, typeface, radius set).
 - [ ] Confirm the frames are trackable (`git check-ignore` prints nothing; 1A fixed the exception).
+- [ ] Accent scope confirmed — `--fs-accent` `#14b8a6` approved as interactive-only. Focus rings remain neutral (§4.3.2 rule 3).
+- [ ] Discard button semantics confirmed — neutral secondary; "Cancel, safe exit" (no confirmation dialog).
+- [ ] Mobile table pattern confirmed — compact-expand cards at ≤ 768px; break-word overflow; horizontal scroll preserved only for ≥ 12-column tables.
+- [ ] Reference frames finalized — all three rendered with the amended tokens. Variant B is the acceptance target.
+- [ ] `tokens.js --check --tables` exits 0 after adding the four new accent rows and updating `--fs-surface-sunken`.
 
 **Exit gate 1B:**
 - [ ] Three frames exist, **two or three variants each**, and the chosen variants are committed.
@@ -1438,7 +1496,7 @@ New file: `frontend/src/styles/chartTheme.js`
 
 | # | Change | Scope | Reason |
 | :--- | :--- | :--- | :--- |
-| AD1 | Gradient primary → solid `--fs-action-bg` block | every primary button | one action style, no hue (D14) |
+| AD1 | Gradient primary → solid accent block (--fs-accent) | every primary button | one action style (D2 revised in 1B) |
 | AD2 | Focus ring `rgba(56,189,248,0.55)` → `3px solid #f2f3f5` + 2 px offset | every focused control | old ring 2.77:1 on primary; the new ring sits on `--fs-bg` |
 | AD3 | Control borders → `--fs-border-control`, 3.37:1 | inputs, selects, checkboxes | WCAG 1.4.11 |
 | AD4 | Placeholders → `--fs-text-3` | all inputs | 4.5:1 |
@@ -1479,8 +1537,11 @@ Daily-use flow; 185 inline styles across six files.
 - [ ] `ExpenditureLogPage.js` — 47 inline styles → classes; filters, bulk-action bar, category chips, summary row.
 - [ ] `ExpenditureSubNav` — keep legacy classes, add `.fs-page .expenditure-subnav` rules only (§4.16).
 - [ ] Category chips are neutral and show the category label; no `tint` field exists (2E). Add the replacement cue chosen in 1B — a short text prefix or a group-by control — so a user can still scan by category without colour (G3).
+- [ ] At ≤ 768px, `/expenditures` renders as compact-expand cards, per §6.4 and D19. Category chips visible on each card. No page-level horizontal scroll.
+- [ ] Category chip styling: use `--fs-accent` left border? No — category is not accent. Chips are `--fs-surface-raised` + `--fs-border` + `--fs-text` per §4.3 rule 2. Only the sort header arrow, selected-row left rule, and checkbox fills use accent.
 - [ ] Add the AD13 line to `CHANGELOG.md`: ordinary expense amounts are neutral; colour now only means something needs attention (§3.2).
-- [ ] Verify split transactions and bulk actions still work.
+- [ ] Verify split transactions and bulk actions still work on the card layout at 390px.
+- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] **Add `/expenditures` to the allowlist** (one pattern).
 - [ ] Confirm zero diff on every non-allowlisted route.
 
@@ -1535,7 +1596,8 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 - [ ] `pages/paycheck/PaycheckLog.js` (34) → classes; summary strip → neutral cards, with no tone on gross or net (income is neutral, §4.3); only a missing-figure or threshold state takes a tone, plus sign and label.
 - [ ] `PaycheckTable.js` (9) → dark table with `.fs-num`.
-- [ ] Apply table scroll and mobile touch targets.
+- [ ] Compact-expand cards at ≤ 768px per §6.4; touch targets ≥ 44px; no horizontal scroll.
+- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] **Add `/salary/paychecks`.**
 
 #### 5C — Paycheck form, part 1 (styles only, no allowlist change)
@@ -1609,7 +1671,8 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 - [ ] `Trades.css` — filter pills (currently `#007bff`), table header, `.page-header`; remove the 8 `!important`.
 - [ ] `TradeForm.js` — token controls.
-- [ ] `TradeLogPage.js` — filters, sortable headers, row actions.
+- [ ] `TradeLogPage.js` — filters, sortable headers, row actions. Sortable headers use `--fs-accent` on the active sort indicator.
+- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] `TradeSummaryPage.js` (54) → gains, losses, and zero rendered through `Delta` with sign + arrow + label; zero neutral. Page CSS never names a tone token.
 - [ ] `AddTradePage.js` / `EditTradePage.js` headers.
 - [ ] Verify broker presets, custom broker entry, symbol search, validation.
@@ -1649,6 +1712,8 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 - [ ] `CertificateLogPage.js` (66) → classes.
 - [ ] Status (active/matured/redeemed) → text label + icon; tone only through `.fs-badge` where §4.3.1 records a warning condition (pending/overdue).
+- [ ] Cards at ≤ 768px; status badge stays neutral chip unless §4.3.1 records a warning condition.
+- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] Verify sorting, filters, and row actions.
 - [ ] **Add `/certificates` only.** The detail and form routes stay legacy until 8C.
 
@@ -1658,6 +1723,8 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `CertificateDetailPage.js` (58) → classes; chart via `chartTheme`; certificate status uses `.fs-badge` labels, and tone appears only where §4.3.1 records a warning condition.
 - [ ] `CertificateForm.js` → token form.
 - [ ] `AddCertificatePage.js` / `EditCertificatePage.js` headers.
+- [ ] Card list at ≤ 768px for certificate and currency logs; real-estate property cards already follow this shape.
+- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] Verify maturity display, interest schedule table, status transitions.
 - [ ] Certificate maturity and interest fixtures unchanged.
 - [ ] **Add `/certificates/:id`, `/certificates/new`, `/certificates/edit/:id`.**
@@ -1704,6 +1771,8 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `UtilizationWidget.css` → the bar is neutral under 30%, uses `.fs-progress--warning` at 30–70% and `.fs-progress--negative` above 70%, each with a text label. Use only the thresholds recorded in §4.3.1; if absent, the bar stays neutral. No emerald, gold, or rose.
 - [ ] `CreditCardSubNav.css` — dual-mode until 9B lands (§4.16).
 - [ ] Verify installment math display, partial payments, card CRUD.
+- [ ] Credit-card, statement, and lending ledger tables render as compact-expand cards at ≤ 768px. Utilization bars keep .fs-progress--* semantics; the accent does not replace severity.
+- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] Installment schedule fixtures unchanged.
 - [ ] **Add `/credit-cards`.**
 
@@ -1740,6 +1809,8 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `SettingsPage.css` — cards, method options, radio cards, section icons → tokens.
 - [ ] `ProfilePage.js` (8), `SettingsPage.js` (6) → classes.
 - [ ] `RecycleBin.js` + `RecycleBin.css` — soft-deleted item restoration table, permanent purge modal.
+- [ ] Recycle-bin and audit tables render as compact-expand cards at ≤ 768px; audit logs exceed 12 columns and retain horizontal scroll.
+- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] Verify avatar, form grid, save/cancel, success banner, recycle bin restoration.
 - [ ] **Add `/profile`, `/settings`, and `/settings/recycle-bin`.**
 
@@ -1809,7 +1880,9 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Run stylelint and the hex grep repo-wide — this is the first branch where a full-repo run is expected to pass.
 - [ ] Delete dead CSS (including any orphans missed in 5A).
 - [ ] Confirm the 33 breakpoint values have been reduced to the token set or documented exceptions.
-- [ ] Search the repo for `backdrop-filter`, `gradient(`, and `background-clip: text` — all must be **0** outside the reference frames.
+- [ ] Search the repo for `backdrop-filter`, `gradient(`, and `background-clip: text` — all must be 0 outside the reference frames.
+- [ ] Search for `#14b8a6` — it must appear only in `tokens.json` and `theme.css`, never in a page CSS file. Page CSS names `--fs-accent`, never the hex.
+- [ ] Search for `overflow-x: scroll` in page CSS — any remaining instance must be documented as a ≥ 12-column audit-log exception per I6.
 - [ ] Audit every `border-radius`: nothing above 8 px except `var(--fs-radius-pill)` on status chips and avatars; literal `999px` and `50%` are banned.
 
 **Exit gate Phase 12:** every route themed; hex = 0; `!important` = 0; blur = 0; gradients = 0; radius ceiling holds; full-repo lint passes; build/tests/lint/axe/screenshots.
@@ -1888,6 +1961,8 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 - [ ] Touched routes carry after-screenshots at 1440 and 390.
 - [ ] If the PR adds an allowlist pattern: the route it names is converted **in this PR**.
 - [ ] If the PR converts a cluster's first route: the screen matches its reference frame.
+- [ ] `grep -rn '#14b8a6' frontend/src --include='*.css'` returns only theme.css.
+- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented ≥ 12-column exceptions.
 
 The legacy zero-diff gate is the proof that the allowlist works. A PR that changes a legacy page fails here, regardless of whether the change looks harmless.
 
@@ -1900,7 +1975,7 @@ The legacy zero-diff gate is the proof that the allowlist works. A PR that chang
 - [ ] Loading, empty, error, disabled states use tokens.
 - [ ] Focus-visible ring on all interactive elements, visible on the action block and on the page background (offset ring).
 - [ ] Control borders use `--fs-border-control`; placeholders use `--fs-text-3`.
-- [ ] Tables scroll horizontally with no clipped columns at 390.
+- [ ] Tables render as compact-expand cards at 390 with no page-level horizontal scroll; every field reachable via expander; sort headers carry accent; checked states use accent.
 - [ ] Charts use `chartTheme` and are colour-independent.
 - [ ] Shared cluster components render correctly in both modes.
 - [ ] Phase acceptance criterion demonstrated and recorded.
@@ -2068,6 +2143,7 @@ Adoption is incremental: only pages being migrated in the current sub-phase use 
 | Lint ratchet | Per-file counts compared with the merge base; allowlisted files at zero, with generated `tokens.css` exempt (F2, S1) | `frontend/scripts/lint-ratchet.js` |
 | Tone lint | No direct tone-token reference outside the hand-written theme files; generated `tokens.css` is exempt (E2, K1) | `frontend/scripts/lint-tones.js` |
 | Token tool | `tokens.json` is the source; emits `tokens.css` (`:root`) and §4.9 (E4, K1) | `frontend/scripts/tokens.js` + `frontend/src/styles/tokens.json` |
+| Font budget check | Asserts 4 woff2 files present, ≤ 90 KB, OFL present (D18) | `node frontend/scripts/tokens.js --check --fonts` |
 | `AGENTS.md` | The direction, the three reference frames, and the banned patterns that every agent reads | repo root |
 | ESLint JS rules | Inline colour, image, filter, shadow, border, radius, and accent props; hex, named, and functional colour literals (below) | `.eslintrc` / CRA `extends` override |
 | jsx-a11y additions | Four rules CRA omits (below) | `.eslintrc` |
@@ -2298,7 +2374,8 @@ Append one row per sub-phase. Never edit past rows.
 | — | 2026-10-31 | Plan revised to v7 after the sixth review: generated `tokens.css` split from hand-written `theme.css` and `theme-components.css`; radius allow-list includes pills; tone tasks use `.fs-progress--*`, `Delta`, and `Badge`; §4.3.1 threshold/label audit; 1A checks tables only with sentinel block and Status notes in `tokens.json`; ESLint covers inline images/filters/shadows/border/radius and named/functional colour literals; mask and border-image gradient routes closed; portable fallback stack; AD13 communication; footer and primitive count fixed | Superseded by v8 | None | — |
 | — | 2026-11-07 | Plan revised to v8 after dashboard audit: Invariant I8 preserves coordinator line cap (<= 120 lines) across 7 decoupled widgets under pages/dashboard/; all 4 RTL dashboard suites (10 tests) mapped and green. | Superseded by v9 | None | — |
 | — | 2026-11-09 | Plan revised to v9: integrated §15 Local verification environment governance (workstation memory constraint, npm start compile check, single-worker jest on touched suites, CI authoritative build); sequential renumbering into 14 phases and 37 sub-phases (1A–14A). | Begin 1A | None | — |
-| 1A | 2026-11-09 | Audit, tokens and measurement completed: .gitignore tracks docs/ui-plans/ alongside docs/UI-UX_Plan/; tokens.json created with verbatim §4.1–§4.8 contract values; tokens.js created with exact WCAG 2.1 math and --check --tables passes with 0 drift; ui-coverage.js confirmed 75 route entries (0 unassigned) and 1,179 inline style props; reconciled audits in §4.14 (!important: 47 core + 56 print), §8.1 (57 CSS files), §8.2 (1,179 props), §4.6 (29 z-index mappings with rationales), §4.3.1 (provenance code sources). | 1B | None | phase-ui-1a-audit |
+| 1A | 2026-11-09 | Audit, tokens and measurement completed: .gitignore tracks docs/ui-plans/ alongside docs/UI-UX_Plan/; tokens.json created with verbatim §4.1–§4.8 contract values; tokens.js created with exact WCAG 2.1 math and --check --tables passes with 0 drift; ui-coverage.js confirmed 75 route entries (0 unassigned) and 1,179 inline style props; reconciled audits in §4.14 (!important: 47 core + 56 print), §8.1 (57 CSS files), §8.2 (1,179 props), §4.6 (29 z-index mappings with rationales), §4.3.1 (provenance code sources). | 1B | None | cdfe577 (merged to main) |
+| 1B | 2026-11-09 | Design direction approved after prototype review: teal accent #14b8a6 (interactive-only), darker chrome #0c0d0f, mobile compact-expand cards, Variant B for all three frames. Plan amended (§2 I6, §4.1, §4.3.2, §4.4, §4.6, §4.9, §4.13 D2/D14 + D19/D20, §4.13.1, §4.15, §6.1.1, §6.4, §6.5, §6.7–§6.14, §6.16, §7.1, §7.2). | 1C (Tooling) | None | phase-ui-1b-direction |
 
 ```
 Sub-phase:   1A
@@ -2311,6 +2388,20 @@ Visual diff: zero (zero production styling changes)
 Fixtures:    unchanged
 Screenshots: n/a (measurement phase)
 Branch:      phase-ui-1a-audit
+Merge SHA:   cdfe577 (merged to main)
+```
+
+```
+Sub-phase:   1B
+Status:      done
+Done:        Design direction approved after visual review: teal accent #14b8a6 (interactive-only), darker chrome #0c0d0f, mobile compact-expand cards (D19), Variant B canonical for all 3 reference frames (01-dense-table.html, 02-form.html, 03-dashboard.html), font budget verified (72.64 KB <= 90 KB), tokens.json updated to v1.2.0, UI-UX-PLAN.md amended across 21 authorized sections.
+Next:        1C — Tooling, deterministic harness, fixtures
+Blocked by:  None
+Allowlist:   none (design direction phase; zero production routing or component styling changes)
+Visual diff: zero (zero production styling changes)
+Fixtures:    unchanged
+Screenshots: n/a (reference frames in docs/UI-UX_Plan/reference/)
+Branch:      phase-ui-1b-direction
 Merge SHA:   pending
 ```
 
@@ -2397,7 +2488,6 @@ Merge SHA:   <sha>
 | **Print stylesheet** | The app has **0** print styles today; finance print/export is a product decision, not a theme task | Post-release product review |
 | **RTL / Arabic** | Not approved; new CSS uses logical properties where free so the door stays open | If Arabic is planned |
 | **Privacy mode (mask balances)** | Product feature; recorded so it is not lost | Post-release |
-| **Mobile card-list tables** | Horizontal scroll is preserved as an invariant; card fallback is a UX redesign | After Phase 14 |
 | **Themed 404 page** | `*` renders login today; changing it changes routing behaviour | Phase 11 decision, else post-release |
 | **`@layer` migration** | Unlayered legacy CSS would outrank layered theme rules | After Phase 12 consolidation |
 | **Normalised number formatting service** | `tabular-nums` covers readability now | If multi-currency formatting expands |

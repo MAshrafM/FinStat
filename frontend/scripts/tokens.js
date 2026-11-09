@@ -5,6 +5,7 @@
  *
  * Usage:
  *   node frontend/scripts/tokens.js --check --tables
+ *   node frontend/scripts/tokens.js --check --fonts
  *   node frontend/scripts/tokens.js --write
  */
 
@@ -14,6 +15,7 @@ const path = require('path');
 const ROOT_DIR = path.resolve(__dirname, '../..');
 const TOKENS_PATH = path.join(ROOT_DIR, 'frontend/src/styles/tokens.json');
 const PLAN_PATH = path.join(ROOT_DIR, 'docs/UI-UX_Plan/UI-UX-PLAN.md');
+const FONTS_DIR = path.join(ROOT_DIR, 'frontend/src/assets/fonts');
 
 // --- WCAG 2.1 Relative Luminance & Contrast Math (Gamma 2.4, threshold 0.04045) ---
 
@@ -38,22 +40,42 @@ function calculateContrast(hex1, hex2) {
   return ((max + 0.05) / (min + 0.05)).toFixed(2);
 }
 
+function compositeColor(rgbaStr, bgHex) {
+  const match = rgbaStr.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+  if (!match) return null;
+  const r = parseInt(match[1], 10);
+  const g = parseInt(match[2], 10);
+  const b = parseInt(match[3], 10);
+  const a = parseFloat(match[4]);
+
+  const cleanBg = bgHex.replace('#', '');
+  const bgR = parseInt(cleanBg.slice(0, 2), 16);
+  const bgG = parseInt(cleanBg.slice(2, 4), 16);
+  const bgB = parseInt(cleanBg.slice(4, 6), 16);
+
+  const cR = Math.round(a * r + (1 - a) * bgR).toString(16).padStart(2, '0');
+  const cG = Math.round(a * g + (1 - a) * bgG).toString(16).padStart(2, '0');
+  const cB = Math.round(a * b + (1 - a) * bgB).toString(16).padStart(2, '0');
+
+  return '#' + cR + cG + cB;
+}
+
 // --- Token Resolution ---
 
 function resolveHex(tokenOrHex, tokens) {
   if (!tokenOrHex) return null;
-  if (tokenOrHex.startsWith('#')) return tokenOrHex;
+  if (tokenOrHex.startsWith('#') || tokenOrHex.startsWith('rgba(')) return tokenOrHex;
   if (tokenOrHex.startsWith('var(')) {
     const match = tokenOrHex.match(/var\(([^)]+)\)/);
     if (match) return resolveHex(match[1], tokens);
   }
 
   // Look in token sections
-  const sections = ['surfaces', 'borders', 'text', 'tones', 'actions', 'focus'];
+  const sections = ['surfaces', 'borders', 'text', 'tones', 'actions', 'focus', 'platformSurfaces', 'accents'];
   for (const s of sections) {
     if (tokens[s] && tokens[s][tokenOrHex]) {
       const val = tokens[s][tokenOrHex];
-      if (val.startsWith('#')) return val;
+      if (val.startsWith('#') || val.startsWith('rgba(')) return val;
       if (val.startsWith('var(')) return resolveHex(val, tokens);
     }
   }
@@ -140,13 +162,89 @@ function generateMarkdownTables(tokens) {
     nonTextRows.push(`| ${item.pair} | ${surfaceVal} | ${bgVal} | ${raisedVal} | ${item.status} |`);
   }
 
+  // 3. Platform Surfaces (§4.9.3)
+  const platformRows = [];
+  platformRows.push('| Pair | Surface | Status |');
+  platformRows.push('| :--- | ---: | :--- |');
+
+  if (tokens.tables.platformSurfaces) {
+    for (const item of tokens.tables.platformSurfaces) {
+      const fgVal = resolveHex(item.foreground, tokens);
+      const bgVal = resolveHex(item.background, tokens);
+      let ratio = '—';
+
+      if (fgVal && bgVal) {
+        if (fgVal.startsWith('rgba(')) {
+          const comp = compositeColor(fgVal, bgVal);
+          ratio = calculateContrast(comp, bgVal);
+        } else {
+          ratio = calculateContrast(fgVal, bgVal);
+        }
+      }
+
+      platformRows.push(`| ${item.pair} | ${ratio} | ${item.status} |`);
+    }
+  }
+
   return (
     `#### 4.9.1 Text pairs\n\n` +
     textRows.join('\n') +
     `\n\n` +
     `#### 4.9.2 Non-text pairs (WCAG 1.4.11, 3:1)\n\n` +
-    nonTextRows.join('\n')
+    nonTextRows.join('\n') +
+    `\n\n` +
+    `#### 4.9.3 Platform surfaces\n\n` +
+    platformRows.join('\n')
   );
+}
+
+// --- Font Budget Verification ---
+
+function checkFonts() {
+  const requiredFiles = [
+    'IBMPlexSans-Regular.woff2',
+    'IBMPlexSans-Medium.woff2',
+    'IBMPlexSans-SemiBold.woff2',
+    'IBMPlexMono-Regular.woff2',
+  ];
+  const oflFile = 'OFL.txt';
+
+  if (!fs.existsSync(FONTS_DIR)) {
+    console.error(`✗ Font directory not found: ${FONTS_DIR}`);
+    process.exit(1);
+  }
+
+  const oflPath = path.join(FONTS_DIR, oflFile);
+  if (!fs.existsSync(oflPath) || fs.statSync(oflPath).size === 0) {
+    console.error(`✗ OFL license file missing or empty: ${oflPath}`);
+    process.exit(1);
+  }
+
+  let totalBytes = 0;
+  for (const file of requiredFiles) {
+    const filePath = path.join(FONTS_DIR, file);
+    if (!fs.existsSync(filePath)) {
+      console.error(`✗ Required font file missing: ${filePath}`);
+      process.exit(1);
+    }
+    const stat = fs.statSync(filePath);
+    if (stat.size === 0) {
+      console.error(`✗ Font file empty: ${filePath}`);
+      process.exit(1);
+    }
+    totalBytes += stat.size;
+  }
+
+  const budgetBytes = 90 * 1024; // 92,160 bytes
+  const totalKb = (totalBytes / 1024).toFixed(2);
+
+  if (totalBytes > budgetBytes) {
+    console.error(`✗ Font budget exceeded: ${totalKb} KB > 90.00 KB limit (${totalBytes} > ${budgetBytes} bytes)`);
+    process.exit(1);
+  }
+
+  console.log(`✓ All 4 IBM Plex woff2 files present. Total: ${totalKb} KB (<= 90 KB budget). OFL verified.`);
+  process.exit(0);
 }
 
 // --- Main Execution Modes ---
@@ -154,11 +252,18 @@ function generateMarkdownTables(tokens) {
 function main() {
   const args = process.argv.slice(2);
   const isCheckTables = args.includes('--check') && args.includes('--tables');
+  const isCheckFonts = args.includes('--check') && args.includes('--fonts');
   const isWrite = args.includes('--write');
+
+  if (isCheckFonts) {
+    checkFonts();
+    return;
+  }
 
   if (!isCheckTables && !isWrite) {
     console.log('Usage:');
     console.log('  node frontend/scripts/tokens.js --check --tables');
+    console.log('  node frontend/scripts/tokens.js --check --fonts');
     console.log('  node frontend/scripts/tokens.js --write');
     process.exit(1);
   }
@@ -193,7 +298,7 @@ function main() {
 
   if (isCheckTables) {
     if (currentTablesBlock === expectedTablesBlock) {
-      console.log('✓ All §4.9 contrast tables match tokens.json exactly! (0 drift)');
+      console.log('✓ All §4.9 contrast tables (including §4.9.3) match tokens.json exactly! (0 drift)');
       process.exit(0);
     } else {
       console.error('✗ Contrast tables drift detected in §4.9:');
@@ -224,6 +329,7 @@ if (require.main === module) {
 module.exports = {
   relativeLuminance,
   calculateContrast,
+  compositeColor,
   generateMarkdownTables,
   resolveHex,
 };

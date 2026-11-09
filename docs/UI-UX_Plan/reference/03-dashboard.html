@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reference Frame 03 — Dashboard (Variant B — Canonical)</title>
+  <style>
+    :root {
+      --fs-bg: #101114;
+      --fs-surface: #1a1c20;
+      --fs-surface-raised: #22252a;
+      --fs-surface-sunken: #0c0d0f; /* darker chrome plane (amended §4.1) */
+      --fs-chrome: #0c0d0f;
+      --fs-border: #34383f;
+      --fs-border-strong: #4a4f57;
+      --fs-border-control: #6a6f77;
+      --fs-border-width: 1px;
+      --fs-text: #f2f3f5;
+      --fs-text-2: #c9cdd3;
+      --fs-text-3: #a2a8b0;
+      --fs-text-4: #6f757d;
+      --fs-ink: #0d0e10;
+      --fs-positive: #4fa87c;
+      --fs-negative: #d97076;
+      --fs-warning: #cfa24f;
+      --fs-accent: #14b8a6;
+      --fs-accent-hover: #22c4b3;
+      --fs-accent-active: #0fa192;
+      --fs-accent-text: #0d0e10;
+      --fs-action-bg: var(--fs-accent);
+      --fs-action-text: var(--fs-accent-text);
+      --fs-action-hover: var(--fs-accent-hover);
+      --fs-action-active: var(--fs-accent-active);
+      --fs-danger: #d97076;
+      --fs-disabled-opacity: 0.45;
+      --fs-radius-sm: 4px;
+      --fs-radius-md: 6px;
+      --fs-radius-lg: 8px;
+      --fs-radius-pill: 999px;
+      --fs-focus-ring: 3px solid #f2f3f5;
+      --fs-focus-offset: 2px;
+      --fs-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      --fs-font-sans: 'IBM Plex Sans', 'Plex Sans Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --fs-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+      /* Neutral Chart Greys per §4.12 */
+      --fs-chart-grey-1: #8b929b;
+      --fs-chart-grey-2: #b8bec6;
+      --fs-chart-grey-3: #6a7078;
+      --fs-chart-grey-4: #d5d9dd;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--fs-bg);
+      color: var(--fs-text);
+      font-family: var(--fs-font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    /* Reviewer Toolbar */
+    .review-controls {
+      width: 100%;
+      max-width: 1440px;
+      background: var(--fs-surface-raised);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-md);
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .review-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .review-label {
+      font-size: 12px;
+      color: var(--fs-text-3);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .review-btn {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border-control);
+      border-radius: var(--fs-radius-sm);
+      color: var(--fs-text);
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .review-btn.active {
+      background: var(--fs-accent);
+      color: var(--fs-ink);
+      border-color: var(--fs-accent);
+      font-weight: 600;
+    }
+
+    /* Viewport Simulator Container */
+    .viewport-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      transition: max-width 0.2s ease;
+    }
+
+    .viewport-1440 {
+      max-width: 1440px;
+    }
+
+    .viewport-1024 {
+      max-width: 1024px;
+    }
+
+    .viewport-390 {
+      max-width: 390px;
+    }
+
+    /* Overall Application Shell Layout */
+    .fs-shell {
+      width: 100%;
+      background: var(--fs-chrome); /* Recessed darker chrome plane #0c0d0f */
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-lg);
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      grid-template-rows: 56px 1fr;
+      min-height: 820px;
+      overflow: hidden;
+    }
+
+    /* Top Shell Navigation Bar */
+    .fs-navbar {
+      grid-column: 1 / -1;
+      background: var(--fs-chrome);
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+    }
+
+    .fs-nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fs-text);
+    }
+
+    .fs-brand-mark {
+      width: 14px;
+      height: 14px;
+      background: var(--fs-accent);
+      border-radius: 2px;
+    }
+
+    .fs-nav-meta {
+      font-size: 12px;
+      color: var(--fs-text-3);
+      display: flex;
+      gap: 16px;
+    }
+
+    /* Left Sidebar */
+    .fs-sidebar {
+      background: var(--fs-chrome);
+      border-right: var(--fs-border-width) solid var(--fs-border);
+      padding: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* Active Nav Item with Teal Accent Indicator */
+    .fs-nav-item {
+      padding: 8px 18px;
+      font-size: 13px;
+      color: var(--fs-text-2);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      border-left: 2px solid transparent;
+    }
+
+    .fs-nav-item:hover {
+      background: var(--fs-surface);
+      color: var(--fs-text);
+    }
+
+    .fs-nav-item.active {
+      background: var(--fs-surface-raised);
+      color: var(--fs-accent);
+      border-left-color: var(--fs-accent);
+      font-weight: 500;
+    }
+
+    /* Main Dashboard Content Canvas */
+    .fs-main {
+      background: var(--fs-bg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* Hero Strip */
+    .fs-dashboard-hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    /* Primary CTA Button: Solid Teal Accent with Ink Text */
+    .fs-btn-primary-accent {
+      background: var(--fs-accent);
+      color: var(--fs-ink);
+      border: var(--fs-border-width) solid var(--fs-accent);
+      border-radius: var(--fs-radius-sm);
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .fs-btn-primary-accent:hover {
+      background: var(--fs-accent-hover);
+      border-color: var(--fs-accent-hover);
+    }
+
+    .fs-btn-primary-accent:active {
+      background: var(--fs-accent-active);
+      border-color: var(--fs-accent-active);
+    }
+
+    .fs-btn-primary-accent:focus-visible {
+      outline: var(--fs-focus-ring);
+      outline-offset: var(--fs-focus-offset);
+    }
+
+    /* 4-Column KPI Grid */
+    .fs-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .fs-kpi-card {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .fs-kpi-label {
+      font-size: 12px;
+      color: var(--fs-text-3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fs-kpi-value {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--fs-text);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+
+    .fs-kpi-delta {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .tone-pos {
+      color: var(--fs-positive);
+    }
+
+    .tone-neg {
+      color: var(--fs-negative);
+    }
+
+    /* Trend Chart Panel */
+    .fs-chart-panel {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .fs-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .fs-panel-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fs-text);
+    }
+
+    .fs-chart-wrapper {
+      width: 100%;
+      height: 200px;
+      background: var(--fs-surface-raised);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-sm);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .fs-chart-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Accessible Collapsible Data Table for Chart */
+    .fs-accessible-table-details {
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-sm);
+      background: var(--fs-surface-sunken);
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
+    .fs-accessible-table-details summary {
+      cursor: pointer;
+      color: var(--fs-text-2);
+      font-weight: 500;
+    }
+
+    .fs-mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 11px;
+    }
+
+    .fs-mini-table th,
+    .fs-mini-table td {
+      padding: 4px 8px;
+      border-bottom: 1px solid var(--fs-border);
+      text-align: left;
+    }
+
+    .fs-mini-table th {
+      color: var(--fs-text-3);
+    }
+
+    /* Chart State Views */
+    .fs-chart-empty-view,
+    .fs-chart-error-view {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+    }
+
+    .mode-empty .fs-chart-svg,
+    .mode-empty .fs-accessible-table-details {
+      display: none !important;
+    }
+
+    .mode-empty .fs-chart-empty-view {
+      display: flex;
+    }
+
+    .mode-error .fs-chart-svg,
+    .mode-error .fs-accessible-table-details {
+      display: none !important;
+    }
+
+    .mode-error .fs-chart-error-view {
+      display: flex;
+    }
+
+    /* Recent Activity Section */
+    .fs-activity-panel {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-md);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .fs-desktop-activity-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .fs-desktop-activity-table th {
+      background: var(--fs-surface-sunken);
+      color: var(--fs-text-3);
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      white-space: nowrap;
+    }
+
+    .fs-desktop-activity-table td {
+      padding: 10px 14px;
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      color: var(--fs-text-2);
+      white-space: nowrap;
+    }
+
+    .fs-desktop-activity-table tr:hover {
+      background: var(--fs-surface-raised);
+    }
+
+    /* Mobile Vertical Card Representation */
+    .fs-mobile-activity-cards {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      width: 100%;
+    }
+
+    .fs-dash-card {
+      background: var(--fs-surface-raised);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-sm);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .fs-dash-card-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      padding-bottom: 6px;
+    }
+
+    .fs-dash-card-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 2px 0;
+    }
+
+    .fs-dash-card-label {
+      color: var(--fs-text-3);
+      text-transform: uppercase;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .fs-status-pill {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-pill);
+      padding: 2px 8px;
+      font-size: 11px;
+      color: var(--fs-text-2);
+    }
+
+    /* Mobile Responsiveness */
+    .viewport-1024 .fs-kpi-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .viewport-390 .fs-shell {
+      grid-template-columns: 1fr;
+      grid-template-rows: 56px 1fr;
+      min-height: auto;
+    }
+
+    .viewport-390 .fs-sidebar {
+      display: none;
+    }
+
+    .viewport-390 .fs-main {
+      padding: 14px;
+      gap: 16px;
+    }
+
+    .viewport-390 .fs-kpi-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .viewport-390 .fs-desktop-activity-table {
+      display: none !important;
+    }
+
+    .viewport-390 .fs-mobile-activity-cards {
+      display: flex !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Reviewer Control Bar -->
+  <header class="review-controls">
+    <div class="review-group">
+      <span class="review-label">Viewport:</span>
+      <button class="review-btn active" onclick="setViewport('1440', this)">1440px Desktop</button>
+      <button class="review-btn" onclick="setViewport('1024', this)">1024px Tablet (2x2 KPI)</button>
+      <button class="review-btn" onclick="setViewport('390', this)">390px Mobile (1-Col KPI + Cards)</button>
+    </div>
+
+    <div class="review-group">
+      <span class="review-label">State:</span>
+      <button class="review-btn active" onclick="setState('normal', this)">Live Data</button>
+      <button class="review-btn" onclick="setState('empty', this)">Chart Empty</button>
+      <button class="review-btn" onclick="setState('error', this)">Chart Error</button>
+    </div>
+  </header>
+
+  <!-- Viewport Frame -->
+  <main class="viewport-container viewport-1440" id="viewportContainer">
+    <div class="fs-shell" id="shellWrapper">
+
+      <!-- Top Shell Navbar (Recessed Darker Chrome #0c0d0f) -->
+      <header class="fs-navbar">
+        <div class="fs-nav-brand">
+          <div class="fs-brand-mark"></div>
+          <span>FinStat Enterprise</span>
+        </div>
+        <div class="fs-nav-meta">
+          <span>Q4 2026 Audit</span>
+          <span style="color: var(--fs-text); font-weight: 500;">Alpha Holdings</span>
+        </div>
+      </header>
+
+      <!-- Sidebar (Recessed Darker Chrome #0c0d0f, Collapses on 390px mobile) -->
+      <aside class="fs-sidebar">
+        <!-- Active Nav: Teal Left Rule + Teal Text -->
+        <a href="#dashboard" class="fs-nav-item active">Dashboard</a>
+        <a href="#expenditures" class="fs-nav-item">Expenditures</a>
+        <a href="#salary" class="fs-nav-item">Payroll &amp; Salary</a>
+        <a href="#portfolio" class="fs-nav-item">Portfolio &amp; Assets</a>
+        <a href="#trades" class="fs-nav-item">Trades</a>
+        <a href="#audit" class="fs-nav-item">Audit Trail</a>
+      </aside>
+
+      <!-- Main Dashboard Canvas (Full width on mobile) -->
+      <section class="fs-main">
+
+        <!-- Dashboard Hero Header -->
+        <div class="fs-dashboard-hero">
+          <div>
+            <h1 style="font-size: 20px; font-weight: 600; color: var(--fs-text);">Executive Financial Overview</h1>
+            <p style="font-size: 13px; color: var(--fs-text-3);">Consolidated real-time telemetry across operating and reserve portfolios</p>
+          </div>
+          <!-- Primary Action Button: Solid Teal Accent with --fs-ink text (Proximity test with Positive Delta below) -->
+          <button type="button" class="fs-btn-primary-accent">+ Record Transaction</button>
+        </div>
+
+        <!-- 4 Summary KPI Cards (Collapses to 1fr at <= 768px / 390px) -->
+        <div class="fs-kpi-grid">
+
+          <!-- Stress Case 1: 47-character Account Title with Positive Delta near primary button -->
+          <div class="fs-kpi-card">
+            <div class="fs-kpi-label" title="Alexander Bartholomew Montgomery-Fitzgerald III (Holding Division)">
+              Alexander Bartholomew Montgomery-Fitzgerald III (Holding Division)
+            </div>
+            <div class="fs-kpi-value">$842,500.00</div>
+            <!-- Proximity Check: --fs-positive #4fa87c rendered right below --fs-accent button -->
+            <div class="fs-kpi-delta tone-pos">▲ +4.2% quarterly yield</div>
+          </div>
+
+          <!-- Stress Case 2: 9-digit Negative Liability -->
+          <div class="fs-kpi-card">
+            <div class="fs-kpi-label">Institutional Net Delta</div>
+            <div class="fs-kpi-value tone-neg">-$123,456,789.00</div>
+            <div class="fs-kpi-delta tone-neg">▼ -18.4% realized liability</div>
+          </div>
+
+          <div class="fs-kpi-card">
+            <div class="fs-kpi-label">Reserve Liquidity</div>
+            <div class="fs-kpi-value">$1,894,220.50</div>
+            <div class="fs-kpi-delta" style="color: var(--fs-text-3);">Covenant compliant</div>
+          </div>
+
+          <div class="fs-kpi-card">
+            <div class="fs-kpi-label">Pending Verifications</div>
+            <div class="fs-kpi-value">3 <span style="font-size: 13px; font-weight: normal; color: var(--fs-text-3);">Ledgers</span></div>
+            <div class="fs-kpi-delta" style="color: var(--fs-warning);">Requires review</div>
+          </div>
+
+        </div>
+
+        <!-- Accessible Trend Chart (Neutral Grey Series per §4.12) -->
+        <div class="fs-chart-panel">
+          <div class="fs-panel-header">
+            <div>
+              <h2 class="fs-panel-title">Asset Liquidity &amp; Expenditure Velocity</h2>
+              <p id="chartSummary" style="font-size: 12px; color: var(--fs-text-3); margin-top: 2px;">
+                Monthly trend using neutral chart greys. Peak allocation occurred in cycle 4.
+              </p>
+            </div>
+          </div>
+
+          <div class="fs-chart-wrapper">
+            <svg class="fs-chart-svg" viewBox="0 0 900 200" role="img" aria-describedby="chartSummary">
+              <title>Monthly Liquidity Curve: July - December 2026</title>
+
+              <!-- Grid lines using Chart Grey 3 (#6a7078) -->
+              <line x1="50" y1="20" x2="880" y2="20" stroke="var(--fs-chart-grey-3)" stroke-width="1" stroke-dasharray="3 3" opacity="0.35" />
+              <line x1="50" y1="70" x2="880" y2="70" stroke="var(--fs-chart-grey-3)" stroke-width="1" stroke-dasharray="3 3" opacity="0.35" />
+              <line x1="50" y1="120" x2="880" y2="120" stroke="var(--fs-chart-grey-3)" stroke-width="1" stroke-dasharray="3 3" opacity="0.35" />
+              <line x1="50" y1="160" x2="880" y2="160" stroke="var(--fs-chart-grey-3)" stroke-width="1" stroke-dasharray="3 3" opacity="0.35" />
+
+              <!-- Axis text -->
+              <text x="40" y="24" fill="var(--fs-text-3)" font-size="11" text-anchor="end">200M</text>
+              <text x="40" y="74" fill="var(--fs-text-3)" font-size="11" text-anchor="end">150M</text>
+              <text x="40" y="124" fill="var(--fs-text-3)" font-size="11" text-anchor="end">100M</text>
+              <text x="40" y="164" fill="var(--fs-text-3)" font-size="11" text-anchor="end">50M</text>
+
+              <!-- Month labels -->
+              <text x="120" y="190" fill="var(--fs-text-3)" font-size="12" text-anchor="middle">Jul</text>
+              <text x="260" y="190" fill="var(--fs-text-3)" font-size="12" text-anchor="middle">Aug</text>
+              <text x="400" y="190" fill="var(--fs-text-3)" font-size="12" text-anchor="middle">Sep</text>
+              <text x="540" y="190" fill="var(--fs-text-3)" font-size="12" text-anchor="middle">Oct</text>
+              <text x="680" y="190" fill="var(--fs-text-3)" font-size="12" text-anchor="middle">Nov</text>
+              <text x="820" y="190" fill="var(--fs-text-3)" font-size="12" text-anchor="middle">Dec</text>
+
+              <!-- Series 1: Primary Liquidity Trend using Neutral Chart Grey 4 (#d5d9dd) -->
+              <path d="M 120 130 L 260 90 L 400 110 L 540 40 L 680 75 L 820 50" fill="none" stroke="var(--fs-chart-grey-4)" stroke-width="2.5" />
+
+              <!-- Series 2: Reserve Requirement Line using Neutral Chart Grey 1 (#8b929b) -->
+              <path d="M 120 150 L 260 145 L 400 140 L 540 135 L 680 130 L 820 125" fill="none" stroke="var(--fs-chart-grey-1)" stroke-width="1.5" stroke-dasharray="4 4" />
+            </svg>
+
+            <!-- Chart Empty State View -->
+            <div class="fs-chart-empty-view">
+              <h3 style="font-size: 14px; color: var(--fs-text); margin-bottom: 4px;">No trend telemetry available</h3>
+              <p class="fs-empty" style="font-size: 12px; color: var(--fs-text-3); max-width: 320px;">
+                Historical liquidity curve requires at least 3 completed operating cycles to project velocity.
+              </p>
+            </div>
+
+            <!-- Chart Error State View -->
+            <div class="fs-chart-error-view">
+              <h3 style="font-size: 14px; color: var(--fs-negative); margin-bottom: 4px;">Telemetry Feed Disconnected</h3>
+              <p style="font-size: 12px; color: var(--fs-text-3); max-width: 340px;">
+                Unable to query time-series store. Re-authenticating telemetry connector.
+              </p>
+            </div>
+          </div>
+
+          <!-- Accessible Data Table Alternative per §4.12 -->
+          <details class="fs-accessible-table-details">
+            <summary>View Liquidity Trend Data Table Alternative</summary>
+            <table class="fs-mini-table">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Operating Liquidity</th>
+                  <th>Baseline Reserve</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Jul 2026</td><td class="fs-num">$85,000,000.00</td><td class="fs-num">$65,000,000.00</td></tr>
+                <tr><td>Aug 2026</td><td class="fs-num">$135,000,000.00</td><td class="fs-num">$70,000,000.00</td></tr>
+                <tr><td>Sep 2026</td><td class="fs-num">$115,000,000.00</td><td class="fs-num">$75,000,000.00</td></tr>
+                <tr><td>Oct 2026</td><td class="fs-num">$190,000,000.00</td><td class="fs-num">$80,000,000.00</td></tr>
+                <tr><td>Nov 2026</td><td class="fs-num">$150,000,000.00</td><td class="fs-num">$85,000,000.00</td></tr>
+                <tr><td>Dec 2026</td><td class="fs-num">$175,000,000.00</td><td class="fs-num">$90,000,000.00</td></tr>
+              </tbody>
+            </table>
+          </details>
+        </div>
+
+        <!-- Recent Ledger Activity (Desktop Table vs Mobile Cards) -->
+        <div class="fs-activity-panel">
+          <div style="padding: 14px 18px; border-bottom: var(--fs-border-width) solid var(--fs-border);">
+            <h3 style="font-size: 13px; font-weight: 600; color: var(--fs-text);">Recent Ledger Clearances</h3>
+          </div>
+
+          <!-- Desktop Table (Hidden at 390px) -->
+          <table class="fs-desktop-activity-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Ledger Account</th>
+                <th style="text-align: right;">Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2026-11-09</td>
+                <td>Treasury Reserve Disbursement (Alexander Montgomery-Fitzgerald)</td>
+                <td>Operating Account</td>
+                <td class="tone-neg" style="text-align: right; font-variant-numeric: tabular-nums;">-$123,456,789.00</td>
+                <td><span class="fs-status-pill">Cleared</span></td>
+              </tr>
+              <tr>
+                <td>2026-11-08</td>
+                <td>Institutional Liquidity Settlement</td>
+                <td>Reserve Portfolio</td>
+                <td class="tone-pos" style="text-align: right; font-variant-numeric: tabular-nums;">+$245,000.00</td>
+                <td><span class="fs-status-pill">Settled</span></td>
+              </tr>
+              <tr>
+                <td>2026-11-08</td>
+                <td>Metropolitan Lease Disbursement</td>
+                <td>Commercial Checking</td>
+                <td class="tone-neg" style="text-align: right; font-variant-numeric: tabular-nums;">-$8,450.00</td>
+                <td><span class="fs-status-pill">Cleared</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Mobile Vertical Card Format (Strictly Active at 390px) -->
+          <div class="fs-mobile-activity-cards">
+            <div class="fs-dash-card">
+              <div class="fs-dash-card-header">
+                <span style="font-size: 11px; color: var(--fs-text-3);">2026-11-09</span>
+                <span class="fs-status-pill">Cleared</span>
+              </div>
+              <div style="font-size: 13px; color: var(--fs-text); font-weight: 500; overflow-wrap: break-word;">
+                Treasury Reserve Disbursement (Alexander Montgomery-Fitzgerald)
+              </div>
+              <div class="fs-dash-card-row">
+                <span class="fs-dash-card-label">Ledger:</span>
+                <span style="color: var(--fs-text-2);">Operating Account</span>
+              </div>
+              <div class="fs-dash-card-row">
+                <span class="fs-dash-card-label">Amount:</span>
+                <span class="tone-neg" style="font-weight: 600; font-variant-numeric: tabular-nums;">-$123,456,789.00</span>
+              </div>
+            </div>
+
+            <div class="fs-dash-card">
+              <div class="fs-dash-card-header">
+                <span style="font-size: 11px; color: var(--fs-text-3);">2026-11-08</span>
+                <span class="fs-status-pill">Settled</span>
+              </div>
+              <div style="font-size: 13px; color: var(--fs-text); font-weight: 500; overflow-wrap: break-word;">
+                Institutional Liquidity Settlement
+              </div>
+              <div class="fs-dash-card-row">
+                <span class="fs-dash-card-label">Ledger:</span>
+                <span style="color: var(--fs-text-2);">Reserve Portfolio</span>
+              </div>
+              <div class="fs-dash-card-row">
+                <span class="fs-dash-card-label">Amount:</span>
+                <span class="tone-pos" style="font-weight: 600; font-variant-numeric: tabular-nums;">+$245,000.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    function setViewport(size, btn) {
+      document.querySelectorAll('.review-group:nth-child(1) .review-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const container = document.getElementById('viewportContainer');
+      container.className = 'viewport-container viewport-' + size;
+    }
+
+    function setState(s, btn) {
+      document.querySelectorAll('.review-group:nth-child(2) .review-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const wrapper = document.getElementById('shellWrapper');
+      wrapper.classList.remove('mode-empty', 'mode-error');
+      if (s === 'empty') wrapper.classList.add('mode-empty');
+      if (s === 'error') wrapper.classList.add('mode-error');
+    }
+  </script>
+</body>
+
+</html>

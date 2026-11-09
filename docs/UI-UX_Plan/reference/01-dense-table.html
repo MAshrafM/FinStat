@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reference Frame 01 — Dense Table (Variant B — Canonical)</title>
+  <!-- Variant A pattern documented in §4.13.1 (rejected options) -->
+  <style>
+    :root {
+      --fs-bg: #101114;
+      --fs-surface: #1a1c20;
+      --fs-surface-raised: #22252a;
+      --fs-surface-sunken: #0c0d0f; /* darker chrome plane (amended §4.1) */
+      --fs-border: #34383f;
+      --fs-border-strong: #4a4f57;
+      --fs-border-control: #6a6f77;
+      --fs-border-width: 1px;
+      --fs-text: #f2f3f5;
+      --fs-text-2: #c9cdd3;
+      --fs-text-3: #a2a8b0;
+      --fs-text-4: #6f757d;
+      --fs-ink: #0d0e10;
+      --fs-positive: #4fa87c;
+      --fs-negative: #d97076;
+      --fs-warning: #cfa24f;
+      --fs-accent: #14b8a6;
+      --fs-accent-hover: #22c4b3;
+      --fs-accent-active: #0fa192;
+      --fs-accent-text: #0d0e10;
+      --fs-action-bg: var(--fs-accent);
+      --fs-action-text: var(--fs-accent-text);
+      --fs-action-hover: var(--fs-accent-hover);
+      --fs-action-active: var(--fs-accent-active);
+      --fs-danger: #d97076;
+      --fs-disabled-opacity: 0.45;
+      --fs-radius-sm: 4px;
+      --fs-radius-md: 6px;
+      --fs-radius-lg: 8px;
+      --fs-radius-pill: 999px;
+      --fs-focus-ring: 3px solid #f2f3f5;
+      --fs-focus-offset: 2px;
+      --fs-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      --fs-font-sans: 'IBM Plex Sans', 'Plex Sans Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --fs-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--fs-bg);
+      color: var(--fs-text);
+      font-family: var(--fs-font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Top Review Controls */
+    .review-controls {
+      width: 100%;
+      max-width: 1440px;
+      background: var(--fs-surface-raised);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-md);
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .review-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .review-label {
+      font-size: 12px;
+      color: var(--fs-text-3);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .review-btn {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border-control);
+      border-radius: var(--fs-radius-sm);
+      color: var(--fs-text);
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .review-btn.active {
+      background: var(--fs-accent);
+      color: var(--fs-ink);
+      border-color: var(--fs-accent);
+      font-weight: 600;
+    }
+
+    /* Viewport Simulator Container */
+    .viewport-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      transition: max-width 0.2s ease;
+    }
+
+    .viewport-1440 {
+      max-width: 1440px;
+    }
+
+    .viewport-1024 {
+      max-width: 1024px;
+    }
+
+    .viewport-390 {
+      max-width: 390px;
+    }
+
+    /* Main Page Shell */
+    .fs-page {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-lg);
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Page Header */
+    .fs-page-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .fs-page-title-group h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--fs-text);
+      line-height: 1.3;
+    }
+
+    .fs-page-title-group p {
+      font-size: 13px;
+      color: var(--fs-text-3);
+    }
+
+    .fs-action-bar {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Buttons */
+    .fs-btn-primary {
+      background: var(--fs-action-bg);
+      color: var(--fs-action-text);
+      border: var(--fs-border-width) solid var(--fs-action-bg);
+      border-radius: var(--fs-radius-sm);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .fs-btn-primary:hover {
+      background: var(--fs-action-hover);
+      border-color: var(--fs-action-hover);
+    }
+
+    .fs-btn-primary:active {
+      background: var(--fs-action-active);
+      border-color: var(--fs-action-active);
+    }
+
+    .fs-btn-secondary {
+      background: var(--fs-surface);
+      color: var(--fs-text);
+      border: var(--fs-border-width) solid var(--fs-border-control);
+      border-radius: var(--fs-radius-sm);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .fs-btn-secondary:hover {
+      background: var(--fs-surface-raised);
+      border-color: var(--fs-border-strong);
+    }
+
+    /* Filter Toolbar */
+    .fs-toolbar {
+      padding: 12px 20px;
+      background: var(--fs-surface-sunken);
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .fs-input,
+    .fs-select {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border-control);
+      border-radius: var(--fs-radius-sm);
+      color: var(--fs-text);
+      padding: 6px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .fs-input:focus,
+    .fs-select:focus {
+      outline: var(--fs-focus-ring);
+      outline-offset: var(--fs-focus-offset);
+    }
+
+    /* Group-by Bar (Variant B Canonical) */
+    .fs-group-bar {
+      display: flex;
+      padding: 8px 20px;
+      background: var(--fs-surface);
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      gap: 8px;
+      align-items: center;
+    }
+
+    .fs-chip {
+      background: var(--fs-surface-raised);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-pill);
+      color: var(--fs-text-2);
+      font-size: 11px;
+      padding: 2px 8px;
+      cursor: pointer;
+    }
+
+    .fs-chip.active {
+      border-color: var(--fs-border-control);
+      color: var(--fs-text);
+      font-weight: 500;
+    }
+
+    /* Desktop / Tablet Table View */
+    .fs-desktop-table-container {
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+    }
+
+    .fs-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .fs-table th {
+      background: var(--fs-surface-sunken);
+      color: var(--fs-text-3);
+      font-weight: 500;
+      font-size: 12px;
+      padding: 10px 14px;
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      white-space: nowrap;
+    }
+
+    .fs-table th.fs-th-sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .fs-table th.fs-th-active {
+      color: var(--fs-text);
+      font-weight: 600;
+    }
+
+    .fs-sort-arrow {
+      color: var(--fs-accent);
+      font-size: 10px;
+      margin-left: 4px;
+    }
+
+    .fs-table td {
+      padding: 10px 14px;
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      color: var(--fs-text-2);
+      white-space: nowrap;
+    }
+
+    .fs-table tbody tr:hover {
+      background: var(--fs-surface-raised);
+    }
+
+    /* Selected Row per §4.13 D19 / §6.4: raised + 2px accent left rule */
+    .fs-table tbody tr.fs-row-selected {
+      background: var(--fs-surface-raised);
+      border-left: 2px solid var(--fs-accent);
+    }
+
+    /* Checkbox with accent fill and ink tick */
+    .fs-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border-control);
+      border-radius: var(--fs-radius-sm);
+      cursor: pointer;
+      display: inline-grid;
+      place-content: center;
+      vertical-align: middle;
+      margin: 0;
+    }
+
+    .fs-checkbox:checked {
+      background: var(--fs-accent);
+      border-color: var(--fs-accent);
+    }
+
+    .fs-checkbox:checked::after {
+      content: '';
+      width: 4px;
+      height: 8px;
+      border: solid var(--fs-ink);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+      margin-bottom: 2px;
+    }
+
+    .fs-checkbox:focus-visible {
+      outline: var(--fs-focus-ring);
+      outline-offset: var(--fs-focus-offset);
+    }
+
+    .fs-num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fs-mono {
+      font-family: var(--fs-font-mono);
+      font-size: 12px;
+      color: var(--fs-text-3);
+    }
+
+    .tone-neg {
+      color: var(--fs-negative);
+    }
+
+    .tone-pos {
+      color: var(--fs-positive);
+    }
+
+    /* Category Badges in Variant B: Neutral Chips */
+    .fs-cat-badge {
+      display: inline-block;
+      background: var(--fs-surface-raised);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-pill);
+      padding: 1px 7px;
+      font-size: 11px;
+      color: var(--fs-text-2);
+      margin-right: 6px;
+    }
+
+    /* ==========================================================================
+       MOBILE COMPACT-EXPAND CARD PATTERN (Strictly eliminates horizontal scroll)
+       ========================================================================== */
+    .fs-mobile-card-list {
+      display: none;
+      padding: 12px;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    /* Activate Card Pattern in 390px Viewport Simulator */
+    .viewport-390 .fs-desktop-table-container {
+      display: none !important;
+    }
+
+    .viewport-390 .fs-mobile-card-list {
+      display: flex !important;
+    }
+
+    /* Individual Transaction Card */
+    .fs-card-item {
+      background: var(--fs-surface-raised);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    .fs-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      padding-bottom: 8px;
+      gap: 8px;
+    }
+
+    .fs-card-meta {
+      font-size: 11px;
+      color: var(--fs-text-3);
+      font-family: var(--fs-font-mono);
+    }
+
+    .fs-card-amount {
+      font-size: 16px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    .fs-card-field {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .fs-card-label {
+      font-size: 11px;
+      color: var(--fs-text-3);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .fs-card-value {
+      font-size: 13px;
+      color: var(--fs-text);
+      line-height: 1.35;
+    }
+
+    /* Overflow Treatment: Direct Break-Word Full Display per D19 */
+    .overflow-break-word {
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    /* Mobile Compact-Expand Details Drawer */
+    .fs-card-details-drawer {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 6px;
+      border-top: var(--fs-border-width) solid var(--fs-border);
+    }
+
+    .fs-card-details-drawer.open {
+      display: flex;
+    }
+
+    .fs-card-expander-btn {
+      display: block;
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border-control);
+      border-radius: var(--fs-radius-sm);
+      color: var(--fs-text-2);
+      font-size: 12px;
+      padding: 6px;
+      text-align: center;
+      cursor: pointer;
+      margin-top: 4px;
+      width: 100%;
+      font-family: inherit;
+    }
+
+    .fs-card-expander-btn:hover {
+      background: var(--fs-surface-raised);
+      color: var(--fs-text);
+    }
+
+    /* Status Pill */
+    .fs-status-chip {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-pill);
+      padding: 2px 8px;
+      font-size: 11px;
+      color: var(--fs-text-2);
+      display: inline-block;
+    }
+
+    /* Stress Views */
+    .fs-banner-error {
+      display: none;
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-negative);
+      border-radius: var(--fs-radius-md);
+      margin: 14px 20px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--fs-text);
+    }
+
+    .mode-error .fs-banner-error {
+      display: block;
+    }
+
+    .fs-empty-state {
+      display: none;
+      padding: 48px 20px;
+      text-align: center;
+      background: var(--fs-surface);
+    }
+
+    .mode-empty .fs-empty-state {
+      display: block;
+    }
+
+    .mode-empty .fs-desktop-table-container,
+    .mode-empty .fs-mobile-card-list,
+    .mode-empty .fs-pagination {
+      display: none !important;
+    }
+
+    /* Pagination */
+    .fs-pagination {
+      padding: 12px 20px;
+      background: var(--fs-surface-sunken);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: var(--fs-border-width) solid var(--fs-border);
+      font-size: 12px;
+      color: var(--fs-text-3);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Reviewer Control Bar -->
+  <header class="review-controls">
+    <div class="review-group">
+      <span class="review-label">Viewport:</span>
+      <button class="review-btn active" onclick="setViewport('1440', this)">1440px Desktop</button>
+      <button class="review-btn" onclick="setViewport('1024', this)">1024px Tablet</button>
+      <button class="review-btn" onclick="setViewport('390', this)">390px Mobile (Compact-Expand Cards)</button>
+    </div>
+
+    <div class="review-group">
+      <span class="review-label">State:</span>
+      <button class="review-btn active" onclick="setState('normal', this)">20 Records</button>
+      <button class="review-btn" onclick="setState('empty', this)">Empty (.fs-empty)</button>
+      <button class="review-btn" onclick="setState('error', this)">Network Error</button>
+    </div>
+  </header>
+
+  <!-- Viewport Frame -->
+  <main class="viewport-container viewport-1440" id="viewportContainer">
+    <div class="fs-page" id="pageWrapper">
+
+      <div class="fs-page-header">
+        <div class="fs-page-title-group">
+          <h1>Expenditure Ledger</h1>
+          <p>Canonical transaction log with multi-column auditing and mobile vertical cards</p>
+        </div>
+        <div class="fs-action-bar">
+          <button class="fs-btn-secondary">Export</button>
+          <button class="fs-btn-primary">Add Expense</button>
+        </div>
+      </div>
+
+      <!-- Network Error Banner -->
+      <div class="fs-banner-error">
+        <strong>Synchronization Error:</strong> Unable to reach remote ledger node. Displaying cached local records.
+      </div>
+
+      <!-- Filter Toolbar -->
+      <div class="fs-toolbar">
+        <input type="text" class="fs-input" placeholder="Search payee or ref..." style="width: 200px;" />
+        <select class="fs-select">
+          <option>All Categories</option>
+          <option>Food &amp; Dining</option>
+          <option>Housing</option>
+          <option>Utilities</option>
+        </select>
+        <button class="fs-btn-secondary">Filter</button>
+      </div>
+
+      <!-- Group-by Bar (Variant B Canonical) -->
+      <div class="fs-group-bar">
+        <span style="font-size: 12px; color: var(--fs-text-3); font-weight: 500;">Group by:</span>
+        <span class="fs-chip active">None</span>
+        <span class="fs-chip">Category</span>
+        <span class="fs-chip">Account</span>
+        <span class="fs-chip">Date</span>
+      </div>
+
+      <!-- Empty State -->
+      <div class="fs-empty-state">
+        <h3 style="font-size: 15px; color: var(--fs-text); margin-bottom: 4px;">No transactions recorded</h3>
+        <p class="fs-empty" style="font-size: 13px; color: var(--fs-text-3); margin-bottom: 16px;">
+          No expenditures match your selected filters. Adjust your criteria or click Add Expense.
+        </p>
+        <button class="fs-btn-primary">Add Expense</button>
+      </div>
+
+      <!-- ==================================================================
+           1. DESKTOP / TABLET TABLE VIEW (Used at 1440px and 1024px)
+           ================================================================== -->
+      <div class="fs-desktop-table-container">
+        <table class="fs-table">
+          <thead>
+            <tr>
+              <th style="width: 32px;"><input type="checkbox" class="fs-checkbox" aria-label="Select all" /></th>
+              <th>Reference ID</th>
+              <th class="fs-th-sortable fs-th-active">Date <span class="fs-sort-arrow">▼</span></th>
+              <th>Payee / Description</th>
+              <th>Account</th>
+              <th class="fs-num">Debit</th>
+              <th class="fs-num">Credit</th>
+              <th class="fs-num">Balance</th>
+              <th>Status</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1: STRESS DATA (47-char name + 9-digit negative) -->
+            <tr>
+              <td><input type="checkbox" class="fs-checkbox" aria-label="Select row" /></td>
+              <td class="fs-mono">TX-984210</td>
+              <td>2026-11-09</td>
+              <td>
+                <span class="fs-cat-badge">Corporate</span>
+                Alexander Bartholomew Montgomery-Fitzgerald III
+              </td>
+              <td>Primary Reserve</td>
+              <td class="fs-num tone-neg">-$123,456,789.00</td>
+              <td class="fs-num">—</td>
+              <td class="fs-num tone-neg">-$123,456,789.00</td>
+              <td><span class="fs-status-chip">Cleared</span></td>
+              <td style="text-align: right;"><button class="fs-btn-secondary"
+                  style="padding: 3px 8px; font-size: 11px;">View</button></td>
+            </tr>
+            <!-- Row 2: Selected Row with accent left rule & checked checkbox -->
+            <tr class="fs-row-selected">
+              <td><input type="checkbox" class="fs-checkbox" checked aria-label="Select row" /></td>
+              <td class="fs-mono">TX-984209</td>
+              <td>2026-11-08</td>
+              <td>
+                <span class="fs-cat-badge">Housing</span>
+                Metropolitan Property Group - Commercial Lease
+              </td>
+              <td>Operating Account</td>
+              <td class="fs-num tone-neg">-$8,450.00</td>
+              <td class="fs-num">—</td>
+              <td class="fs-num">$421,550.00</td>
+              <td><span class="fs-status-chip">Cleared</span></td>
+              <td style="text-align: right;"><button class="fs-btn-secondary"
+                  style="padding: 3px 8px; font-size: 11px;">View</button></td>
+            </tr>
+            <!-- Row 3 -->
+            <tr>
+              <td><input type="checkbox" class="fs-checkbox" aria-label="Select row" /></td>
+              <td class="fs-mono">TX-984208</td>
+              <td>2026-11-08</td>
+              <td>
+                <span class="fs-cat-badge">Revenue</span>
+                Institutional Consulting Dividend Settlement
+              </td>
+              <td>Reserve Liquidity</td>
+              <td class="fs-num">—</td>
+              <td class="fs-num tone-pos">+$245,000.00</td>
+              <td class="fs-num">$430,000.00</td>
+              <td><span class="fs-status-chip">Settled</span></td>
+              <td style="text-align: right;"><button class="fs-btn-secondary"
+                  style="padding: 3px 8px; font-size: 11px;">View</button></td>
+            </tr>
+            <!-- Row 4 -->
+            <tr>
+              <td><input type="checkbox" class="fs-checkbox" aria-label="Select row" /></td>
+              <td class="fs-mono">TX-984207</td>
+              <td>2026-11-07</td>
+              <td>
+                <span class="fs-cat-badge">Utilities</span>
+                HyperScale Fiber &amp; Cloud Infrastructure
+              </td>
+              <td>Operating Account</td>
+              <td class="fs-num tone-neg">-$1,840.25</td>
+              <td class="fs-num">—</td>
+              <td class="fs-num">$185,000.00</td>
+              <td><span class="fs-status-chip">Pending</span></td>
+              <td style="text-align: right;"><button class="fs-btn-secondary"
+                  style="padding: 3px 8px; font-size: 11px;">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ==================================================================
+           2. MOBILE CARD VIEW (Active at 390px — ZERO Horizontal Scroll)
+           ================================================================== -->
+      <div class="fs-mobile-card-list">
+
+        <!-- Mobile Card 1: 47-char Payee with Break-Word Full Display & 9-digit negative -->
+        <article class="fs-card-item">
+          <div class="fs-card-header">
+            <div>
+              <span class="fs-card-meta">TX-984210 · 2026-11-09</span>
+              <div class="fs-card-label" style="margin-top: 4px;">Payee</div>
+              <div class="fs-card-value overflow-break-word">
+                Alexander Bartholomew Montgomery-Fitzgerald III
+              </div>
+            </div>
+            <div class="fs-card-amount tone-neg">-$123,456,789.00</div>
+          </div>
+
+          <!-- Drawer Fields (Compact-Expand per D19) -->
+          <div class="fs-card-details-drawer" id="drawer-1">
+            <div class="fs-card-field">
+              <span class="fs-card-label">Category</span>
+              <div><span class="fs-cat-badge">Corporate</span><span class="fs-card-value">Corporate Treasury Holdings</span></div>
+            </div>
+            <div class="fs-card-field">
+              <span class="fs-card-label">Account</span>
+              <span class="fs-card-value">Primary Reserve · USD</span>
+            </div>
+            <div class="fs-card-field">
+              <span class="fs-card-label">Running Balance</span>
+              <span class="fs-card-value tone-neg fs-num">-$123,456,789.00</span>
+            </div>
+            <div class="fs-card-field">
+              <span class="fs-card-label">Status &amp; Verification</span>
+              <div><span class="fs-status-chip">Cleared · Escrow Verified</span></div>
+            </div>
+          </div>
+
+          <button type="button" class="fs-card-expander-btn" onclick="toggleDrawer('drawer-1', this)">Show all fields ▼</button>
+        </article>
+
+        <!-- Mobile Card 2: Selected Card with Break-Word Full Display -->
+        <article class="fs-card-item" style="border-left: 2px solid var(--fs-accent);">
+          <div class="fs-card-header">
+            <div>
+              <span class="fs-card-meta">TX-984209 · 2026-11-08</span>
+              <div class="fs-card-label" style="margin-top: 4px;">Payee</div>
+              <div class="fs-card-value overflow-break-word">
+                Metropolitan Property Group - Commercial Lease (Holding Division)
+              </div>
+            </div>
+            <div class="fs-card-amount tone-neg">-$8,450.00</div>
+          </div>
+
+          <div class="fs-card-details-drawer" id="drawer-2">
+            <div class="fs-card-field">
+              <span class="fs-card-label">Category</span>
+              <div><span class="fs-cat-badge">Housing</span><span class="fs-card-value">Housing &amp; Commercial Lease</span></div>
+            </div>
+            <div class="fs-card-field">
+              <span class="fs-card-label">Account</span>
+              <span class="fs-card-value">Operating Account · USD</span>
+            </div>
+            <div class="fs-card-field">
+              <span class="fs-card-label">Running Balance</span>
+              <span class="fs-card-value fs-num">$421,550.00</span>
+            </div>
+            <div class="fs-card-field">
+              <span class="fs-card-label">Status</span>
+              <div><span class="fs-status-chip">Cleared</span></div>
+            </div>
+          </div>
+
+          <button type="button" class="fs-card-expander-btn" onclick="toggleDrawer('drawer-2', this)">Show all fields ▼</button>
+        </article>
+
+        <!-- Mobile Card 3: Standard Positive Credit -->
+        <article class="fs-card-item">
+          <div class="fs-card-header">
+            <div>
+              <span class="fs-card-meta">TX-984208 · 2026-11-08</span>
+              <div class="fs-card-label" style="margin-top: 4px;">Payee</div>
+              <div class="fs-card-value overflow-break-word">
+                Institutional Consulting Dividend Settlement
+              </div>
+            </div>
+            <div class="fs-card-amount tone-pos">+$245,000.00</div>
+          </div>
+
+          <div class="fs-card-details-drawer" id="drawer-3">
+            <div class="fs-card-field">
+              <span class="fs-card-label">Category</span>
+              <div><span class="fs-cat-badge">Revenue</span><span class="fs-card-value">Revenue Distribution</span></div>
+            </div>
+            <div class="fs-card-field">
+              <span class="fs-card-label">Account</span>
+              <span class="fs-card-value">Reserve Liquidity · USD</span>
+            </div>
+            <div class="fs-card-field">
+              <span class="fs-card-label">Running Balance</span>
+              <span class="fs-card-value fs-num">$430,000.00</span>
+            </div>
+            <div class="fs-card-field">
+              <span class="fs-card-label">Status</span>
+              <div><span class="fs-status-chip">Settled</span></div>
+            </div>
+          </div>
+
+          <button type="button" class="fs-card-expander-btn" onclick="toggleDrawer('drawer-3', this)">Show all fields ▼</button>
+        </article>
+
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="fs-pagination">
+        <span>Showing 1 to 20 of 142 records</span>
+        <div style="display: flex; gap: 6px;">
+          <button class="fs-btn-secondary" style="padding: 4px 8px; font-size: 11px;" disabled>Prev</button>
+          <button class="fs-btn-secondary" style="padding: 4px 8px; font-size: 11px;">Next</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    function setViewport(size, btn) {
+      document.querySelectorAll('.review-group:nth-child(1) .review-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const container = document.getElementById('viewportContainer');
+      container.className = 'viewport-container viewport-' + size;
+    }
+
+    function setState(s, btn) {
+      document.querySelectorAll('.review-group:nth-child(2) .review-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const page = document.getElementById('pageWrapper');
+      page.classList.remove('mode-empty', 'mode-error');
+      if (s === 'empty') page.classList.add('mode-empty');
+      if (s === 'error') page.classList.add('mode-error');
+    }
+
+    function toggleDrawer(drawerId, btn) {
+      const drawer = document.getElementById(drawerId);
+      const isOpen = drawer.classList.toggle('open');
+      btn.textContent = isOpen ? 'Hide details ▲' : 'Show all fields ▼';
+    }
+  </script>
+</body>
+
+</html>

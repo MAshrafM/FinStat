@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reference Frame 02 — Two-Column Form (Variant B — Canonical)</title>
+  <style>
+    :root {
+      --fs-bg: #101114;
+      --fs-surface: #1a1c20;
+      --fs-surface-raised: #22252a;
+      --fs-surface-sunken: #0c0d0f; /* darker chrome plane (amended §4.1) */
+      --fs-border: #34383f;
+      --fs-border-strong: #4a4f57;
+      --fs-border-control: #6a6f77;
+      --fs-border-width: 1px;
+      --fs-text: #f2f3f5;
+      --fs-text-2: #c9cdd3;
+      --fs-text-3: #a2a8b0;
+      --fs-text-4: #6f757d;
+      --fs-ink: #0d0e10;
+      --fs-positive: #4fa87c;
+      --fs-negative: #d97076;
+      --fs-warning: #cfa24f;
+      --fs-accent: #14b8a6;
+      --fs-accent-hover: #22c4b3;
+      --fs-accent-active: #0fa192;
+      --fs-accent-text: #0d0e10;
+      --fs-action-bg: var(--fs-accent);
+      --fs-action-text: var(--fs-accent-text);
+      --fs-action-hover: var(--fs-accent-hover);
+      --fs-action-active: var(--fs-accent-active);
+      --fs-danger: #d97076;
+      --fs-disabled-opacity: 0.45;
+      --fs-radius-sm: 4px;
+      --fs-radius-md: 6px;
+      --fs-radius-lg: 8px;
+      --fs-radius-pill: 999px;
+      --fs-focus-ring: 3px solid #f2f3f5;
+      --fs-focus-offset: 2px;
+      --fs-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      --fs-font-sans: 'IBM Plex Sans', 'Plex Sans Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --fs-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--fs-bg);
+      color: var(--fs-text);
+      font-family: var(--fs-font-sans);
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Top Review Controls */
+    .review-controls {
+      width: 100%;
+      max-width: 900px;
+      background: var(--fs-surface-raised);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-md);
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .review-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .review-label {
+      font-size: 12px;
+      color: var(--fs-text-3);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .review-btn {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border-control);
+      border-radius: var(--fs-radius-sm);
+      color: var(--fs-text);
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .review-btn.active {
+      background: var(--fs-accent);
+      color: var(--fs-ink);
+      border-color: var(--fs-accent);
+      font-weight: 600;
+    }
+
+    /* Viewport Simulator Container */
+    .viewport-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      transition: max-width 0.2s ease;
+    }
+
+    .viewport-1440 {
+      max-width: 900px;
+    }
+
+    .viewport-390 {
+      max-width: 390px;
+    }
+
+    /* Main Page Shell */
+    .fs-page {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-lg);
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Page Header */
+    .fs-page-header {
+      padding: 20px 24px;
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      background: var(--fs-surface-sunken);
+    }
+
+    .fs-page-title-group h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--fs-text);
+      line-height: 1.3;
+    }
+
+    .fs-page-title-group p {
+      font-size: 13px;
+      color: var(--fs-text-3);
+      margin-top: 2px;
+    }
+
+    /* Form Content Area */
+    .fs-form-content {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Stacked Sub-Panel Cards (Variant B Canonical) */
+    .fs-section-card {
+      background: var(--fs-surface-raised);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .fs-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fs-text);
+      border-bottom: var(--fs-border-width) solid var(--fs-border);
+      padding-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Grid Layout */
+    .fs-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 20px;
+    }
+
+    .fs-col-full {
+      grid-column: 1 / -1;
+    }
+
+    /* Field Anatomy */
+    .fs-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .fs-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--fs-text-2);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .fs-req {
+      color: var(--fs-accent);
+      font-weight: 600;
+    }
+
+    .fs-input,
+    .fs-select,
+    .fs-textarea {
+      background: var(--fs-surface);
+      border: var(--fs-border-width) solid var(--fs-border-control);
+      border-radius: var(--fs-radius-sm);
+      color: var(--fs-text);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      width: 100%;
+    }
+
+    /* Neutral Focus Ring sits on --fs-bg per §4.6 */
+    .fs-input:focus,
+    .fs-select:focus,
+    .fs-textarea:focus {
+      outline: var(--fs-focus-ring);
+      outline-offset: var(--fs-focus-offset);
+      border-color: var(--fs-border-strong);
+    }
+
+    .fs-help-text {
+      font-size: 12px;
+      color: var(--fs-text-3);
+    }
+
+    /* Inline Text Links per §4.3.2 / §6.4 */
+    .fs-link {
+      color: var(--fs-accent);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .fs-link:hover {
+      text-decoration-thickness: 2px;
+    }
+
+    .fs-link:focus-visible {
+      outline: var(--fs-focus-ring);
+      outline-offset: var(--fs-focus-offset);
+    }
+
+    /* Inline Error State per §6.4 */
+    .fs-field.has-error .fs-input {
+      border-color: var(--fs-negative);
+    }
+
+    .fs-error-msg {
+      font-size: 12px;
+      color: var(--fs-negative);
+      font-weight: 500;
+    }
+
+    /* Disabled Control State per §4.4 */
+    .fs-field.disabled {
+      opacity: var(--fs-disabled-opacity);
+    }
+
+    .fs-field.disabled .fs-input {
+      cursor: not-allowed;
+      color: var(--fs-text-4);
+      background: var(--fs-surface-sunken);
+    }
+
+    /* Form Actions Footer */
+    .fs-form-footer {
+      padding: 16px 24px;
+      background: var(--fs-surface-sunken);
+      border-top: var(--fs-border-width) solid var(--fs-border);
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Primary Save Button: Solid Teal Accent with Ink Text */
+    .fs-btn-save-accent {
+      background: var(--fs-accent);
+      color: var(--fs-ink);
+      border: var(--fs-border-width) solid var(--fs-accent);
+      border-radius: var(--fs-radius-sm);
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .fs-btn-save-accent:hover {
+      background: var(--fs-accent-hover);
+      border-color: var(--fs-accent-hover);
+    }
+
+    .fs-btn-save-accent:active {
+      background: var(--fs-accent-active);
+      border-color: var(--fs-accent-active);
+    }
+
+    .fs-btn-save-accent:focus-visible {
+      outline: var(--fs-focus-ring);
+      outline-offset: var(--fs-focus-offset);
+    }
+
+    /* Discard Button: Neutral Secondary per human approval */
+    .fs-btn-discard-neutral {
+      background: var(--fs-surface);
+      color: var(--fs-text);
+      border: var(--fs-border-width) solid var(--fs-border-control);
+      border-radius: var(--fs-radius-sm);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .fs-btn-discard-neutral:hover {
+      background: var(--fs-surface-raised);
+      border-color: var(--fs-border-strong);
+    }
+
+    .fs-btn-discard-neutral:focus-visible {
+      outline: var(--fs-focus-ring);
+      outline-offset: var(--fs-focus-offset);
+    }
+
+    .fs-btn-secondary-neutral {
+      background: var(--fs-surface);
+      color: var(--fs-text-2);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-sm);
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .fs-btn-secondary-neutral:hover {
+      background: var(--fs-surface-sunken);
+      color: var(--fs-text);
+    }
+
+    /* Empty State Container */
+    .fs-empty-banner {
+      display: none;
+      background: var(--fs-surface-raised);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-sm);
+      padding: 16px 20px;
+      margin-bottom: 8px;
+    }
+
+    .mode-empty .fs-empty-banner {
+      display: block;
+    }
+
+    .mode-empty .fs-section-card {
+      opacity: 0.7;
+    }
+
+    /* Teal Legibility Check Box */
+    .teal-legibility-box {
+      background: var(--fs-surface-sunken);
+      border: var(--fs-border-width) solid var(--fs-border);
+      border-radius: var(--fs-radius-sm);
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .teal-sample-heading {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--fs-accent);
+      line-height: 1.2;
+    }
+
+    .teal-sample-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fs-accent);
+    }
+
+    /* Mobile 390px collapse */
+    .viewport-390 .fs-grid-2col {
+      grid-template-columns: 1fr;
+    }
+
+    .viewport-390 .fs-form-footer {
+      flex-direction: column-reverse;
+      width: 100%;
+    }
+
+    .viewport-390 .fs-btn-save-accent,
+    .viewport-390 .fs-btn-discard-neutral {
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Reviewer Control Bar -->
+  <header class="review-controls">
+    <div class="review-group">
+      <span class="review-label">Viewport:</span>
+      <button class="review-btn active" onclick="setViewport('1440', this)">Desktop / 1024px</button>
+      <button class="review-btn" onclick="setViewport('390', this)">390px Mobile</button>
+    </div>
+
+    <div class="review-group">
+      <span class="review-label">State:</span>
+      <button class="review-btn active" onclick="setState('normal', this)">Populated</button>
+      <button class="review-btn" onclick="setState('empty', this)">Empty (.fs-empty)</button>
+    </div>
+  </header>
+
+  <!-- Viewport Frame -->
+  <main class="viewport-container viewport-1440" id="viewportContainer">
+    <div class="fs-page" id="pageWrapper">
+
+      <div class="fs-page-header">
+        <div class="fs-page-title-group">
+          <h1>Salary Profile &amp; Banking Credentials</h1>
+          <p>Variant B Stacked Sub-Panels with Solid Teal Accent Primary Button</p>
+        </div>
+      </div>
+
+      <div class="fs-form-content">
+
+        <!-- Mandatory Teal Legibility Test Sample on Dark Surface (13px and 20px) -->
+        <div class="teal-legibility-box">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--fs-text-3);">
+            Accent Candidate Legibility Check (on dark #0c0d0f surface):
+          </div>
+          <div class="teal-sample-heading">20px Heading Sample in Teal Accent #14b8a6</div>
+          <div class="teal-sample-label">13px Label Sample in Teal Accent — 6.85:1 contrast against surface</div>
+        </div>
+
+        <!-- Empty State Container -->
+        <div class="fs-empty-banner">
+          <h3 style="font-size: 15px; color: var(--fs-text); margin-bottom: 4px;">No profile records loaded</h3>
+          <p class="fs-empty" style="font-size: 13px; color: var(--fs-text-3);">
+            Fields are unpopulated. Enter compensation details below or import from corporate directory.
+          </p>
+        </div>
+
+        <form id="salaryForm">
+
+          <!-- Section 1: Stacked Card -->
+          <div class="fs-section-card">
+            <div class="fs-section-title">
+              <span>Employee Identification &amp; Base Allocation</span>
+              <button type="button" class="fs-btn-secondary-neutral">Import Directory</button>
+            </div>
+
+            <div class="fs-grid-2col">
+              <!-- Stress Case 1: 47-character Payee Name -->
+              <div class="fs-field fs-col-full">
+                <label class="fs-label" for="profileName">Legal Employee / Payee Name <span class="fs-req">*</span></label>
+                <input type="text" id="profileName" class="fs-input" value="Alexander Bartholomew Montgomery-Fitzgerald III" />
+                <span class="fs-help-text">Full legal name for treasury tax reporting (47 characters). Verified via <a href="#" class="fs-link">Compliance Registry</a>.</span>
+              </div>
+
+              <!-- Stress Case 2: 9-digit Negative Amount -->
+              <div class="fs-field">
+                <label class="fs-label" for="baseComp">Annual Net Base Allocation <span class="fs-req">*</span></label>
+                <input type="text" id="baseComp" class="fs-input" value="-$123,456,789.00" style="font-variant-numeric: tabular-nums;" />
+                <span class="fs-help-text">Annual liability cap threshold.</span>
+              </div>
+
+              <div class="fs-field">
+                <label class="fs-label" for="schedule">Payroll Frequency</label>
+                <select id="schedule" class="fs-select">
+                  <option selected>Bi-Weekly (26 Periods)</option>
+                  <option>Monthly (12 Periods)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Stacked Card -->
+          <div class="fs-section-card">
+            <div class="fs-section-title">Settlement Banking &amp; Routing Covenants</div>
+
+            <div class="fs-grid-2col">
+              <div class="fs-field">
+                <label class="fs-label" for="bankName">Depository Bank <span class="fs-req">*</span></label>
+                <input type="text" id="bankName" class="fs-input" value="J.P. Morgan Chase &amp; Co." />
+              </div>
+
+              <!-- Stress Case 3: Inline Error State -->
+              <div class="fs-field has-error">
+                <label class="fs-label" for="routingNum">ABA Routing Number <span class="fs-req">*</span></label>
+                <input type="text" id="routingNum" class="fs-input" value="12345" />
+                <span class="fs-error-msg">Routing number must be exactly 9 numeric digits.</span>
+              </div>
+
+              <div class="fs-field">
+                <label class="fs-label" for="accountNum">Settlement Account <span class="fs-req">*</span></label>
+                <input type="password" id="accountNum" class="fs-input" value="8821941203" />
+              </div>
+
+              <!-- Stress Case 4: Disabled Control -->
+              <div class="fs-field disabled">
+                <label class="fs-label" for="fedWire">Federal Reserve Sub-Wire (Locked)</label>
+                <input type="text" id="fedWire" class="fs-input" value="FED-WIRE-PRIMARY-LOCKED" disabled />
+                <span class="fs-help-text">Managed by treasury compliance officer.</span>
+              </div>
+
+              <div class="fs-field fs-col-full">
+                <label class="fs-label" for="instructions">Audit Remarks</label>
+                <textarea id="instructions" class="fs-textarea" rows="2">Covenant clearance executed under Rule 144(A). Refer to treasury filing guidelines.</textarea>
+              </div>
+            </div>
+          </div>
+
+        </form>
+
+      </div>
+
+      <!-- Action Footer -->
+      <div class="fs-form-footer">
+        <!-- Discard Button: Neutral Secondary per human approval -->
+        <button type="button" class="fs-btn-discard-neutral" id="btnDiscardNeutral">Discard Changes</button>
+
+        <!-- Save Button: Solid Teal Accent (Text is --fs-ink #0d0e10, 7.62:1 contrast) -->
+        <button type="button" class="fs-btn-save-accent" id="btnSave">Save Salary Profile</button>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    function setViewport(size, btn) {
+      document.querySelectorAll('.review-group:nth-child(1) .review-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const container = document.getElementById('viewportContainer');
+      container.className = 'viewport-container viewport-' + size;
+    }
+
+    function setState(s, btn) {
+      document.querySelectorAll('.review-group:nth-child(2) .review-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const page = document.getElementById('pageWrapper');
+      const inputs = document.querySelectorAll('#salaryForm input[type="text"], #salaryForm textarea');
+      const saveBtn = document.getElementById('btnSave');
+
+      if (s === 'empty') {
+        page.classList.add('mode-empty');
+        inputs.forEach(i => i.dataset.prevVal = i.value);
+        inputs.forEach(i => i.value = '');
+        saveBtn.disabled = true;
+      } else {
+        page.classList.remove('mode-empty');
+        inputs.forEach(i => { if (i.dataset.prevVal) i.value = i.dataset.prevVal; });
+        saveBtn.disabled = false;
+      }
+    }
+  </script>
+</body>
+
+</html>
