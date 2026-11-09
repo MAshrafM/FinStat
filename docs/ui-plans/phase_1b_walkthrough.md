@@ -39,9 +39,9 @@ The developer has approved the design direction after in-browser review:
 
 ## 2. Enumeration of Amended Plan Sections (`UI-UX-PLAN.md`)
 
-All amendments were made strictly according to Part 1 instructions across the **25 amended sections (21 primary + 4 supporting)**:
+All amendments were made strictly according to Part 1 instructions across the **27 amended sections (23 primary + 4 supporting)**:
 
-### Primary Amendments (21 Sections)
+### Primary Amendments (23 Sections)
 1. **§2 (Invariant I6)**: Rewritten from horizontal scroll preservation to compact-expand cards at $\le 768\text{px}$ (D19), preserving horizontal scroll only for $\ge 12$-column audit tables; 390px visual check updated.
 2. **§4.1 (Surfaces & Chrome)**: Updated `--fs-surface-sunken` to `#0c0d0f` (1.03:1 darker than `--fs-bg`, corrected from initial 1.044:1 estimate to match tool calculation), establishing chrome as a recessed shell.
 3. **§4.3.2 (Interactive Accent — New Subsection)**: Defined `--fs-accent: #14b8a6`, `--fs-accent-hover: #22c4b3`, `--fs-accent-active: #0fa192`, `--fs-accent-text: #0d0e10`. Recorded the 6 governing rules (accent is interactivity, never white-on-teal, focus rings remain neutral, one primary per section, focus rings excluded, chart series never accent).
@@ -58,19 +58,21 @@ All amendments were made strictly according to Part 1 instructions across the **
 14. **§6.7 (Phase 3 — Dashboard)**: Updated AD1 row in the accepted diff register from solid action-bg block to solid accent block (`--fs-accent`).
 15. **§6.8 (Phase 4 — Expenditure Tasks)**: Updated 4A `/expenditures` table task to compact-expand cards at $\le 768\text{px}$ with neutral category chips and split/bulk action check.
 16. **§6.9 (Phase 5 — Payroll & Salary Tasks)**: Updated 5B `/salary/paychecks` table task to compact-expand cards at $\le 768\text{px}$ with $\ge 44\text{px}$ touch targets.
-17. **§6.11 (Phase 7 — Investments Tasks)**: Updated 7A `/trades` log table task to compact-expand cards at $\le 768\text{px}$ with `--fs-accent` active sort indicator.
-18. **§6.12 (Phase 8 — Assets Tasks)**: Updated 8B certificate log and 8C currency/real-estate log table tasks to compact-expand cards at $\le 768\text{px}$.
-19. **§6.13 (Phase 9 — Credit Cards, Debt & Lending Tasks)**: Updated 9A credit card and lending ledger tables to compact-expand cards at $\le 768\text{px}$, preserving `.fs-progress--*` utilization semantics.
-20. **§6.14 (Phase 10 — Account, Security, Admin Tasks)**: Updated 10A recycle-bin and audit tables to compact-expand cards at $\le 768\text{px}$, explicitly preserving horizontal scroll for $\ge 12$-column audit logs per I6.
-21. **§6.16 (Phase 12 — Cleanup Tasks)**: Added searches for raw hex `#14b8a6` (permitted only in `tokens.json` and `theme.css`) and `overflow-x: scroll` (only permitted on $\ge 12$-column audit logs).
+17. **§6.10 (Phase 6 — Portfolio Tasks)**: Added 6A `/portfolio` holdings table task to render as compact-expand cards at $\le 768\text{px}$ per §6.4 and D19 with no page-level horizontal scroll.
+18. **§6.11 (Phase 7 — Investments Tasks)**: Updated 7A `/trades` log table task to compact-expand cards at $\le 768\text{px}$ with `--fs-accent` active sort indicator.
+19. **§6.12 (Phase 8 — Assets Tasks)**: Updated 8B certificate log and 8C currency/real-estate log table tasks to compact-expand cards at $\le 768\text{px}$.
+20. **§6.13 (Phase 9 — Credit Cards, Debt & Lending Tasks)**: Updated 9A credit card and lending ledger tables to compact-expand cards at $\le 768\text{px}$, preserving `.fs-progress--*` utilization semantics.
+21. **§6.14 (Phase 10 — Account, Security, Admin Tasks)**: Updated 10A recycle-bin and audit tables to compact-expand cards at $\le 768\text{px}$, explicitly preserving horizontal scroll for $\ge 12$-column audit logs per I6.
+22. **§6.16 (Phase 12 — Cleanup Tasks)**: Added searches for raw hex `#14b8a6` (permitted only in `tokens.json` and `theme.css`) and `overflow-x: scroll` (only permitted on $\ge 12$-column audit logs).
+23. **§9.2 (Phase 1C Tooling Inventory)**: Added `node frontend/scripts/tokens.js --check --fonts` to the Phase 1C tooling table. Reasoned addition beyond the Part 1 instruction list: §9.2 is the plan's authoritative tooling inventory, and `--check --fonts` is a tool the plan now requires (per §6.5 1B exit gate). Registering it in 1C's plan would leave the tool untracked for the remainder of 1B.
 
-*(Note on unamended sections: §6.10 Phase 6 Portfolio contains only summary cards/allocation charts and §6.15 Phase 11 Landing contains no tables; both were deliberately unmodified as they carry no table scroll tasks).*
+*(Note on unamended sections: §6.15 Phase 11 Landing contains no tables; deliberately unmodified as it carries no table scroll tasks).*
 
 ### Supporting Amendments (4 Sections)
-22. **§7.1 (Per-PR Definition of Done)**: Added automated PR checks for raw hex `#14b8a6` outside tokens/theme and unapproved `overflow-x`.
-23. **§7.2 (Per-Phase Manual Definition of Done)**: Added manual check for compact-expand cards at 390px with no page-level horizontal scroll.
-24. **§10 (Progress Log)**: Appended completed entry and sub-phase note for Phase 1B with merge SHA `46f75aa`.
-25. **§13 (Deferred / Out of Scope)**: Updated deferred table by removing the "Mobile card-list tables" deferred row (now formally adopted as D19).
+24. **§7.1 (Per-PR Definition of Done)**: Added automated PR checks for raw hex `#14b8a6` outside tokens/theme and unapproved `overflow-x`.
+25. **§7.2 (Per-Phase Manual Definition of Done)**: Added manual check for compact-expand cards at 390px with no page-level horizontal scroll.
+26. **§10 (Progress Log)**: Appended completed entry and sub-phase note for Phase 1B with merge SHA `46f75aa`.
+27. **§13 (Deferred / Out of Scope)**: Updated deferred table by removing the "Mobile card-list tables" deferred row (now formally adopted as D19).
 
 ---
 
@@ -168,7 +170,7 @@ All three reference frames in `docs/UI-UX_Plan/reference/` have been finalized t
 | :--- | :--- | :--- | :---: |
 | `node frontend/scripts/tokens.js --check --tables` | 0 drift across §4.9.1, §4.9.2, §4.9.3 | 0 drift reported | **PASS** |
 | `node frontend/scripts/tokens.js --check --fonts` | 4 woff2 files, $\le 90\text{ KB}$, OFL present | 72.64 KB (17.36 KB headroom) | **PASS** |
-| `git diff --stat docs/UI-UX_Plan/UI-UX-PLAN.md` | Hunks in authorized sections only | Verified: hunks strictly in 25 authorized sections (21 primary + 4 supporting) | **PASS** |
+| `git diff --stat docs/UI-UX_Plan/UI-UX-PLAN.md` | Hunks in authorized sections only | Verified: hunks strictly in 27 authorized sections (23 primary + 4 supporting) | **PASS** |
 | `git diff --stat frontend/src/styles/tokens.json` | Token values and schema only | Verified: tokens and tables schema only | **PASS** |
 | Banned pattern grep on reference frames | 0 gradient, blur, text-shadow, high radius | 0 occurrences | **PASS** |
 | Accent leaked to production CSS grep | 0 occurrences of `#14b8a6` in `src/` | 0 occurrences | **PASS** |

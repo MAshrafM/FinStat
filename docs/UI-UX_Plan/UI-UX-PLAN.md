@@ -1646,6 +1646,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `components/portfolio/*` (`AllocationChart`, `HoldingsTable`, `SummaryCards`, `UtilizationWidget`) — token colours, no layout change.
 - [ ] Unrealised P&L is neutral unless it is the subject of the view, and then uses `Delta` with sign, arrow, and label.
 - [ ] Verify summary cards, holdings table, allocation doughnut at all widths.
+- [ ] Holdings table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] **Add `/portfolio`.**
 
 #### 6B — Rebalancing & comprehensive reporting
