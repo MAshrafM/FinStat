@@ -1,4 +1,4 @@
-# Phase 1C Implementation Plan — Tooling, Deterministic Harness, and Characterization Fixtures (v3 Reconciled)
+# Phase 1C Implementation Plan — Tooling, Deterministic Harness, and Characterization Fixtures (v4 Reconciled)
 
 ## 1. Overview & Context
 
