@@ -2375,7 +2375,7 @@ Append one row per sub-phase. Never edit past rows.
 | — | 2026-11-07 | Plan revised to v8 after dashboard audit: Invariant I8 preserves coordinator line cap (<= 120 lines) across 7 decoupled widgets under pages/dashboard/; all 4 RTL dashboard suites (10 tests) mapped and green. | Superseded by v9 | None | — |
 | — | 2026-11-09 | Plan revised to v9: integrated §15 Local verification environment governance (workstation memory constraint, npm start compile check, single-worker jest on touched suites, CI authoritative build); sequential renumbering into 14 phases and 37 sub-phases (1A–14A). | Begin 1A | None | — |
 | 1A | 2026-11-09 | Audit, tokens and measurement completed: .gitignore tracks docs/ui-plans/ alongside docs/UI-UX_Plan/; tokens.json created with verbatim §4.1–§4.8 contract values; tokens.js created with exact WCAG 2.1 math and --check --tables passes with 0 drift; ui-coverage.js confirmed 75 route entries (0 unassigned) and 1,179 inline style props; reconciled audits in §4.14 (!important: 47 core + 56 print), §8.1 (57 CSS files), §8.2 (1,179 props), §4.6 (29 z-index mappings with rationales), §4.3.1 (provenance code sources). | 1B | None | cdfe577 (merged to main) |
-| 1B | 2026-11-09 | Design direction approved after prototype review: teal accent #14b8a6 (interactive-only), darker chrome #0c0d0f, mobile compact-expand cards, Variant B for all three frames. Plan amended (§2 I6, §4.1, §4.3.2, §4.4, §4.6, §4.9, §4.13 D2/D14 + D19/D20, §4.13.1, §4.15, §6.1.1, §6.4, §6.5, §6.7–§6.14, §6.16, §7.1, §7.2). | 1C (Tooling) | None | phase-ui-1b-direction |
+| 1B | 2026-11-09 | Design direction approved after prototype review: teal accent #14b8a6 (interactive-only), darker chrome #0c0d0f, mobile compact-expand cards, Variant B for all three frames. Plan amended (§2 I6, §4.1, §4.3.2, §4.4, §4.6, §4.9, §4.13 D2/D14 + D19/D20, §4.13.1, §4.15, §6.1.1, §6.4, §6.5, §6.7–§6.14, §6.16, §7.1, §7.2). | 1C (Tooling) | None | 46f75aa (merged to main) |
 
 ```
 Sub-phase:   1A
@@ -2402,7 +2402,7 @@ Visual diff: zero (zero production styling changes)
 Fixtures:    unchanged
 Screenshots: n/a (reference frames in docs/UI-UX_Plan/reference/)
 Branch:      phase-ui-1b-direction
-Merge SHA:   pending
+Merge SHA:   46f75aa (merged to main)
 ```
 
 ### Sub-phase note template
