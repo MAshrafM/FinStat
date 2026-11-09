@@ -26,6 +26,9 @@ docs/*
 !docs/UI-UX_Plan/
 !docs/ui-plans/
 
+# visual regression baselines (A5-Local, D21)
+frontend/tests/visual/baseline/
+
 #changes
 CHANGELOG.md
 .env*

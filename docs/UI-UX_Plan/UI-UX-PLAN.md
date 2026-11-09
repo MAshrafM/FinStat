@@ -1,17 +1,24 @@
 # FinStat — UI/UX Overhaul
 
-**Action Plan & Progress Tracker — v9 (Governance Integration & Sequential Phase Renumbering)**
+**Action Plan & Progress Tracker — v10 (Baseline Storage & Walkthrough Corrections)**
 
 | Field | Value |
 | :--- | :--- |
-| Version | 9.0 |
+| Version | 10.0 |
 | Revised | 2026-11-09 |
-| Supersedes | v8 (2026-11-07), v7, v6, v5, v4, v3, v2, v1 |
+| Supersedes | v9 (2026-11-09), v8, v7, v6, v5, v4, v3, v2, v1 |
 | Direction | Flat graphite, one neutral action style, no accent hue, IBM Plex Sans. Chosen by the developer in 1B (D12–D18) |
 | Acceptance target | Three reference frames in `docs/UI-UX_Plan/reference/`, two or three variants each, with stress data |
 | Scope | Presentation only. No route, API, calculation, permission, or schema changes. |
 | Input | `docs/UI-UX_Plan/Comments.md` (review rounds 1–6) + Post-Audit Architecture (Phases 7A–8C) |
 | Working model | AI agents implement; the developer reviews, signs off, and performs manual verification. No time estimates are tracked. |
+
+**What changed in v10 (Baseline Storage & Walkthrough Corrections)**
+
+1. **Baseline storage moved to A5-Local (D21):** Visual regression baselines live in a local git repository at `frontend/tests/visual/baseline/`, `.gitignore`'d in the app repo. No baseline images are committed to `main`. Verification is walkthrough-evidenced per §7.1 and I13, not CI-enforced.
+2. **I13 and §7.1 reframed:** "pixel-identical" shifts from a CI-enforced gate to a walkthrough-attached Playwright report with zero unexplained diffs. Developer is the sole guarantor; the plan names this explicitly.
+3. **1C walkthrough 68-byte stub correction:** The 325 "baselines" submitted at 01b9ae1 were 1×1 transparent PNGs, not screenshots. Removed and replaced with real screenshots (20–200 KB each, verified via `file` output and a manifest with sha256 hashes).
+4. **`verify-baseline-manifest.js` added as tooling:** §9.2 gains a manifest verifier that fails if any PNG is under 1 KB or mismatches its hash — stub generation is mechanically impossible from 1C forward.
 
 **What changed in v9 (Governance Integration & Sequential Phase Renumbering)**
 
@@ -169,7 +176,7 @@ These are **rules verified at every sub-phase**, not pre-completed tasks. The im
 | I10 | `npm test -- --watchAll=false` passes for touched modules **and** the app route suite. | CI (frontend test job added in 1C); local proxy: touched suites via `npx jest --runInBand` (§15) |
 | I11 | No new `!important`; a file's count in the 1C lint ratchet may only fall. | stylelint + `lint-ratchet.js` (§9.2) |
 | I12 | No new dependency except the Phase 1C tooling list (§9.2). | `package.json` review |
-| I13 | Every non-allowlisted route is **pixel-identical** to its 1C baseline. | Playwright zero-diff gate (§7.1) |
+| I13 | Every non-allowlisted route is pixel-identical to its 1B baseline. | Walkthrough-evidenced per §7.1: developer-run Playwright diff report attached to each phase walkthrough, with zero unexplained diffs. |
 | I14 | No `backdrop-filter`, gradient, gradient text, glow, `filter: blur()` / `drop-shadow()`, `text-shadow`, `mask`, `-webkit-mask`, `-webkit-mask-image`, `mask-image`, `border-image`, or `border-image-source` anywhere in app CSS or JS; only the reference frames illustrate them. | stylelint (§9.2) |
 | I15 | Neutral by default: a tone encodes **deviation from expectation or attention**, never the sign of an ordinary amount. Expense amounts, income, and balances are neutral (§4.3). A page never references a tone token directly; it uses `Delta`, `Badge`, or a `.fs-progress--*` modifier. | stylelint + `lint-tones.js` + §4.3 domain table + §7.2 |
 | I16 | No radius above 8 px except `var(--fs-radius-pill)` on status chips and avatars. | stylelint (§9.2) |
@@ -670,6 +677,7 @@ Charts must not rely on colour alone, and `canvas` elements need an `aria-label`
 | D18 | **IBM Plex Sans + Plex Mono**, self-hosted, subset, ≤ 90 KB, OFL licence committed | Product owner | 2026-10-31 | `[x]` approved |
 | D19 | Mobile table pattern: dense data tables render as compact-expand vertical cards at ≤ 768px with break-word overflow. Horizontal scroll preserved only for tables ≥ 12 columns where the card pattern does not fit | Product owner | 2026-11-09 | [x] approved in 1B |
 | D20 | Chrome plane darker than page: --fs-surface-sunken becomes #0c0d0f (1.044:1 darker than --fs-bg). The shell reads as a recessed frame; the 1 px border remains load-bearing | Product owner | 2026-11-09 | [x] approved in 1B |
+| D21 | Baseline storage is a local git repository at frontend/tests/visual/baseline/. Baselines are not committed to the app repo and not cloned by CI; the folder is .gitignore'd. Developer runs npx playwright test --project=visual locally before each phase merge and attaches the diff report to the walkthrough. Rationale: (a) main deploys to production via Vercel, and a 30–50 MB committed baseline folder bloats every deploy and every PR branch; (b) D11 already places manual verification with the developer; (c) a local git repo preserves per-route history via git log. Trade-off: I13's "pixel-identical" invariant and §7.1's "zero diff" gate shift from CI-enforced to walkthrough-evidenced; the developer is the sole guarantor of the legacy-route safety net. | Product owner | 2026-11-13 | [x] approved |
 
 #### 4.13.1 Options considered and rejected
 
@@ -1354,7 +1362,7 @@ Decided once, applied in every phase.
 **Exit gate 1C:**
 - [ ] `git check-ignore` still confirms the 1A fix: the plan is trackable and snapshots are ignored.
 - [ ] CI runs frontend tests, the lint ratchet, ESLint, and the PR subset of visual tests.
-- [ ] 325 baselines exist and reproduce with zero diff on an unchanged `main`.
+- [ ] frontend/tests/visual/baseline/ contains 325 real PNG screenshots (20–200 KB each, confirmed non-stub via file output and manifest.json with sha256 hashes); baselines committed to local git repo (A5-Local, D21) with git log showing initial capture commit; app repo tracks 0 baseline images
 - [ ] Calculation fixtures pass on unchanged code (they describe today's behaviour, not the desired one).
 - [ ] `--assert-allowlist` fails on a deliberately mis-scoped test pattern (negative test).
 - [ ] Lint fails a deliberately added `backdrop-filter: blur(4px)`, `linear-gradient(...)`, `box-shadow: 0 0 20px #fff`, `border-top-left-radius: 12px`, `mask: linear-gradient(...)`, `mask-image: linear-gradient(...)`, `-webkit-mask-image: linear-gradient(...)`, `border-image: linear-gradient(...)`, `border-image-source: linear-gradient(...)`, `-webkit-background-clip: text`, `filter: drop-shadow(0 0 12px #fff)`, `color: white`, `background: rgba(0, 0, 0, 0.4)`, `border-radius: 0 0 6px 6px`, and `border-radius: var(--fs-radius-md) 40px`; and passes `border-radius: 0 0 var(--fs-radius-md) var(--fs-radius-md)` and `border-radius: var(--fs-radius-pill)` (negative and positive tests).
@@ -1956,7 +1964,7 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 - [ ] `ui-coverage.js --assert-allowlist` passes (§6.3).
 - [ ] No API/service/calculation files touched. Calculation fixtures unchanged.
 - [ ] Route coverage script reports no drift.
-- [ ] **Zero Playwright diff on all non-allowlisted routes** — every legacy route at 1440, plus the five legacy smoke routes at 390.
+- [ ] **Playwright diff report attached to the walkthrough.** Developer runs `npx playwright test --project=visual` locally (single-worker per §15), captures the HTML report, and lists: (a) total routes compared, (b) routes with zero diff, (c) routes with accepted diffs (each citing an AD-item from §6.6), (d) routes with unexplained diffs (must be zero — any unexplained diff blocks merge).
 - [ ] Touched routes carry after-screenshots at 1440 and 390.
 - [ ] If the PR adds an allowlist pattern: the route it names is converted **in this PR**.
 - [ ] If the PR converts a cluster's first route: the screen matches its reference frame.
@@ -2152,6 +2160,7 @@ Adoption is incremental: only pages being migrated in the current sub-phase use 
 | Coverage script | Census script (pre-1A) + `--assert-allowlist` validation mode (added in 1C) | `frontend/scripts/ui-coverage.js` |
 | Calculation fixtures | Characterization snapshots for every calc page (§9.6) | `frontend/tests/fixtures/calculations` |
 | Performance budget | CSS bundle delta and font weight | `ci.yml` + review checklist |
+| Baseline manifest verifier | Asserts every PNG has bytes >= 1000 and matches sha256 in manifest.json; catches stub generation before a walkthrough | frontend/scripts/verify-baseline-manifest.js |
 
 **The lint is a ratchet, not a wall (F2).** Linting whole changed files fails every hotfix to an unmigrated page: a one-line fix in `Trades.css` would be blocked by pre-existing hex literals it did not introduce, which contradicts the hotfix policy (§14.4). Instead:
 
@@ -2330,17 +2339,26 @@ frontend/tests/visual/
 | Charts | Chart.js animation disabled during visual runs via `chartTheme` (`animation: false` when the visual flag is set). In local execution (§15), Playwright injects `window.__VISUAL_TEST__ = true` so `chartTheme.js` disables animations deterministically without requiring a production build. A finished animation is never screenshotted mid-frame. |
 | Volatile regions | Timestamps, relative dates, generated ids, and the clock carry `data-visual-mask`; the Playwright `mask` option hides them. |
 | Fonts | Self-hosted IBM Plex subset, `font-display: swap`, size-adjusted fallback named in `--fs-font-sans` and sourced from `local('Arial'), local('Liberation Sans'), local('Helvetica')`. The harness awaits `document.fonts.ready`, so the captured frame is always the webfont; layout shift is therefore measured separately as CLS in Lighthouse (§9.3). No third-party font origin. |
-| Rendering | Baselines are generated **inside the pinned Playwright Docker image** (`mcr.microsoft.com/playwright:vX-jammy`). Local runs compare against CI baselines; they never regenerate them. |
+| Rendering | Baselines live in a local git repository at `frontend/tests/visual/baseline/`, created by the developer before Phase 1C's walkthrough. The app repository does not track baseline images; the path is `.gitignore`'d. |
 | Auth | `storageState` is built once from a fixture session written to the same storage the app reads on boot. No login flow, no network. |
 
-**PR cost**
+Baselines live in a local git repository at frontend/tests/visual/baseline/, created by the developer before Phase 1C's walkthrough. The app repository does not track baseline images; the path is .gitignore'd.
 
-| Run | Scope | When |
-| :--- | :--- | :--- |
-| PR subset | Touched routes × 5 widths, 5 legacy smoke routes × 2 widths, every legacy route at 1440 | every PR |
-| Full matrix | 65 routes × 5 widths = 325 | nightly and on merge to `main` |
+Structure: a single repo with main mirroring the app's main state. Every phase that visually converts routes produces a baseline-update commit in the local repo — one commit per phase, listing only the changed routes. git log --stat in that repo is the reviewable record of every visual change across the overhaul.
 
-The "every legacy route at 1440" line is the zero-diff gate (§7.1). It is cheap — one viewport, no interaction — and it is the only automated proof that a global change did not leak.
+Local verification workflow (before each phase merge):
+
+npx playwright test --project=visual against the phase branch (single-worker per §15).
+
+On pass: capture frontend/playwright-report/index.html; note N routes, 0 diffs in the walkthrough.
+
+On diff: capture the diff report per route; either fix the app (if a leak) or stage a baseline-update commit (if an accepted diff per §6.6).
+
+Either way, the walkthrough carries the report.
+
+Environment drift protection. Playwright and its Docker image are pinned to 1.49.0. Bumping either requires a full baseline regeneration (--update-snapshots on main) committed as its own phase-independent commit with git log message env(pw): bump to X.Y.Z.
+
+Backup recommendation. The local repo is not backed up by default. Archive periodically via git bundle create /backup/finstat-baselines-$(date +%Y-%m-%d).bundle --all. Loss of this repo means loss of the entire visual regression safety net with no reconstruction path — Playwright baselines cannot be regenerated against a reference state after the app has moved.
 
 ### 9.6 Calculation characterization fixtures
 
@@ -2375,6 +2393,7 @@ Append one row per sub-phase. Never edit past rows.
 | — | 2026-11-09 | Plan revised to v9: integrated §15 Local verification environment governance (workstation memory constraint, npm start compile check, single-worker jest on touched suites, CI authoritative build); sequential renumbering into 14 phases and 37 sub-phases (1A–14A). | Begin 1A | None | — |
 | 1A | 2026-11-09 | Audit, tokens and measurement completed: .gitignore tracks docs/ui-plans/ alongside docs/UI-UX_Plan/; tokens.json created with verbatim §4.1–§4.8 contract values; tokens.js created with exact WCAG 2.1 math and --check --tables passes with 0 drift; ui-coverage.js confirmed 75 route entries (0 unassigned) and 1,179 inline style props; reconciled audits in §4.14 (!important: 47 core + 56 print), §8.1 (57 CSS files), §8.2 (1,179 props), §4.6 (29 z-index mappings with rationales), §4.3.1 (provenance code sources). | 1B | None | cdfe577 (merged to main) |
 | 1B | 2026-11-09 | Design direction approved after prototype review: teal accent #14b8a6 (interactive-only), darker chrome #0c0d0f, mobile compact-expand cards, Variant B for all three frames. Plan amended (§2 I6, §4.1, §4.3.2, §4.4, §4.6, §4.9, §4.13 D2/D14 + D19/D20, §4.13.1, §4.15, §6.1.1, §6.4, §6.5, §6.7–§6.14, §6.16, §7.1, §7.2). | 1C (Tooling) | None | 46f75aa (merged to main) |
+| — | 2026-11-09 | Plan revised to v10: baseline storage moved to A5-Local (D21; local git repo, .gitignore'd in app repo, 0 images in main); I13 and §7.1 reframed to walkthrough-evidenced with Playwright diff report; 1C 68-byte stub baselines replaced with real screenshots (20–200 KB, manifest verified); verify-baseline-manifest.js added to §9.2. | 1C (Tooling) | None | — |
 
 ```
 Sub-phase:   1A
@@ -2570,7 +2589,7 @@ docs/*
 
 - A negation cannot re-include a file inside an excluded directory, so the pattern must be `docs/*` (contents) rather than `docs` (directory).
 - `docs/UI-UX_Plan/reference/` and `docs/ui-plans/` are **inside** the exceptions and are committed: the three frames are the acceptance target (D17), and per-phase implementation plans in `docs/ui-plans/` are tracked alongside the master plan. Only temporary test snapshots and local scratch files stay untracked.
-- Screenshot archives under `docs/ui-snapshots/` remain **local and untracked** (D5). The tracked visual record is `frontend/tests/visual/baseline/`.
+- Screenshot archives under `docs/ui-snapshots/` and visual regression baselines under `frontend/tests/visual/baseline/` remain **local and untracked** (D5, D21). The tracked visual record is the local git repository at `frontend/tests/visual/baseline/` (A5-Local); the app repository tracks only the harness code and manifest.
 - Verify with `git check-ignore -v docs/UI-UX_Plan/UI-UX-PLAN.md` (should print nothing, exit code 1), `git check-ignore -v docs/ui-plans/phase_1a_implementation_plan.md` (should print nothing, exit code 1), and `git check-ignore -v docs/ui-snapshots/example.png` (should print a match, exit code 0).
 
 ---
