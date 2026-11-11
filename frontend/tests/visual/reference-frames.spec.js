@@ -33,6 +33,15 @@ const REFERENCE_FRAMES = [
 test.describe('Reference Frames Visual Suite', () => {
   for (const frame of REFERENCE_FRAMES) {
     test(`${frame.name} @ 1440px`, async ({ page }) => {
+      const consoleErrors = [];
+      const failedRequests = [];
+      page.on('console', msg => {
+        if (msg.type() === 'error') consoleErrors.push(msg.text());
+      });
+      page.on('response', res => {
+        if (res.status() >= 400) failedRequests.push(`${res.url()} (${res.status()})`);
+      });
+
       await page.setViewportSize({ width: 1440, height: 900 });
 
       // Invalidate transient effects / freeze any transitions
@@ -43,6 +52,10 @@ test.describe('Reference Frames Visual Suite', () => {
       await page.goto(frame.url, { waitUntil: 'domcontentloaded' });
       await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
       await page.evaluate(() => document.fonts.ready).catch(() => {});
+
+      // Verify zero console errors and zero 404s/failed requests (M6)
+      expect(failedRequests).toEqual([]);
+      expect(consoleErrors).toEqual([]);
 
       // Verify self-hosted IBM Plex Sans has loaded
       const fontLoaded = await page.evaluate(() => document.fonts.check('14px "IBM Plex Sans"'));
