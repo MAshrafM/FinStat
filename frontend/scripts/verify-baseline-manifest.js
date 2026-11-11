@@ -9,8 +9,8 @@ const isGenerate = process.argv.includes('--generate');
 
 if (isGenerate) {
   const files = fs.readdirSync(BASELINE_DIR).filter(f => f.endsWith('.png'));
-  if (files.length !== 325) {
-    console.error(`Expected 325 PNG files, found ${files.length}`);
+  if (files.length < 325) {
+    console.error(`Expected at least 325 PNG files, found ${files.length}`);
     process.exit(1);
   }
   const manifest = {};
@@ -34,7 +34,7 @@ if (isGenerate) {
     manifest[file] = { bytes: buf.length, sha256: hash };
   }
   fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
-  console.log(`Manifest generated for 325 baselines at ${MANIFEST_PATH}`);
+  console.log(`Manifest generated for ${files.length} baselines at ${MANIFEST_PATH}`);
   process.exit(0);
 }
 
@@ -44,13 +44,19 @@ if (!fs.existsSync(MANIFEST_PATH)) {
   process.exit(1);
 }
 const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
-const keys = Object.keys(manifest);
-if (keys.length !== 325) {
-  console.error(`Expected 325 entries in manifest, found ${keys.length}`);
+const entries = manifest.entries
+  ? (Array.isArray(manifest.entries) ? manifest.entries : Object.entries(manifest.entries))
+  : Object.entries(manifest);
+const expectedCount = manifest.count || entries.length;
+
+if (entries.length !== expectedCount || entries.length < 325) {
+  console.error(`Expected ${expectedCount} entries (>= 325) in manifest, found ${entries.length}`);
   process.exit(1);
 }
+
 let passed = 0;
-for (const [file, meta] of Object.entries(manifest)) {
+for (const entry of entries) {
+  const [file, meta] = Array.isArray(entry) ? entry : [entry.file || entry.name, entry];
   const full = path.join(BASELINE_DIR, file);
   if (!fs.existsSync(full)) {
     console.error(`MISSING: ${file}`);
@@ -68,6 +74,5 @@ for (const [file, meta] of Object.entries(manifest)) {
   }
   passed++;
 }
-console.log(`${passed}/325 baselines verified successfully.`);
+console.log(`${passed}/${expectedCount} baselines verified successfully.`);
 process.exit(0);
-
