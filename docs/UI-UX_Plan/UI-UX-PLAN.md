@@ -418,6 +418,8 @@ The interface carries one accent hue, reserved exclusively for affordances that 
 | `--fs-weight-medium` | `500` |
 | `--fs-weight-semibold` | `600` |
 
+*Note: Phase 2A splits §4.5's compound sizes into individual `--fs-text-{size}` and `--fs-line-height-{size}` CSS tokens in `tokens.json` and `tokens.css` for flexible individual property application; compound shorthand remains documented here as design reference.*
+
 **Three weights, no 700.** Page titles and section headings use 600; table headers and labels 500; body 400. Hierarchy comes from size and weight, never from gradient text, and `.fs-page-title` is plain `color: var(--fs-text)`.
 
 **Self-hosting (1B deliverable).** Four subset files: Plex Sans 400/500/600 and Plex Mono 400, woff2, latin subset, committed under `frontend/src/assets/fonts/` with the OFL licence. Budget: **≤ 90 KB total**. No third-party font CDN — it is slower, it leaks requests, and it makes visual baselines depend on someone else's uptime.
