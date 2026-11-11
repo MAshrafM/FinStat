@@ -14,6 +14,7 @@ const path = require('path');
 
 const ROOT_DIR = path.resolve(__dirname, '../..');
 const TOKENS_PATH = path.join(ROOT_DIR, 'frontend/src/styles/tokens.json');
+const CSS_PATH = path.join(ROOT_DIR, 'frontend/src/styles/tokens.css');
 const PLAN_PATH = path.join(ROOT_DIR, 'docs/UI-UX_Plan/UI-UX-PLAN.md');
 const FONTS_DIR = path.join(ROOT_DIR, 'frontend/src/assets/fonts');
 
@@ -247,12 +248,55 @@ function checkFonts() {
   process.exit(0);
 }
 
+function generateTokensCss(tokens) {
+  const sections = [
+    { key: 'surfaces', comment: 'Surfaces' },
+    { key: 'borders', comment: 'Borders' },
+    { key: 'text', comment: 'Typography & Text Colors' },
+    { key: 'tones', comment: 'Semantic Tones' },
+    { key: 'accents', comment: 'Interactive Accent' },
+    { key: 'actions', comment: 'Action Tokens' },
+    { key: 'radii', comment: 'Radii (8px ceiling)' },
+    { key: 'focus', comment: 'Focus Ring & Offset' },
+    { key: 'motion', comment: 'Motion Durations & Curves' },
+    { key: 'zIndex', comment: 'Z-Index Scale' },
+    { key: 'breakpoints', comment: 'Breakpoints' },
+    { key: 'platformSurfaces', comment: 'Platform Surfaces & Scrim' },
+    { key: 'shadows', comment: 'Shadows' },
+    { key: 'typography', comment: 'Typography Tokens' },
+  ];
+
+  const lines = [];
+  lines.push('/* fs-tokens:start */');
+  lines.push(':root[data-fs-theme="dark"] {');
+
+  for (const { key, comment } of sections) {
+    if (!tokens[key]) continue;
+    lines.push(`  /* ${comment} */`);
+    for (const [prop, val] of Object.entries(tokens[key])) {
+      if (prop.startsWith('_')) continue;
+      lines.push(`  ${prop}: ${val};`);
+    }
+    lines.push('');
+  }
+
+  if (lines[lines.length - 1] === '') {
+    lines.pop();
+  }
+
+  lines.push('}');
+  lines.push('/* fs-tokens:end */\n');
+
+  return lines.join('\n');
+}
+
 // --- Main Execution Modes ---
 
 function main() {
   const args = process.argv.slice(2);
   const isCheckTables = args.includes('--check') && args.includes('--tables');
   const isCheckFonts = args.includes('--check') && args.includes('--fonts');
+  const isCheck = args.includes('--check') && !isCheckTables && !isCheckFonts;
   const isWrite = args.includes('--write');
 
   if (isCheckFonts) {
@@ -260,8 +304,9 @@ function main() {
     return;
   }
 
-  if (!isCheckTables && !isWrite) {
+  if (!isCheckTables && !isCheck && !isWrite) {
     console.log('Usage:');
+    console.log('  node frontend/scripts/tokens.js --check');
     console.log('  node frontend/scripts/tokens.js --check --tables');
     console.log('  node frontend/scripts/tokens.js --check --fonts');
     console.log('  node frontend/scripts/tokens.js --write');
@@ -279,6 +324,7 @@ function main() {
 
   const tokens = JSON.parse(fs.readFileSync(TOKENS_PATH, 'utf8'));
   const generatedMarkdown = generateMarkdownTables(tokens);
+  const generatedCss = generateTokensCss(tokens);
 
   const planContent = fs.readFileSync(PLAN_PATH, 'utf8').replace(/\r\n/g, '\n');
 
@@ -310,6 +356,38 @@ function main() {
     }
   }
 
+  if (isCheck) {
+    let hasError = false;
+
+    // 1. Check tables
+    if (currentTablesBlock === expectedTablesBlock) {
+      console.log('✓ All §4.9 contrast tables match tokens.json (0 drift).');
+    } else {
+      console.error('✗ Contrast tables drift detected in §4.9:');
+      hasError = true;
+    }
+
+    // 2. Check tokens.css
+    if (!fs.existsSync(CSS_PATH)) {
+      console.error(`✗ tokens.css not found at ${CSS_PATH}`);
+      hasError = true;
+    } else {
+      const currentCss = fs.readFileSync(CSS_PATH, 'utf8').replace(/\r\n/g, '\n');
+      if (currentCss === generatedCss) {
+        console.log('✓ tokens.css matches tokens.json verbatim (0 drift).');
+      } else {
+        console.error('✗ Drift detected between tokens.json and tokens.css:');
+        hasError = true;
+      }
+    }
+
+    if (hasError) {
+      process.exit(1);
+    }
+    console.log('✓ All tokens checks passed successfully.');
+    process.exit(0);
+  }
+
   if (isWrite) {
     const updatedPlan =
       planContent.substring(0, startIndex) +
@@ -318,6 +396,9 @@ function main() {
       planContent.substring(endIndex);
     fs.writeFileSync(PLAN_PATH, updatedPlan, 'utf8');
     console.log('✓ Successfully wrote §4.9 contrast tables to UI-UX-PLAN.md');
+
+    fs.writeFileSync(CSS_PATH, generatedCss, 'utf8');
+    console.log(`✓ Successfully generated tokens.css at ${CSS_PATH}`);
     process.exit(0);
   }
 }
@@ -331,5 +412,6 @@ module.exports = {
   calculateContrast,
   compositeColor,
   generateMarkdownTables,
+  generateTokensCss,
   resolveHex,
 };
