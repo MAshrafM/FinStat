@@ -1,4 +1,4 @@
-# Phase 2B Implementation Plan — Gated Shell and Global Surfaces
+# Phase 2B Implementation Plan — Gated Shell and Global Surfaces (v2 — Revised)
 
 > **Governing Standards:**  
 > - `docs/UI-UX_Plan/UI-UX-PLAN.md` §4.6 (Z-Index Scale), §4.8 (Geometry & 8px Radius Ceiling), §4.9 (Contrast Baseline), §4.16 (Gating Matrix & Dual-Mode Components), §6.3 (Route Allowlist Design), and §6.6 (Phase 2B Scope & Exit Gate).  
@@ -11,24 +11,25 @@
 **Goal:** Establish the gated dark shell, persistent navigation, global overlays, and the route allowlisting mechanism for FinStat. After Phase 2B, all shell components (`Navbar`, `Sidebar`, `AccountSwitcher`, `Toast`, `UndoToast`, `ErrorBoundary`) support the dark design system when gated under `html[data-fs-theme]`, while unmigrated routes remain visually 100% untouched (**Invariant I13**).
 
 **Phase 2B Scope Deliverables:**
-1. **Route Gating & Skip Link (`ProtectedRoute.js`)**:
+1. **Route Gating & Functional Skip Link (`ProtectedRoute.js`)**:
    - Introduce `THEMED_PATTERNS = []` (strictly empty in 2B per §6.3 rule).
    - Implement `isThemedRoute(pathname)` via `matchPath({ path, end: true })`.
    - Add `useLayoutEffect` to conditionally set `document.documentElement.dataset.fsTheme = 'dark'` and clean up on unmount or navigation to legacy routes.
    - Inject the accessible skip-to-content link (`.fs-skip-link`) at `--fs-z-skip` (1500) as the very first focusable element in tab order, linking to `<main id="main-content">`.
+   - Add `tabIndex={-1}` to `<main id="main-content">` and `#main-content:focus { outline: none; }` in `theme.css` to ensure keyboard focus shifts into main content on activation (**WCAG 2.4.1 compliance**).
 2. **Gated Navbar (`Navbar.css`)**:
    - Scope all dark shell styles under `html[data-fs-theme] .navbar`.
-   - Flat `--fs-surface-sunken` (`#0c0d0f`), 1 px bottom border (`--fs-border` `#34383f`), 64 px height, sticky positioning, `z-index: var(--fs-z-sidebar, 900)`.
-   - Primary action button `.nav-button`: flat solid `--fs-action-bg` (`#14b8a6`), `--fs-action-text` (`#101114`), `--fs-radius-sm` (4px), zero gradients, zero shadows.
-   - Viewer badge: neutral surface chip with `--fs-warning` accent and 4 px radius.
+   - Flat `--fs-surface-sunken` (`#0c0d0f`), 1 px bottom border (`--fs-border` `#34383f`), 64 px height, sticky positioning, `z-index: var(--fs-z-nav)` (950, stacking above sidebar 900).
+   - Primary action button `.nav-button`: flat solid `--fs-action-bg` (`#14b8a6`), `--fs-action-text` (`#0d0e10` / `--fs-ink`), `--fs-radius-sm` (4px), zero gradients, zero shadows. Subdued hover state using `--fs-surface-raised` border or `--fs-action-hover`.
+   - Viewer badge: neutral surface chip with `--fs-warning` accent (`#cfa24f`) and `var(--fs-radius-pill)` (status chip allowance per §4.8).
 3. **Gated Sidebar (`Sidebar.css` & `Sidebar.js`)**:
-   - Scope all dark shell styles under `html[data-fs-theme] .sidebar`.
+   - **Step 4a (Verbatim Extraction)**: Move the inline `<style>` block (lines 182–263) from `Sidebar.js` to `Sidebar.css` **verbatim** — keeping the exact same selectors, exact same declarations in the exact same order, including existing legacy hex values (`#6c7ce7`, `#f87171`, `rgba(239, 68, 68, 0.1)`). No hex is replaced or themed at this step, guaranteeing byte-identical legacy rendering (Invariant I13).
+   - **Step 4b (Gated Themed Overrides)**: Scope all dark shell styles under `html[data-fs-theme] .sidebar`.
    - Flat `--fs-surface-sunken` (`#0c0d0f`), 1 px right border (`--fs-border`), 70 px collapsed / 280 px expanded widths, zero linear gradients or box shadows.
    - Active navigation item: `background: var(--fs-surface-raised)` (`#22252a`) plus a 2 px left rule in `var(--fs-text)` (`#f2f3f5`) — strictly no accent hue or wash.
    - Inactive item hover: `background: var(--fs-surface-raised)`, `color: var(--fs-text)`, no translation (`transform: none`).
    - Hub group headers and icons: clean neutral typography (`--fs-text-3`).
-   - Dedicated logout button: flat `--fs-surface-sunken`, 1 px `--fs-border`, text `--fs-negative` (`#e05252`).
-   - Extract legacy inline `<style>` block from `Sidebar.js` into `Sidebar.css` so themed styles cascade cleanly without inline specificity fights.
+   - Dedicated logout button: flat `--fs-surface-sunken`, 1 px `--fs-border`, text `--fs-negative` (`#d97076`).
 4. **Gated Account Switcher (`AccountSwitcher.css` & `AccountSwitcher.js`)**:
    - Scope all dark shell rules under `html[data-fs-theme]`.
    - Account switcher trigger pill: `--fs-surface`, 1 px `--fs-border`, text `--fs-text`, hover `--fs-surface-raised`.
@@ -36,7 +37,7 @@
    - Dropdown menu: `--fs-surface`, 1 px `--fs-border`, radius `--fs-radius-md` (6px), shadow `--fs-shadow`, `z-index: var(--fs-z-dropdown)` (1200).
    - Delegation banner: `--fs-surface` with `--fs-warning` border and `--fs-warning` text; switchback button uses neutral secondary styling.
    - Family Rollup Modal:
-     - Backdrop: `--fs-scrim` (`rgba(16, 17, 20, 0.80)`), `backdrop-filter: none`, `z-index: var(--fs-z-modal)` (1100).
+     - Backdrop: `--fs-scrim` (`rgba(8, 9, 11, 0.72)` per §4.1), `backdrop-filter: none`, `z-index: var(--fs-z-modal)` (1100).
      - Modal content: `--fs-surface`, 1 px `--fs-border`, radius `--fs-radius-lg` (8px maximum ceiling), shadow `--fs-shadow`.
      - Metrics cards and list items: `--fs-surface-raised`, `--fs-border`, `--fs-text`, with `--fs-num` for numeric values.
 5. **Gated Toast Overlays (`Toast.css` & `UndoToast.css`)**:
@@ -47,10 +48,15 @@
 6. **Gated Error Boundary (`ErrorBoundary.css`)**:
    - Scope all styles under `html[data-fs-theme]`.
    - Card: `--fs-surface`, 1 px `--fs-border`, radius `--fs-radius-lg` (8px), shadow `--fs-shadow`, `backdrop-filter: none`.
-   - Debug pre block: `--fs-surface-sunken`, 1 px `--fs-border`, `--fs-font-mono`, `--fs-negative` text.
+   - Debug pre block: `--fs-surface-sunken`, 1 px `--fs-border`, `--fs-font-mono`, `--fs-negative` text (`#d97076`).
    - Action buttons: primary uses solid action block (`--fs-action-bg`), secondary uses raised surface (`--fs-surface-raised`).
 7. **Skip-To-Content CSS (`theme.css`)**:
    - Implement `.fs-skip-link`: off-screen until focused (`top: -9999px; :focus { top: 16px; left: 16px; }`), `z-index: var(--fs-z-skip)` (1500), outline `var(--fs-focus-ring)`.
+   - Add `#main-content:focus { outline: none; }` to prevent entire viewport focus outline.
+8. **Option A Shell Visual Baselines (`shell.spec.js`)**:
+   - Add `shell` project to `playwright.config.js`.
+   - Capture 6 persistent shell baseline images ($N = 6$): legacy desktop, legacy mobile, dark desktop collapsed, dark desktop expanded, dark mobile drawer, dark account dropdown.
+   - Update `verify-baseline-manifest.js` manifest count: $328 \to 334$.
 
 ---
 
@@ -77,11 +83,16 @@
 > - All 10px, 12px, 16px, 20px radii in legacy components must be clamped to `var(--fs-radius-md)` (6px) or `var(--fs-radius-lg)` (8px).
 > - Zero gradients (`linear-gradient`, `radial-gradient`), zero blurs (`backdrop-filter: blur`), zero arbitrary box-shadow glows.
 
+> [!NOTE]
+> ### 4. Interim States in Phase 2B & 3A
+> - **M1 (2B Themed Shell State)**: In Phase 2B shell tests with injected `data-fs-theme="dark"`, the navbar and sidebar render in the new dark theme, while page content below remains in legacy light mode (`.fs-page` is not applied because `THEMED_PATTERNS` is empty). This partial state is intentional and expected for 2B verification; Phase 3A activates `.fs-page` when `/dashboard` is allowlisted.
+> - **M2 (ViewOnlyBanner Interim State)**: `ViewOnlyBanner` renders on every route for view-only users. Per §4.16, it is shadowed in `theme-components.css` (Phase 2D deliverable). Between Phase 3A and 2C, view-only users visiting `/dashboard` will see a dark shell, dark `.fs-page`, and a light `ViewOnlyBanner`. This is an accepted interim state recorded in §10.
+
 ---
 
 ## Proposed Changes & File Modifications
 
-### Component 1: `ProtectedRoute.js` & Skip-to-Content Link
+### Component 1: `ProtectedRoute.js` & Functional Skip Link
 **Path:** `frontend/src/components/ProtectedRoute.js`
 
 - Import `useLayoutEffect` from `react` and `matchPath` from `react-router-dom`.
@@ -112,7 +123,7 @@
     };
   }, [themed]);
   ```
-- In JSX:
+- In JSX (incorporating `tabIndex={-1}` for WCAG 2.4.1 focus management):
   ```jsx
   return (
     <div className="App">
@@ -123,6 +134,7 @@
       <Sidebar />
       <main
         id="main-content"
+        tabIndex={-1}
         className={`main-content ${themed ? 'fs-page' : ''} ${sidebarOpen ? 'sidebar-open' : ''} ${
           isFullBleedPage ? 'full-bleed' : ''
         }`}
@@ -149,7 +161,7 @@ html[data-fs-theme] .navbar {
   border-bottom: 1px solid var(--fs-border);
   color: var(--fs-text);
   box-shadow: none;
-  z-index: var(--fs-z-sidebar);
+  z-index: var(--fs-z-nav); /* 950: stacks above sidebar 900 */
 }
 
 html[data-fs-theme] .navbar-brand a {
@@ -165,13 +177,13 @@ html[data-fs-theme] .role-badge-viewer {
   background: var(--fs-surface-raised);
   border: 1px solid var(--fs-border);
   color: var(--fs-warning);
-  border-radius: var(--fs-radius-sm);
+  border-radius: var(--fs-radius-pill); /* Status chip allowance per §4.8 */
   font-family: var(--fs-font-sans);
 }
 
 html[data-fs-theme] .navbar-links .nav-button {
   background: var(--fs-action-bg);
-  color: var(--fs-action-text);
+  color: var(--fs-action-text); /* #0d0e10 (--fs-ink), 7.76:1 contrast */
   border-radius: var(--fs-radius-sm);
   box-shadow: none;
   font-family: var(--fs-font-sans);
@@ -190,8 +202,15 @@ html[data-fs-theme] .navbar-links .nav-button:hover {
 ### Component 3: `Sidebar.css` & `Sidebar.js` Refactor
 **Paths:** `frontend/src/components/Sidebar.css`, `frontend/src/components/Sidebar.js`
 
-1. **`Sidebar.js`**: Remove the embedded `<style>` block (lines 182–263) and move base styles to `Sidebar.css`. Replace hardcoded hex colors (`#6c7ce7`, `rgba(239, 68, 68, 0.1)`, `#f87171`) with standard class names that inherit or are themed.
-2. **`Sidebar.css`**: Append gated styles under `html[data-fs-theme]`:
+#### Step 4a: Verbatim Extraction (I13 Preservation)
+Move the inline `<style>` block (lines 182–263) from `Sidebar.js` into `Sidebar.css` **verbatim**:
+- Keep exact same class names: `.logo-text`, `.sidebar-content`, `.sidebar.collapsed ...`, `.sidebar-logout-btn`, `.sidebar-hub-group`, `.sidebar-hub-header`, etc.
+- Keep exact legacy colors (`#6c7ce7`, `#f87171`, `rgba(239, 68, 68, 0.1)`, `rgba(255, 255, 255, 0.04)`).
+- Replace dynamic inline opacities with pure CSS `.sidebar.collapsed` / `.sidebar.expanded` selectors (which already exist in `Sidebar.css`).
+- Zero hex or rgba is replaced or themed in this step.
+
+#### Step 4b: Gated Themed Rules (Phase 2B)
+Append gated styles under `html[data-fs-theme]`:
 ```css
 /* ==========================================================================
    Gated Themed Shell — Sidebar (Phase 2B / D22 Attribute-Existence)
@@ -201,7 +220,7 @@ html[data-fs-theme] .sidebar {
   border-right: 1px solid var(--fs-border);
   color: var(--fs-text);
   box-shadow: none;
-  z-index: var(--fs-z-sidebar);
+  z-index: var(--fs-z-sidebar); /* 900 */
 }
 
 html[data-fs-theme] .sidebar-header {
@@ -272,7 +291,7 @@ html[data-fs-theme] .sidebar-description {
 html[data-fs-theme] .sidebar-logout-btn {
   background: transparent;
   border: 1px solid var(--fs-border);
-  color: var(--fs-negative);
+  color: var(--fs-negative); /* #d97076 */
   border-radius: var(--fs-radius-md);
 }
 
@@ -323,12 +342,12 @@ Scope themed rules under `html[data-fs-theme]`:
   - Active row: `background: var(--fs-surface-raised); border: 1px solid var(--fs-border-control);`
   - Role badges (`admin`, `manager`, `viewer`): `background: var(--fs-surface-raised); border: 1px solid var(--fs-border); color: var(--fs-text-2); border-radius: var(--fs-radius-sm);`
 - **Family Rollup Modal**:
-  - Backdrop: `background: var(--fs-scrim); backdrop-filter: none; -webkit-backdrop-filter: none; z-index: var(--fs-z-modal);`
+  - Backdrop: `background: var(--fs-scrim); backdrop-filter: none; -webkit-backdrop-filter: none; z-index: var(--fs-z-modal);` (`rgba(8, 9, 11, 0.72)` per §4.1).
   - Content: `background: var(--fs-surface); border: 1px solid var(--fs-border); border-radius: var(--fs-radius-lg); box-shadow: var(--fs-shadow);`
   - Header: `border-bottom: 1px solid var(--fs-border); color: var(--fs-text);`
   - Close button: `color: var(--fs-text-3);` hover `color: var(--fs-text);`
   - Metrics cards: `background: var(--fs-surface-raised); border: 1px solid var(--fs-border); border-radius: var(--fs-radius-md);`
-  - Metric values: `color: var(--fs-text); font-family: var(--fs-font-sans); font-variant-numeric: tabular-nums;` (debts use `--fs-negative`, net worth uses `--fs-text`).
+  - Metric values: `color: var(--fs-text); font-family: var(--fs-font-sans); font-variant-numeric: tabular-nums;` (debts use `--fs-negative` `#d97076`, net worth uses `--fs-text`).
 
 ---
 
@@ -445,7 +464,7 @@ html[data-fs-theme] .error-boundary-desc {
 html[data-fs-theme] .error-boundary-debug {
   background: var(--fs-surface-sunken);
   border: 1px solid var(--fs-border);
-  color: var(--fs-negative);
+  color: var(--fs-negative); /* #d97076 */
   border-radius: var(--fs-radius-sm);
   font-family: var(--fs-font-mono);
 }
@@ -480,10 +499,10 @@ html[data-fs-theme] .error-boundary-btn-secondary:hover {
 
 ---
 
-### Component 7: `theme.css` Additions (Skip Link)
+### Component 7: `theme.css` Additions (Skip Link & Outline Suppression)
 **Path:** `frontend/src/styles/theme.css`
 
-Add `.fs-skip-link` styles:
+Add `.fs-skip-link` and `#main-content:focus` styles:
 ```css
 /* ==========================================================================
    Skip to Main Content Link (§4.6 / WCAG 2.4.1)
@@ -510,42 +529,78 @@ Add `.fs-skip-link` styles:
 .fs-skip-link:focus-visible {
   top: 16px;
 }
+
+/* Suppress content area focus ring when focus moves programmatically to <main> */
+#main-content:focus {
+  outline: none;
+}
 ```
+
+---
+
+### Component 8: Playwright Shell Project & Baselines (Option A)
+**Paths:** `frontend/playwright.config.js`, `frontend/tests/visual/shell.spec.js`, `frontend/scripts/verify-baseline-manifest.js`
+
+1. **`playwright.config.js`**: Add dedicated `shell` project:
+   ```javascript
+   {
+     name: 'shell',
+     dependencies: ['setup'],
+     testMatch: /shell\.spec\.js/,
+   },
+   ```
+2. **`shell.spec.js`**: Defines 6 persistent shell baseline tests ($N = 6$):
+   - `shell-legacy-desktop`: Desktop at 1440 with legacy shell (attribute absent).
+   - `shell-legacy-mobile`: Mobile at 390 with legacy shell.
+   - `shell-dark-desktop-collapsed`: Desktop at 1440 with `data-fs-theme="dark"` injected (collapsed 70px sidebar, dark navbar).
+   - `shell-dark-desktop-expanded`: Desktop at 1440 with `data-fs-theme="dark"` (expanded 280px sidebar, active item 2px rule, account switcher).
+   - `shell-dark-mobile-drawer`: Mobile at 390 with `data-fs-theme="dark"` (open drawer menu with scrim backdrop).
+   - `shell-dark-account-dropdown`: Account switcher dropdown popover open on dark shell.
+   - Computed style assertions on themed state:
+     - `.navbar` background: `rgb(12, 13, 15)` (`#0c0d0f`)
+     - `.sidebar` background: `rgb(12, 13, 15)` (`#0c0d0f`)
+     - `.sidebar-item.active` background: `rgb(34, 37, 42)` (`#22252a`)
+     - `.sidebar-item.active` border-left: `2px solid rgb(242, 243, 245)` (`--fs-text`)
+3. **Overlay & Error Injection Methods**:
+   - **Toast Test**: Triggered via testing harness invoking `useToast().showToast()` or dispatching a synthetic toast custom event inside the browser context.
+   - **ErrorBoundary Test**: Tested via dedicated test harness route (`/test-error-boundary`) or component test throwing an error inside the boundary.
+4. **Manifest Count Update**:
+   - Update `verify-baseline-manifest.js` count requirement from 328 $\to$ **334** ($325 \text{ routes} + 3 \text{ reference frames} + 6 \text{ shell baselines}$).
+   - Store generated PNGs in `D:\Projects\FinStat-visual-baselines` local repository and commit with SHA-256 hashes in `manifest.json`.
 
 ---
 
 ## Step-by-Step Implementation Sequence
 
-### Step 0: Branch Creation
-- Verify clean git status on `main`.
-- Create and switch to feature branch:
+### Step 0: Branch Creation & Origin Alignment
+- Verify working tree is clean and aligned with `origin/main`:
   ```bash
+  git log --oneline -1 origin/main
+  git status
   git checkout -b phase-ui-2b-shell
   ```
 
-### Step 1: `ProtectedRoute.js` & Skip Link
+### Step 1: `ProtectedRoute.js` & Accessible Skip Link
 - Update `frontend/src/components/ProtectedRoute.js`:
   - Add `THEMED_PATTERNS = []` and `isThemedRoute(pathname)`.
   - Add `useLayoutEffect` to toggle `document.documentElement.dataset.fsTheme = 'dark'` and cleanup on unmount/route change.
   - Add `<a href="#main-content" className="fs-skip-link">Skip to main content</a>` first in JSX.
-  - Add `id="main-content"` and conditional `fs-page` class to `<main>`.
+  - Add `id="main-content"` and `tabIndex={-1}` to `<main>`.
 
-### Step 2: Skip Link CSS in `theme.css`
-- Add `.fs-skip-link` to `frontend/src/styles/theme.css` with `--fs-z-skip` (1500), focus outline, and transition.
+### Step 2: Skip Link & Focus CSS in `theme.css`
+- Add `.fs-skip-link` and `#main-content:focus { outline: none; }` to `frontend/src/styles/theme.css`.
 
 ### Step 3: Gated `Navbar.css`
-- Add `html[data-fs-theme] .navbar` rules to `frontend/src/components/Navbar.css`.
-- Ensure all colors, borders, and radii conform strictly to design tokens.
+- Add `html[data-fs-theme] .navbar` rules to `frontend/src/components/Navbar.css` with `z-index: var(--fs-z-nav)` (950).
 
-### Step 4: Refactor `Sidebar.js` & Gated `Sidebar.css`
-- Extract inline `<style>` block from `frontend/src/components/Sidebar.js` into `Sidebar.css`.
-- Add `html[data-fs-theme] .sidebar` rules in `Sidebar.css`.
-- Active item uses `--fs-surface-raised` and 2 px solid left rule in `--fs-text` (not an accent hue).
-- Update logout button, mobile toggle, and mobile drawer backdrop styles.
+### Step 4a: Verbatim Extraction of `Sidebar.js` Inline Styles
+- Move lines 182–263 from `frontend/src/components/Sidebar.js` into `Sidebar.css` verbatim with existing legacy hexes.
+
+### Step 4b: Gated Themed Rules in `Sidebar.css`
+- Add `html[data-fs-theme] .sidebar` rules in `Sidebar.css`. Active item uses `--fs-surface-raised` and 2 px solid left rule in `--fs-text`.
 
 ### Step 5: Gated `AccountSwitcher.css`
 - Add `html[data-fs-theme]` scoped blocks for trigger pill, avatar, dropdown, and Family Rollup Modal.
-- Enforce 8 px radius ceiling and remove blur/gradient declarations.
 
 ### Step 6: Gated `Toast.css` & `UndoToast.css`
 - Add `html[data-fs-theme]` scoped blocks for `.toast-container`, `.toast-item`, semantic variants, and `.undo-toast-wrapper`.
@@ -555,26 +610,23 @@ Add `.fs-skip-link` styles:
 
 ### Step 8: Unit / Integration Tests
 - Create `frontend/src/components/__tests__/ProtectedRoute.test.js`:
-  - Test skip link presence, `href="#main-content"`, and focus.
-  - Test `isThemedRoute` behavior with empty `THEMED_PATTERNS`.
-  - Test `useLayoutEffect` setting and cleaning up `document.documentElement.dataset.fsTheme`.
-  - Test `.fs-page` class applied to `<main>` when route matches, omitted when not.
-- Run all 48 CRA test suites + existing component tests:
+  - Assert skip link is first focusable element before `<main>`.
+  - Assert `href="#main-content"`.
+  - Assert `tabIndex={-1}` on `<main id="main-content">`.
+  - Assert `useLayoutEffect` toggles `document.documentElement.dataset.fsTheme`.
+- Run CRA test suites:
   ```bash
   cd frontend && npm test -- --watchAll=false
   ```
 
-### Step 9: Dedicated Shell Playwright Verification Spec
-- Create `frontend/tests/visual/shell.spec.js`:
-  - Screenshot 1: Shell in Legacy Mode (un-themed, attribute absent) — verify exact legacy rendering.
-  - Screenshot 2: Shell in Themed Mode (`document.documentElement.dataset.fsTheme = 'dark'` injected) — verify dark navbar, collapsed sidebar (70px), expanded sidebar (280px), active navigation item, and account switcher dropdown.
-  - Screenshot 3: Toast in both legacy and themed modes.
-  - Screenshot 4: ErrorBoundary in both legacy and themed modes.
-  - Capture computed styles:
-    - Navbar background: `#0c0d0f` (sunken)
-    - Sidebar background: `#0c0d0f` (sunken)
-    - Active item background: `#22252a` (raised)
-    - Active item left border: `2px solid rgb(242, 243, 245)` (`--fs-text`)
+### Step 9: Playwright Shell Project & Baselines (Option A)
+- Add `shell` project to `playwright.config.js`.
+- Author `frontend/tests/visual/shell.spec.js`.
+- Generate 6 shell baselines into `D:\Projects\FinStat-visual-baselines` via:
+  ```bash
+  $env:CI="true"; npx playwright test --project=shell --update-snapshots
+  ```
+- Update `frontend/scripts/verify-baseline-manifest.js` count check to 334.
 
 ### Step 10: Complete Verification Suite
 Execute all verification commands sequentially:
@@ -582,7 +634,7 @@ Execute all verification commands sequentially:
 2. `cd frontend && npm run lint:style`
 3. `node frontend/scripts/lint-tones.js`
 4. `node frontend/scripts/lint-ratchet.js`
-5. `node frontend/scripts/ui-coverage.js --assert-allowlist`
+5. `node frontend/scripts/ui-coverage.js --assert-allowlist` (vacuously passes on empty allowlist)
 6. Strict D22 Grep Audit:
    ```powershell
    git grep "data-fs-theme=\"dark\"" frontend/src
@@ -598,28 +650,58 @@ Execute all verification commands sequentially:
    $env:CI="true"; npx playwright test tests/visual/reference.spec.js
    ```
    *Must pass with 0 diff.*
-9. Baseline Manifest Integrity:
+9. Shell Baselines (6 snapshots):
    ```powershell
-   node frontend/scripts/verify-baseline-manifest.js
+   $env:CI="true"; npx playwright test tests/visual/shell.spec.js
    ```
-   *328/328 files verified.*
+   *Must pass with 0 diff.*
+10. Baseline Manifest Integrity:
+    ```powershell
+    node frontend/scripts/verify-baseline-manifest.js
+    ```
+    *334/334 files verified.*
 
 ---
 
-## Verification & Acceptance Criteria (Exit Gate 2B)
+## Required Walkthrough Evidence (Exit Gate 2B)
 
-| Check | Target | Verification Method |
-| :--- | :--- | :--- |
-| **D22 Multi-Theme Invariant** | 0 occurrences of `data-fs-theme="dark"` in CSS outside `tokens.css` | `git grep "data-fs-theme=\"dark\"" frontend/src` |
-| **Route Gating (Invariant I13)** | 325 legacy routes show ZERO visual regression | `npx playwright test tests/visual/visual.spec.js` (325/325 pass) |
-| **Reference Frames** | 3 reference frames show ZERO visual regression | `npx playwright test tests/visual/reference.spec.js` (3/3 pass) |
-| **Manifest Integrity** | 328/328 baseline PNGs verified | `node frontend/scripts/verify-baseline-manifest.js` |
-| **Allowlist Integrity** | Empty allowlist validated against `App.js` | `node frontend/scripts/ui-coverage.js --assert-allowlist` |
-| **Skip-to-Content Link** | First focusable element; links to `#main-content` | `ProtectedRoute.test.js` & tab focus test |
-| **Dark Shell Legibility** | Flat `#0c0d0f`, 1px borders, active item raised + `--fs-text` rule | `shell.spec.js` visual snapshots & computed styles |
-| **Dual-Mode Overlays** | Toast & ErrorBoundary legible in both legacy and dark modes | `shell.spec.js` comparison screenshots |
-| **Lint Ratchet & Tones** | 0 new violations; 0 illegal tone usages | `lint-ratchet.js` & `lint-tones.js` exit code 0 |
-| **Unit Test Suite** | 48 CRA test suites + new `ProtectedRoute.test.js` pass | `npm test -- --watchAll=false` exits 0 |
+The Phase 2B walkthrough must explicitly present the following verifiable evidence:
+
+1. **D22 Multi-Theme Evidence**:
+   - `git grep "data-fs-theme=\"dark\"" frontend/src` &rarr; only `tokens.css` matches.
+   - `grep -E "html\[data-fs-theme\]" frontend/src/components/Navbar.css frontend/src/components/Sidebar.css frontend/src/components/layout/AccountSwitcher.css` &rarr; all selectors use the attribute-existence form.
+   - Zero `html[data-fs-theme="dark"]` outside `tokens.css` across all CSS files.
+2. **I13 Legacy Fidelity Evidence**:
+   - `npx playwright test --project=visual` &rarr; 326 passed (1 setup + 325 route baselines), 0 diff (zero visual regression).
+   - `npx playwright test --project=reference` &rarr; 3 passed, 0 diff.
+   - `node frontend/scripts/verify-baseline-manifest.js` &rarr; 334/334 files verified.
+3. **Shell Functionality Evidence (Themed & Legacy Modes)**:
+   - `npx playwright test --project=shell` &rarr; 6 passed, 0 diff.
+   - Computed style assertions from `shell.spec.js`:
+     - `.navbar` background = `rgb(12, 13, 15)` (`#0c0d0f`)
+     - `.sidebar` background = `rgb(12, 13, 15)` (`#0c0d0f`)
+     - `.sidebar-item.active` background = `rgb(34, 37, 42)` (`#22252a`)
+     - `.sidebar-item.active` border-left = `2px solid rgb(242, 243, 245)` (`--fs-text`)
+   - Account switcher dropdown screenshot in themed mode &rarr; shows dark dropdown on `--fs-surface` with `--fs-shadow`.
+4. **Accessible Skip Link Evidence**:
+   - `ProtectedRoute.test.js` passes with assertions:
+     - Skip link is first focusable element before `<main>`.
+     - `href="#main-content"` is present.
+     - `tabIndex={-1}` is present on `<main>`.
+   - Manual keyboard trace: Tab &rarr; focus on skip link &rarr; Enter &rarr; focus shifts to `<main>` without full-page ring.
+5. **Sidebar Extraction Evidence**:
+   - `git diff main -- frontend/src/components/Sidebar.js` &rarr; confirms removal of inline `<style>` block only; no JSX structure or business logic modifications.
+   - 325-route visual regression passing with 0 diff &rarr; proves verbatim extraction preserved legacy appearance pixel-for-pixel.
+6. **Dual-Mode Overlays**:
+   - Toast screenshots in legacy mode and themed mode.
+   - ErrorBoundary screenshots in legacy mode and themed mode.
+7. **Static Guardrails**:
+   - `npm test -- --watchAll=false` &rarr; all test suites pass.
+   - `npx stylelint "src/styles/*.css"` &rarr; 0 errors.
+   - `node frontend/scripts/lint-tones.js` &rarr; 0 violations.
+   - `node frontend/scripts/lint-ratchet.js` &rarr; 0 regressions.
+   - `node frontend/scripts/ui-coverage.js --assert-allowlist` &rarr; passes on empty allowlist.
+   - `$env:CI="true"; npm run build` &rarr; Compiled successfully.
 
 ---
 
@@ -627,4 +709,3 @@ Execute all verification commands sequentially:
 This plan is preserved simultaneously in:
 - Artifact Directory: `C:\Users\User\.gemini\antigravity\brain\6a81524b-5770-4a5a-a050-161c44267e14/phase_2b_implementation_plan.md`
 - Repository Documentation: `docs/ui-plans/phase_2b_implementation_plan.md`
-
