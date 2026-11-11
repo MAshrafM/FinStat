@@ -52,7 +52,18 @@ test.describe('Visual Regression Suite', () => {
         await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
         await page.evaluate(() => document.fonts.ready).catch(() => {});
         await page.addStyleTag({
-          content: '*, *::before, *::after { transition: none !important; animation: none !important; }',
+          content: `
+            *, *::before, *::after { transition: none !important; animation: none !important; }
+            .toast-container,
+            [class*="toast-container"],
+            .Toastify,
+            .undo-toast-wrapper,
+            [role="status"],
+            [role="alert"] {
+              display: none !important;
+              visibility: hidden !important;
+            }
+          `,
         }).catch(() => {});
         await page.waitForTimeout(500); // settle Chart.js and CSS transitions
 
