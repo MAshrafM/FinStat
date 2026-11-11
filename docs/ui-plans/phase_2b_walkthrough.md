@@ -1,4 +1,4 @@
-# Walkthrough — UI Phase 2B: Gated Shell & Global Surfaces (v2 — Verified)
+# Walkthrough — UI Phase 2B: Gated Shell & Global Surfaces (v3 — Clean Production Architecture)
 
 Phase 2B implements the global application shell styling, accessible keyboard navigation (WCAG 2.4.1), synchronous theme gating under the D22 multi-theme existence pattern, and persistent shell visual regression baselines while rigorously preserving legacy appearance on unmigrated routes (**Invariant I13**).
 
@@ -8,7 +8,7 @@ Phase 2B implements the global application shell styling, accessible keyboard na
 
 - **Deliverables**:
   1. **Accessible Skip Link (WCAG 2.4.1)**: Added `.fs-skip-link` targeting `#main-content` with `tabIndex={-1}` and outline suppression (`#main-content:focus { outline: none; }`) in [`ProtectedRoute.js`](file:///d:/Projects/FinStat/frontend/src/components/ProtectedRoute.js) and [`theme.css`](file:///d:/Projects/FinStat/frontend/src/styles/theme.css).
-  2. **Synchronous Theme Gating (D22 Constraint 2)**: Scoped theme application in `ProtectedRoute.js` using `useLayoutEffect`, setting/deleting `document.documentElement.dataset.fsTheme`. In Phase 2B, `THEMED_PATTERNS = []` remains empty, guaranteeing 0 visual regressions on all 325 unmigrated routes (**Invariant I13**). Hooks order was positioned before early returns, ensuring 100% compliance with React Rules of Hooks.
+  2. **Zero Test-Awareness in Production (Option A)**: Completely removed all `__VISUAL_TEST__` flags and test-conditional checks from [`ProtectedRoute.js`](file:///d:/Projects/FinStat/frontend/src/components/ProtectedRoute.js). Theme application is pure production code using standard `useLayoutEffect`, placed at the top level before early returns in strict accordance with React Rules of Hooks. Theme injection for test baselines is handled 100% test-side in [`shell.spec.js`](file:///d:/Projects/FinStat/frontend/tests/visual/shell.spec.js).
   3. **Sidebar Inline `<style>` Extraction (I13 Preservation)**: Moved the 82-line inline `<style>` block from [`Sidebar.js`](file:///d:/Projects/FinStat/frontend/src/components/Sidebar.js) into [`Sidebar.css`](file:///d:/Projects/FinStat/frontend/src/components/Sidebar.css) verbatim, preserving exact legacy hexes and layout without cascade regression.
   4. **Strict Token Resolution (100% Valid Tokens)**: Audited and resolved all shell token references against [`tokens.json`](file:///d:/Projects/FinStat/frontend/src/styles/tokens.json). Replaced all undefined references (`--fs-warning-subtle`, `--fs-border-focus`, `--fs-surface-hover`, `--fs-text-subtle`, `--fs-text-bright`, `--fs-negative-subtle`) with valid design tokens (`--fs-focus-ring-color`, `--fs-surface-raised`, `--fs-text`, `--fs-text-3`, `--fs-warning`, `--fs-negative`).
   5. **Tooling Enhancement in `lint-tones.js`**: Built an automated undefined-token detector into [`lint-tones.js`](file:///d:/Projects/FinStat/frontend/scripts/lint-tones.js) that scans all 60 CSS files across the codebase against `tokens.json`.
@@ -18,7 +18,7 @@ Phase 2B implements the global application shell styling, accessible keyboard na
      - Captured 6 persistent shell baselines on stable route `/portfolio` (328 $\to$ 334 baselines).
   8. **Local Baseline Repo & Manifest**:
      - Committed the 6 new PNG baselines to `D:\Projects\FinStat-visual-baselines` (commit `ac62e13`).
-     - Regenerated and verified `manifest.json` for all 334 entries.
+     - Verified `manifest.json` for all 334 entries.
   9. **Full Verification Suite Passed**:
      - 49/49 CRA test suites passed (314 tests).
      - 326/326 Visual regression tests passed (0 diff across all 325 unmigrated routes).
@@ -101,9 +101,9 @@ Conducted manual keyboard trace in Chromium (Chrome 130) on authenticated route:
 
 ---
 
-## Evidence Item 3: Synchronous Theme Gating & React Hook Order
+## Evidence Item 3: Synchronous Theme Gating (Option A — Clean Production Code)
 
-In [`ProtectedRoute.js`](file:///d:/Projects/FinStat/frontend/src/components/ProtectedRoute.js), `useLayoutEffect` is placed at the top level before any conditional returns:
+Per the standard established in Phase 2A, production code contains **zero test-awareness or test flags**. In [`ProtectedRoute.js`](file:///d:/Projects/FinStat/frontend/src/components/ProtectedRoute.js), `useLayoutEffect` runs cleanly before paint and before conditional early returns:
 
 ```jsx
 const ProtectedRoute = () => {
@@ -122,18 +122,13 @@ const ProtectedRoute = () => {
 
   // Synchronous theme gating — runs before browser paint, avoiding flash-of-unstyled-shell
   useLayoutEffect(() => {
-    if (typeof window !== 'undefined' && window.__VISUAL_TEST__ && document.documentElement.dataset.fsTheme) {
-      return;
-    }
     if (themed) {
       document.documentElement.dataset.fsTheme = 'dark';
     } else {
       delete document.documentElement.dataset.fsTheme;
     }
     return () => {
-      if (!(typeof window !== 'undefined' && window.__VISUAL_TEST__)) {
-        delete document.documentElement.dataset.fsTheme;
-      }
+      delete document.documentElement.dataset.fsTheme;
     };
   }, [themed]);
 
@@ -143,15 +138,26 @@ const ProtectedRoute = () => {
   ...
 ```
 
+In [`shell.spec.js`](file:///d:/Projects/FinStat/frontend/tests/visual/shell.spec.js), theme injection is managed purely test-side after navigation:
+```javascript
+  await page.goto(TEST_ROUTE, { waitUntil: 'domcontentloaded' });
+  await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => { });
+  await page.locator('.loading-spinner, .loading-spinner-ring').waitFor({ state: 'detached', timeout: 5000 }).catch(() => { });
+
+  if (themed) {
+    await page.evaluate(() => document.documentElement.setAttribute('data-fs-theme', 'dark'));
+  }
+  await page.evaluate(() => document.fonts.ready).catch(() => { });
+```
+
 ---
 
-## Evidence Item 4: D22 Strict Audit (M1)
+## Evidence Item 4: D22 CSS-Only Strict Audit (M1)
 
-Verifying that the value-form selector `data-fs-theme="dark"` is strictly isolated to [`tokens.css`](file:///d:/Projects/FinStat/frontend/src/styles/tokens.css):
+Verifying that the value-form selector `data-fs-theme="dark"` is strictly isolated to [`tokens.css`](file:///d:/Projects/FinStat/frontend/src/styles/tokens.css) across all CSS files:
 
 ```powershell
-$ git grep -F "data-fs-theme=\`"dark\`"" frontend/src
-frontend/src/components/__tests__/ProtectedRoute.test.js:  test('3. correctly sets data-fs-theme="dark" and fs-page class when route matches allowlist', () => {
+$ git grep -F "data-fs-theme=\`"dark\`"" -- "frontend/src/**/*.css"
 frontend/src/styles/tokens.css::root[data-fs-theme="dark"] {
 ```
 
@@ -183,7 +189,7 @@ html[data-fs-theme] .delegation-banner {
 
 html[data-fs-theme] .delegation-banner-badge {
   background: var(--fs-warning);             /* #cfa24f */
-  color: var(--fs-ink);                      /* #101114 (accessible on warning) */
+  color: var(--fs-ink);                      /* #101114 (WCAG AA compliant contrast) */
   border-radius: var(--fs-radius-pill);      /* 9999px */
 }
 
@@ -293,15 +299,15 @@ Playwright execution:
 $ $env:CI="true"; cd frontend; npx playwright test --project=shell
 Running 7 tests using 1 worker
 
-  ok 1 [setup] › fixtures\auth.setup.js:8:1 › authenticate visual test session (10ms)
-  ok 2 [shell] › shell.spec.js:57:3 › Shell Visual Suite (Option A) › shell-legacy-desktop (9.4s)
-  ok 3 [shell] › shell.spec.js:62:3 › Shell Visual Suite (Option A) › shell-legacy-mobile (2.0s)
-  ok 4 [shell] › shell.spec.js:67:3 › Shell Visual Suite (Option A) › shell-dark-desktop-collapsed (2.3s)
-  ok 5 [shell] › shell.spec.js:79:3 › Shell Visual Suite (Option A) › shell-dark-desktop-expanded (3.1s)
-  ok 6 [shell] › shell.spec.js:98:3 › Shell Visual Suite (Option A) › shell-dark-mobile-drawer (2.3s)
-  ok 7 [shell] › shell.spec.js:111:3 › Shell Visual Suite (Option A) › shell-dark-account-dropdown (7.7s)
+  ok 1 [setup] › fixtures\auth.setup.js:8:1 › authenticate visual test session (11ms)
+  ok 2 [shell] › shell.spec.js:51:3 › Shell Visual Suite (Option A) › shell-legacy-desktop (7.8s)
+  ok 3 [shell] › shell.spec.js:56:3 › Shell Visual Suite (Option A) › shell-legacy-mobile (2.4s)
+  ok 4 [shell] › shell.spec.js:61:3 › Shell Visual Suite (Option A) › shell-dark-desktop-collapsed (3.0s)
+  ok 5 [shell] › shell.spec.js:73:3 › Shell Visual Suite (Option A) › shell-dark-desktop-expanded (3.2s)
+  ok 6 [shell] › shell.spec.js:92:3 › Shell Visual Suite (Option A) › shell-dark-mobile-drawer (2.8s)
+  ok 7 [shell] › shell.spec.js:105:3 › Shell Visual Suite (Option A) › shell-dark-account-dropdown (6.6s)
 
-  7 passed (50.6s)
+  7 passed (40.0s)
 ```
 
 ---
@@ -341,16 +347,17 @@ Date:   Wed Nov 11 17:21:03 2026 +0200
  7 files changed, 24 insertions(+)
 ```
 
-Manifest verification:
+Manifest verification via verifier:
 ```powershell
 $ node frontend/scripts/verify-baseline-manifest.js
 334/334 baselines verified successfully.
 ```
 
-Manifest entry count:
+Manifest structure details:
 ```javascript
+// manifest.json is formatted as a dictionary of entries: { [filename]: { bytes, sha256 } }
 const m = require('D:/Projects/FinStat-visual-baselines/manifest.json');
-Object.keys(m).length; // 334
+const totalEntries = Object.keys(m).length; // 334 entries
 ```
 
 ---

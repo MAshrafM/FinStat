@@ -63,7 +63,6 @@ const ERROR_BOUNDARY_HTML = `
 test.describe('Dual-Mode Overlays Visual Evidence', () => {
   test('capture toast and error-boundary in legacy and dark modes', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.addInitScript(() => { window.__VISUAL_TEST__ = true; });
     await page.goto('/portfolio', { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
 
@@ -106,3 +105,4 @@ test.describe('Dual-Mode Overlays Visual Evidence', () => {
     await errorCard.screenshot({ path: path.join(OUT_DIR, 'error-dark-1440.png') });
   });
 });
+

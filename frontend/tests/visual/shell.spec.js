@@ -21,19 +21,13 @@ async function prepareShellPage(page, { width, themed = false }) {
   await page.setViewportSize({ width, height: 900 });
   await setFixedClock(page);
 
-  await page.addInitScript(({ isThemed }) => {
-    window.__VISUAL_TEST__ = true;
-    if (isThemed) {
-      document.documentElement.setAttribute('data-fs-theme', 'dark');
-    }
-  }, { isThemed: themed });
-
   await page.goto(TEST_ROUTE, { waitUntil: 'domcontentloaded' });
+  await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => { });
+  await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner').waitFor({ state: 'detached', timeout: 5000 }).catch(() => { });
+
   if (themed) {
     await page.evaluate(() => document.documentElement.setAttribute('data-fs-theme', 'dark'));
   }
-  await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => { });
-  await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner').waitFor({ state: 'detached', timeout: 5000 }).catch(() => { });
   await page.evaluate(() => document.fonts.ready).catch(() => { });
 
   // Disable CSS transitions/animations for visual determinism

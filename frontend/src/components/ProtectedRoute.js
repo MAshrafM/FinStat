@@ -98,18 +98,13 @@ const ProtectedRoute = () => {
 
   // Synchronous theme gating — runs before browser paint, avoiding flash-of-unstyled-shell
   useLayoutEffect(() => {
-    if (typeof window !== 'undefined' && window.__VISUAL_TEST__ && document.documentElement.dataset.fsTheme) {
-      return;
-    }
     if (themed) {
       document.documentElement.dataset.fsTheme = 'dark';
     } else {
       delete document.documentElement.dataset.fsTheme;
     }
     return () => {
-      if (!(typeof window !== 'undefined' && window.__VISUAL_TEST__)) {
-        delete document.documentElement.dataset.fsTheme;
-      }
+      delete document.documentElement.dataset.fsTheme;
     };
   }, [themed]);
 
