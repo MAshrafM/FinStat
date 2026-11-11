@@ -2440,7 +2440,7 @@ Append one row per sub-phase. Never edit past rows.
 | — | 2026-11-09 | Plan revised to v10.1: progressive `.eslintignore` (116 legacy files) added to prevent CI=true CRA build failures while enabling strict "error" rules for anti-slop; CI visual job removed under A5-Local (D21) in favor of local walkthrough evidence; updated §6.5, §7.1, §9.2, and §6.7–§6.14 task lists. | 1C (Tooling) | None | — |
 | 1C | 2026-11-10 | Tooling, deterministic harness, calc fixtures, and repository hygiene completed: anti-slop stylelint AST + ratchet, lint-tones.js, strict ESLint rules with progressive .eslintignore (116 legacy files; CI=true build clean), testid-guard.js, 8 calculation characterization fixtures, A5-Local visual baseline architecture (325 real PNGs, manifest verified, local git repo, junction linked), zero production UI changes. | 2A (Tokens) | None | eb820d4 (merged to main) |
 | — | 2026-11-10 | Plan revised to v10.2: D22 added (multi-theme door preservation via four constraints in Phases 2A, 3A, 12); §13 deferred entry expanded; Phase 2A tasks amended (scoped tokens.css, attribute-existence selectors); Phase 3A tasks amended (theme-aware chartTheme.js, four chart grey tokens); Phase 12 task clarified (delete conditional, preserve attribute); AGENTS.md gains Multi-theme section. | Phase 2A planning | None | e6600cb (merged to main) |
-| 2A | 2026-11-11 | Token layer and theme primitives completed: tokens.css generated scoped under :root[data-fs-theme="dark"] (D22 constraint 1); theme.css authored (611 lines, zero raw colours); theme-components.css created; index.css gated via html[data-fs-theme] with color-scheme: dark (D22 constraint 2a/2b); entry index.js wired; reference frames linked; http-server static server added (port 3001); test-only toast suppression; baseline set expanded from 325 to 328 (3 canonical reference frame baselines); verify-baseline-manifest.js verified 328/328; CRA 48 suites, a11y, and calculations passed. | 2B (Gated shell) | None | 27a0805 (ready for merge) |
+| 2A | 2026-11-11 | Token layer and theme primitives completed: tokens.css generated scoped under :root[data-fs-theme="dark"] (D22 constraint 1); theme.css authored (611 lines, zero raw colours); theme-components.css created; index.css gated via html[data-fs-theme] with color-scheme: dark (D22 constraint 2a/2b); entry index.js wired; reference frames linked; http-server static server added (port 3001); test-only toast suppression; baseline set expanded from 325 to 328 (3 canonical reference frame baselines); verify-baseline-manifest.js verified 328/328; CRA 48 suites, a11y, and calculations passed. | 2B (Gated shell) | None | c63a12d (merged to main) |
 
 ```
 Sub-phase:   1A
@@ -2495,7 +2495,7 @@ Visual diff: zero on legacy routes (Invariant I13 verified); 3 canonical referen
 Fixtures:    unchanged (8 characterization fixtures passing)
 Screenshots: 328 baselines stored in local repo (A5-Local, D21)
 Branch:      phase-ui-2a-tokens
-Merge SHA:   27a0805 (ready for merge)
+Merge SHA:   c63a12d (merged to main)
 ```
 
 ### Sub-phase note template
