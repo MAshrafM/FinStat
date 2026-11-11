@@ -1028,7 +1028,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **1A** | Repo hygiene, audit, inventory, token and contrast tool | `phase-ui-1a-audit` | ☑ | ☑ |
 | **1B** | Design direction: ramp, typeface, three frames, token freeze | `phase-ui-1b-direction` | ☑ | ☑ |
 | **1C** | Tooling, deterministic harness, calc fixtures, gitignore | `phase-ui-1c-tooling` | ☑ | ☑ |
-| **2A** | `tokens.css` (generated) + `theme.css` + `theme-components.css` + `.fs-page` base + gated body | `phase-ui-2a-tokens` | ☐ | ☐ |
+| **2A** | `tokens.css` (generated) + `theme.css` + `theme-components.css` + `.fs-page` base + gated body | `phase-ui-2a-tokens` | ☑ | ☑ |
 | **2B** | Gated shell and global overlays | `phase-ui-2b-shell` | ☐ | ☐ |
 | **2C** | `App.css` `!important` removal (side branch off 2B, merges before 3A) | `phase-ui-2c-app-css-fix` | ☐ | ☐ |
 | **2D** | Shared component overrides (new file, `.fs-page` scoped) | `phase-ui-2d-shared-css` | ☐ | ☐ |
@@ -1399,30 +1399,30 @@ Decided once, applied in every phase.
 
 New files: `frontend/src/styles/tokens.css`, `frontend/src/styles/theme.css`, and `frontend/src/styles/theme-components.css`.
 
-- [ ] Create `tokens.css` from `tokens.json` with `tokens.js --write`. It contains only the sentinel-delimited `:root` block and no other declarations; the block is generated output, never hand-typed (E4, K1, K6).
-- [ ] Create `theme.css` by hand for the primitives below. Every colour, radius, and shadow comes from a `var()` token; spacing and 1 px borders may be literal. It contains no literal hex, `rgb()`, `hsl()`, or named colour.
-- [ ] Create `theme-components.css` with a header comment and import it directly after `theme.css`. Every shared override lands there from 2D (E1).
-- [ ] Add `@font-face` for the four Plex files with `font-display: swap`, plus the size-adjusted fallback face per family sourced from `local('Arial'), local('Liberation Sans'), local('Helvetica')` and named in `--fs-font-sans` (G6, S2, K9). **No preload at all** — the fallback carries the first paint, and 3A measures CLS.
-- [ ] Add `.fs-page` base scope: `background: var(--fs-bg)`, `color: var(--fs-text)`, `font-family: var(--fs-font-sans)`, font smoothing, scrollbar styling, and `min-height: calc(100vh - 64px)`. `.main-content.full-bleed` keeps zero padding.
-- [ ] Add `.fs-page` typography: `h1`–`h4` at weights 500/600, `.fs-page-title` as **plain** `color: var(--fs-text)` with no `background-clip`, optional `.fs-eyebrow` at `--fs-text-3` with normal tracking, `.fs-page-subtitle`, `.fs-muted`.
-- [ ] Add `.fs-surface`, `.fs-surface-raised`, `.fs-surface-sunken`, `.fs-card`, `.fs-panel`, `.fs-panel-head` — opaque, 1 px `--fs-border`, radii 4/6/8. No blur, no alpha surfaces.
-- [ ] Add `.fs-btn`, `.fs-btn-primary` (solid action block), `.fs-btn-secondary`, `.fs-btn-ghost`, `.fs-btn-danger`, `.fs-btn-sm`, plus hover/active/disabled/focus states. No gradient, no shadow.
-- [ ] Add `.fs-input`, `.fs-select`, `.fs-textarea`, `.fs-label`, `.fs-help`, `.fs-error`, with `--fs-border-control` on the boundary, `--fs-radius-sm`, and `::placeholder` set to `--fs-text-3`.
-- [ ] Add `.fs-badge` as a neutral chip plus three semantic modifiers that use **tone text + a 2 px left rule**. No tinted fills.
-- [ ] Add `.fs-table` (header on `--fs-surface-sunken`, 1 px dividers, hover on `--fs-surface-raised`, sticky head option), `.fs-num` (proportional + tabular).
-- [ ] Add `.fs-empty`, `.fs-skeleton`, `.fs-loading`, `.fs-error` state blocks.
-- [ ] Add `.fs-tabs`, `.fs-pill`, `.fs-progress` (monochrome) plus `.fs-progress--warning` and `.fs-progress--negative`; those modifiers are the only meter tone entry point.
-- [ ] Add `.fs-page-head` (optional eyebrow slot, title, subtitle, actions), `.fs-grid`, `.fs-stack`.
-- [ ] Add `@media (prefers-reduced-motion: reduce)` and the `forced-colors` block from §4.11. There is no `@supports` block.
-- [ ] Add the native-control rules from §4.14 (`select`, `option`, date and time inputs).
-- [ ] Add `.fs-table-scroll { padding: 5px; }` and the inset-ring variant from §4.6 (G4).
-- [ ] Point the three reference frames at the real token files: replace their inline token block with `<link rel="stylesheet" href="../../../frontend/src/styles/tokens.css">`, `<link rel="stylesheet" href="../../../frontend/src/styles/theme.css">`, and `<link rel="stylesheet" href="../../../frontend/src/styles/theme-components.css">`, and add one Playwright fixture that screenshots each frame, so a token edit produces a diff (G7).
-- [ ] Import `tokens.css`, `theme.css`, and `theme-components.css` once in `frontend/src/index.js`, in that order, after `index.css`.
-- [ ] In `index.css`, add **only** the two gated rules from §4.14: `color-scheme` and the `body` background/colour under `html[data-fs-theme="dark"]`. Do **not** change the default `body` values.
-- [ ] Verify `/dashboard` renders unchanged and every unmigrated route still looks light.
-- [ ] D22 constraint 1 — tokens.css scoped block: tokens.js --write emits :root[data-fs-theme="dark"] { ... }, not flat :root { ... }. Verify with grep "^:root" frontend/src/styles/tokens.css → matches :root[data-fs-theme="dark"], not bare :root.
-- [ ] D22 constraint 2a — index.css body rule: the gated body rule uses html[data-fs-theme] body { ... } (attribute-existence), not html[data-fs-theme="dark"] body. Verify with grep "data-fs-theme" frontend/src/index.css → shows [data-fs-theme] on the body rule. Specificity is (0,1,2) in both forms — no cascade change.
-- [ ] D22 constraint 2b — selector audit: grep all of frontend/src/styles/tokens.css, theme.css, theme-components.css, and index.css for data-fs-theme="dark" and confirm each occurrence is :root[data-fs-theme="dark"] inside tokens.css (specific theme token block). Any occurrence elsewhere (html[data-fs-theme="dark"] in theme.css, theme-components.css, or index.css) is a D22 violation and must be converted to [data-fs-theme].
+- [x] Create `tokens.css` from `tokens.json` with `tokens.js --write`. It contains only the sentinel-delimited `:root` block and no other declarations; the block is generated output, never hand-typed (E4, K1, K6).
+- [x] Create `theme.css` by hand for the primitives below. Every colour, radius, and shadow comes from a `var()` token; spacing and 1 px borders may be literal. It contains no literal hex, `rgb()`, `hsl()`, or named colour.
+- [x] Create `theme-components.css` with a header comment and import it directly after `theme.css`. Every shared override lands there from 2D (E1).
+- [x] Add `@font-face` for the four Plex files with `font-display: swap`, plus the size-adjusted fallback face per family sourced from `local('Arial'), local('Liberation Sans'), local('Helvetica')` and named in `--fs-font-sans` (G6, S2, K9). **No preload at all** — the fallback carries the first paint, and 3A measures CLS.
+- [x] Add `.fs-page` base scope: `background: var(--fs-bg)`, `color: var(--fs-text)`, `font-family: var(--fs-font-sans)`, font smoothing, scrollbar styling, and `min-height: calc(100vh - 64px)`. `.main-content.full-bleed` keeps zero padding.
+- [x] Add `.fs-page` typography: `h1`–`h4` at weights 500/600, `.fs-page-title` as **plain** `color: var(--fs-text)` with no `background-clip`, optional `.fs-eyebrow` at `--fs-text-3` with normal tracking, `.fs-page-subtitle`, `.fs-muted`.
+- [x] Add `.fs-surface`, `.fs-surface-raised`, `.fs-surface-sunken`, `.fs-card`, `.fs-panel`, `.fs-panel-head` — opaque, 1 px `--fs-border`, radii 4/6/8. No blur, no alpha surfaces.
+- [x] Add `.fs-btn`, `.fs-btn-primary` (solid action block), `.fs-btn-secondary`, `.fs-btn-ghost`, `.fs-btn-danger`, `.fs-btn-sm`, plus hover/active/disabled/focus states. No gradient, no shadow.
+- [x] Add `.fs-input`, `.fs-select`, `.fs-textarea`, `.fs-label`, `.fs-help`, `.fs-error`, with `--fs-border-control` on the boundary, `--fs-radius-sm`, and `::placeholder` set to `--fs-text-3`.
+- [x] Add `.fs-badge` as a neutral chip plus three semantic modifiers that use **tone text + a 2 px left rule**. No tinted fills.
+- [x] Add `.fs-table` (header on `--fs-surface-sunken`, 1 px dividers, hover on `--fs-surface-raised`, sticky head option), `.fs-num` (proportional + tabular).
+- [x] Add `.fs-empty`, `.fs-skeleton`, `.fs-loading`, `.fs-error` state blocks.
+- [x] Add `.fs-tabs`, `.fs-pill`, `.fs-progress` (monochrome) plus `.fs-progress--warning` and `.fs-progress--negative`; those modifiers are the only meter tone entry point.
+- [x] Add `.fs-page-head` (optional eyebrow slot, title, subtitle, actions), `.fs-grid`, `.fs-stack`.
+- [x] Add `@media (prefers-reduced-motion: reduce)` and the `forced-colors` block from §4.11. There is no `@supports` block.
+- [x] Add the native-control rules from §4.14 (`select`, `option`, date and time inputs).
+- [x] Add `.fs-table-scroll { padding: 5px; }` and the inset-ring variant from §4.6 (G4).
+- [x] Point the three reference frames at the real token files: replace their inline token block with `<link rel="stylesheet" href="../../../frontend/src/styles/tokens.css">`, `<link rel="stylesheet" href="../../../frontend/src/styles/theme.css">`, and `<link rel="stylesheet" href="../../../frontend/src/styles/theme-components.css">`, and add one Playwright fixture that screenshots each frame, so a token edit produces a diff (G7).
+- [x] Import `tokens.css`, `theme.css`, and `theme-components.css` once in `frontend/src/index.js`, in that order, after `index.css`.
+- [x] In `index.css`, add **only** the two gated rules from §4.14: `color-scheme` and the `body` background/colour under `html[data-fs-theme]`. Do **not** change the default `body` values.
+- [x] Verify `/dashboard` renders unchanged and every unmigrated route still looks light.
+- [x] D22 constraint 1 — tokens.css scoped block: tokens.js --write emits :root[data-fs-theme="dark"] { ... }, not flat :root { ... }. Verify with grep "^:root" frontend/src/styles/tokens.css → matches :root[data-fs-theme="dark"], not bare :root.
+- [x] D22 constraint 2a — index.css body rule: the gated body rule uses html[data-fs-theme] body { ... } (attribute-existence), not html[data-fs-theme="dark"] body. Verify with grep "data-fs-theme" frontend/src/index.css → shows [data-fs-theme] on the body rule. Specificity is (0,1,2) in both forms — no cascade change.
+- [x] D22 constraint 2b — selector audit: grep all of frontend/src/styles/tokens.css, theme.css, theme-components.css, and index.css for data-fs-theme="dark" and confirm each occurrence is :root[data-fs-theme="dark"] inside tokens.css (specific theme token block). Any occurrence elsewhere (html[data-fs-theme="dark"] in theme.css, theme-components.css, or index.css) is a D22 violation and must be converted to [data-fs-theme].
 
 **Exit gate 2A:** `tokens.css`, `theme.css`, and `theme-components.css` compile and are imported; `tokens.js --check` passes for `tokens.css` and §4.9; `theme.css` and `theme-components.css` contain no literal colour; no route changes appearance; toggling `document.documentElement.dataset.fsTheme` on any page changes `body` background and text colour only; the three frames load all three files and are covered by the visual fixture.
 
@@ -2440,6 +2440,7 @@ Append one row per sub-phase. Never edit past rows.
 | — | 2026-11-09 | Plan revised to v10.1: progressive `.eslintignore` (116 legacy files) added to prevent CI=true CRA build failures while enabling strict "error" rules for anti-slop; CI visual job removed under A5-Local (D21) in favor of local walkthrough evidence; updated §6.5, §7.1, §9.2, and §6.7–§6.14 task lists. | 1C (Tooling) | None | — |
 | 1C | 2026-11-10 | Tooling, deterministic harness, calc fixtures, and repository hygiene completed: anti-slop stylelint AST + ratchet, lint-tones.js, strict ESLint rules with progressive .eslintignore (116 legacy files; CI=true build clean), testid-guard.js, 8 calculation characterization fixtures, A5-Local visual baseline architecture (325 real PNGs, manifest verified, local git repo, junction linked), zero production UI changes. | 2A (Tokens) | None | eb820d4 (merged to main) |
 | — | 2026-11-10 | Plan revised to v10.2: D22 added (multi-theme door preservation via four constraints in Phases 2A, 3A, 12); §13 deferred entry expanded; Phase 2A tasks amended (scoped tokens.css, attribute-existence selectors); Phase 3A tasks amended (theme-aware chartTheme.js, four chart grey tokens); Phase 12 task clarified (delete conditional, preserve attribute); AGENTS.md gains Multi-theme section. | Phase 2A planning | None | e6600cb (merged to main) |
+| 2A | 2026-11-11 | Token layer and theme primitives completed: tokens.css generated scoped under :root[data-fs-theme="dark"] (D22 constraint 1); theme.css authored (611 lines, zero raw colours); theme-components.css created; index.css gated via html[data-fs-theme] with color-scheme: dark (D22 constraint 2a/2b); entry index.js wired; reference frames linked; http-server static server added (port 3001); test-only toast suppression; baseline set expanded from 325 to 328 (3 canonical reference frame baselines); verify-baseline-manifest.js verified 328/328; CRA 48 suites, a11y, and calculations passed. | 2B (Gated shell) | None | 27a0805 (ready for merge) |
 
 ```
 Sub-phase:   1A
@@ -2481,6 +2482,20 @@ Fixtures:    unchanged (8 characterization fixtures established)
 Screenshots: 325 real baselines stored in local repo (A5-Local, D21)
 Branch:      phase-ui-1c-tooling
 Merge SHA:   eb820d4 (merged to main)
+```
+
+```
+Sub-phase:   2A
+Status:      done
+Done:        tokens.css (scoped :root[data-fs-theme="dark"]), theme.css (611 lines, IBM Plex fonts + fallbacks, zero raw colours), theme-components.css stub, index.css attribute-existence gated body with color-scheme: dark, reference frames load real tokens, multi-server Playwright harness (3000 app, 3001 static), test-only toast suppression, 325 route baselines regenerated and verified (0 diff), 3 reference frame baselines captured at 1440px (total 328), manifest 328/328 verified, 48 src/ + 2 tests/ suites green.
+Next:        2B — Gated shell and global surfaces
+Blocked by:  None
+Allowlist:   none (token & primitive phase; zero production routing changes)
+Visual diff: zero on legacy routes (Invariant I13 verified); 3 canonical reference baselines added
+Fixtures:    unchanged (8 characterization fixtures passing)
+Screenshots: 328 baselines stored in local repo (A5-Local, D21)
+Branch:      phase-ui-2a-tokens
+Merge SHA:   27a0805 (ready for merge)
 ```
 
 ### Sub-phase note template
