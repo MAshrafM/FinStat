@@ -94,6 +94,25 @@ const ProtectedRoute = () => {
     [location.pathname]
   );
 
+  const themed = isThemedRoute(location.pathname);
+
+  // Synchronous theme gating — runs before browser paint, avoiding flash-of-unstyled-shell
+  useLayoutEffect(() => {
+    if (typeof window !== 'undefined' && window.__VISUAL_TEST__ && document.documentElement.dataset.fsTheme) {
+      return;
+    }
+    if (themed) {
+      document.documentElement.dataset.fsTheme = 'dark';
+    } else {
+      delete document.documentElement.dataset.fsTheme;
+    }
+    return () => {
+      if (!(typeof window !== 'undefined' && window.__VISUAL_TEST__)) {
+        delete document.documentElement.dataset.fsTheme;
+      }
+    };
+  }, [themed]);
+
   if (!token) {
     return <Navigate to="/" replace />;
   }
@@ -113,25 +132,6 @@ const ProtectedRoute = () => {
   const isFullBleedPage =
     location.pathname.startsWith('/portfolio') ||
     location.pathname.startsWith('/real-estate');
-
-  const themed = isThemedRoute(location.pathname);
-
-  // Synchronous theme gating — runs before browser paint, avoiding flash-of-unstyled-shell
-  useLayoutEffect(() => {
-    if (typeof window !== 'undefined' && window.__VISUAL_TEST__ && document.documentElement.dataset.fsTheme) {
-      return;
-    }
-    if (themed) {
-      document.documentElement.dataset.fsTheme = 'dark';
-    } else {
-      delete document.documentElement.dataset.fsTheme;
-    }
-    return () => {
-      if (!(typeof window !== 'undefined' && window.__VISUAL_TEST__)) {
-        delete document.documentElement.dataset.fsTheme;
-      }
-    };
-  }, [themed]);
 
   return (
     <div className="App">

@@ -16,8 +16,27 @@ const fs = require('fs');
 const path = require('path');
 
 const FRONTEND_SRC = path.resolve(__dirname, '../src');
+const TOKENS_JSON_PATH = path.resolve(__dirname, '../src/styles/tokens.json');
 
-// Exempt files (relative to frontend/src or basename)
+// Extract all valid tokens defined in tokens.json
+function loadValidTokens() {
+  if (!fs.existsSync(TOKENS_JSON_PATH)) return new Set();
+  const tokensData = JSON.parse(fs.readFileSync(TOKENS_JSON_PATH, 'utf8'));
+  const validSet = new Set();
+  function traverse(obj) {
+    for (const key of Object.keys(obj)) {
+      if (key.startsWith('--fs-')) {
+        validSet.add(key);
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        traverse(obj[key]);
+      }
+    }
+  }
+  traverse(tokensData);
+  return validSet;
+}
+
+// Exempt files for tone/accent ban (they define or host shared theme rules)
 const EXEMPT_BASENAMES = new Set([
   'tokens.css',
   'theme.css',
@@ -25,38 +44,41 @@ const EXEMPT_BASENAMES = new Set([
 ]);
 
 const FORBIDDEN_PATTERN = /var\(--fs-(?:positive|negative|warning|accent(?:-hover|-active|-text)?)\)/g;
+const TOKEN_VAR_PATTERN = /var\((--fs-[a-zA-Z0-9_-]+)/g;
 
-function findCssFiles(dir, fileList = []) {
+function findAllCssFiles(dir, fileList = []) {
   if (!fs.existsSync(dir)) return fileList;
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      findCssFiles(fullPath, fileList);
+      findAllCssFiles(fullPath, fileList);
     } else if (entry.isFile() && entry.name.endsWith('.css')) {
-      if (!EXEMPT_BASENAMES.has(entry.name)) {
-        fileList.push(fullPath);
-      }
+      fileList.push(fullPath);
     }
   }
   return fileList;
 }
 
 function lintTones() {
-  const cssFiles = findCssFiles(FRONTEND_SRC);
-  const violations = [];
+  const allCssFiles = findAllCssFiles(FRONTEND_SRC);
+  const unexemptCssFiles = allCssFiles.filter(f => !EXEMPT_BASENAMES.has(path.basename(f)));
+  const validTokens = loadValidTokens();
 
-  for (const filePath of cssFiles) {
+  const toneViolations = [];
+  const undefinedViolations = [];
+
+  // Check 1: Forbidden tone/accent tokens in unexempt page CSS files
+  for (const filePath of unexemptCssFiles) {
     const relPath = path.relative(path.resolve(__dirname, '..'), filePath).replace(/\\/g, '/');
     const content = fs.readFileSync(filePath, 'utf8');
     const lines = content.split(/\r?\n/);
 
     lines.forEach((line, index) => {
       let match;
-      // Reset lastIndex for global regex
       FORBIDDEN_PATTERN.lastIndex = 0;
       while ((match = FORBIDDEN_PATTERN.exec(line)) !== null) {
-        violations.push({
+        toneViolations.push({
           file: relPath,
           line: index + 1,
           token: match[0],
@@ -66,17 +88,59 @@ function lintTones() {
     });
   }
 
-  if (violations.length > 0) {
-    console.error(`\n❌ [lint-tones] Found ${violations.length} forbidden tone/accent token reference(s):`);
-    for (const v of violations) {
+  // Check 2: Undefined tokens across ALL CSS files (including theme and theme-components)
+  for (const filePath of allCssFiles) {
+    // tokens.css is the token generator output; skip definitions
+    if (path.basename(filePath) === 'tokens.css') continue;
+    const relPath = path.relative(path.resolve(__dirname, '..'), filePath).replace(/\\/g, '/');
+    const content = fs.readFileSync(filePath, 'utf8');
+    const lines = content.split(/\r?\n/);
+
+    lines.forEach((line, index) => {
+      let match;
+      TOKEN_VAR_PATTERN.lastIndex = 0;
+      while ((match = TOKEN_VAR_PATTERN.exec(line)) !== null) {
+        const tokenName = match[1];
+        if (!validTokens.has(tokenName)) {
+          undefinedViolations.push({
+            file: relPath,
+            line: index + 1,
+            token: tokenName,
+            snippet: line.trim(),
+          });
+        }
+      }
+    });
+  }
+
+  let hasError = false;
+
+  if (toneViolations.length > 0) {
+    hasError = true;
+    console.error(`\n❌ [lint-tones] Found ${toneViolations.length} forbidden tone/accent token reference(s):`);
+    for (const v of toneViolations) {
       console.error(`   ${v.file}:${v.line} -> ${v.token}`);
       console.error(`      ${v.snippet}`);
     }
     console.error('\nFix: Use semantic utility classes from theme.css / theme-components.css, or neutral tokens.\n');
+  }
+
+  if (undefinedViolations.length > 0) {
+    hasError = true;
+    console.error(`\n❌ [lint-tones] Found ${undefinedViolations.length} undefined design token reference(s):`);
+    for (const v of undefinedViolations) {
+      console.error(`   ${v.file}:${v.line} -> ${v.token}`);
+      console.error(`      ${v.snippet}`);
+    }
+    console.error('\nFix: Use valid tokens defined in tokens.json, or propose a token addition in design tokens.\n');
+  }
+
+  if (hasError) {
     process.exit(1);
   }
 
-  console.log(`✓ [lint-tones] Scanned ${cssFiles.length} CSS files: 0 forbidden tone or accent references.`);
+  console.log(`✓ [lint-tones] Scanned ${unexemptCssFiles.length} page CSS files for tone scoping: 0 violations.`);
+  console.log(`✓ [lint-tones] Scanned ${allCssFiles.length} total CSS files against tokens.json: 0 undefined tokens.`);
   process.exit(0);
 }
 

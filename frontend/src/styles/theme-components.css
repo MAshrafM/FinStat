@@ -24,12 +24,12 @@ html[data-fs-theme] .navbar-brand a {
 }
 
 html[data-fs-theme] .navbar-brand a:hover {
-  color: var(--fs-text-bright);
+  color: var(--fs-text);
 }
 
 html[data-fs-theme] .role-badge-viewer {
-  background: var(--fs-warning-subtle);
-  border: 1px solid var(--fs-warning-border);
+  background: var(--fs-surface-raised);
+  border: 1px solid var(--fs-warning);
   color: var(--fs-warning);
   border-radius: var(--fs-radius-pill);
 }
@@ -74,12 +74,12 @@ html[data-fs-theme] .logo-text {
 }
 
 html[data-fs-theme] .menu-icon {
-  color: var(--fs-text-subtle);
+  color: var(--fs-text-3);
 }
 
 html[data-fs-theme] .sidebar-hub-header {
   background: transparent;
-  color: var(--fs-text-subtle);
+  color: var(--fs-text-3);
   border-radius: var(--fs-radius-sm);
   font-family: var(--fs-font-sans);
 }
@@ -90,11 +90,11 @@ html[data-fs-theme] .sidebar-hub-header:hover {
 }
 
 html[data-fs-theme] .sidebar-hub-chevron {
-  color: var(--fs-text-subtle);
+  color: var(--fs-text-3);
 }
 
 html[data-fs-theme] .sidebar-item {
-  color: var(--fs-text-muted);
+  color: var(--fs-text-3);
   border-radius: var(--fs-radius-md);
   border-left: 2px solid transparent;
 }
@@ -129,7 +129,7 @@ html[data-fs-theme] .sidebar-title {
 }
 
 html[data-fs-theme] .sidebar-description {
-  color: var(--fs-text-subtle);
+  color: var(--fs-text-3);
   font-family: var(--fs-font-sans);
 }
 
@@ -141,8 +141,8 @@ html[data-fs-theme] .sidebar-logout-btn {
 }
 
 html[data-fs-theme] .sidebar-logout-btn:hover {
-  background: var(--fs-negative-subtle);
-  border-color: var(--fs-negative-border);
+  background: var(--fs-surface-raised);
+  border-color: var(--fs-negative);
   color: var(--fs-negative);
 }
 
@@ -183,7 +183,7 @@ html[data-fs-theme] .account-switcher-avatar {
 }
 
 html[data-fs-theme] .account-switcher-chevron {
-  color: var(--fs-text-subtle);
+  color: var(--fs-text-3);
 }
 
 html[data-fs-theme] .account-switcher-dropdown {
@@ -202,37 +202,37 @@ html[data-fs-theme] .account-switcher-item {
 
 html[data-fs-theme] .account-switcher-item:hover {
   background: var(--fs-surface-raised);
-  color: var(--fs-text-bright);
+  color: var(--fs-text);
 }
 
 html[data-fs-theme] .account-switcher-item.active {
   background: var(--fs-surface-raised);
-  color: var(--fs-text-bright);
+  color: var(--fs-text);
 }
 
 html[data-fs-theme] .delegation-banner {
-  background: var(--fs-warning-subtle);
-  border: 1px solid var(--fs-warning-border);
+  background: var(--fs-surface-raised);
+  border: 1px solid var(--fs-warning);
   color: var(--fs-warning);
   border-radius: var(--fs-radius-sm);
 }
 
 html[data-fs-theme] .delegation-banner-badge {
   background: var(--fs-warning);
-  color: var(--fs-action-text);
+  color: var(--fs-ink);
   border-radius: var(--fs-radius-pill);
 }
 
 html[data-fs-theme] .delegation-banner-switchback-btn {
-  background: var(--fs-surface-raised);
-  border: 1px solid var(--fs-warning-border);
-  color: var(--fs-text);
+  background: var(--fs-surface-sunken);
+  border: 1px solid var(--fs-warning);
+  color: var(--fs-warning);
   border-radius: var(--fs-radius-sm);
 }
 
 html[data-fs-theme] .delegation-banner-switchback-btn:hover {
-  background: var(--fs-surface-hover);
-  color: var(--fs-text-bright);
+  background: var(--fs-warning);
+  color: var(--fs-ink);
 }
 
 html[data-fs-theme] .family-rollup-modal-backdrop {
@@ -258,7 +258,7 @@ html[data-fs-theme] .family-rollup-modal-title {
 }
 
 html[data-fs-theme] .family-rollup-close-btn {
-  color: var(--fs-text-subtle);
+  color: var(--fs-text-3);
 }
 
 html[data-fs-theme] .family-rollup-close-btn:hover {
@@ -272,7 +272,7 @@ html[data-fs-theme] .rollup-metric-card {
 }
 
 html[data-fs-theme] .rollup-metric-label {
-  color: var(--fs-text-subtle);
+  color: var(--fs-text-3);
   font-family: var(--fs-font-sans);
 }
 
@@ -345,17 +345,17 @@ html[data-fs-theme] .toast-icon-warning {
 }
 
 html[data-fs-theme] .toast-info {
-  border-left: 3px solid var(--fs-border-focus);
+  border-left: 3px solid var(--fs-focus-ring-color);
   background: var(--fs-surface);
   color: var(--fs-text);
 }
 
 html[data-fs-theme] .toast-icon-info {
-  color: var(--fs-text-subtle);
+  color: var(--fs-text-3);
 }
 
 html[data-fs-theme] .toast-close-btn {
-  color: var(--fs-text-subtle);
+  color: var(--fs-text-3);
   border-radius: var(--fs-radius-sm);
 }
 
@@ -394,7 +394,7 @@ html[data-fs-theme] .btn-undo-action:hover:not(:disabled) {
 }
 
 html[data-fs-theme] .btn-undo-dismiss {
-  color: var(--fs-text-subtle);
+  color: var(--fs-text-3);
 }
 
 html[data-fs-theme] .btn-undo-dismiss:hover {
@@ -424,8 +424,8 @@ html[data-fs-theme] .error-boundary-card {
 }
 
 html[data-fs-theme] .error-boundary-icon-badge {
-  background: var(--fs-negative-subtle);
-  border: 1px solid var(--fs-negative-border);
+  background: var(--fs-surface-raised);
+  border: 1px solid var(--fs-negative);
 }
 
 html[data-fs-theme] .error-boundary-icon {
@@ -438,7 +438,7 @@ html[data-fs-theme] .error-boundary-title {
 }
 
 html[data-fs-theme] .error-boundary-desc {
-  color: var(--fs-text-subtle);
+  color: var(--fs-text-3);
   font-family: var(--fs-font-sans);
 }
 
@@ -472,7 +472,7 @@ html[data-fs-theme] .error-boundary-btn-secondary {
 }
 
 html[data-fs-theme] .error-boundary-btn-secondary:hover {
-  background: var(--fs-surface-hover);
-  color: var(--fs-text-bright);
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
   transform: none;
 }

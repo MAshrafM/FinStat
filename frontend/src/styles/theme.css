@@ -108,7 +108,7 @@
   font-weight: var(--fs-weight-semibold);
   border-radius: var(--fs-radius-md);
   text-decoration: none;
-  border: 2px solid var(--fs-border-focus);
+  border: 2px solid var(--fs-focus-ring-color);
 }
 
 .fs-skip-link:focus,

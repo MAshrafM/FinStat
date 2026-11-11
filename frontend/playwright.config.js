@@ -41,6 +41,11 @@ module.exports = defineConfig({
       testMatch: /shell\.spec\.js/,
     },
     {
+      name: 'overlays',
+      dependencies: ['setup'],
+      testMatch: /overlays\.spec\.js/,
+    },
+    {
       name: 'pr-subset',
       dependencies: ['setup'],
       testMatch: /visual\.spec\.js/,
