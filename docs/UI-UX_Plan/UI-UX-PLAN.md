@@ -2442,6 +2442,7 @@ Append one row per sub-phase. Never edit past rows.
 | 1C | 2026-11-10 | Tooling, deterministic harness, calc fixtures, and repository hygiene completed: anti-slop stylelint AST + ratchet, lint-tones.js, strict ESLint rules with progressive .eslintignore (116 legacy files; CI=true build clean), testid-guard.js, 8 calculation characterization fixtures, A5-Local visual baseline architecture (325 real PNGs, manifest verified, local git repo, junction linked), zero production UI changes. | 2A (Tokens) | None | eb820d4 (merged to main) |
 | — | 2026-11-10 | Plan revised to v10.2: D22 added (multi-theme door preservation via four constraints in Phases 2A, 3A, 12); §13 deferred entry expanded; Phase 2A tasks amended (scoped tokens.css, attribute-existence selectors); Phase 3A tasks amended (theme-aware chartTheme.js, four chart grey tokens); Phase 12 task clarified (delete conditional, preserve attribute); AGENTS.md gains Multi-theme section. | Phase 2A planning | None | e6600cb (merged to main) |
 | 2A | 2026-11-11 | Token layer and theme primitives completed: tokens.css generated scoped under :root[data-fs-theme="dark"] (D22 constraint 1); theme.css authored (611 lines, zero raw colours); theme-components.css created; index.css gated via html[data-fs-theme] with color-scheme: dark (D22 constraint 2a/2b); entry index.js wired; reference frames linked; http-server static server added (port 3001); test-only toast suppression; baseline set expanded from 325 to 328 (3 canonical reference frame baselines); verify-baseline-manifest.js verified 328/328; CRA 48 suites, a11y, and calculations passed. | 2B (Gated shell) | None | c63a12d (merged to main) |
+| 2B | 2026-11-11 | Gated shell, accessible skip link, and global surfaces completed: WCAG 2.4.1 skip link with outline suppression; useLayoutEffect synchronous theme gating without test hooks (Option A); Sidebar.js inline styles extracted verbatim to Sidebar.css (I13 fidelity); all dark shell component overrides in theme-components.css (Navbar, Sidebar, AccountSwitcher, Toast, UndoToast, ErrorBoundary); 0 undefined tokens across codebase; automated undefined-token detector in lint-tones.js; Playwright shell project added (Option A), 6 persistent shell baselines captured (total 334); verify-baseline-manifest.js verified 334/334; 325 visual routes + 3 reference frames + 7 shell tests + 49 CRA suites passed at 0 diff. | 2C (App.css fix) | None | afc5248 (merged to main) |
 
 ```
 Sub-phase:   1A
@@ -2510,7 +2511,7 @@ Visual diff: zero on legacy routes (Invariant I13 verified); 6 persistent shell 
 Fixtures:    unchanged (8 characterization fixtures passing)
 Screenshots: 334 baselines stored in local repo (A5-Local, D21)
 Branch:      phase-ui-2b-shell
-Merge SHA:   (pending merge)
+Merge SHA:   afc5248 (merged to main)
 ```
 
 ### Sub-phase note template
