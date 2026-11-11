@@ -32,13 +32,16 @@ async function runDailyRecurringScan() {
     console.log(
       `[RecurringJob] Completed daily recurring scan. Total suggestions processed: ${totalSuggestionsGenerated}`
     );
+    return totalSuggestionsGenerated;
   } catch (err) {
     console.error('[RecurringJob] Failed to execute recurring expense scan:', err);
+    return 0;
   }
 }
 
 /**
  * Initializes the daily cron job at 2:00 AM.
+ * In production/server mode, this executes the combined daily maintenance tasks.
  */
 function initRecurringCron() {
   if (process.env.NODE_ENV === 'test') {
@@ -46,11 +49,12 @@ function initRecurringCron() {
   }
 
   // 0 2 * * * = Every day at 02:00 AM
+  const { runDailyMaintenance } = require('./dailyMaintenanceJob');
   recurringTask = cron.schedule('0 2 * * *', async () => {
-    await runDailyRecurringScan();
+    await runDailyMaintenance();
   });
 
-  console.log('[RecurringJob] Scheduled recurring expense detection job (Daily at 2:00 AM)');
+  console.log('[RecurringJob] Scheduled daily maintenance cron job (Daily at 2:00 AM)');
   return recurringTask;
 }
 

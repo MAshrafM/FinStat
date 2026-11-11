@@ -8,7 +8,7 @@
   ],
   "crons": [
     {
-      "path": "/api/recurring-suggestions/detect",
+      "path": "/api/jobs/daily-maintenance",
       "schedule": "0 2 * * *"
     },
     {
