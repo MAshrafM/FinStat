@@ -185,13 +185,15 @@ html[data-fs-theme] .navbar-links .nav-button {
   background: var(--fs-action-bg);
   color: var(--fs-action-text); /* #0d0e10 (--fs-ink), 7.76:1 contrast */
   border-radius: var(--fs-radius-sm);
+  border: 1px solid transparent;
   box-shadow: none;
   font-family: var(--fs-font-sans);
 }
 
 html[data-fs-theme] .navbar-links .nav-button:hover {
-  background: var(--fs-action-hover);
-  color: var(--fs-action-text);
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+  border: 1px solid var(--fs-border-control);
   transform: none;
   box-shadow: none;
 }
@@ -539,7 +541,7 @@ Add `.fs-skip-link` and `#main-content:focus` styles:
 ---
 
 ### Component 8: Playwright Shell Project & Baselines (Option A)
-**Paths:** `frontend/playwright.config.js`, `frontend/tests/visual/shell.spec.js`, `frontend/scripts/verify-baseline-manifest.js`
+**Paths:** `frontend/playwright.config.js`, `frontend/tests/visual/shell.spec.js`, `D:\Projects\FinStat-visual-baselines\manifest.json`
 
 1. **`playwright.config.js`**: Add dedicated `shell` project:
    ```javascript
@@ -549,24 +551,28 @@ Add `.fs-skip-link` and `#main-content:focus` styles:
      testMatch: /shell\.spec\.js/,
    },
    ```
-2. **`shell.spec.js`**: Defines 6 persistent shell baseline tests ($N = 6$):
-   - `shell-legacy-desktop`: Desktop at 1440 with legacy shell (attribute absent).
-   - `shell-legacy-mobile`: Mobile at 390 with legacy shell.
-   - `shell-dark-desktop-collapsed`: Desktop at 1440 with `data-fs-theme="dark"` injected (collapsed 70px sidebar, dark navbar).
-   - `shell-dark-desktop-expanded`: Desktop at 1440 with `data-fs-theme="dark"` (expanded 280px sidebar, active item 2px rule, account switcher).
-   - `shell-dark-mobile-drawer`: Mobile at 390 with `data-fs-theme="dark"` (open drawer menu with scrim backdrop).
-   - `shell-dark-account-dropdown`: Account switcher dropdown popover open on dark shell.
+2. **`shell.spec.js` Architecture & Route Selection (C3, C6)**:
+   - Uses `/portfolio` as the stable test route (C6), keeping shell visual baselines decoupled from Phase 3A's `/dashboard` conversion.
+   - **Theme Injection Mechanism (C3)**: Injects theme cleanly via `page.addInitScript(() => { document.documentElement.setAttribute('data-fs-theme', 'dark'); });` before calling `page.goto()`. For legacy captures, no script is injected (attribute remains absent).
+   - Defines 6 persistent shell baseline tests ($N = 6$):
+     - `shell-legacy-desktop`: Desktop at 1440 with legacy shell on `/portfolio`.
+     - `shell-legacy-mobile`: Mobile at 390 with legacy shell on `/portfolio`.
+     - `shell-dark-desktop-collapsed`: Desktop at 1440 with `data-fs-theme="dark"` injected (collapsed 70px sidebar, dark navbar).
+     - `shell-dark-desktop-expanded`: Desktop at 1440 with `data-fs-theme="dark"` (expanded 280px sidebar, active item 2px rule, account switcher).
+     - `shell-dark-mobile-drawer`: Mobile at 390 with `data-fs-theme="dark"` (open drawer menu with scrim backdrop).
+     - `shell-dark-account-dropdown`: Account switcher dropdown popover open on dark shell.
    - Computed style assertions on themed state:
      - `.navbar` background: `rgb(12, 13, 15)` (`#0c0d0f`)
      - `.sidebar` background: `rgb(12, 13, 15)` (`#0c0d0f`)
      - `.sidebar-item.active` background: `rgb(34, 37, 42)` (`#22252a`)
      - `.sidebar-item.active` border-left: `2px solid rgb(242, 243, 245)` (`--fs-text`)
-3. **Overlay & Error Injection Methods**:
+3. **Overlay & Error Injection Methods (M3)**:
    - **Toast Test**: Triggered via testing harness invoking `useToast().showToast()` or dispatching a synthetic toast custom event inside the browser context.
    - **ErrorBoundary Test**: Tested via dedicated test harness route (`/test-error-boundary`) or component test throwing an error inside the boundary.
-4. **Manifest Count Update**:
-   - Update `verify-baseline-manifest.js` count requirement from 328 $\to$ **334** ($325 \text{ routes} + 3 \text{ reference frames} + 6 \text{ shell baselines}$).
-   - Store generated PNGs in `D:\Projects\FinStat-visual-baselines` local repository and commit with SHA-256 hashes in `manifest.json`.
+4. **Manifest Count & Dynamic Verifier (C4)**:
+   - Regenerate `manifest.json` with `count: 334` and the 6 new shell snapshot entries ($325 \text{ routes} + 3 \text{ reference frames} + 6 \text{ shell baselines}$).
+   - `verify-baseline-manifest.js` remains dynamic (reads `manifest.count` and validates matching entry count and SHA-256 hashes).
+   - Store generated PNGs in `D:\Projects\FinStat-visual-baselines` local repository and commit with updated `manifest.json`.
 
 ---
 
@@ -621,15 +627,15 @@ Add `.fs-skip-link` and `#main-content:focus` styles:
 
 ### Step 9: Playwright Shell Project & Baselines (Option A)
 - Add `shell` project to `playwright.config.js`.
-- Author `frontend/tests/visual/shell.spec.js`.
+- Author `frontend/tests/visual/shell.spec.js` using `page.addInitScript` and `/portfolio` route.
 - Generate 6 shell baselines into `D:\Projects\FinStat-visual-baselines` via:
   ```bash
   $env:CI="true"; npx playwright test --project=shell --update-snapshots
   ```
-- Update `frontend/scripts/verify-baseline-manifest.js` count check to 334.
+- Regenerate `manifest.json` with `count: 334`.
 
 ### Step 10: Complete Verification Suite
-Execute all verification commands sequentially:
+Execute all verification commands sequentially using `--project=` flags (C1, C2):
 1. `node frontend/scripts/tokens.js --check`
 2. `cd frontend && npm run lint:style`
 3. `node frontend/scripts/lint-tones.js`
@@ -640,19 +646,19 @@ Execute all verification commands sequentially:
    git grep "data-fs-theme=\"dark\"" frontend/src
    ```
    *Must return ONLY `tokens.css: :root[data-fs-theme="dark"]`.*
-7. Visual Regression (325 routes):
+7. Visual Regression (325 routes + 1 setup) (C2):
    ```powershell
-   $env:CI="true"; npx playwright test tests/visual/visual.spec.js
+   $env:CI="true"; npx playwright test --project=visual
    ```
    *Must pass with 0 diff (proving legacy fidelity).*
-8. Reference Frames (3 frames):
+8. Reference Frames (3 frames) (C1, C2):
    ```powershell
-   $env:CI="true"; npx playwright test tests/visual/reference.spec.js
+   $env:CI="true"; npx playwright test --project=reference
    ```
    *Must pass with 0 diff.*
-9. Shell Baselines (6 snapshots):
+9. Shell Baselines (6 snapshots + 1 setup) (C2):
    ```powershell
-   $env:CI="true"; npx playwright test tests/visual/shell.spec.js
+   $env:CI="true"; npx playwright test --project=shell
    ```
    *Must pass with 0 diff.*
 10. Baseline Manifest Integrity:
