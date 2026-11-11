@@ -1,0 +1,8 @@
+/**
+ * FinStat Design System — Shared Component Overrides
+ * Governed by docs/UI-UX_Plan/UI-UX-PLAN.md §6.6 (Phase 2D Anchor) and AGENTS.md
+ *
+ * Every shared component override lands here from Phase 2D (E1).
+ * All rules must be scoped under .fs-page (e.g. .fs-page .styled-table).
+ * Strictly enforced: zero literal hex, rgb, rgba, or named colours.
+ */
