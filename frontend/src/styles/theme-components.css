@@ -1,9 +1,478 @@
 /**
  * FinStat Design System — Shared Component Overrides
- * Governed by docs/UI-UX_Plan/UI-UX-PLAN.md §6.6 (Phase 2D Anchor) and AGENTS.md
+ * Governed by docs/UI-UX_Plan/UI-UX-PLAN.md §6.6 and AGENTS.md
  *
- * Every shared component override lands here from Phase 2D (E1).
- * All rules must be scoped under .fs-page (e.g. .fs-page .styled-table).
+ * Every shared component and gated shell override lands here (E1).
  * Strictly enforced: zero literal hex, rgb, rgba, or named colours.
  */
 
+/* ==========================================================================
+   FinStat Design System — Gated Shell: Navbar
+   Governed by docs/ui-plans/phase_2b_implementation_plan.md Component 2
+   ========================================================================== */
+
+html[data-fs-theme] .navbar {
+  background: var(--fs-surface-sunken);
+  border-bottom: 1px solid var(--fs-border);
+  color: var(--fs-text);
+  box-shadow: none;
+  z-index: var(--fs-z-nav);
+}
+
+html[data-fs-theme] .navbar-brand a {
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .navbar-brand a:hover {
+  color: var(--fs-text-bright);
+}
+
+html[data-fs-theme] .role-badge-viewer {
+  background: var(--fs-warning-subtle);
+  border: 1px solid var(--fs-warning-border);
+  color: var(--fs-warning);
+  border-radius: var(--fs-radius-pill);
+}
+
+html[data-fs-theme] .navbar-links .nav-button {
+  background: var(--fs-action-bg);
+  color: var(--fs-action-text);
+  border-radius: var(--fs-radius-sm);
+  border: 1px solid transparent;
+  box-shadow: none;
+  font-family: var(--fs-font-sans);
+}
+
+html[data-fs-theme] .navbar-links .nav-button:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+  border: 1px solid var(--fs-border-control);
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   FinStat Design System — Gated Shell: Sidebar
+   Governed by docs/ui-plans/phase_2b_implementation_plan.md Component 3
+   ========================================================================== */
+
+html[data-fs-theme] .sidebar {
+  background: var(--fs-surface-sunken);
+  border-right: 1px solid var(--fs-border);
+  box-shadow: none;
+  z-index: var(--fs-z-sidebar);
+}
+
+html[data-fs-theme] .sidebar-header {
+  border-bottom: 1px solid var(--fs-border);
+}
+
+html[data-fs-theme] .logo-text {
+  color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+  font-weight: var(--fs-weight-semibold);
+}
+
+html[data-fs-theme] .menu-icon {
+  color: var(--fs-text-subtle);
+}
+
+html[data-fs-theme] .sidebar-hub-header {
+  background: transparent;
+  color: var(--fs-text-subtle);
+  border-radius: var(--fs-radius-sm);
+  font-family: var(--fs-font-sans);
+}
+
+html[data-fs-theme] .sidebar-hub-header:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .sidebar-hub-chevron {
+  color: var(--fs-text-subtle);
+}
+
+html[data-fs-theme] .sidebar-item {
+  color: var(--fs-text-muted);
+  border-radius: var(--fs-radius-md);
+  border-left: 2px solid transparent;
+}
+
+html[data-fs-theme] .sidebar-item:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+  transform: none;
+}
+
+html[data-fs-theme] .sidebar-item:hover .sidebar-icon {
+  color: var(--fs-text);
+  transform: none;
+}
+
+html[data-fs-theme] .sidebar-item.active {
+  background: var(--fs-surface-raised);
+  border-left: 2px solid var(--fs-text);
+  border-radius: 0 var(--fs-radius-md) var(--fs-radius-md) 0;
+  color: var(--fs-text);
+  transform: none;
+}
+
+html[data-fs-theme] .sidebar-item.active .sidebar-icon {
+  color: var(--fs-text);
+  transform: none;
+}
+
+html[data-fs-theme] .sidebar-title {
+  color: inherit;
+  font-family: var(--fs-font-sans);
+}
+
+html[data-fs-theme] .sidebar-description {
+  color: var(--fs-text-subtle);
+  font-family: var(--fs-font-sans);
+}
+
+html[data-fs-theme] .sidebar-logout-btn {
+  background: transparent;
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  color: var(--fs-negative);
+}
+
+html[data-fs-theme] .sidebar-logout-btn:hover {
+  background: var(--fs-negative-subtle);
+  border-color: var(--fs-negative-border);
+  color: var(--fs-negative);
+}
+
+html[data-fs-theme] .mobile-toggle {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  z-index: var(--fs-z-toast);
+}
+
+html[data-fs-theme] .sidebar-backdrop {
+  background: var(--fs-scrim);
+  z-index: var(--fs-z-modal);
+}
+
+/* ==========================================================================
+   FinStat Design System — Gated Shell: AccountSwitcher
+   Governed by docs/ui-plans/phase_2b_implementation_plan.md Component 4
+   ========================================================================== */
+
+html[data-fs-theme] .account-switcher-pill {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  color: var(--fs-text);
+  border-radius: var(--fs-radius-md);
+}
+
+html[data-fs-theme] .account-switcher-pill:hover:not([data-disabled='true']) {
+  background: var(--fs-surface-raised);
+  border-color: var(--fs-border-control);
+}
+
+html[data-fs-theme] .account-switcher-avatar {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+  border: 1px solid var(--fs-border);
+}
+
+html[data-fs-theme] .account-switcher-chevron {
+  color: var(--fs-text-subtle);
+}
+
+html[data-fs-theme] .account-switcher-dropdown {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  box-shadow: var(--fs-shadow);
+  z-index: var(--fs-z-dropdown);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .account-switcher-item {
+  color: var(--fs-text);
+  border-radius: var(--fs-radius-sm);
+}
+
+html[data-fs-theme] .account-switcher-item:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text-bright);
+}
+
+html[data-fs-theme] .account-switcher-item.active {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text-bright);
+}
+
+html[data-fs-theme] .delegation-banner {
+  background: var(--fs-warning-subtle);
+  border: 1px solid var(--fs-warning-border);
+  color: var(--fs-warning);
+  border-radius: var(--fs-radius-sm);
+}
+
+html[data-fs-theme] .delegation-banner-badge {
+  background: var(--fs-warning);
+  color: var(--fs-action-text);
+  border-radius: var(--fs-radius-pill);
+}
+
+html[data-fs-theme] .delegation-banner-switchback-btn {
+  background: var(--fs-surface-raised);
+  border: 1px solid var(--fs-warning-border);
+  color: var(--fs-text);
+  border-radius: var(--fs-radius-sm);
+}
+
+html[data-fs-theme] .delegation-banner-switchback-btn:hover {
+  background: var(--fs-surface-hover);
+  color: var(--fs-text-bright);
+}
+
+html[data-fs-theme] .family-rollup-modal-backdrop {
+  background: var(--fs-scrim);
+  z-index: var(--fs-z-modal);
+}
+
+html[data-fs-theme] .family-rollup-modal-content {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: var(--fs-shadow);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .family-rollup-modal-header {
+  border-bottom: 1px solid var(--fs-border);
+}
+
+html[data-fs-theme] .family-rollup-modal-title {
+  color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+}
+
+html[data-fs-theme] .family-rollup-close-btn {
+  color: var(--fs-text-subtle);
+}
+
+html[data-fs-theme] .family-rollup-close-btn:hover {
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .rollup-metric-card {
+  background: var(--fs-surface-sunken);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+}
+
+html[data-fs-theme] .rollup-metric-label {
+  color: var(--fs-text-subtle);
+  font-family: var(--fs-font-sans);
+}
+
+html[data-fs-theme] .rollup-metric-value {
+  color: var(--fs-text);
+  font-family: var(--fs-font-mono);
+}
+
+html[data-fs-theme] .rollup-member-card {
+  background: var(--fs-surface-sunken);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+}
+
+html[data-fs-theme] .member-card-title {
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .member-networth-val {
+  color: var(--fs-text);
+  font-family: var(--fs-font-mono);
+}
+
+/* ==========================================================================
+   FinStat Design System — Gated Shell: Toast
+   Governed by docs/ui-plans/phase_2b_implementation_plan.md Component 5
+   ========================================================================== */
+
+html[data-fs-theme] .toast-container {
+  z-index: var(--fs-z-toast);
+}
+
+html[data-fs-theme] .toast-item {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  box-shadow: var(--fs-shadow);
+  color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+}
+
+html[data-fs-theme] .toast-error {
+  border-left: 3px solid var(--fs-negative);
+  background: var(--fs-surface);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .toast-icon-error {
+  color: var(--fs-negative);
+}
+
+html[data-fs-theme] .toast-success {
+  border-left: 3px solid var(--fs-positive);
+  background: var(--fs-surface);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .toast-icon-success {
+  color: var(--fs-positive);
+}
+
+html[data-fs-theme] .toast-warning {
+  border-left: 3px solid var(--fs-warning);
+  background: var(--fs-surface);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .toast-icon-warning {
+  color: var(--fs-warning);
+}
+
+html[data-fs-theme] .toast-info {
+  border-left: 3px solid var(--fs-border-focus);
+  background: var(--fs-surface);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .toast-icon-info {
+  color: var(--fs-text-subtle);
+}
+
+html[data-fs-theme] .toast-close-btn {
+  color: var(--fs-text-subtle);
+  border-radius: var(--fs-radius-sm);
+}
+
+html[data-fs-theme] .toast-close-btn:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+/* ==========================================================================
+   FinStat Design System — Gated Shell: UndoToast
+   Governed by docs/ui-plans/phase_2b_implementation_plan.md Component 5
+   ========================================================================== */
+
+html[data-fs-theme] .undo-toast-wrapper {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  box-shadow: var(--fs-shadow);
+  color: var(--fs-text);
+  z-index: var(--fs-z-toast);
+}
+
+html[data-fs-theme] .undo-toast-icon {
+  color: var(--fs-warning);
+}
+
+html[data-fs-theme] .btn-undo-action {
+  background: var(--fs-action-bg);
+  color: var(--fs-action-text);
+  border-radius: var(--fs-radius-sm);
+}
+
+html[data-fs-theme] .btn-undo-action:hover:not(:disabled) {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .btn-undo-dismiss {
+  color: var(--fs-text-subtle);
+}
+
+html[data-fs-theme] .btn-undo-dismiss:hover {
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .undo-toast-progress-track {
+  background: var(--fs-surface-raised);
+}
+
+html[data-fs-theme] .undo-toast-progress-bar {
+  background: var(--fs-action-bg);
+}
+
+/* ==========================================================================
+   FinStat Design System — Gated Shell: ErrorBoundary
+   Governed by docs/ui-plans/phase_2b_implementation_plan.md Component 6
+   ========================================================================== */
+
+html[data-fs-theme] .error-boundary-card {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: var(--fs-shadow);
+  color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+}
+
+html[data-fs-theme] .error-boundary-icon-badge {
+  background: var(--fs-negative-subtle);
+  border: 1px solid var(--fs-negative-border);
+}
+
+html[data-fs-theme] .error-boundary-icon {
+  color: var(--fs-negative);
+}
+
+html[data-fs-theme] .error-boundary-title {
+  color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+}
+
+html[data-fs-theme] .error-boundary-desc {
+  color: var(--fs-text-subtle);
+  font-family: var(--fs-font-sans);
+}
+
+html[data-fs-theme] .error-boundary-debug {
+  background: var(--fs-surface-sunken);
+  color: var(--fs-negative);
+  font-family: var(--fs-font-mono);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+}
+
+html[data-fs-theme] .error-boundary-btn-primary {
+  background: var(--fs-action-bg);
+  color: var(--fs-action-text);
+  border-radius: var(--fs-radius-sm);
+  transform: none;
+}
+
+html[data-fs-theme] .error-boundary-btn-primary:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+  transform: none;
+}
+
+html[data-fs-theme] .error-boundary-btn-secondary {
+  background: var(--fs-surface-raised);
+  border: 1px solid var(--fs-border-control);
+  color: var(--fs-text);
+  border-radius: var(--fs-radius-sm);
+  transform: none;
+}
+
+html[data-fs-theme] .error-boundary-btn-secondary:hover {
+  background: var(--fs-surface-hover);
+  color: var(--fs-text-bright);
+  transform: none;
+}

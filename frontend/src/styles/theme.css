@@ -94,6 +94,33 @@
   padding: 0;
 }
 
+/* Accessible Skip Link (WCAG 2.4.1) */
+.fs-skip-link {
+  position: fixed;
+  top: -9999px;
+  left: 16px;
+  background: var(--fs-action-bg);
+  color: var(--fs-action-text);
+  padding: 8px 16px;
+  z-index: var(--fs-z-skip);
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-semibold);
+  border-radius: var(--fs-radius-md);
+  text-decoration: none;
+  border: 2px solid var(--fs-border-focus);
+}
+
+.fs-skip-link:focus,
+.fs-skip-link:focus-visible {
+  top: 16px;
+  outline: none;
+}
+
+#main-content:focus {
+  outline: none;
+}
+
 /* ==========================================================================
    3. Typography Primitives
    ========================================================================== */

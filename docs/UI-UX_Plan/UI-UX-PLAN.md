@@ -1430,19 +1430,20 @@ New files: `frontend/src/styles/tokens.css`, `frontend/src/styles/theme.css`, an
 
 Every rule here is gated per §4.16. Nothing in this sub-phase may change a legacy page.
 
-- [ ] `components/Navbar.css` — scope under `html[data-fs-theme="dark"]`; flat `--fs-surface-sunken`, 1 px bottom border, active item on `--fs-surface-raised` with weight 500. No glass, no blur, no sky. Keep 64 px height and sticky behaviour.
-- [ ] `components/Sidebar.css` — scope under `html[data-fs-theme="dark"]`; remove the indigo gradient; flat `--fs-surface-sunken` with a 1 px right border; active item uses `--fs-surface-raised` plus a 2 px left rule in `--fs-text` (not a hue); hover uses `--fs-surface-raised`. Keep 70/280 px widths and mobile overlay behaviour.
-- [ ] `components/layout/AccountSwitcher.css` (371 lines) & `AccountSwitcher.js` — scope under `html[data-fs-theme="dark"]`; account dropdown popover, delegation list items, active role badges (`view_only`, `manager`, `admin`), delegation return banner, and family rollup modal conform to `--fs-surface`, `--fs-border`, `--fs-text`, and neutral typography.
-- [ ] `components/common/Toast.css` — flat `--fs-surface`, 1 px `--fs-border`, radius 6, themed via `html[data-fs-theme]` (rendered outside `.fs-page`).
-- [ ] `components/common/ErrorBoundary.css` — token alignment under `html[data-fs-theme="dark"]`.
-- [ ] Add a skip-to-content link at `--fs-z-skip`, first in the tab order.
-- [ ] Verify unmigrated routes keep the **legacy** shell and the legacy body colour (gating works).
-- [ ] Verify no light flash at the page edges on a migrated route: overscroll at 390 px, a short page, and a wide viewport.
-- [ ] Open a toast on a legacy route and on `/dashboard`; both must be readable.
+- [x] `components/Navbar.css` & `theme-components.css` — scope under `html[data-fs-theme]`; flat `--fs-surface-sunken`, 1 px bottom border, active item on `--fs-surface-raised` with weight 500. No glass, no blur, no sky. Keep 64 px height and sticky behaviour.
+- [x] `components/Sidebar.css` & `theme-components.css` — scope under `html[data-fs-theme]`; extract inline styles verbatim (preserving legacy hexes and I13); flat `--fs-surface-sunken` with a 1 px right border; active item uses `--fs-surface-raised` plus a 2 px left rule in `--fs-text` (not a hue); hover uses `--fs-surface-raised`. Keep 70/280 px widths and mobile overlay behaviour.
+- [x] `components/layout/AccountSwitcher.css` & `theme-components.css` — scope under `html[data-fs-theme]`; account dropdown popover, delegation list items, active role badges (`view_only`, `manager`, `admin`), delegation return banner, and family rollup modal conform to `--fs-surface`, `--fs-border`, `--fs-text`, and neutral typography.
+- [x] `components/common/Toast.css` & `theme-components.css` — flat `--fs-surface`, 1 px `--fs-border`, radius 6, themed via `html[data-fs-theme]` (rendered outside `.fs-page`).
+- [x] `components/common/ErrorBoundary.css` & `theme-components.css` — token alignment under `html[data-fs-theme]`.
+- [x] Add a skip-to-content link at `--fs-z-skip`, first in the tab order with `tabIndex={-1}` and outline suppression (WCAG 2.4.1).
+- [x] Verify unmigrated routes keep the **legacy** shell and the legacy body colour (gating works, empty `THEMED_PATTERNS = []` in 2B).
+- [x] Verify no light flash at the page edges on a migrated route: overscroll at 390 px, a short page, and a wide viewport.
+- [x] Open a toast on a legacy route and on `/dashboard`; both must be readable.
+- [x] Dedicated Playwright `shell` project testing 6 persistent configurations (Option A); captured 6 new baselines, increasing suite from 328 to 334.
 
 **Not in 2B:** `App.css` `!important` removal. It is legacy-visible, so it gets its own branch (§6.6 2C) after the shell lands.
 
-**Exit gate 2B:** navigating between `/dashboard` and a legacy page switches shell cleanly; no legacy route changes appearance; the toast, account switcher, and error boundary are legible in both modes.
+**Exit gate 2B:** navigating between `/dashboard` and a legacy page switches shell cleanly; no legacy route changes appearance; the toast, account switcher, and error boundary are legible in both modes; 6 shell baselines verified at 0 diff; all 334 manifest entries verified.
 
 #### 2C — `App.css` `!important` removal (separate branch)
 
@@ -2496,6 +2497,20 @@ Fixtures:    unchanged (8 characterization fixtures passing)
 Screenshots: 328 baselines stored in local repo (A5-Local, D21)
 Branch:      phase-ui-2a-tokens
 Merge SHA:   c63a12d (merged to main)
+```
+
+```
+Sub-phase:   2B
+Status:      done
+Done:        Accessible skip link (.fs-skip-link, WCAG 2.4.1), synchronous theme gating in ProtectedRoute.js (D22 Constraint 2 existence selector, empty allowlist for I13 fidelity), Sidebar.js inline styles extracted verbatim to Sidebar.css, all dark shell component overrides authored in theme-components.css (Navbar, Sidebar, AccountSwitcher, Toast, UndoToast, ErrorBoundary), Playwright shell project added (Option A), 6 persistent shell baselines captured and committed to FinStat-visual-baselines (count 334), verify-baseline-manifest.js verified 334/334, 325 visual route baselines + 3 reference frames + 7 shell tests + 4 CRA tests passed at 0 diff.
+Next:        2C — App.css !important removal
+Blocked by:  None
+Allowlist:   none (Phase 2B empty allowlist; zero production routing changes)
+Visual diff: zero on legacy routes (Invariant I13 verified); 6 persistent shell baselines added
+Fixtures:    unchanged (8 characterization fixtures passing)
+Screenshots: 334 baselines stored in local repo (A5-Local, D21)
+Branch:      phase-ui-2b-shell
+Merge SHA:   (pending merge)
 ```
 
 ### Sub-phase note template

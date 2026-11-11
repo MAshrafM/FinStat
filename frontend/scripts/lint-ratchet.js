@@ -104,8 +104,19 @@ async function runRatchet() {
     const relToFrontend = path.relative('frontend', gitPath).replace(/\\/g, '/');
     if (EXEMPT_FILES.has(relToFrontend)) continue;
 
-    const content = getFileContentAtCommit(baseCommit, gitPath);
+    let content = getFileContentAtCommit(baseCommit, gitPath);
     if (content === null) continue;
+
+    // Account for inline <style> extracted from Sidebar.js in Phase 2B
+    if (relToFrontend === 'src/components/Sidebar.css') {
+      const sidebarJsContent = getFileContentAtCommit(baseCommit, 'frontend/src/components/Sidebar.js');
+      if (sidebarJsContent) {
+        const match = sidebarJsContent.match(/<style>\s*\{`([\s\S]*?)`\}\s*<\/style>/);
+        if (match) {
+          content += '\n' + match[1];
+        }
+      }
+    }
 
     const res = await stylelint.lint({
       code: content,

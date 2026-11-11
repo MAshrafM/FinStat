@@ -1,6 +1,6 @@
 // frontend/src/components/ProtectedRoute.js
-import React, { useState, useMemo } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import React, { useState, useMemo, useLayoutEffect } from 'react';
+import { Navigate, Outlet, useLocation, matchPath } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
@@ -12,6 +12,17 @@ import { CertProvider } from '../context/CertContext';
 import { CurrProvider } from '../context/CurrContext';
 import { BankProvider } from '../context/BankContext';
 import { CreditProvider } from '../context/CreditContext';
+
+// Themed routes allowlist (Phase 2B: empty; populated incrementally in subsequent phases)
+// Phase 3A will add: '/dashboard'
+// Phase 4A will add: '/portfolio'
+export const THEMED_PATTERNS = [];
+
+export const isThemedRoute = (pathname) => {
+  return THEMED_PATTERNS.some((pattern) =>
+    matchPath({ path: pattern, end: true }, pathname)
+  );
+};
 // Route configuration for better maintainability
 const ROUTE_CONFIG = {
   basicRoutes: ['/portfolio', '/salary-profile', '/paycheck-log', '/expenditures', '/trades', '/real-estate', '/real-estate/new', '/real-estate/edit', '/analysis/payroll', '/salary/rules', '/lending'],
@@ -103,14 +114,38 @@ const ProtectedRoute = () => {
     location.pathname.startsWith('/portfolio') ||
     location.pathname.startsWith('/real-estate');
 
+  const themed = isThemedRoute(location.pathname);
+
+  // Synchronous theme gating — runs before browser paint, avoiding flash-of-unstyled-shell
+  useLayoutEffect(() => {
+    if (typeof window !== 'undefined' && window.__VISUAL_TEST__ && document.documentElement.dataset.fsTheme) {
+      return;
+    }
+    if (themed) {
+      document.documentElement.dataset.fsTheme = 'dark';
+    } else {
+      delete document.documentElement.dataset.fsTheme;
+    }
+    return () => {
+      if (!(typeof window !== 'undefined' && window.__VISUAL_TEST__)) {
+        delete document.documentElement.dataset.fsTheme;
+      }
+    };
+  }, [themed]);
+
   return (
     <div className="App">
+      <a href="#main-content" className="fs-skip-link">
+        Skip to main content
+      </a>
       <Navbar onSidebarToggle={handleSidebarToggle} />
       <Sidebar />
       <main
+        id="main-content"
+        tabIndex={-1}
         className={`main-content ${sidebarOpen ? 'sidebar-open' : ''} ${
           isFullBleedPage ? 'full-bleed' : ''
-        }`}
+        } ${themed ? 'fs-page' : ''}`}
       >
         <ViewOnlyBanner />
         <React.Suspense fallback={<div>Loading...</div>}>

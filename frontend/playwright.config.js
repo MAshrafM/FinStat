@@ -36,6 +36,11 @@ module.exports = defineConfig({
       testMatch: /reference-frames\.spec\.js/,
     },
     {
+      name: 'shell',
+      dependencies: ['setup'],
+      testMatch: /shell\.spec\.js/,
+    },
+    {
       name: 'pr-subset',
       dependencies: ['setup'],
       testMatch: /visual\.spec\.js/,
@@ -49,7 +54,7 @@ module.exports = defineConfig({
   webServer: [
     {
       command: process.env.CI
-        ? 'npm run build && npx serve -s build -l 3000'
+        ? 'npx serve -s build -l 3000'
         : 'npm start',
       port: 3000,
       reuseExistingServer: !process.env.CI,

@@ -69,10 +69,10 @@ function assertAllowlist(customPattern = null) {
   const protectedRoutePath = path.join(ROOT_DIR, 'frontend/src/components/ProtectedRoute.js');
   if (fs.existsSync(protectedRoutePath)) {
     const prContent = fs.readFileSync(protectedRoutePath, 'utf8');
-    const match = prContent.match(/const\s+THEMED_PATTERNS\s*=\s*\[([\s\S]*?)\];/);
+    const match = prContent.match(/(?:export\s+)?const\s+THEMED_PATTERNS\s*=\s*\[([\s\S]*?)\];/);
     if (match) {
       const items = match[1]
-        .split('\n')
+        .split(/\r?\n/)
         .map(l => l.replace(/\/\/.*$/, '').trim())
         .filter(Boolean)
         .flatMap(l => l.split(','))
