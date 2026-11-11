@@ -20,6 +20,16 @@ body {
   color: #2c3e50;
 }
 
+/* Phase 2A / D22 Gated Theme Rules (Attribute-existence form preserves multi-theme door) */
+html[data-fs-theme] {
+  color-scheme: dark;
+}
+
+html[data-fs-theme] body {
+  background: var(--fs-bg);
+  color: var(--fs-text);
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
