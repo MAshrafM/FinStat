@@ -23,10 +23,12 @@ body {
 /* Phase 2A / D22 Gated Theme Rules (Attribute-existence form preserves multi-theme door) */
 html[data-fs-theme] {
   color-scheme: dark;
+  background-color: var(--fs-bg);
+  color: var(--fs-text);
 }
 
 html[data-fs-theme] body {
-  background: var(--fs-bg);
+  background-color: var(--fs-bg);
   color: var(--fs-text);
 }
 
