@@ -4,7 +4,7 @@ const { defineConfig, devices } = require('@playwright/test');
 module.exports = defineConfig({
   testDir: './tests/visual',
   snapshotDir: './tests/visual/baseline',
-  snapshotPathTemplate: '{snapshotDir}/{arg}{ext}',
+  snapshotPathTemplate: '{testDir}/baseline/{arg}{ext}',
   timeout: 30000,
   expect: {
     toHaveScreenshot: {
@@ -32,6 +32,10 @@ module.exports = defineConfig({
       testMatch: /visual\.spec\.js/,
     },
     {
+      name: 'reference',
+      testMatch: /reference-frames\.spec\.js/,
+    },
+    {
       name: 'pr-subset',
       dependencies: ['setup'],
       testMatch: /visual\.spec\.js/,
@@ -42,13 +46,21 @@ module.exports = defineConfig({
       testMatch: /a11y\.spec\.js/,
     },
   ],
-  webServer: {
-    command: process.env.CI
-      ? 'npm run build && npx serve -s build -l 3000'
-      : 'npm start',
-    port: 3000,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  webServer: [
+    {
+      command: process.env.CI
+        ? 'npm run build && npx serve -s build -l 3000'
+        : 'npm start',
+      port: 3000,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000,
+    },
+    {
+      command: 'npx http-server .. -p 3001 --cors -c-1',
+      port: 3001,
+      reuseExistingServer: !process.env.CI,
+      timeout: 30000,
+    },
+  ],
 });
 

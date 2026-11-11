@@ -72,7 +72,7 @@ function resolveHex(tokenOrHex, tokens) {
   }
 
   // Look in token sections
-  const sections = ['surfaces', 'borders', 'text', 'tones', 'actions', 'focus', 'platformSurfaces', 'accents'];
+  const sections = ['surfaces', 'borders', 'text', 'tones', 'actions', 'focus', 'platformSurfaces', 'accents', 'charts'];
   for (const s of sections) {
     if (tokens[s] && tokens[s][tokenOrHex]) {
       const val = tokens[s][tokenOrHex];
@@ -254,6 +254,7 @@ function generateTokensCss(tokens) {
     { key: 'borders', comment: 'Borders' },
     { key: 'text', comment: 'Typography & Text Colors' },
     { key: 'tones', comment: 'Semantic Tones' },
+    { key: 'charts', comment: 'Chart Neutral Greys (D22 / Phase 3A)' },
     { key: 'accents', comment: 'Interactive Accent' },
     { key: 'actions', comment: 'Action Tokens' },
     { key: 'radii', comment: 'Radii (8px ceiling)' },

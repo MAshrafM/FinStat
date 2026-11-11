@@ -5,6 +5,7 @@
   --fs-surface: #1a1c20;
   --fs-surface-raised: #22252a;
   --fs-surface-sunken: #0c0d0f;
+  --fs-chrome: var(--fs-surface-sunken);
 
   /* Borders */
   --fs-border: #34383f;
@@ -24,6 +25,12 @@
   --fs-negative: #d97076;
   --fs-warning: #cfa24f;
   --fs-neutral: var(--fs-text-3);
+
+  /* Chart Neutral Greys (D22 / Phase 3A) */
+  --fs-chart-grey-1: #8b929b;
+  --fs-chart-grey-2: #b8bec6;
+  --fs-chart-grey-3: #6a7078;
+  --fs-chart-grey-4: #d5d9dd;
 
   /* Interactive Accent */
   --fs-accent: #14b8a6;
