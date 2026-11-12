@@ -609,6 +609,12 @@ section.fs-error {
   color: var(--fs-text);
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ==========================================================================
    13. Accessibility & Media Queries (§4.11)
    ========================================================================== */
@@ -627,6 +633,10 @@ section.fs-error {
   .fs-skeleton {
     animation: none;
     background: var(--fs-surface-raised);
+  }
+
+  .fs-page .loading-spinner {
+    animation: none;
   }
 
   .fs-btn,

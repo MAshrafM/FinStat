@@ -476,3 +476,42 @@ html[data-fs-theme] .error-boundary-btn-secondary:hover {
   color: var(--fs-text);
   transform: none;
 }
+
+/* ==========================================================================
+   FinStat Design System — Scoped Page Overrides: Buttons & Spinners
+   Governed by UI-UX-PLAN.md §6.6 (Phase 2C)
+   ========================================================================== */
+
+.fs-page .dashboard-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem;
+  padding: 0.75rem 1.5rem;
+  font-size: var(--fs-text-base);
+  font-family: var(--fs-font-sans);
+  font-weight: var(--fs-weight-semibold);
+  background: var(--fs-action-bg);
+  color: var(--fs-action-text);
+  border-radius: var(--fs-radius-md);
+  text-decoration: none;
+  border: 1px solid transparent;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .dashboard-button:hover {
+  background: var(--fs-action-hover);
+  color: var(--fs-action-text);
+}
+
+.fs-page .loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--fs-border);
+  border-top-color: var(--fs-text);
+  border-radius: var(--fs-radius-pill);
+  animation: spin 1s linear infinite;
+}
+
