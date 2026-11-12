@@ -1,17 +1,26 @@
 # FinStat — UI/UX Overhaul
 
-**Action Plan & Progress Tracker — v10.2 (Multi-theme door preservation, D22)**
+**Action Plan & Progress Tracker — v10.3 (Universal loading, D23)**
 
 | Field | Value |
 | :--- | :--- |
-| Version | 10.2 |
-| Revised | 2026-11-10 |
-| Supersedes | v10.1 (2026-11-09), v10, v9, v8, v7, v6, v5, v4, v3, v2, v1 |
+| Version | 10.3 |
+| Revised | 2026-11-12 |
+| Supersedes | v10.2 (2026-11-10), v10.1 (2026-11-09), v10, v9, v8, v7, v6, v5, v4, v3, v2, v1 |
 | Direction | Flat graphite, one neutral action style, no accent hue, IBM Plex Sans. Chosen by the developer in 1B (D12–D18) |
 | Acceptance target | Three reference frames in `docs/UI-UX_Plan/reference/`, two or three variants each, with stress data |
 | Scope | Presentation only. No route, API, calculation, permission, or schema changes. |
 | Input | `docs/UI-UX_Plan/Comments.md` (review rounds 1–6) + Post-Audit Architecture (Phases 7A–8C) |
 | Working model | AI agents implement; the developer reviews, signs off, and performs manual verification. No time estimates are tracked. |
+
+**What changed in v10.3 (Universal loading, D23)**
+
+1. **Sub-phase 2F added — Universal loading pattern.** Inserted between 2E and 3A. Sub-phase count goes 37 → 38.
+2. **D23 recorded:** Loading consistency is not per-page — it is app-wide. Every route that shows a loading indicator uses the same mechanism: `<Loading variant="..." />` for route-level Suspense, `.fs-skeleton--*` for shaped placeholders, `.loading-spinner` for inline states. No page keeps its own ad-hoc loading UI after 2F.
+3. **`Loading` primitive added to §8.4** (primitive #8). Extracted and used within 2F, not 2E.
+4. **`--fs-danger-hover` added to tokens.json.** Used by 2D's danger button hover state (the plan referenced it but it wasn't in the token set). Value: `#c36066` (10% darker than `--fs-danger` `#d97076`). Contrast re-verified in §4.9.1.
+5. **§6.4 "Loading" row refined** with explicit mechanism per context.
+6. **`--fs-danger-hover` regenerates `tokens.css` and §4.9 table rows.**
 
 **What changed in v10.2 (Multi-theme door preservation, D22)**
 
@@ -388,6 +397,7 @@ The interface carries one accent hue, reserved exclusively for affordances that 
 | `--fs-action-hover` | `var(--fs-accent-hover)` | Primary hover |
 | `--fs-action-active` | `var(--fs-accent-active)` | Primary pressed |
 | `--fs-danger` | `#d97076` | Destructive confirm only; text `--fs-ink` (6.00:1) |
+| `--fs-danger-hover` | `#c36066` | Destructive confirm hover; text `--fs-ink` (4.77:1) |
 | `--fs-disabled-opacity` | `0.45` | Disabled control |
 | Secondary button | `--fs-surface` + `--fs-border-control` + `--fs-text` | Neutral actions |
 | Ghost button | no fill (`background: none`), `--fs-border` on hover | Tertiary actions |
@@ -557,6 +567,7 @@ Emitted by `frontend/scripts/tokens.js` from `frontend/src/styles/tokens.json`, 
 | `--fs-negative` | 5.30 | 5.87 | 4.78 | 4.5 | Pass |
 | `--fs-warning` | 7.26 | 8.03 | 6.54 | 4.5 | Pass |
 | `--fs-ink` on `--fs-danger` `#d97076` | 6.00 | — | — | 4.5 | Pass |
+| `--fs-ink` on `--fs-danger-hover` `#c36066` | 4.77 | — | — | 4.5 | Pass |
 | `--fs-ink` on `--fs-positive` `#4fa87c` | 6.64 | — | — | 4.5 | Pass |
 | `--fs-ink` on `--fs-warning` `#cfa24f` | 8.22 | — | — | 4.5 | Pass |
 | `--fs-accent` | 6.85 | 7.58 | 6.18 | 4.5 | Pass |
@@ -694,6 +705,7 @@ Charts must not rely on colour alone, and `canvas` elements need an `aria-label`
 | D20 | Chrome plane darker than page: --fs-surface-sunken becomes #0c0d0f (1.044:1 darker than --fs-bg). The shell reads as a recessed frame; the 1 px border remains load-bearing | Product owner | 2026-11-09 | [x] approved in 1B |
 | D21 | Baseline storage is a local git repository at frontend/tests/visual/baseline/. Baselines are not committed to the app repo and not cloned by CI; the folder is .gitignore'd. Developer runs npx playwright test --project=visual locally before each phase merge and attaches the diff report to the walkthrough. Rationale: (a) main deploys to production via Vercel, and a 30–50 MB committed baseline folder bloats every deploy and every PR branch; (b) D11 already places manual verification with the developer; (c) a local git repo preserves per-route history via git log. Trade-off: I13's "pixel-identical" invariant and §7.1's "zero diff" gate shift from CI-enforced to walkthrough-evidenced; the developer is the sole guarantor of the legacy-route safety net. | Product owner | 2026-11-13 | [x] approved |
 | D22 | Multi-theme architecture is deferred; the door is preserved by four constraints. (1) tokens.css generates scoped :root[data-fs-theme="<name>"] blocks, not flat :root — a new theme is a generator addition, not a selector rewrite. (2) Theme-gating CSS rules use [data-fs-theme] (attribute-existence) so body rules apply regardless of the attribute value; :root[data-fs-theme="dark"] (specific value) is used only inside tokens.css to scope a theme's token block. (3) chartTheme.js reads --fs-chart-grey-1..4 and --fs-positive|negative|warning via getComputedStyle(document.documentElement) at chart render time; no hardcoded hex in the palette. A test-mode fallback returns the dark-theme constants so jest/jsdom tests pass. (4) Phase 12 deletes the allowlist conditional but preserves <html data-fs-theme="dark"> application unconditionally; the mechanism survives the cleanup. Cost today: ~30 lines across Phase 2A and 3A. Cost if omitted: generator rewrite, ~50-file specificity audit, chartTheme.js refactor plus 5 chart re-verifications, and attribute-path re-addition — estimated 2–3 phases of rework. | Product owner | 2026-11-10 | [x] approved |
+| D23 | Universal loading pattern enforced across all routes. Every route uses <Loading variant="route" /> (spinner) for Suspense fallbacks, <Loading variant="table\|card\|form-field" /> (skeleton) for shaped placeholders, and <Loading variant="inline" /> (small spinner) for button/inline states. No page keeps its own ad-hoc loading UI after Phase 2F. Deliberate because (a) loading is the primary perceived-performance signal in a data-heavy finance app, (b) ad-hoc loading UI in ~65 pages produces ~65 different loading experiences, which reads as unreliable, (c) 2F is a bounded phase — audit + migrate once — cheaper than adding a loader per page during 3A–11A. | Product owner | 2026-11-12 | [x] approved |
 
 #### 4.13.1 Options considered and rejected
 
@@ -1003,19 +1015,19 @@ The allowlist reaches its final size in 10C, not in 4A. This table is the author
 | Legacy v8 Phase | v9 Phase (sub-phases) | Phase Scope | Execution Order |
 | :--- | :--- | :--- | :--- |
 | **Phase 0** | **Phase 1** (1A, 1B, 1C) | Audit, direction and tooling | 1, 2, 3 |
-| **Phase 1 (Theme)** | **Phase 2** (2A, 2B, 2C, 2D, 2E) | Core theme & shared UI | 4, 5, 6 (branch off 2B), 7, 8 |
-| **Phase 1 (Dash)** | **Phase 3** (3A) | Dashboard | 9 |
-| **Phase 2** | **Phase 4** (4A, 4B, 4C) | Expenditure | 10, 11, 12 |
-| **Phase 3** | **Phase 5** (5A, 5B, 5C, 5D, 5E) | Payroll & salary | 13, 14, 15, 16, 17 |
-| **Phase 4** | **Phase 6** (6A, 6B) | Portfolio | 18, 19 |
-| **Phase 5** | **Phase 7** (7A, 7B, 7C) | Investments | 20, 21, 22 |
-| **Phase 6** | **Phase 8** (8A, 8B, 8C, 8D, 8E) | Assets | 23, 24, 25, 26, 27 |
-| **Phase 7** | **Phase 9** (9A, 9B, 9C) | Credit cards, debt & lending | 28, 29, 30 |
-| **Phase 8** | **Phase 10** (10A, 10B, 10C) | Account, security, admin | 31, 32, 33 |
-| **Phase 9** | **Phase 11** (11A) | Landing / login | 34 |
-| **Phase 10** | **Phase 12** (12A) | Cleanup and consolidation | 35 |
-| **Phase 11** | **Phase 13** (13A) | QA matrix | 36 |
-| **Phase 12** | **Phase 14** (14A) | Sign-off | 37 |
+| **Phase 1 (Theme)** | **Phase 2** (2A, 2B, 2C, 2D, 2E, 2F) | Core theme & shared UI | 4, 5, 6 (branch off 2B), 7, 8, 9 |
+| **Phase 1 (Dash)** | **Phase 3** (3A) | Dashboard | 10 |
+| **Phase 2** | **Phase 4** (4A, 4B, 4C) | Expenditure | 11, 12, 13 |
+| **Phase 3** | **Phase 5** (5A, 5B, 5C, 5D, 5E) | Payroll & salary | 14, 15, 16, 17, 18 |
+| **Phase 4** | **Phase 6** (6A, 6B) | Portfolio | 19, 20 |
+| **Phase 5** | **Phase 7** (7A, 7B, 7C) | Investments | 21, 22, 23 |
+| **Phase 6** | **Phase 8** (8A, 8B, 8C, 8D, 8E) | Assets | 24, 25, 26, 27, 28 |
+| **Phase 7** | **Phase 9** (9A, 9B, 9C) | Credit cards, debt & lending | 29, 30, 31 |
+| **Phase 8** | **Phase 10** (10A, 10B, 10C) | Account, security, admin | 32, 33, 34 |
+| **Phase 9** | **Phase 11** (11A) | Landing / login | 35 |
+| **Phase 10** | **Phase 12** (12A) | Cleanup and consolidation | 36 |
+| **Phase 11** | **Phase 13** (13A) | QA matrix | 37 |
+| **Phase 12** | **Phase 14** (14A) | Sign-off | 38 |
 
 > *(Note: Appendices A–F retain historical v8 sub-phase identifiers for comment-disposition traceability; see mapping table above for corresponding v9 sub-phases.)*
 
@@ -1033,6 +1045,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **2C** | `App.css` `!important` removal (side branch off 2B, merges before 3A) | `phase-ui-2c-app-css-fix` | ☐ | ☐ |
 | **2D** | Shared component overrides (new file, `.fs-page` scoped) | `phase-ui-2d-shared-css` | ☐ | ☐ |
 | **2E** | Seven primitives, category labels, specificity | `phase-ui-2e-primitives` | ☐ | ☐ |
+| **2F** | Universal loading pattern (Loading primitive + migrate all pages) | `phase-ui-2f-loading` | ☐ | ☐ |
 | **3A** | `chartTheme.js` + Dashboard conversion | `phase-ui-3a-dashboard` | ☐ | ☐ |
 | **4A** | Expenditure log + filters | `phase-ui-4a-expenditure-log` | ☐ | ☐ |
 | **4B** | Expenditure forms + sub-nav | `phase-ui-4b-expenditure-forms` | ☐ | ☐ |
@@ -1063,7 +1076,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **13A** | QA matrix and accessibility audit | `phase-ui-13a-qa` | ☐ | ☐ |
 | **14A** | Sign-off, changelog, docs | `phase-ui-14a-signoff` | ☐ | ☐ |
 
-**Sub-phase count: 37.** Phase 1 and 2 account for 8 of them because they carry the audit, the design direction, the tooling, the gated shell, the shared CSS, the primitives, the `App.css` cleanup, and Phase 3 delivers the canonical converted dashboard.
+**Sub-phase count: 38.** Phase 1 and 2 account for 9 of them because they carry the audit, the design direction, the tooling, the gated shell, the shared CSS, the primitives, the `App.css` cleanup, the universal loading pattern, and Phase 3 delivers the canonical converted dashboard.
 
 Rows are in **execution order**; the labels are stable identifiers. 1B (design) runs before 1C (tooling) because the radius ceiling and the palette must exist before the lint rules that enforce them are written.
 
@@ -1100,8 +1113,9 @@ graph LR
     P2B --> P2C[2C App.css cleanup]
     P2A --> P2D[2D shared CSS]
     P2D --> P2E[2E primitives]
+    P2E --> P2F["2F universal loading"]
     P2B --> P3A[3A dashboard + charts]
-    P2C & P2E --> P3A
+    P2C & P2F --> P3A
     P3A --> P4A[4A expenditure log]
     P4A --> P4B[4B expenditure forms]
     P4B --> P4C[4C rules/budgets/analysis]
@@ -1271,7 +1285,7 @@ Decided once, applied in every phase.
 | Radii | 4 / 6 / 8 px only; 8 px is the ceiling (D15). `var(--fs-radius-pill)` is for status chips and avatars, never buttons; `50%` is not allowed. |
 | Forms | Label above control; required marked `*` + `aria-required`; help text below; inline error directly under the field with `aria-describedby` + `aria-invalid`; summary error on submit; validate on blur and submit, not on every keystroke. Control borders use `--fs-border-control`. |
 | Placeholders | `--fs-text-3` via `::placeholder`. Never `--fs-text-4`. |
-| Loading | Skeletons for tables, cards, and lists; spinner only for route-level Suspense. `.fs-skeleton` is shape-stable and static under reduced motion. |
+| Loading | Route-level Suspense: `<Loading variant="route" />` (spinner). Tables/cards/lists: `<Loading variant="table|card|form-field" />` (skeleton). Buttons: `<Loading variant="inline" />` (small spinner). Never bare `<div>Loading...</div>` or a page-local spinner SVG. `.fs-skeleton` static under reduced motion (§4.11). |
 | Empty states | Icon + one-line explanation + one primary action. `.fs-empty` |
 | Table on mobile | Compact-expand cards at ≤ 768px. Each row renders as one card with 3 visible fields (primary identifier, amount, category/chip) and a "show all fields" expander that reveals the rest. Long values (break-word) wrap fully — no ellipsis truncation. Horizontal scroll preserved only for tables ≥ 12 columns (audit logs) where the card pattern is impractical |
 | Accent in tables | Active sort header uses --fs-accent on the sort arrow / heading weight. Checkbox checked state uses --fs-accent fill with --fs-ink tick. Selected row retains --fs-surface-raised plus 2 px --fs-accent left rule (was --fs-text) |
@@ -1481,6 +1495,34 @@ New file: `frontend/src/styles/theme-components.css`. Every rule is scoped under
 - [ ] Document the dual-mode rule for `ExpenditureSubNav`, `CreditCardSubNav`, and `PayrollRulesHub` tabs (§4.16).
 
 **Exit gate 2E:** all seven primitives — `Button`, `Card`, `Badge`, `PageHeader`, `EmptyState`, `Tabs`, `Delta` — render without changing page markup; `categories.js` still passes its tests; the dual-mode components are documented and demonstrated.
+
+#### 2F — Universal loading pattern
+
+**Goal:** Every route that shows any loading indication shows the same loading indication. Establish `<Loading>` primitive and migrate every page's ad-hoc loading UI to it.
+
+**Audit method:** `git grep -nE "(Loading|loading|Spinner|spinner|DataLoader|Suspense)" frontend/src --include="*.js"` produces every occurrence. Classify each result:
+
+| Category | Definition | Action |
+| :--- | :--- | :--- |
+| **A** | Page uses ad-hoc loading UI (spinner, custom SVG, text "Loading...") | Migrate to `<Loading variant="…" />` |
+| **B** | Page uses `<Suspense fallback={…}>` | Set fallback to `<Loading variant="route" />` |
+| **C** | Page fetches data and shows nothing while loading (bad UX) | Add `<Loading variant="inline" />` or appropriate variant |
+| **D** | Page renders instantly, no async fetch | Leave as-is |
+
+**Deliverables:**
+- `frontend/src/components/ui/Loading.js` — 8th primitive, wraps `DataLoader` and `.fs-skeleton--*` variants
+- `ProtectedRoute.js` Suspense fallback → `<Loading variant="route" />`
+- Every Category A page migrated
+- Every Category B page updated
+- Every Category C page given a loading state
+- `.fs-skeleton--row`, `.fs-skeleton--card`, `.fs-skeleton--form-field` variants added to `theme.css`
+
+**Exit gate 2F:**
+- [ ] `git grep -nE "Loading|Spinner|DataLoader|Suspense" frontend/src --include="*.js"` returns only `<Loading>` usages, test files, and the Loading primitive's own definition
+- [ ] Zero pages render bare `<div>Loading...</div>` or custom spinner SVGs
+- [ ] 326-route visual regression passes (loading states do not appear in baselines — see risk note)
+- [ ] Every Category A/B/C page audited in a walkthrough tracking table
+- [ ] Loading primitive covered by jest-axe test in `frontend/tests/a11y/`
 
 ### 6.7 Phase 3 — Dashboard
 
@@ -2011,6 +2053,7 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 - [ ] If the PR converts a cluster's first route: the screen matches its reference frame.
 - [ ] `grep -rn '#14b8a6' frontend/src --include='*.css'` returns only theme.css.
 - [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented ≥ 12-column exceptions.
+- [ ] Loading consistency check: `git grep -nE "<div>Loading|className=\"loading-spinner\"|custom spinner SVG" frontend/src --include="*.js"` returns only loading primitive usages and test files.
 
 The legacy zero-diff gate is the proof that the allowlist works. A PR that changes a legacy page fails here, regardless of whether the change looks harmless.
 
@@ -2021,6 +2064,7 @@ The legacy zero-diff gate is the proof that the allowlist works. A PR that chang
 - [ ] Zero colour-bearing inline styles in touched components (dynamic values via CSS custom properties).
 - [ ] Correct at 1440/1024/768/480/390; screenshots at 1440 and 390 minimum.
 - [ ] Loading, empty, error, disabled states use tokens.
+- [ ] Loading consistency check (from 3A onward): Any new page content that fetches data uses `<Loading variant="…" />`; no ad-hoc loading UI introduced.
 - [ ] Focus-visible ring on all interactive elements, visible on the action block and on the page background (offset ring).
 - [ ] Control borders use `--fs-border-control`; placeholders use `--fs-text-3`.
 - [ ] Tables render as compact-expand cards at 390 with no page-level horizontal scroll; every field reachable via expander; sort headers carry accent; checked states use accent.
@@ -2153,7 +2197,7 @@ Every chart uses the neutral grey ramp plus the three semantic tones. Patterns a
 
 Payroll analytics and debt payoff use metric cards and tables today — **no charts**. If a chart is added later, it must consume `chartTheme.js`.
 
-### 8.4 React primitives (extracted in 2E)
+### 8.4 React primitives (extracted in 2E and 2F)
 
 | Primitive | Replaces | Notes |
 | :--- | :--- | :--- |
@@ -2164,6 +2208,7 @@ Payroll analytics and debt payoff use metric cards and tables today — **no cha
 | `PageHeader` | 5 `.page-header` definitions | Title/subtitle/actions anatomy; eyebrow optional and off by default; no gradient title |
 | `EmptyState` | Ad-hoc empty blocks | Icon + one line + one action |
 | `Tabs` | `ExpenditureSubNav`, `PayrollRulesHub` tabs, `CreditCardSubNav` | Keyboard arrow navigation, `aria-selected` |
+| `Loading` | `DataLoader.js`, `.fs-skeleton--*` ad-hoc usage, inline spinner SVGs | Variants: route (spinner), table (skeleton rows), card (skeleton block), form-field (skeleton input), inline (small spinner). Wraps `DataLoader` and skeleton variants. Every page uses this after 2F. |
 
 Adoption is incremental: only pages being migrated in the current sub-phase use them. No global refactor.
 
@@ -2444,6 +2489,7 @@ Append one row per sub-phase. Never edit past rows.
 | 2A | 2026-11-11 | Token layer and theme primitives completed: tokens.css generated scoped under :root[data-fs-theme="dark"] (D22 constraint 1); theme.css authored (611 lines, zero raw colours); theme-components.css created; index.css gated via html[data-fs-theme] with color-scheme: dark (D22 constraint 2a/2b); entry index.js wired; reference frames linked; http-server static server added (port 3001); test-only toast suppression; baseline set expanded from 325 to 328 (3 canonical reference frame baselines); verify-baseline-manifest.js verified 328/328; CRA 48 suites, a11y, and calculations passed. | 2B (Gated shell) | None | c63a12d (merged to main) |
 | 2B | 2026-11-11 | Gated shell, accessible skip link, and global surfaces completed: WCAG 2.4.1 skip link with outline suppression; useLayoutEffect synchronous theme gating without test hooks (Option A); Sidebar.js inline styles extracted verbatim to Sidebar.css (I13 fidelity); all dark shell component overrides in theme-components.css (Navbar, Sidebar, AccountSwitcher, Toast, UndoToast, ErrorBoundary); 0 undefined tokens across codebase; automated undefined-token detector in lint-tones.js; Playwright shell project added (Option A), 6 persistent shell baselines captured (total 334); verify-baseline-manifest.js verified 334/334; 325 visual routes + 3 reference frames + 7 shell tests + 49 CRA suites passed at 0 diff. | 2C (App.css fix) | None | afc5248 (merged to main) |
 | 2C | 2026-11-12 | All 11 `!important` declarations removed from App.css across 4 verified groups (Links, Disabled, Colours, Overflow); declaration-no-important errors dropped from 11 to 0; .fs-page .dashboard-button and .fs-page .loading-spinner (with stylelint-compliant var(--fs-radius-pill)) added to theme-components.css; @keyframes spin and merged reduced-motion rule added to theme.css; 0 diff across all 326 visual route tests at every intermediate group and final composite state; reference frames (3/3), shell tests (7/7), baseline manifest (334/334), and CRA test suites (49/49, 314 tests) passing. | 2D (Shared overrides) | None | 115ddfa (merged to main) |
+| — | 2026-11-12 | Plan revised to v10.3: added sub-phase 2F (universal loading, D23); added Loading primitive to §8.4; added --fs-danger-hover token; refined §6.4 loading row; updated dependency graph. | 2D | None | — |
 
 ```
 Sub-phase:   1A
@@ -2603,7 +2649,7 @@ Merge SHA:   <sha>
 | **Category colour in the log** | Removed by D14; replaced by a text prefix or group-by (G3). If the §1.3 timed task regresses materially, revisit the cue, not the palette | After Phase 4 analytics |
 | **Accent colour** | D14 rejects an accent hue; reintroducing one is a brand decision, not a page-level change | Post-release brand review |
 | **Third-party design skills** (antislop, UIdetox, Taste Skill) | They are instructions agents obey, usually unpinned; the deterministic stylelint rules cover the same patterns and block rather than advise | If a vetted, commit-pinned skill is trialled in 1C |
-| Full component-library extraction | Only 7 primitives are extracted now, including `Delta` | After Phase 14 |
+| Full component-library extraction | Only 8 primitives are extracted now, including `Delta` and `Loading` | After Phase 14 |
 | Storybook / permanent styleguide | Not required to ship; patterns are documented in §4 and §6.4 | After Phase 14 |
 | Replacing inline styles with CSS-in-JS | Classes + CSS custom properties suffice | Not planned |
 | Animation/motion redesign | Tokens cover transitions; no new motion | Optional polish |

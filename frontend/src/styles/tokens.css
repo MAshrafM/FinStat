@@ -44,6 +44,7 @@
   --fs-action-hover: var(--fs-accent-hover);
   --fs-action-active: var(--fs-accent-active);
   --fs-danger: #d97076;
+  --fs-danger-hover: #c36066;
   --fs-disabled-opacity: 0.45;
 
   /* Radii (8px ceiling) */
