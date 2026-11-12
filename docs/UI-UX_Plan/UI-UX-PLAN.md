@@ -1447,11 +1447,11 @@ Every rule here is gated per §4.16. Nothing in this sub-phase may change a lega
 
 #### 2C — `App.css` `!important` removal (separate branch)
 
-- [ ] Branch `phase-ui-2c-app-css-fix`.
-- [ ] Remove the 11 `!important` declarations from `App.css` one group at a time (link text-decoration, disabled transform/shadow, `.btn-*` colours, `overflow-x`).
-- [ ] After each group, run the full legacy visual suite. Any diff outside the accepted list stops the removal.
-- [ ] Move `.dashboard-button` and `.loading-spinner` styling under `.fs-page`.
-- [ ] No `.main-content` background rule is added — that element has no background today and does not need one; `.fs-page` supplies the surface.
+- [x] Branch `phase-ui-2c-app-css-fix`.
+- [x] Remove the 11 `!important` declarations from `App.css` one group at a time (link text-decoration, disabled transform/shadow, `.btn-*` colours, `overflow-x`).
+- [x] After each group, run the full legacy visual suite. Any diff outside the accepted list stops the removal.
+- [x] Move `.dashboard-button` and `.loading-spinner` styling under `.fs-page`.
+- [x] No `.main-content` background rule is added — that element has no background today and does not need one; `.fs-page` supplies the surface.
 
 **Exit gate 2C:** `App.css` contains no `!important`; legacy routes show zero visual diff.
 
@@ -2443,6 +2443,7 @@ Append one row per sub-phase. Never edit past rows.
 | — | 2026-11-10 | Plan revised to v10.2: D22 added (multi-theme door preservation via four constraints in Phases 2A, 3A, 12); §13 deferred entry expanded; Phase 2A tasks amended (scoped tokens.css, attribute-existence selectors); Phase 3A tasks amended (theme-aware chartTheme.js, four chart grey tokens); Phase 12 task clarified (delete conditional, preserve attribute); AGENTS.md gains Multi-theme section. | Phase 2A planning | None | e6600cb (merged to main) |
 | 2A | 2026-11-11 | Token layer and theme primitives completed: tokens.css generated scoped under :root[data-fs-theme="dark"] (D22 constraint 1); theme.css authored (611 lines, zero raw colours); theme-components.css created; index.css gated via html[data-fs-theme] with color-scheme: dark (D22 constraint 2a/2b); entry index.js wired; reference frames linked; http-server static server added (port 3001); test-only toast suppression; baseline set expanded from 325 to 328 (3 canonical reference frame baselines); verify-baseline-manifest.js verified 328/328; CRA 48 suites, a11y, and calculations passed. | 2B (Gated shell) | None | c63a12d (merged to main) |
 | 2B | 2026-11-11 | Gated shell, accessible skip link, and global surfaces completed: WCAG 2.4.1 skip link with outline suppression; useLayoutEffect synchronous theme gating without test hooks (Option A); Sidebar.js inline styles extracted verbatim to Sidebar.css (I13 fidelity); all dark shell component overrides in theme-components.css (Navbar, Sidebar, AccountSwitcher, Toast, UndoToast, ErrorBoundary); 0 undefined tokens across codebase; automated undefined-token detector in lint-tones.js; Playwright shell project added (Option A), 6 persistent shell baselines captured (total 334); verify-baseline-manifest.js verified 334/334; 325 visual routes + 3 reference frames + 7 shell tests + 49 CRA suites passed at 0 diff. | 2C (App.css fix) | None | afc5248 (merged to main) |
+| 2C | 2026-11-12 | All 11 `!important` declarations removed from App.css across 4 verified groups (Links, Disabled, Colours, Overflow); declaration-no-important errors dropped from 11 to 0; .fs-page .dashboard-button and .fs-page .loading-spinner (with stylelint-compliant var(--fs-radius-pill)) added to theme-components.css; @keyframes spin and merged reduced-motion rule added to theme.css; 0 diff across all 326 visual route tests at every intermediate group and final composite state; reference frames (3/3), shell tests (7/7), baseline manifest (334/334), and CRA test suites (49/49, 314 tests) passing. | 2D (Shared overrides) | None | phase-ui-2c-app-css-fix |
 
 ```
 Sub-phase:   1A
@@ -2512,6 +2513,20 @@ Fixtures:    unchanged (8 characterization fixtures passing)
 Screenshots: 334 baselines stored in local repo (A5-Local, D21)
 Branch:      phase-ui-2b-shell
 Merge SHA:   afc5248 (merged to main)
+```
+
+```
+Sub-phase:   2C
+Status:      done
+Done:        All 11 !important declarations safely de-escalated from App.css across 4 groups (Link text-decoration, Disabled transform/shadow, .btn-* colours, Table container overflow-x); declaration-no-important stylelint errors reached 0 (50 pre-existing violations remain for Phase 10); .fs-page .dashboard-button and .fs-page .loading-spinner authored in theme-components.css with stylelint-compliant var(--fs-radius-pill); universal @keyframes spin added to theme.css with reduced-motion merged into existing single media block; 0 diff across all 326 visual tests at every group step; reference frames (3/3), shell tests (7/7), manifest (334/334), and CRA suites (49/49, 314 tests) green.
+Next:        2D — Shared component overrides (theme-components.css)
+Blocked by:  None
+Allowlist:   none (zero production routing changes; empty allowlist preserved)
+Visual diff: zero on legacy routes (Invariant I13 verified; 0 accepted diffs, 0 route changes)
+Fixtures:    unchanged (8 characterization fixtures passing)
+Screenshots: n/a (0 visual diff across all 334 baseline captures)
+Branch:      phase-ui-2c-app-css-fix
+Merge SHA:   <pending merge>
 ```
 
 ### Sub-phase note template
