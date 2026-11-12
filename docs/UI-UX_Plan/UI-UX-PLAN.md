@@ -1041,9 +1041,9 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **1B** | Design direction: ramp, typeface, three frames, token freeze | `phase-ui-1b-direction` | ☑ | ☑ |
 | **1C** | Tooling, deterministic harness, calc fixtures, gitignore | `phase-ui-1c-tooling` | ☑ | ☑ |
 | **2A** | `tokens.css` (generated) + `theme.css` + `theme-components.css` + `.fs-page` base + gated body | `phase-ui-2a-tokens` | ☑ | ☑ |
-| **2B** | Gated shell and global overlays | `phase-ui-2b-shell` | ☐ | ☐ |
-| **2C** | `App.css` `!important` removal (side branch off 2B, merges before 3A) | `phase-ui-2c-app-css-fix` | ☐ | ☐ |
-| **2D** | Shared component overrides (new file, `.fs-page` scoped) | `phase-ui-2d-shared-css` | ☐ | ☐ |
+| **2B** | Gated shell and global overlays | `phase-ui-2b-shell` | ☑ | ☑ |
+| **2C** | `App.css` `!important` removal (side branch off 2B, merges before 3A) | `phase-ui-2c-app-css-fix` | ☑ | ☑ |
+| **2D** | Shared component overrides (new file, `.fs-page` scoped) | `phase-ui-2d-shared-components` | ☑ | ☑ |
 | **2E** | Seven primitives, category labels, specificity | `phase-ui-2e-primitives` | ☐ | ☐ |
 | **2F** | Universal loading pattern (Loading primitive + migrate all pages) | `phase-ui-2f-loading` | ☐ | ☐ |
 | **3A** | `chartTheme.js` + Dashboard conversion | `phase-ui-3a-dashboard` | ☐ | ☐ |
@@ -1475,12 +1475,12 @@ New file: `frontend/src/styles/theme-components.css`. Every rule is scoped under
 
 **The shared legacy files are not edited here (E1).** `Table.css`, `Form.css`, `Modal.css`, `index.css` and the rest keep their rules and their ratchet counts until Phase 12. v5 required them to reach zero as soon as a route was allowlisted, which the 3A gate could not satisfy; this sub-phase shadows them instead.
 
-- [ ] `.fs-page .styled-table` — header on `--fs-surface-sunken`, 1 px `--fs-border` dividers, hover on `--fs-surface-raised`, sorted-header state, empty row, `.fs-num`. Zebra uses the surface step, never a tint.
-- [ ] `.fs-page` form rules — labels, inputs, textarea, select, focus, error, disabled, control borders, placeholder.
-- [ ] `.fs-page .modal-content`, `.fs-page .confirm-modal-content`, `.fs-page .confirm-modal-overlay` (on `--fs-scrim`). The legacy content is `background: #ffffff`; the override is opaque `--fs-surface` with a 1 px border and an 8 px radius.
-- [ ] `.fs-page` banner, pagination, summary, analysis-card, component-table, and app-launcher rules.
-- [ ] `components/DataLoader.js` — spinner uses `currentColor` so it inherits the page without a gate.
-- [ ] **Verify each override wins in the browser**, not just in source order: inspect the computed style on a converted route. A legacy `!important` that beats the override is removed by the owning page's sub-phase, never by editing the shared file (R27).
+- [x] `.fs-page .styled-table` — header on `--fs-surface-sunken`, 1 px `--fs-border` dividers, hover on `--fs-surface-raised`, sorted-header state, empty row, `.fs-num`. Zebra uses the surface step, never a tint.
+- [x] `.fs-page` form rules — labels, inputs, textarea, select, focus, error, disabled, control borders, placeholder.
+- [x] `.fs-page .modal-content`, `.fs-page .confirm-modal-content`, `.fs-page .confirm-modal-overlay` (on `--fs-scrim`). The legacy content is `background: #ffffff`; the override is opaque `--fs-surface` with a 1 px border and an 8 px radius.
+- [x] `.fs-page` banner, pagination, summary, analysis-card, component-table, and app-launcher rules.
+- [x] `components/DataLoader.js` — spinner uses `currentColor` so it inherits the page without a gate.
+- [x] **Verify each override wins in the browser**, not just in source order: inspect the computed style on a converted route. A legacy `!important` that beats the override is removed by the owning page's sub-phase, never by editing the shared file (R27).
 
 **Exit gate 2D:** `Table`, `Modal`, `ConfirmModal`, and `Form` inside `.fs-page` look correct; the same components outside `.fs-page` look exactly as they did; zero diff on all legacy routes; `theme-components.css` reports zero violations; the computed-style check above is recorded.
 
@@ -2573,6 +2573,20 @@ Fixtures:    unchanged (8 characterization fixtures passing)
 Screenshots: n/a (0 visual diff across all 334 baseline captures)
 Branch:      phase-ui-2c-app-css-fix
 Merge SHA:   115ddfa (merged to main)
+```
+
+```
+Sub-phase:   2D
+Status:      done
+Done:        Authored Plain CSS expanded shadow rules in theme-components.css for Tables, Forms, Modals (8px ceiling), ConfirmModals, ViewOnlyBanner, ProtectedAction, Pagination, SummaryRow, AnalysisCard, ComponentTable, AppLauncher without editing legacy shared files (Constraint E1); converted DataLoader.js to currentColor inheritance with dedicated Jest tests; created static dual-mode HTML fixture page (port 3001) and Playwright spec (shared-components.spec.js) verifying 6/6 dual-mode computed styles in browser; full Exit Gate 2D verified: tokens (0 drift), tones (0 violations, 0 undefined tokens), ratchet (0 regressions), reference frames (3/3 pass, 0 diff), shell (7/7 pass), manifest (334/334 pass), and CRA unit suites (50/50 pass, 317 tests).
+Next:        2E — Primitives, category labels, specificity
+Blocked by:  None
+Allowlist:   none (zero production routing changes; empty allowlist preserved)
+Visual diff: zero on unmigrated routes (Invariant I13 verified)
+Fixtures:    shared-components.html added (port 3001 static dual-mode harness)
+Screenshots: 12 dual-mode screenshots captured in frontend/tests/visual/output/phase-2d/
+Branch:      phase-ui-2d-shared-components
+Merge SHA:   (pending merge to main)
 ```
 
 ### Sub-phase note template

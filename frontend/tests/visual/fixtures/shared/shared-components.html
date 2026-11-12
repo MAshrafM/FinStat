@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shared Components Dual-Mode Fixture (Phase 2D)</title>
+  <link rel="stylesheet" href="../../../../src/styles/tokens.css">
+  <link rel="stylesheet" href="../../../../src/styles/theme.css">
+  <link rel="stylesheet" href="../../../../src/styles/theme-components.css">
+  <link rel="stylesheet" href="../../../../src/components/Table.css">
+  <link rel="stylesheet" href="../../../../src/components/Form.css">
+  <link rel="stylesheet" href="../../../../src/components/Modal.css">
+  <link rel="stylesheet" href="../../../../src/components/common/ConfirmModal.css">
+  <link rel="stylesheet" href="../../../../src/components/common/ViewOnlyBanner.css">
+  <link rel="stylesheet" href="../../../../src/components/SummaryRow.css">
+  <link rel="stylesheet" href="../../../../src/components/AnalysisCard.css">
+  <link rel="stylesheet" href="../../../../src/components/salary/ComponentTable.css">
+  <link rel="stylesheet" href="../../../../src/components/PaginationControls.css">
+  <link rel="stylesheet" href="../../../../src/components/dashboard/AppLauncher.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .fixture-section {
+      margin-bottom: 40px;
+      padding: 20px;
+      border: 1px dashed #ccc;
+    }
+    /* Fixed overlay helper to keep inline within test viewport */
+    .inline-overlay-wrapper {
+      position: relative !important;
+      inset: auto !important;
+      width: 100% !important;
+      min-height: 200px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 1 !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Legacy Context (Un-scoped, no .fs-page) -->
+  <div id="legacy-context" class="fixture-section">
+    <h2>Legacy Context</h2>
+
+    <!-- Table -->
+    <div class="table-container legacy-table-container">
+      <table class="styled-table legacy-table">
+        <thead>
+          <tr>
+            <th>Header 1</th>
+            <th>Header 2</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Row 1 Odd</td>
+            <td class="fs-num">100.00</td>
+          </tr>
+          <tr>
+            <td>Row 2 Even (Zebra)</td>
+            <td class="fs-num">200.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Form -->
+    <div class="paycheck-form-container legacy-form-container">
+      <h3>Paycheck Form</h3>
+      <div class="form-group">
+        <label>Input Label</label>
+        <input type="text" class="legacy-input" placeholder="Type here..." value="Sample text" />
+      </div>
+      <button class="submit-button legacy-submit-button">Submit</button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay inline-overlay-wrapper legacy-modal-overlay">
+      <div class="modal-content legacy-modal-content">
+        <div class="modal-header">
+          <h2>Modal Title</h2>
+          <button class="modal-close-button">&times;</button>
+        </div>
+        <div class="modal-body">Modal body content</div>
+      </div>
+    </div>
+
+    <!-- ConfirmModal -->
+    <div class="confirm-modal-overlay inline-overlay-wrapper legacy-confirm-overlay">
+      <div class="confirm-modal-content legacy-confirm-content">
+        <div class="confirm-modal-header">
+          <h3 class="confirm-modal-title">Delete Record</h3>
+        </div>
+        <div class="confirm-modal-body">
+          <p class="confirm-modal-message">Are you sure you want to proceed?</p>
+        </div>
+        <div class="confirm-modal-actions">
+          <button class="confirm-modal-btn confirm-modal-btn-cancel legacy-confirm-cancel">Cancel</button>
+          <button class="confirm-modal-btn confirm-modal-btn-danger legacy-confirm-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SummaryRow -->
+    <div class="summary-row legacy-summary-row">
+      <div class="summary-item">
+        <h4>Period Summary</h4>
+        <div class="period-item legacy-period-item">
+          <strong>Current Period</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- AnalysisCard -->
+    <div class="analysis-card legacy-analysis-card">
+      <h2>Portfolio Analysis</h2>
+      <div class="stat-item">
+        <h4>Metric</h4>
+        <p>$10,000</p>
+      </div>
+    </div>
+
+    <!-- ComponentTable -->
+    <div class="component-table-wrapper legacy-component-table-wrapper">
+      <h3 class="component-table-heading">Earnings Components</h3>
+      <table class="custom-component-table legacy-custom-table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Basic Salary</td>
+            <td>5000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Themed Context (Scoped inside .fs-page) -->
+  <div id="themed-context" class="fs-page fixture-section">
+    <h2>Themed Context (.fs-page)</h2>
+
+    <!-- Table -->
+    <div class="table-container themed-table-container">
+      <table class="styled-table themed-table">
+        <thead>
+          <tr>
+            <th>Header 1</th>
+            <th>Header 2</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Row 1 Odd</td>
+            <td class="fs-num">100.00</td>
+          </tr>
+          <tr>
+            <td>Row 2 Even (Zebra)</td>
+            <td class="fs-num">200.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Form -->
+    <div class="paycheck-form-container themed-form-container">
+      <h3>Paycheck Form</h3>
+      <div class="form-group">
+        <label>Input Label</label>
+        <input type="text" class="themed-input" placeholder="Type here..." value="Sample text" />
+      </div>
+      <button class="submit-button themed-submit-button">Submit</button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay inline-overlay-wrapper themed-modal-overlay">
+      <div class="modal-content themed-modal-content">
+        <div class="modal-header">
+          <h2>Modal Title</h2>
+          <button class="modal-close-button">&times;</button>
+        </div>
+        <div class="modal-body">Modal body content</div>
+      </div>
+    </div>
+
+    <!-- ConfirmModal -->
+    <div class="confirm-modal-overlay inline-overlay-wrapper themed-confirm-overlay">
+      <div class="confirm-modal-content themed-confirm-content">
+        <div class="confirm-modal-header">
+          <h3 class="confirm-modal-title">Delete Record</h3>
+        </div>
+        <div class="confirm-modal-body">
+          <p class="confirm-modal-message">Are you sure you want to proceed?</p>
+        </div>
+        <div class="confirm-modal-actions">
+          <button class="confirm-modal-btn confirm-modal-btn-cancel themed-confirm-cancel">Cancel</button>
+          <button class="confirm-modal-btn confirm-modal-btn-danger themed-confirm-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SummaryRow -->
+    <div class="summary-row themed-summary-row">
+      <div class="summary-item">
+        <h4>Period Summary</h4>
+        <div class="period-item themed-period-item">
+          <strong>Current Period</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- AnalysisCard -->
+    <div class="analysis-card themed-analysis-card">
+      <h2>Portfolio Analysis</h2>
+      <div class="stat-item">
+        <h4>Metric</h4>
+        <p>$10,000</p>
+      </div>
+    </div>
+
+    <!-- ComponentTable -->
+    <div class="component-table-wrapper themed-component-table-wrapper">
+      <h3 class="component-table-heading">Earnings Components</h3>
+      <table class="custom-component-table themed-custom-table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Basic Salary</td>
+            <td>5000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</body>
+</html>
+

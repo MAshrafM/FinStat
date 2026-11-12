@@ -106,7 +106,7 @@ const DataLoader = ({ children }) => {
         dot: {
             width: '8px',
             height: '8px',
-            backgroundColor: '#3b82f6',
+            backgroundColor: 'currentColor',
             borderRadius: '50%',
             animation: 'bounce 1.4s infinite ease-in-out both'
         },
@@ -196,7 +196,7 @@ const DataLoader = ({ children }) => {
                                 cx="50"
                                 cy="50"
                                 r="40"
-                                stroke="#3b82f6"
+                                stroke="currentColor"
                                 strokeWidth="8"
                                 fill="transparent"
                                 strokeDasharray={circumference}
