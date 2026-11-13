@@ -20,12 +20,12 @@ Phase 2D implements `.fs-page`-scoped Plain CSS expanded overrides for all share
    - **Tables**: `.fs-page .styled-table`, `.fs-page .table-container`, header on `--fs-surface-sunken`, borders `--fs-border`, hover `--fs-surface-raised`, zebra `--fs-surface-sunken`.
    - **Forms**: `.fs-page .paycheck-form-container`, `.fs-page .form-group` inputs, textareas, selects, focus rings, disabled states, and submit button.
    - **Modals & Overlays**: `.fs-page .modal-overlay` & `html[data-fs-theme] .modal-overlay` with `--fs-scrim` (`rgba(8, 9, 11, 0.72)`), opaque `--fs-surface` card, 8px ceiling radius (`--fs-radius-lg`), safe neutral close buttons, and explicit `backdrop-filter: none;` (`-webkit-backdrop-filter: none;`) to suppress legacy blurs.
-   - **ConfirmModal**: `.fs-page .confirm-modal-content` on `--fs-surface`, `--fs-radius-lg`, destructive action on `--fs-danger` with `--fs-ink` text (6.00:1 contrast, passing WCAG 2.1 AA), and explicit `backdrop-filter: none;`.
-   - **Banners & Actions**: `.fs-page .view-only-banner` (`--fs-surface-raised` + `--fs-warning`, `backdrop-filter: none;`), `.fs-page .protected-action-wrapper` opacity gating (`--fs-opacity-disabled: 0.45`).
-   - **Pagination**: `.fs-page .pagination-container` neutral controls and `--fs-accent` active page indicator.
+   - **ConfirmModal**: `.fs-page .confirm-modal-content` on `--fs-surface`, `--fs-radius-lg`, destructive action on `--fs-danger` with `--fs-ink` text (`#0d0e10` / `rgb(13, 14, 16)`, 6.00:1 contrast, passing WCAG 2.1 AA), and explicit `backdrop-filter: none;` suppressing legacy `blur(2px)`.
+   - **Banners & Actions**: `.fs-page .view-only-banner` (`--fs-surface-raised` + `--fs-warning` `#cfa24f`, explicit `backdrop-filter: none;` suppressing legacy `blur(8px)`), `.fs-page .protected-action-wrapper` opacity gating (`--fs-disabled-opacity: 0.45`).
+   - **Pagination**: `.fs-page .pagination-container` neutral controls on `--fs-surface`, `--fs-border-control`, and 4px radius (`--fs-radius-sm`).
    - **Summary & Analytics**: `.fs-page .summary-row`, `.fs-page .period-item` on `--fs-surface-raised`, `.fs-page .analysis-card`.
    - **ComponentTable**: `.fs-page .component-table-wrapper`, custom component table zebra and inputs.
-   - **AppLauncher**: `.fs-page .launcher-panel`, search input, tabs, action cards, and `backdrop-filter: none;`.
+   - **AppLauncher**: `.fs-page .launcher-panel` on `--fs-surface` (`rgb(26, 28, 32)`), search input, tabs, action cards, and `backdrop-filter: none;` suppressing legacy `blur(10px)`.
 3. **`DataLoader.js` Colour Inheritance**:
    - Replaced hardcoded `#3b82f6` with `currentColor` on SVG circle stroke and bouncing dots, allowing dynamic inheritance without route gates.
 4. **Behavioral Unit Testing**:
@@ -97,26 +97,41 @@ Snapshots:   0 total
 
 ## 4. W3: Dual-Mode Browser Verification & Screenshots
 
+### 4.1 Legacy Blur Suppression Audit
+Verification that legacy CSS files contain `backdrop-filter: blur(...)` and that Phase 2D's `.fs-page` / `html[data-fs-theme]` overrides successfully eliminate them to `none`:
+
+```powershell
+git grep -n "backdrop-filter" frontend/src/components/Modal.css frontend/src/components/common/ConfirmModal.css frontend/src/components/common/ViewOnlyBanner.css frontend/src/components/dashboard/AppLauncher.css
+```
+```
+frontend/src/components/common/ConfirmModal.css:13:  backdrop-filter: blur(2px);
+frontend/src/components/common/ViewOnlyBanner.css:13:  backdrop-filter: blur(8px);
+frontend/src/components/dashboard/AppLauncher.css:12:  backdrop-filter: blur(10px);
+frontend/src/components/dashboard/AppLauncher.css:13:  -webkit-backdrop-filter: blur(10px);
+```
+*(Note: `Modal.css` did not define a legacy blur; it renders with `backdrop-filter: none` by default and is explicitly locked to `none` under theme).*
+
+### 4.2 Browser Computed Style Test Run
 Dual-mode computed styles were verified in Chromium at 1440px via `npx playwright test --project=shared`:
 
 ```
 Running 10 tests using 1 worker
 
-  ok 1 [shared] › shared-components.spec.js:27:3 › Phase 2D: Shared Components Dual-Mode Verification › Table: computed styles verify legacy vs .fs-page theme override (2.0s)
-  ok 2 [shared] › shared-components.spec.js:53:3 › Phase 2D: Shared Components Dual-Mode Verification › Form: computed styles verify legacy vs .fs-page theme override (1.8s)
-  ok 3 [shared] › shared-components.spec.js:86:3 › Phase 2D: Shared Components Dual-Mode Verification › Modal: computed styles verify legacy vs theme override (8px ceiling) (1.7s)
-  ok 4 [shared] › shared-components.spec.js:114:3 › Phase 2D: Shared Components Dual-Mode Verification › ConfirmModal: computed styles verify legacy vs theme override (1.7s)
-  ok 5 [shared] › shared-components.spec.js:148:3 › Phase 2D: Shared Components Dual-Mode Verification › SummaryRow & AnalysisCard: computed styles verify theme overrides (1.7s)
-  ok 6 [shared] › shared-components.spec.js:174:3 › Phase 2D: Shared Components Dual-Mode Verification › ComponentTable: computed styles verify theme overrides (1.6s)
-  ok 7 [shared] › shared-components.spec.js:198:3 › Phase 2D: Shared Components Dual-Mode Verification › ViewOnlyBanner: computed styles verify theme overrides and backdrop-filter none (1.5s)
-  ok 8 [shared] › shared-components.spec.js:218:3 › Phase 2D: Shared Components Dual-Mode Verification › ProtectedAction: computed styles verify opacity gating (1.4s)
-  ok 9 [shared] › shared-components.spec.js:232:3 › Phase 2D: Shared Components Dual-Mode Verification › Pagination: computed styles verify theme overrides (1.4s)
-  ok 10 [shared] › shared-components.spec.js:246:3 › Phase 2D: Shared Components Dual-Mode Verification › AppLauncher: computed styles verify theme overrides and backdrop-filter none (1.5s)
+  ok 1 [shared] › shared-components.spec.js:27:3 › Phase 2D: Shared Components Dual-Mode Verification › Table: computed styles verify legacy vs .fs-page theme override (3.8s)
+  ok 2 [shared] › shared-components.spec.js:53:3 › Phase 2D: Shared Components Dual-Mode Verification › Form: computed styles verify legacy vs .fs-page theme override (3.8s)
+  ok 3 [shared] › shared-components.spec.js:86:3 › Phase 2D: Shared Components Dual-Mode Verification › Modal: computed styles verify legacy vs theme override (8px ceiling) (3.6s)
+  ok 4 [shared] › shared-components.spec.js:114:3 › Phase 2D: Shared Components Dual-Mode Verification › ConfirmModal: computed styles verify legacy vs theme override (3.2s)
+  ok 5 [shared] › shared-components.spec.js:148:3 › Phase 2D: Shared Components Dual-Mode Verification › SummaryRow & AnalysisCard: computed styles verify theme overrides (3.0s)
+  ok 6 [shared] › shared-components.spec.js:174:3 › Phase 2D: Shared Components Dual-Mode Verification › ComponentTable: computed styles verify theme overrides (3.5s)
+  ok 7 [shared] › shared-components.spec.js:198:3 › Phase 2D: Shared Components Dual-Mode Verification › ViewOnlyBanner: computed styles verify theme overrides and backdrop-filter none (2.2s)
+  ok 8 [shared] › shared-components.spec.js:218:3 › Phase 2D: Shared Components Dual-Mode Verification › ProtectedAction: computed styles verify opacity gating (2.4s)
+  ok 9 [shared] › shared-components.spec.js:232:3 › Phase 2D: Shared Components Dual-Mode Verification › Pagination: computed styles verify theme overrides (3.0s)
+  ok 10 [shared] › shared-components.spec.js:256:3 › Phase 2D: Shared Components Dual-Mode Verification › AppLauncher: computed styles verify theme overrides and backdrop-filter none (2.6s)
 
-  10 passed (32.4s)
+  10 passed (50.7s)
 ```
 
-### Computed Style Assertion Matrix
+### 4.3 Computed Style Assertion Matrix
 
 | Component | Selector | Legacy Property & Value | Themed Property & Value | Status |
 | :--- | :--- | :--- | :--- | :--- |
@@ -127,22 +142,21 @@ Running 10 tests using 1 worker
 | **Form Button** | `.submit-button` | `bg: rgb(0, 152, 121)`, `radius: 5px` | `bg: rgb(20, 184, 166)` (`#14b8a6`), `radius: 4px` | **PASS** |
 | **Modal Content** | `.modal-content` | `bg: rgb(255, 255, 255)`, `radius: 12px` | `bg: rgb(26, 28, 32)`, `radius: 8px` (ceiling) | **PASS** |
 | **Modal Scrim** | `.modal-overlay` | `rgba(0, 0, 0, 0.5)` | `rgba(8, 9, 11, 0.72)` (`--fs-scrim`) | **PASS** |
-| **Modal Blur** | `.modal-overlay` | `backdrop-filter: none` | `backdrop-filter: none` (anti-slop clean) | **PASS** |
+| **Modal Blur** | `.modal-overlay` | `backdrop-filter: none` (no legacy blur) | `backdrop-filter: none` (anti-slop clean) | **PASS** |
 | **ConfirmModal** | `.confirm-modal-content`| `bg: rgb(255, 255, 255)`, `radius: 12px` | `bg: rgb(26, 28, 32)`, `radius: 8px` (ceiling) | **PASS** |
-| **Confirm Blur** | `.confirm-modal-overlay`| `backdrop-filter: none` | `backdrop-filter: none` (anti-slop clean) | **PASS** |
-| **Confirm Action**| `.confirm-modal-btn-danger`| `bg: rgb(220, 38, 38)`, `color: #fff` | `bg: rgb(217, 112, 118)` (`#d97076`), `color: rgb(16, 17, 20)` (`#101114`) | **PASS** |
+| **Confirm Blur** | `.confirm-modal-overlay`| `backdrop-filter: blur(2px)` | `backdrop-filter: none` (anti-slop clean) | **PASS** |
+| **Confirm Action**| `.confirm-modal-btn-danger`| `bg: rgb(220, 38, 38)`, `color: #fff` | `bg: rgb(217, 112, 118)` (`--fs-danger`), `color: rgb(13, 14, 16)` (`#0d0e10`, `--fs-ink`, 6.00:1) | **PASS** |
 | **Summary Row** | `.summary-row` | `bg: rgb(248, 249, 250)` (`#f8f9fa`) | `bg: rgb(26, 28, 32)` (`--fs-surface`) | **PASS** |
 | **Period Item** | `.period-item` | `bg: rgb(255, 255, 255)` (`#ffffff`) | `bg: rgb(34, 37, 42)` (`--fs-surface-raised`) | **PASS** |
 | **Component Table**| `.component-table-wrapper`| `bg: rgb(255, 255, 255)` (`#ffffff`) | `bg: rgb(26, 28, 32)` (`--fs-surface`) | **PASS** |
-| **ViewOnlyBanner**| `.view-only-banner` | `bg: rgb(254, 243, 199)`, `color: rgb(146, 64, 14)` | `bg: rgb(34, 37, 42)` (`--fs-surface-raised`), `color: rgb(229, 169, 59)` (`--fs-warning`) | **PASS** |
-| **ViewOnly Blur** | `.view-only-banner` | `backdrop-filter: none` | `backdrop-filter: none` (anti-slop clean) | **PASS** |
-| **ProtectedAction**| `.action-disabled` | `opacity: 1` | `opacity: 0.45` (`--fs-opacity-disabled`) | **PASS** |
-| **Pagination Active**| `.pagination-page.active` | `bg: rgb(0, 152, 121)`, `color: rgb(255, 255, 255)` | `bg: rgb(20, 184, 166)` (`--fs-accent`), `color: rgb(16, 17, 20)` (`--fs-ink`) | **PASS** |
-| **Pagination Inactive**| `.pagination-page` | `bg: rgb(248, 249, 250)` (`#f8f9fa`) | `bg: rgb(34, 37, 42)` (`--fs-surface-raised`) | **PASS** |
-| **AppLauncher** | `.launcher-panel` | `bg: rgb(255, 255, 255)`, `radius: 12px` | `bg: rgb(22, 24, 29)` (`--fs-card-bg`), `radius: 8px` (ceiling) | **PASS** |
-| **AppLauncher Blur** | `.launcher-backdrop` | `backdrop-filter: none` | `backdrop-filter: none` (anti-slop clean) | **PASS** |
+| **ViewOnlyBanner**| `.view-only-banner` | `bg: rgb(254, 243, 199)`, `color: rgb(146, 64, 14)` | `bg: rgb(34, 37, 42)` (`--fs-surface-raised`), `color: rgb(207, 162, 79)` (`#cfa24f`, `--fs-warning`) | **PASS** |
+| **ViewOnly Blur** | `.view-only-banner` | `backdrop-filter: blur(8px)` | `backdrop-filter: none` (anti-slop clean) | **PASS** |
+| **ProtectedAction**| `.action-disabled` | `opacity: 1` | `opacity: 0.45` (`--fs-disabled-opacity`) | **PASS** |
+| **Pagination Button**| `.pagination-container button` | `bg: rgb(255, 255, 255)`, `border: rgb(221, 221, 221)`, `radius: 5px` | `bg: rgb(26, 28, 32)` (`--fs-surface`), `border: rgb(106, 111, 119)` (`--fs-border-control`), `radius: 4px` | **PASS** |
+| **AppLauncher** | `.launcher-panel` | `bg: rgb(255, 255, 255)`, `radius: 12px` | `bg: rgb(26, 28, 32)` (`#1a1c20`, `--fs-surface`), `radius: 8px` (ceiling) | **PASS** |
+| **AppLauncher Blur** | `.launcher-backdrop` | `backdrop-filter: blur(10px)` | `backdrop-filter: none` (anti-slop clean) | **PASS** |
 
-### Visual Comparisons (Legacy vs Dark Theme Overrides)
+### 4.4 Visual Comparisons (Legacy vs Dark Theme Overrides)
 
 #### Table Component
 ````carousel
@@ -190,7 +204,25 @@ Running 10 tests using 1 worker
 
 ## 5. Full Exit Gate 2D Verification Suite
 
-### 5.1 Tokens Check
+### 5.1 Constraint E1 Compliance Verification (Zero Legacy Edits)
+```powershell
+git diff --name-only main
+```
+```
+docs/UI-UX_Plan/UI-UX-PLAN.md
+docs/ui-plans/phase_2d_walkthrough.md
+frontend/.gitignore
+frontend/.stylelintrc.json
+frontend/playwright.config.js
+frontend/src/components/DataLoader.js
+frontend/src/components/__tests__/DataLoader.test.js
+frontend/src/styles/theme-components.css
+frontend/tests/visual/fixtures/shared/shared-components.html
+frontend/tests/visual/shared-components.spec.js
+```
+*Zero legacy shared CSS files were touched (Constraint E1 preserved).*
+
+### 5.2 Tokens Check
 ```powershell
 node frontend/scripts/tokens.js --check
 ```
@@ -200,7 +232,7 @@ node frontend/scripts/tokens.js --check
 ✓ All tokens checks passed successfully.
 ```
 
-### 5.2 Lint Tones
+### 5.3 Lint Tones
 ```powershell
 node frontend/scripts/lint-tones.js
 ```
@@ -209,7 +241,7 @@ node frontend/scripts/lint-tones.js
 ✓ [lint-tones] Scanned 60 total CSS files against tokens.json: 0 undefined tokens.
 ```
 
-### 5.3 Stylelint Ratchet
+### 5.4 Stylelint Ratchet
 ```powershell
 node frontend/scripts/lint-ratchet.js
 ```
@@ -218,7 +250,7 @@ node frontend/scripts/lint-ratchet.js
 ✓ [lint-ratchet] Checked 59 CSS files against 4bcb8a927bd9bd34ed21d7bc9a8ac8a7a723a507: 0 regressions.
 ```
 
-### 5.4 Theme Components Stylelint Check
+### 5.5 Theme Components Stylelint Check
 ```powershell
 cd frontend; npx stylelint "src/styles/theme-components.css" "src/styles/theme.css"
 ```
@@ -226,7 +258,7 @@ cd frontend; npx stylelint "src/styles/theme-components.css" "src/styles/theme.c
 (Clean exit with code 0 - 0 errors)
 ```
 
-### 5.5 Reference Frames Suite
+### 5.6 Reference Frames Suite
 ```powershell
 cd frontend; npx playwright test --project=reference
 ```
@@ -240,7 +272,7 @@ Running 3 tests using 1 worker
   3 passed (16.9s)
 ```
 
-### 5.6 Shell Visual Suite
+### 5.7 Shell Visual Suite
 ```powershell
 cd frontend; npx playwright test --project=shell
 ```
@@ -258,7 +290,7 @@ Running 7 tests using 1 worker
   7 passed (1.0m)
 ```
 
-### 5.7 Visual Route Regression Suite (Invariant I13: 326/326 Passed with 0 Diff)
+### 5.8 Visual Route Regression Suite (Invariant I13: 326/326 Passed with 0 Diff)
 ```powershell
 cd frontend; $env:CI="true"; $env:NODE_OPTIONS="--max-old-space-size=4096"; npx playwright test --project=visual
 ```
@@ -294,7 +326,7 @@ Running 326 tests using 1 worker
 
 Across all 326 visual route snapshots, zero visual differences (0 diff) were detected against the established Phase 2A baselines. This confirms that all Phase 2D shared component overrides are strictly scoped to `.fs-page` and do not leak onto legacy unmigrated routes.
 
-### 5.8 Baseline Manifest Verification
+### 5.9 Baseline Manifest Verification
 ```powershell
 node frontend/scripts/verify-baseline-manifest.js
 ```
@@ -302,7 +334,7 @@ node frontend/scripts/verify-baseline-manifest.js
 334/334 baselines verified successfully.
 ```
 
-### 5.9 Jest Unit Test Suite
+### 5.10 Jest Unit Test Suite
 ```powershell
 cd frontend; $env:CI='true'; npm test
 ```
@@ -322,6 +354,6 @@ Ran all test suites.
 - [x] The same components outside `.fs-page` look exactly as they did (verified in legacy fixtures).
 - [x] Zero diff on legacy routes across all 326 route snapshots (Invariant I13 preserved).
 - [x] `theme-components.css` reports zero violations (stylelint clean).
-- [x] Computed-style browser checks recorded in walkthrough table including explicit `backdrop-filter: none`.
+- [x] Computed-style browser checks recorded in walkthrough table including verified suppression of legacy blurs to `none`.
 - [x] Radius ceiling $\le 8\text{px}$ respected (`--fs-radius-lg` on modals and launchers).
-- [x] Zero edits to legacy shared CSS files (Constraint E1 preserved).
+- [x] Zero edits to legacy shared CSS files (Constraint E1 preserved and proven via `git diff --name-only main`).

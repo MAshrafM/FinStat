@@ -234,13 +234,23 @@ test.describe('Phase 2D: Shared Components Dual-Mode Verification', () => {
     await page.goto(FIXTURE_URL, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
 
-    // Themed checks
+    // 1. Legacy checks
+    const legacyBtnBg = await page.$eval('.legacy-page-btn', el => window.getComputedStyle(el).backgroundColor);
+    const legacyBtnBorder = await page.$eval('.legacy-page-btn', el => window.getComputedStyle(el).borderColor);
+    const legacyBtnRadius = await page.$eval('.legacy-page-btn', el => window.getComputedStyle(el).borderRadius);
+    expect(legacyBtnBg).toBe('rgb(255, 255, 255)');
+    expect(legacyBtnBorder).toBe('rgb(221, 221, 221)');
+    expect(legacyBtnRadius).toBe('5px');
+
+    // 2. Themed checks
     await page.evaluate(() => document.documentElement.setAttribute('data-fs-theme', 'dark'));
     const themedBtnBg = await page.$eval('.themed-page-btn', el => window.getComputedStyle(el).backgroundColor);
     const themedBtnBorder = await page.$eval('.themed-page-btn', el => window.getComputedStyle(el).borderColor);
+    const themedBtnRadius = await page.$eval('.themed-page-btn', el => window.getComputedStyle(el).borderRadius);
 
     expect(themedBtnBg).toBe('rgb(26, 28, 32)');        // --fs-surface
     expect(themedBtnBorder).toBe('rgb(106, 111, 119)');  // --fs-border-control (#6a6f77)
+    expect(themedBtnRadius).toBe('4px');                // --fs-radius-sm
   });
 
   test('AppLauncher: computed styles verify theme overrides and backdrop-filter none', async ({ page }) => {
