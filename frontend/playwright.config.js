@@ -36,6 +36,10 @@ module.exports = defineConfig({
       testMatch: /reference-frames\.spec\.js/,
     },
     {
+      name: 'shared',
+      testMatch: /shared-components\.spec\.js/,
+    },
+    {
       name: 'shell',
       dependencies: ['setup'],
       testMatch: /shell\.spec\.js/,

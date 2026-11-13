@@ -515,3 +515,1078 @@ html[data-fs-theme] .error-boundary-btn-secondary:hover {
   animation: spin 1s linear infinite;
 }
 
+
+/* ==========================================================================
+   FinStat Design System — Scoped Page Overrides: Tables
+   Governed by UI-UX-PLAN.md §4.7, §6.4, §6.6 (Phase 2D) and Reference Frame 01
+   ========================================================================== */
+
+.fs-page .table-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 1.25rem auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fs-page .styled-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  background: var(--fs-surface);
+  color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  box-shadow: none;
+  table-layout: auto;
+}
+
+.fs-page .styled-table thead tr {
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-3);
+  font-weight: var(--fs-weight-medium);
+  text-align: left;
+}
+
+.fs-page .styled-table th {
+  padding: 10px 14px;
+  border: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-3);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.fs-page .styled-table td {
+  padding: 10px 14px;
+  border: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-2);
+  white-space: nowrap;
+}
+
+.fs-page .styled-table tbody tr {
+  background: var(--fs-surface);
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  transition: background var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .styled-table tbody tr:nth-of-type(even) {
+  background: var(--fs-surface-sunken);
+}
+
+.fs-page .styled-table tbody tr:hover {
+  background: var(--fs-surface-raised);
+}
+
+.fs-page .styled-table tbody tr:last-of-type {
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+.fs-page .styled-table tbody tr.fs-row-selected {
+  background: var(--fs-surface-raised);
+  border-left: 2px solid var(--fs-accent);
+}
+
+.fs-page .styled-table th.fs-th-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.fs-page .styled-table th.fs-th-active,
+.fs-page .styled-table th.sorted {
+  color: var(--fs-text);
+  font-weight: var(--fs-weight-semibold);
+}
+
+.fs-page .styled-table .fs-sort-arrow,
+.fs-page .styled-table .sort-arrow {
+  color: var(--fs-accent);
+  margin-left: 4px;
+}
+
+.fs-page .styled-table .empty-row,
+.fs-page .styled-table .empty-state {
+  text-align: center;
+  color: var(--fs-text-3);
+  padding: 2rem 1rem;
+}
+
+.fs-page .styled-table .fs-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.fs-page .action-icon {
+  margin: 0 8px;
+  cursor: pointer;
+  color: var(--fs-text-3);
+  transition: color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .action-icon:hover {
+  color: var(--fs-text);
+  transform: none;
+}
+
+.fs-page .edit-icon {
+  color: var(--fs-text-3);
+}
+
+.fs-page .edit-icon:hover {
+  color: var(--fs-text);
+}
+
+.fs-page .delete-icon {
+  color: var(--fs-danger);
+}
+
+.fs-page .delete-icon:hover {
+  color: var(--fs-danger-hover);
+}
+
+.fs-page .tooltip-container:hover::after {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  box-shadow: var(--fs-shadow);
+  font-family: var(--fs-font-sans);
+}
+
+/* ==========================================================================
+   FinStat Design System — Scoped Page Overrides: Forms & Controls
+   Governed by UI-UX-PLAN.md §4.6, §6.4, §6.6 (Phase 2D) and Reference Frame 02
+   ========================================================================== */
+
+.fs-page .paycheck-form-container {
+  max-width: 600px;
+  width: 100%;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+  color: var(--fs-text);
+}
+
+.fs-page .paycheck-form-container h3 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+  font-weight: var(--fs-weight-semibold);
+}
+
+.fs-page .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.fs-page .form-group label {
+  display: block;
+  font-weight: var(--fs-weight-medium);
+  font-size: 12px;
+  margin-bottom: 0.5rem;
+  color: var(--fs-text-2);
+}
+
+.fs-page .paycheck-form-container input,
+.fs-page .paycheck-form-container select,
+.fs-page .paycheck-form-container textarea,
+.fs-page .form-group input,
+.fs-page .form-group select,
+.fs-page .form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--fs-surface);
+  color: var(--fs-text);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  font-size: 13px;
+  font-family: var(--fs-font-sans);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .paycheck-form-container input:focus,
+.fs-page .paycheck-form-container select:focus,
+.fs-page .paycheck-form-container textarea:focus,
+.fs-page .form-group input:focus,
+.fs-page .form-group select:focus,
+.fs-page .form-group textarea:focus {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+  border-color: var(--fs-border-strong);
+  box-shadow: none;
+}
+
+.fs-page .paycheck-form-container input::placeholder,
+.fs-page .paycheck-form-container textarea::placeholder,
+.fs-page .paycheck-form-container select::placeholder,
+.fs-page .form-group input::placeholder,
+.fs-page .form-group textarea::placeholder,
+.fs-page .form-group select::placeholder {
+  color: var(--fs-text-3);
+  opacity: 1;
+}
+
+.fs-page .paycheck-form-container input:disabled,
+.fs-page .paycheck-form-container select:disabled,
+.fs-page .paycheck-form-container textarea:disabled,
+.fs-page .form-group input:disabled,
+.fs-page .form-group select:disabled,
+.fs-page .form-group textarea:disabled,
+.fs-page .form-group.disabled {
+  opacity: var(--fs-disabled-opacity);
+  cursor: not-allowed;
+  color: var(--fs-text-4);
+  background: var(--fs-surface-sunken);
+  border-color: var(--fs-border);
+}
+
+.fs-page .form-group.has-error input,
+.fs-page .form-group.has-error select,
+.fs-page .form-group.has-error textarea,
+.fs-page .form-group input[aria-invalid="true"],
+.fs-page .form-group select[aria-invalid="true"] {
+  border-color: var(--fs-negative);
+}
+
+.fs-page .form-error,
+.fs-page .error-message {
+  color: var(--fs-negative);
+  font-size: 12px;
+  font-weight: var(--fs-weight-medium);
+  margin-top: 4px;
+}
+
+.fs-page .paycheck-form-container select option,
+.fs-page .form-group select option {
+  background: var(--fs-surface);
+  color: var(--fs-text);
+}
+
+.fs-page .form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.fs-page .submit-button {
+  width: 100%;
+  padding: 10px;
+  background: var(--fs-action-bg);
+  color: var(--fs-action-text);
+  border: var(--fs-border-width) solid transparent;
+  border-radius: var(--fs-radius-sm);
+  font-size: 13px;
+  font-weight: var(--fs-weight-semibold);
+  cursor: pointer;
+  transition: background var(--fs-duration-fast) var(--fs-ease-standard);
+  box-shadow: none;
+}
+
+.fs-page .submit-button:hover {
+  background: var(--fs-action-hover);
+  color: var(--fs-action-text);
+}
+
+.fs-page .submit-button:disabled {
+  opacity: var(--fs-disabled-opacity);
+  cursor: not-allowed;
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-4);
+  border-color: var(--fs-border);
+}
+
+/* ==========================================================================
+   FinStat Design System — Scoped Overrides: Modals & Dialogs
+   Governed by UI-UX-PLAN.md §4.14, §4.16, §6.6 (Phase 2D)
+   ========================================================================== */
+
+.fs-page .modal-overlay,
+html[data-fs-theme] .modal-overlay {
+  background: var(--fs-scrim);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  z-index: var(--fs-z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.fs-page .modal-content,
+html[data-fs-theme] .modal-content {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: var(--fs-shadow);
+  color: var(--fs-text);
+  padding: 24px;
+  width: 100%;
+  max-width: 520px;
+  box-sizing: border-box;
+}
+
+.fs-page .modal-header,
+html[data-fs-theme] .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.fs-page .modal-header h2,
+html[data-fs-theme] .modal-header h2 {
+  margin: 0;
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+}
+
+.fs-page .modal-close-button,
+html[data-fs-theme] .modal-close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--fs-text-3);
+  padding: 0 4px;
+  line-height: 1;
+  transition: color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .modal-close-button:hover,
+html[data-fs-theme] .modal-close-button:hover {
+  color: var(--fs-text);
+}
+
+.fs-page .modal-body,
+html[data-fs-theme] .modal-body {
+  color: var(--fs-text);
+}
+
+.fs-page .confirm-modal-overlay,
+html[data-fs-theme] .confirm-modal-overlay {
+  background: var(--fs-scrim);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  z-index: var(--fs-z-modal);
+}
+
+.fs-page .confirm-modal-content,
+html[data-fs-theme] .confirm-modal-content {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: var(--fs-shadow);
+  color: var(--fs-text);
+  width: 90%;
+  max-width: 440px;
+  overflow: hidden;
+}
+
+.fs-page .confirm-modal-header,
+html[data-fs-theme] .confirm-modal-header {
+  padding: 1.25rem 1.5rem 0.75rem;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+.fs-page .confirm-modal-title,
+html[data-fs-theme] .confirm-modal-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+}
+
+.fs-page .confirm-modal-body,
+html[data-fs-theme] .confirm-modal-body {
+  padding: 1rem 1.5rem;
+  color: var(--fs-text);
+}
+
+.fs-page .confirm-modal-message,
+html[data-fs-theme] .confirm-modal-message {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--fs-text-2);
+}
+
+.fs-page .confirm-modal-actions,
+html[data-fs-theme] .confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 1.25rem;
+  background: var(--fs-surface-sunken);
+  border-top: var(--fs-border-width) solid var(--fs-border);
+}
+
+.fs-page .confirm-modal-btn,
+html[data-fs-theme] .confirm-modal-btn {
+  padding: 0.5rem 1.125rem;
+  border-radius: var(--fs-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--fs-duration-fast) var(--fs-ease-standard);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fs-page .confirm-modal-btn:focus-visible,
+html[data-fs-theme] .confirm-modal-btn:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+}
+
+.fs-page .confirm-modal-btn:disabled,
+html[data-fs-theme] .confirm-modal-btn:disabled {
+  opacity: var(--fs-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.fs-page .confirm-modal-btn-cancel,
+html[data-fs-theme] .confirm-modal-btn-cancel {
+  background: var(--fs-surface);
+  border-color: var(--fs-border-control);
+  color: var(--fs-text);
+}
+
+.fs-page .confirm-modal-btn-cancel:hover:not(:disabled),
+html[data-fs-theme] .confirm-modal-btn-cancel:hover:not(:disabled) {
+  background: var(--fs-surface-raised);
+  border-color: var(--fs-border-strong);
+}
+
+.fs-page .confirm-modal-btn-primary,
+html[data-fs-theme] .confirm-modal-btn-primary {
+  background: var(--fs-action-bg);
+  border-color: var(--fs-action-bg);
+  color: var(--fs-action-text);
+}
+
+.fs-page .confirm-modal-btn-primary:hover:not(:disabled),
+html[data-fs-theme] .confirm-modal-btn-primary:hover:not(:disabled) {
+  background: var(--fs-action-hover);
+  border-color: var(--fs-action-hover);
+}
+
+.fs-page .confirm-modal-btn-danger,
+html[data-fs-theme] .confirm-modal-btn-danger {
+  background: var(--fs-danger);
+  border-color: var(--fs-danger);
+  color: var(--fs-ink);
+}
+
+.fs-page .confirm-modal-btn-danger:hover:not(:disabled),
+html[data-fs-theme] .confirm-modal-btn-danger:hover:not(:disabled) {
+  background: var(--fs-danger-hover);
+  border-color: var(--fs-danger-hover);
+}
+
+/* ==========================================================================
+   FinStat Design System — Scoped Overrides: Banners, Pagination, Cards
+   Governed by UI-UX-PLAN.md §4.16, §6.6 (Phase 2D)
+   ========================================================================== */
+
+.fs-page .view-only-banner,
+html[data-fs-theme] .view-only-banner {
+  background: var(--fs-surface-raised);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-warning);
+  z-index: var(--fs-z-nav);
+}
+
+.fs-page .view-only-banner .view-only-icon,
+html[data-fs-theme] .view-only-banner .view-only-icon {
+  color: var(--fs-warning);
+}
+
+.fs-page .view-only-banner strong,
+html[data-fs-theme] .view-only-banner strong {
+  color: var(--fs-warning);
+  font-weight: var(--fs-weight-semibold);
+}
+
+.fs-page .protected-action-wrapper {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  position: relative;
+}
+
+.fs-page .protected-action-wrapper > * {
+  opacity: var(--fs-disabled-opacity);
+}
+
+.fs-page .pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.fs-page .pagination-container button {
+  padding: 0.5rem 1rem;
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  background: var(--fs-surface);
+  color: var(--fs-text);
+  border-radius: var(--fs-radius-sm);
+  cursor: pointer;
+  transition: background var(--fs-duration-fast) var(--fs-ease-standard);
+  font-size: 13px;
+}
+
+.fs-page .pagination-container button:hover:not(:disabled) {
+  background: var(--fs-surface-raised);
+  border-color: var(--fs-border-strong);
+}
+
+.fs-page .pagination-container button:disabled {
+  cursor: not-allowed;
+  color: var(--fs-text-4);
+  background: var(--fs-surface-sunken);
+  border-color: var(--fs-border);
+}
+
+.fs-page .pagination-container span {
+  font-weight: 500;
+  color: var(--fs-text-3);
+  font-size: 13px;
+}
+
+.fs-page .summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  background: var(--fs-surface);
+  padding: 1.5rem;
+  border-radius: var(--fs-radius-md);
+  margin-bottom: 2rem;
+  border: var(--fs-border-width) solid var(--fs-border);
+}
+
+.fs-page .summary-item {
+  flex: 1 1 300px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.fs-page .summary-item h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--fs-text-2);
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  padding-bottom: 0.5rem;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fs-page .grand-total p {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--fs-text);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-page .period-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.fs-page .period-item {
+  background: var(--fs-surface-raised);
+  padding: 1rem;
+  border-radius: var(--fs-radius-sm);
+  border: var(--fs-border-width) solid var(--fs-border);
+  box-shadow: none;
+}
+
+.fs-page .period-item strong {
+  color: var(--fs-text);
+}
+
+.fs-page .period-change {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.fs-page .period-change > .change-positive {
+  color: var(--fs-positive);
+}
+
+.fs-page .period-change > .change-negative {
+  color: var(--fs-negative);
+}
+
+.fs-page .period-change > .change-neutral {
+  color: var(--fs-text-3);
+}
+
+.fs-page .analysis-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  box-shadow: none;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--fs-text);
+}
+
+.fs-page .analysis-card h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--fs-text);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.fs-page .stat-item h4 {
+  color: var(--fs-text-3);
+  margin-bottom: 0.5rem;
+  font-size: 13px;
+}
+
+.fs-page .stat-item p {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--fs-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-page .chart-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+}
+
+/* ==========================================================================
+   FinStat Design System — Scoped Overrides: Salary Component Table
+   Governed by UI-UX-PLAN.md §4.16, §6.6 (Phase 2D)
+   ========================================================================== */
+
+.fs-page .component-table-wrapper {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.fs-page .component-table-heading {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+.fs-page .component-count-badge {
+  font-size: 0.75rem;
+  background: var(--fs-surface-raised);
+  color: var(--fs-text-3);
+  border: var(--fs-border-width) solid var(--fs-border);
+  padding: 2px 8px;
+  border-radius: var(--fs-radius-pill);
+  font-weight: 600;
+}
+
+.fs-page .add-component-btn,
+.fs-page .add-first-component-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: var(--fs-action-bg);
+  color: var(--fs-action-text);
+  border: var(--fs-border-width) solid var(--fs-action-bg);
+  border-radius: var(--fs-radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .add-component-btn:hover,
+.fs-page .add-first-component-btn:hover {
+  background: var(--fs-action-hover);
+  border-color: var(--fs-action-hover);
+}
+
+.fs-page .component-empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--fs-text-3);
+  border: var(--fs-border-width) dashed var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  background: var(--fs-surface-sunken);
+}
+
+.fs-page .custom-component-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.fs-page .custom-component-table th {
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-3);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.65rem 0.75rem;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  text-align: left;
+}
+
+.fs-page .custom-component-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  vertical-align: middle;
+  color: var(--fs-text);
+}
+
+.fs-page .custom-component-table tr:hover td {
+  background: var(--fs-surface-raised);
+}
+
+.fs-page .custom-component-table tr.row-deduction td {
+  background: var(--fs-surface-sunken);
+}
+
+.fs-page .component-input,
+.fs-page .component-select {
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  font-size: 0.9rem;
+  color: var(--fs-text);
+  box-sizing: border-box;
+}
+
+.fs-page .component-input:focus,
+.fs-page .component-select:focus {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+  border-color: var(--fs-border-strong);
+}
+
+.fs-page .component-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+  vertical-align: middle;
+  margin: 0;
+}
+
+.fs-page .component-checkbox:checked {
+  background: var(--fs-accent);
+  border-color: var(--fs-accent);
+}
+
+.fs-page .component-checkbox:checked::after {
+  content: '';
+  width: 4px;
+  height: 8px;
+  border: solid var(--fs-ink);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+.fs-page .component-checkbox:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+}
+
+.fs-page .remove-component-btn {
+  background: transparent;
+  border: none;
+  color: var(--fs-danger);
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: var(--fs-radius-sm);
+  transition: background var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .remove-component-btn:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-danger-hover);
+}
+
+/* ==========================================================================
+   FinStat Design System — Scoped Overrides: App Launcher
+   Governed by UI-UX-PLAN.md §4.16, §6.6 (Phase 2D)
+   ========================================================================== */
+
+.fs-page .launcher-backdrop,
+html[data-fs-theme] .launcher-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--fs-z-modal);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 7vh 16px 24px;
+  background: var(--fs-scrim);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.fs-page .launcher-panel,
+html[data-fs-theme] .launcher-panel {
+  width: min(880px, 100%);
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: var(--fs-shadow);
+  color: var(--fs-text);
+  overflow: hidden;
+}
+
+.fs-page .launcher-header,
+html[data-fs-theme] .launcher-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px 16px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+.fs-page .launcher-heading,
+html[data-fs-theme] .launcher-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.fs-page .launcher-mark,
+html[data-fs-theme] .launcher-mark {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--fs-radius-md);
+  color: var(--fs-action-text);
+  background: var(--fs-action-bg);
+  box-shadow: none;
+  font-size: 1.05rem;
+}
+
+.fs-page .launcher-heading h2,
+html[data-fs-theme] .launcher-heading h2 {
+  margin: 0 0 3px;
+  font-size: 1.18rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--fs-text);
+}
+
+.fs-page .launcher-heading p,
+html[data-fs-theme] .launcher-heading p {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--fs-text-3);
+}
+
+.fs-page .launcher-close,
+html[data-fs-theme] .launcher-close {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--fs-radius-sm);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  background: var(--fs-surface-raised);
+  color: var(--fs-text-3);
+  cursor: pointer;
+  transition: all var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .launcher-close:hover,
+html[data-fs-theme] .launcher-close:hover {
+  color: var(--fs-text);
+}
+
+.fs-page .launcher-tabs,
+html[data-fs-theme] .launcher-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 24px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+.fs-page .launcher-tab,
+html[data-fs-theme] .launcher-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--fs-text-3);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-family: var(--fs-font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .launcher-tab:hover,
+html[data-fs-theme] .launcher-tab:hover {
+  color: var(--fs-text);
+}
+
+.fs-page .launcher-tab.active,
+html[data-fs-theme] .launcher-tab.active {
+  color: var(--fs-text);
+  border-bottom-color: var(--fs-accent);
+}
+
+.fs-page .launcher-tab-count,
+html[data-fs-theme] .launcher-tab-count {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--fs-radius-pill);
+  background: var(--fs-surface-raised);
+  color: var(--fs-text-3);
+}
+
+.fs-page .launcher-search,
+html[data-fs-theme] .launcher-search {
+  padding: 12px 24px;
+  position: relative;
+}
+
+.fs-page .launcher-search input,
+html[data-fs-theme] .launcher-search input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.fs-page .launcher-search input:focus,
+html[data-fs-theme] .launcher-search input:focus {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+  border-color: var(--fs-border-strong);
+}
+
+.fs-page .launcher-search-icon,
+html[data-fs-theme] .launcher-search-icon {
+  position: absolute;
+  left: 36px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--fs-text-3);
+  pointer-events: none;
+}
+
+.fs-page .launcher-body,
+html[data-fs-theme] .launcher-body {
+  padding: 16px 24px;
+  overflow-y: auto;
+}
+
+.fs-page .launcher-group-label,
+html[data-fs-theme] .launcher-group-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--fs-text-3);
+  margin-bottom: 8px;
+}
+
+.fs-page .launcher-action,
+html[data-fs-theme] .launcher-action {
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  color: var(--fs-text);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--fs-duration-fast) var(--fs-ease-standard);
+  box-shadow: none;
+}
+
+.fs-page .launcher-action:hover,
+html[data-fs-theme] .launcher-action:hover {
+  background: var(--fs-surface-sunken);
+  border-color: var(--fs-border-control);
+}
+
+.fs-page .launcher-action-copy strong {
+  display: block;
+  color: var(--fs-text);
+  font-size: 13px;
+}
+
+.fs-page .launcher-action-copy small {
+  display: block;
+  color: var(--fs-text-3);
+  font-size: 12px;
+}
+
+.fs-page .launcher-footer,
+html[data-fs-theme] .launcher-footer {
+  padding: 12px 24px;
+  background: var(--fs-surface-sunken);
+  border-top: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-3);
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
