@@ -97,10 +97,12 @@ test.describe('Phase 2D: Shared Components Dual-Mode Verification', () => {
     // 2. Themed checks
     await page.evaluate(() => document.documentElement.setAttribute('data-fs-theme', 'dark'));
     const themedOverlayBg = await page.$eval('.themed-modal-overlay', el => window.getComputedStyle(el).backgroundColor);
+    const themedOverlayBackdrop = await page.$eval('.themed-modal-overlay', el => window.getComputedStyle(el).backdropFilter);
     const themedContentBg = await page.$eval('.themed-modal-content', el => window.getComputedStyle(el).backgroundColor);
     const themedRadius = await page.$eval('.themed-modal-content', el => window.getComputedStyle(el).borderRadius);
 
     expect(themedOverlayBg).toBe('rgba(8, 9, 11, 0.72)'); // --fs-scrim
+    expect(themedOverlayBackdrop).toBe('none');
     expect(themedContentBg).toBe('rgb(26, 28, 32)');         // #1a1c20 (--fs-surface)
     expect(themedRadius).toBe('8px');                       // var(--fs-radius-lg) 8px ceiling
 
@@ -118,9 +120,11 @@ test.describe('Phase 2D: Shared Components Dual-Mode Verification', () => {
     const legacyContentBg = await page.$eval('.legacy-confirm-content', el => window.getComputedStyle(el).backgroundColor);
     const legacyRadius = await page.$eval('.legacy-confirm-content', el => window.getComputedStyle(el).borderRadius);
     const legacyDangerBg = await page.$eval('.legacy-confirm-danger', el => window.getComputedStyle(el).backgroundColor);
+    const legacyBackdrop = await page.$eval('.legacy-confirm-overlay', el => window.getComputedStyle(el).backdropFilter);
     expect(legacyContentBg).toBe('rgb(255, 255, 255)');
     expect(legacyRadius).toBe('12px');
     expect(legacyDangerBg).toBe('rgb(220, 38, 38)'); // #dc2626
+    expect(legacyBackdrop).toBe('blur(2px)');
 
     // 2. Themed checks
     await page.evaluate(() => document.documentElement.setAttribute('data-fs-theme', 'dark'));
@@ -128,11 +132,13 @@ test.describe('Phase 2D: Shared Components Dual-Mode Verification', () => {
     const themedRadius = await page.$eval('.themed-confirm-content', el => window.getComputedStyle(el).borderRadius);
     const themedDangerBg = await page.$eval('.themed-confirm-danger', el => window.getComputedStyle(el).backgroundColor);
     const themedDangerColor = await page.$eval('.themed-confirm-danger', el => window.getComputedStyle(el).color);
+    const themedBackdrop = await page.$eval('.themed-confirm-overlay', el => window.getComputedStyle(el).backdropFilter);
 
     expect(themedContentBg).toBe('rgb(26, 28, 32)');     // #1a1c20 (--fs-surface)
     expect(themedRadius).toBe('8px');                   // var(--fs-radius-lg) 8px ceiling
     expect(themedDangerBg).toBe('rgb(217, 112, 118)');   // #d97076 (--fs-danger)
     expect(themedDangerColor).toBe('rgb(13, 14, 16)');  // #0d0e10 (--fs-ink)
+    expect(themedBackdrop).toBe('none');
 
     // Capture screenshots
     await page.locator('.legacy-confirm-content').screenshot({ path: path.join(OUTPUT_DIR, 'confirm-legacy-1440.png') });
@@ -187,6 +193,74 @@ test.describe('Phase 2D: Shared Components Dual-Mode Verification', () => {
     // Capture screenshots
     await page.locator('.legacy-component-table-wrapper').screenshot({ path: path.join(OUTPUT_DIR, 'component-table-legacy-1440.png') });
     await page.locator('.themed-component-table-wrapper').screenshot({ path: path.join(OUTPUT_DIR, 'component-table-dark-1440.png') });
+  });
+
+  test('ViewOnlyBanner: computed styles verify theme overrides and backdrop-filter none', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(FIXTURE_URL, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
+
+    // 1. Legacy checks
+    const legacyBackdrop = await page.$eval('.legacy-view-only', el => window.getComputedStyle(el).backdropFilter);
+    expect(legacyBackdrop).toBe('blur(8px)');
+
+    // 2. Themed checks
+    await page.evaluate(() => document.documentElement.setAttribute('data-fs-theme', 'dark'));
+    const themedBg = await page.$eval('.themed-view-only', el => window.getComputedStyle(el).backgroundColor);
+    const themedColor = await page.$eval('.themed-view-only', el => window.getComputedStyle(el).color);
+    const themedBackdrop = await page.$eval('.themed-view-only', el => window.getComputedStyle(el).backdropFilter);
+
+    expect(themedBg).toBe('rgb(34, 37, 42)');       // --fs-surface-raised
+    expect(themedColor).toBe('rgb(207, 162, 79)');   // --fs-warning (#cfa24f)
+    expect(themedBackdrop).toBe('none');
+  });
+
+  test('ProtectedAction: computed styles verify opacity gating', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(FIXTURE_URL, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
+
+    // Themed checks
+    await page.evaluate(() => document.documentElement.setAttribute('data-fs-theme', 'dark'));
+    const themedDisplay = await page.$eval('.themed-protected', el => window.getComputedStyle(el).display);
+    const themedOpacity = await page.$eval('.themed-protected-btn', el => window.getComputedStyle(el).opacity);
+
+    expect(themedDisplay).toBe('inline-flex');
+    expect(themedOpacity).toBe('0.45');             // --fs-disabled-opacity
+  });
+
+  test('Pagination: computed styles verify theme overrides', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(FIXTURE_URL, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
+
+    // Themed checks
+    await page.evaluate(() => document.documentElement.setAttribute('data-fs-theme', 'dark'));
+    const themedBtnBg = await page.$eval('.themed-page-btn', el => window.getComputedStyle(el).backgroundColor);
+    const themedBtnBorder = await page.$eval('.themed-page-btn', el => window.getComputedStyle(el).borderColor);
+
+    expect(themedBtnBg).toBe('rgb(26, 28, 32)');        // --fs-surface
+    expect(themedBtnBorder).toBe('rgb(106, 111, 119)');  // --fs-border-control (#6a6f77)
+  });
+
+  test('AppLauncher: computed styles verify theme overrides and backdrop-filter none', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(FIXTURE_URL, { waitUntil: 'networkidle' });
+    await page.evaluate(() => document.fonts.ready);
+
+    // 1. Legacy checks
+    const legacyBackdrop = await page.$eval('.legacy-launcher-backdrop', el => window.getComputedStyle(el).backdropFilter);
+    expect(legacyBackdrop).toBe('blur(10px)');
+
+    // 2. Themed checks
+    await page.evaluate(() => document.documentElement.setAttribute('data-fs-theme', 'dark'));
+    const themedPanelBg = await page.$eval('.themed-launcher-panel', el => window.getComputedStyle(el).backgroundColor);
+    const themedPanelRadius = await page.$eval('.themed-launcher-panel', el => window.getComputedStyle(el).borderRadius);
+    const themedBackdrop = await page.$eval('.themed-launcher-backdrop', el => window.getComputedStyle(el).backdropFilter);
+
+    expect(themedPanelBg).toBe('rgb(26, 28, 32)');    // --fs-surface
+    expect(themedPanelRadius).toBe('8px');            // --fs-radius-lg (8px ceiling)
+    expect(themedBackdrop).toBe('none');
   });
 });
 

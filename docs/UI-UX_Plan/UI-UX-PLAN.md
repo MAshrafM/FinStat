@@ -1045,7 +1045,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **2C** | `App.css` `!important` removal (side branch off 2B, merges before 3A) | `phase-ui-2c-app-css-fix` | ☑ | ☑ |
 | **2D** | Shared component overrides (new file, `.fs-page` scoped) | `phase-ui-2d-shared-components` | ☑ | ☑ |
 | **2E** | Seven primitives, category labels, specificity | `phase-ui-2e-primitives` | ☐ | ☐ |
-| **2F** | Universal loading pattern (Loading primitive + migrate all pages) | `phase-ui-2f-loading` | ☐ | ☐ |
+| **2F** | Universal loading pattern (D23, `<Loading>` primitive) | `phase-ui-2f-loading` | ☐ | ☐ |
 | **3A** | `chartTheme.js` + Dashboard conversion | `phase-ui-3a-dashboard` | ☐ | ☐ |
 | **4A** | Expenditure log + filters | `phase-ui-4a-expenditure-log` | ☐ | ☐ |
 | **4B** | Expenditure forms + sub-nav | `phase-ui-4b-expenditure-forms` | ☐ | ☐ |

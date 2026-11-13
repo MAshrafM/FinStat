@@ -808,6 +808,8 @@ html[data-fs-theme] .error-boundary-btn-secondary:hover {
 .fs-page .modal-overlay,
 html[data-fs-theme] .modal-overlay {
   background: var(--fs-scrim);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   z-index: var(--fs-z-modal);
   display: flex;
   align-items: center;
@@ -872,6 +874,8 @@ html[data-fs-theme] .modal-body {
 .fs-page .confirm-modal-overlay,
 html[data-fs-theme] .confirm-modal-overlay {
   background: var(--fs-scrim);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   z-index: var(--fs-z-modal);
 }
 
@@ -998,6 +1002,8 @@ html[data-fs-theme] .confirm-modal-btn-danger:hover:not(:disabled) {
 .fs-page .view-only-banner,
 html[data-fs-theme] .view-only-banner {
   background: var(--fs-surface-raised);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-bottom: var(--fs-border-width) solid var(--fs-border);
   color: var(--fs-warning);
   z-index: var(--fs-z-nav);
@@ -1354,6 +1360,8 @@ html[data-fs-theme] .launcher-backdrop {
   justify-content: center;
   padding: 7vh 16px 24px;
   background: var(--fs-scrim);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .fs-page .launcher-panel,
