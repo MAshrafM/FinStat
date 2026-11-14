@@ -25,8 +25,6 @@ const Tabs = ({
 }) => {
   const tabRefs = useRef([]);
 
-  const enabledTabs = tabs.filter(t => !t.disabled);
-
   const focusTabByIndex = (index) => {
     if (tabRefs.current[index]) {
       tabRefs.current[index].focus();

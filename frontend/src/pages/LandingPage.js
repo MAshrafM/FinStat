@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronRight, DollarSign, TrendingUp, Shield, Smartphone, Eye, EyeOff, KeyRound, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, login2FA } from '../services/authService';
+import { Loading } from '../components/ui';
 import './LandingPage.css';
 
 const LandingPage = () => {
@@ -218,7 +219,7 @@ const LandingPage = () => {
                       className="login-button"
                     >
                       {isLoading ? (
-                        <div className="loading-spinner"></div>
+                        <Loading variant="inline" />
                       ) : (
                         <>
                           <span>Sign In</span>
@@ -307,7 +308,7 @@ const LandingPage = () => {
                       className="login-button"
                     >
                       {isLoading ? (
-                        <div className="loading-spinner"></div>
+                        <Loading variant="inline" />
                       ) : (
                         <>
                           <span>Verify & Continue</span>

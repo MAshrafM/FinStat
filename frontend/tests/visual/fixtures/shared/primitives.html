@@ -77,6 +77,27 @@
         </a>
       </div>
     </div>
+
+    <!-- Unthemed Loading Primitive Fallback Check -->
+    <h3>Loading Primitive (Unthemed Legacy Context)</h3>
+    <div class="grid-row">
+      <div id="legacy-loading-route" class="fs-loading fs-loading--route" role="status">
+        <div class="fs-loading-spinner" aria-hidden="true"></div>
+        <p class="fs-loading-text">Loading legacy route...</p>
+      </div>
+      <div id="legacy-loading-inline" class="fs-loading fs-loading--inline" role="status">
+        <span class="fs-loading-spinner fs-loading-spinner--sm" aria-hidden="true"></span>
+        <span class="fs-loading-text">Saving legacy...</span>
+      </div>
+    </div>
+    <div class="grid-row" style="width: 100%;">
+      <div id="legacy-loading-table" class="fs-loading fs-loading--table" role="status" aria-label="Loading legacy table..." style="width: 100%;">
+        <div class="fs-skeleton-rows" aria-hidden="true">
+          <div class="fs-skeleton fs-skeleton--row"></div>
+          <div class="fs-skeleton fs-skeleton--row"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ====================================================================
@@ -251,6 +272,34 @@
         <a href="#rewards" class="cc-subnav-link">
           <span>Rewards</span>
         </a>
+      </div>
+    </div>
+
+    <!-- 9. Loading Primitive (§8.4 Primitive #8) -->
+    <h3 style="margin-top: 32px; border-bottom: 1px solid #34383f; padding-bottom: 8px;">9. Loading Primitive (§8.4 Primitive #8)</h3>
+    <div class="grid-row">
+      <div id="themed-loading-route" class="fs-loading fs-loading--route" role="status">
+        <div class="fs-loading-spinner" aria-hidden="true"></div>
+        <p class="fs-loading-text">Loading application data...</p>
+      </div>
+      <div id="themed-loading-inline" class="fs-loading fs-loading--inline" role="status">
+        <span class="fs-loading-spinner fs-loading-spinner--sm" aria-hidden="true"></span>
+        <span class="fs-loading-text">Saving changes...</span>
+      </div>
+    </div>
+    <div class="grid-row" style="width: 100%; display: flex; flex-direction: column; gap: 16px;">
+      <div id="themed-loading-card" class="fs-loading fs-loading--card" role="status" aria-label="Loading card..." style="width: 100%;">
+        <div class="fs-skeleton fs-skeleton--card" aria-hidden="true"></div>
+      </div>
+      <div id="themed-loading-form" class="fs-loading fs-loading--form-field" role="status" aria-label="Loading form..." style="width: 100%;">
+        <div class="fs-skeleton fs-skeleton--form-field" aria-hidden="true"></div>
+      </div>
+      <div id="themed-loading-table" class="fs-loading fs-loading--table" role="status" aria-label="Loading table..." style="width: 100%;">
+        <div class="fs-skeleton-rows" aria-hidden="true">
+          <div class="fs-skeleton fs-skeleton--row"></div>
+          <div class="fs-skeleton fs-skeleton--row"></div>
+          <div class="fs-skeleton fs-skeleton--row"></div>
+        </div>
       </div>
     </div>
 

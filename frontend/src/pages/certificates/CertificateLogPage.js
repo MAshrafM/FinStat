@@ -9,6 +9,7 @@ import { FaEdit, FaTrash, FaEye, FaHandHoldingUsd, FaPlus, FaTimes, FaExclamatio
 import ProtectedAction from '../../components/common/ProtectedAction';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import { useCanModify } from '../../context/AuthContext';
+import { Loading } from '../../components/ui';
 import '../trades/Trades.css';
 
 const CertificateLogPage = () => {
@@ -101,7 +102,11 @@ const CertificateLogPage = () => {
     };
 
     if (isLoading) {
-        return <p className="page-container">Loading Certificates...</p>;
+        return (
+            <div className="page-container">
+                <Loading variant="table" text="Loading Certificates..." />
+            </div>
+        );
     }
 
     const safeCertList = Array.isArray(certificates) ? certificates : [];

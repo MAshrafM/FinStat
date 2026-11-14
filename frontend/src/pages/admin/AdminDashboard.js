@@ -27,6 +27,7 @@ import { getUsers, createUser, deleteUser } from '../../services/adminService';
 import { dispatchToast } from '../../services/apiClient';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { useAuth } from '../../context/AuthContext';
+import { Loading } from '../../components/ui';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -299,9 +300,7 @@ const AdminDashboard = () => {
       {/* Card & Table */}
       <div className="admin-card">
         {loading ? (
-          <div className="loading-spinner" style={{ margin: '40px auto' }}>
-            Loading {isManager ? 'viewers' : 'users'}...
-          </div>
+          <Loading variant="card" text={`Loading ${isManager ? 'viewers' : 'users'}...`} />
         ) : users.length === 0 ? (
           <div className="admin-empty-state">
             <div className="admin-empty-icon">

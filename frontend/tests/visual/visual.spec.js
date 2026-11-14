@@ -50,7 +50,7 @@ test.describe('Visual Regression Suite', () => {
         // Navigate to route
         await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });
         await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
-        await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+        await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
         await page.evaluate(() => document.fonts.ready).catch(() => {});
         await page.addStyleTag({
           content: `

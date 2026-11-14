@@ -84,6 +84,33 @@ test.describe('Phase 2E: Primitives & Dual-Mode Sub-Nav Verification', () => {
     expect(htabActiveBorderBottom).toBe('rgb(20, 184, 166)'); // #14b8a6
     expect(vtabActiveBorderRight).toBe('rgb(20, 184, 166)');  // #14b8a6
 
+    // 8. Loading Primitive (Themed Context)
+    const themedRouteText = await page.$eval('#themed-loading-route .fs-loading-text', el => window.getComputedStyle(el).color);
+    const themedSpinnerBorder = await page.$eval('#themed-loading-route .fs-loading-spinner', el => window.getComputedStyle(el).borderTopColor);
+    const themedSkeletonCardBg = await page.$eval('#themed-loading-card .fs-skeleton--card', el => window.getComputedStyle(el).backgroundColor);
+    const themedSkeletonCardRadius = await page.$eval('#themed-loading-card .fs-skeleton--card', el => window.getComputedStyle(el).borderRadius);
+
+    expect(themedRouteText).toBe('rgb(162, 168, 176)');       // #a2a8b0 (--fs-text-3)
+    expect(themedSpinnerBorder).toBe('rgb(242, 243, 245)');   // #f2f3f5 (--fs-text)
+    expect(themedSkeletonCardBg).toBe('rgb(34, 37, 42)');     // #22252a (--fs-surface-raised)
+    expect(themedSkeletonCardRadius).toBe('8px');             // 8px ceiling (--fs-radius-lg)
+
+    // 9. Loading Primitive (Unthemed Legacy Fallbacks when data-fs-theme is absent)
+    await page.evaluate(() => document.documentElement.removeAttribute('data-fs-theme'));
+
+    const legacyRouteText = await page.$eval('#legacy-loading-route .fs-loading-text', el => window.getComputedStyle(el).color);
+    const legacySpinnerBorder = await page.$eval('#legacy-loading-route .fs-loading-spinner', el => window.getComputedStyle(el).borderTopColor);
+    const legacySkeletonRowBg = await page.$eval('#legacy-loading-table .fs-skeleton--row', el => window.getComputedStyle(el).backgroundColor);
+    const legacySkeletonRowRadius = await page.$eval('#legacy-loading-table .fs-skeleton--row', el => window.getComputedStyle(el).borderRadius);
+
+    expect(legacyRouteText).toBe('rgb(108, 117, 125)');       // #6c757d (legacy fallback)
+    expect(legacySpinnerBorder).toBe('rgb(44, 62, 80)');      // #2c3e50 (legacy fallback)
+    expect(legacySkeletonRowBg).toBe('rgb(233, 236, 239)');   // #e9ecef (legacy fallback)
+    expect(legacySkeletonRowRadius).toBe('4px');              // 4px (--fs-radius-sm fallback)
+
+    // Restore data-fs-theme="dark" for subsequent checks and screenshots
+    await page.evaluate(() => document.documentElement.setAttribute('data-fs-theme', 'dark'));
+
     // Capture overall screenshot
     await page.screenshot({ path: path.join(OUTPUT_DIR, 'primitives-all-1440.png'), fullPage: true });
   });

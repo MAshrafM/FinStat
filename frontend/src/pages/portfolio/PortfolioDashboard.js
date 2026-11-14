@@ -12,6 +12,7 @@ import SummaryCards from '../../components/portfolio/SummaryCards';
 import AllocationChart from '../../components/portfolio/AllocationChart';
 import HoldingsTable from '../../components/portfolio/HoldingsTable';
 import { FaSyncAlt, FaBalanceScale, FaCheck } from 'react-icons/fa';
+import { Loading } from '../../components/ui';
 import './Portfolio.css';
 
 const PortfolioDashboard = () => {
@@ -106,11 +107,7 @@ const PortfolioDashboard = () => {
     return (
       <div className="portfolio-page-wrapper">
         <div className="portfolio-container">
-          <div className="empty-holdings-box" style={{ paddingTop: '100px' }}>
-            <div className="spinner" style={{ margin: '0 auto 20px' }}></div>
-            <h2>Loading Unified Investment Portfolio...</h2>
-            <p>Aggregating market prices, multi-asset valuations, and performance metrics.</p>
-          </div>
+          <Loading variant="route" text="Loading Unified Investment Portfolio..." />
         </div>
       </div>
     );

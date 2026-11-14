@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute'; // Keep standard impor
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import { Loading } from './components/ui';
 import './App.css';
 import './components/Table.css';
 
@@ -113,7 +114,7 @@ function App() {
       <ToastProvider>
         <AuthProvider>
           <Router>
-            <React.Suspense fallback={<div className="loading-spinner">Loading...</div>}>
+            <React.Suspense fallback={<Loading variant="route" text="Loading application..." />}>
             <Routes>
               <Route path="*" element={<LandingPage />} />
               <Route element={<ProtectedRoute />}>

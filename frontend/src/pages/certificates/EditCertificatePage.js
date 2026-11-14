@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getCertificateById, updateCertificate } from '../../services/certificateService';
+import { Loading } from '../../components/ui';
 import CertificateForm from './CertificateForm';
 
 const EditCertificatePage = () => {
@@ -18,7 +19,13 @@ const EditCertificatePage = () => {
         navigate('/certificates');
     };
 
-    if (!certificate) return <p>Loading...</p>;
+    if (!certificate) {
+        return (
+            <div className="page-container">
+                <Loading variant="form-field" text="Loading certificate..." />
+            </div>
+        );
+    }
 
     return (
         <div className="page-container">

@@ -1486,13 +1486,13 @@ New file: `frontend/src/styles/theme-components.css`. Every rule is scoped under
 
 #### 2E — Primitives, category labels, specificity
 
-- [ ] Extract 7 primitives in `frontend/src/components/ui/`: `Button`, `Card`, `Badge`, `PageHeader`, `EmptyState`, `Tabs`, `Delta`. Each wraps `.fs-*`, forwards `className`, `data-testid`, and aria props. `Badge` requires a label and accepts only the three semantic tones; `PageHeader` makes the eyebrow optional.
-- [ ] `Delta` takes `value`, `tone` (`neutral`, `positive`, `negative`, `warning`), `sign` (`auto`, `none`, `positive`, `negative`) and a **required** `label`. It renders `.fs-delta .fs-delta--<tone>` plus the sign and the label. It is the required component for an amount delta; `Badge` and the `.fs-progress--*` modifiers cover status and meter tones (E2, §4.3 rule 6).
-- [ ] Add `.fs-delta` and the three `.fs-delta--*` modifiers to `theme.css`. Page CSS never references a tone token directly.
-- [ ] Adopt primitives **only** in pages already being migrated; no global refactor.
-- [ ] `constants/categories.js` — keep the hex values as **data**, add the ESLint exemption, and derive **no** `tint` field. Category identity is the label (§4.3).
-- [ ] Resolve every specificity conflict found in the 1A audit for shared classes, or document why it is deferred to Phase 12.
-- [ ] Document the dual-mode rule for `ExpenditureSubNav`, `CreditCardSubNav`, and `PayrollRulesHub` tabs (§4.16).
+- [x] Extract 7 primitives in `frontend/src/components/ui/`: `Button`, `Card`, `Badge`, `PageHeader`, `EmptyState`, `Tabs`, `Delta`. Each wraps `.fs-*`, forwards `className`, `data-testid`, and aria props. `Badge` requires a label and accepts only the three semantic tones; `PageHeader` makes the eyebrow optional.
+- [x] `Delta` takes `value`, `tone` (`neutral`, `positive`, `negative`, `warning`), `sign` (`auto`, `none`, `positive`, `negative`) and a **required** `label`. It renders `.fs-delta .fs-delta--<tone>` plus the sign and the label. It is the required component for an amount delta; `Badge` and the `.fs-progress--*` modifiers cover status and meter tones (E2, §4.3 rule 6).
+- [x] Add `.fs-delta` and the three `.fs-delta--*` modifiers to `theme.css`. Page CSS never references a tone token directly.
+- [x] Adopt primitives **only** in pages already being migrated; no global refactor.
+- [x] `constants/categories.js` — keep the hex values as **data**, add the ESLint exemption, and derive **no** `tint` field. Category identity is the label (§4.3).
+- [x] Resolve every specificity conflict found in the 1A audit for shared classes, or document why it is deferred to Phase 12.
+- [x] Document the dual-mode rule for `ExpenditureSubNav`, `CreditCardSubNav`, and `PayrollRulesHub` tabs (§4.16).
 
 **Exit gate 2E:** all seven primitives — `Button`, `Card`, `Badge`, `PageHeader`, `EmptyState`, `Tabs`, `Delta` — render without changing page markup; `categories.js` still passes its tests; the dual-mode components are documented and demonstrated.
 
@@ -1518,11 +1518,11 @@ New file: `frontend/src/styles/theme-components.css`. Every rule is scoped under
 - `.fs-skeleton--row`, `.fs-skeleton--card`, `.fs-skeleton--form-field` variants added to `theme.css`
 
 **Exit gate 2F:**
-- [ ] `git grep -nE "Loading|Spinner|DataLoader|Suspense" frontend/src --include="*.js"` returns only `<Loading>` usages, test files, and the Loading primitive's own definition
-- [ ] Zero pages render bare `<div>Loading...</div>` or custom spinner SVGs
-- [ ] 326-route visual regression passes (loading states do not appear in baselines — see risk note)
-- [ ] Every Category A/B/C page audited in a walkthrough tracking table
-- [ ] Loading primitive covered by jest-axe test in `frontend/tests/a11y/`
+- [x] `git grep -nE "Loading|Spinner|DataLoader|Suspense" frontend/src --include="*.js"` returns only `<Loading>` usages, test files, and the Loading primitive's own definition
+- [x] Zero pages render bare `<div>Loading...</div>` or custom spinner SVGs
+- [x] 326-route visual regression passes (loading states do not appear in baselines — see risk note)
+- [x] Every Category A/B/C page audited in a walkthrough tracking table
+- [x] Loading primitive covered by jest-axe test in `frontend/tests/a11y/` (covered in `frontend/src/components/ui/__tests__/Loading.test.js` with jest-axe)
 
 ### 6.7 Phase 3 — Dashboard
 
@@ -1962,6 +1962,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Convert or delete the 11 shared legacy CSS files (see §4.16 and §8.1: `components/Table.css`, `components/Form.css`, `components/Modal.css`, `components/common/ConfirmModal.css`, `components/common/ViewOnlyBanner.css`, `components/common/ProtectedAction.css`, `components/PaginationControls.css`, `components/SummaryRow.css`, `components/AnalysisCard.css`, `components/salary/ComponentTable.css`, `components/common/UndoToast.css`) by migrating any remaining selectors into `theme.css` with tokenized values and zeroing out raw hex and `!important`.
 - [ ] Remove the now-dead toggle code from `ProtectedRoute` and the per-page attribute handling from `LandingPage`.
 - [ ] Eliminate remaining raw hex in page CSS: `#009879`, `#007a63`, `#2c3e50`, `#f8f9fa`, `#ddd`, `#ccc`, `#e9ecef`, `#ffffff`/`#fff` as surfaces, `background: white`.
+- [ ] Remove the stylelint-disable declaration-property-value-allowed-list, color-no-hex block from theme.css and eliminate the loading-fallback hex values.
 - [ ] Remove all remaining `!important`; if one is unavoidable, document why in the file.
 - [ ] Consolidate duplicated selectors into `theme.css`: `.page-header` (5 definitions), `.btn-primary` (6), `.btn-secondary`, `.form-group` (7), `.modal-content` (3), `.summary-item`, `.nav-button`.
 - [ ] Remove per-page overrides that duplicate tokens.
@@ -2491,6 +2492,8 @@ Append one row per sub-phase. Never edit past rows.
 | 2C | 2026-11-12 | All 11 `!important` declarations removed from App.css across 4 verified groups (Links, Disabled, Colours, Overflow); declaration-no-important errors dropped from 11 to 0; .fs-page .dashboard-button and .fs-page .loading-spinner (with stylelint-compliant var(--fs-radius-pill)) added to theme-components.css; @keyframes spin and merged reduced-motion rule added to theme.css; 0 diff across all 326 visual route tests at every intermediate group and final composite state; reference frames (3/3), shell tests (7/7), baseline manifest (334/334), and CRA test suites (49/49, 314 tests) passing. | 2D (Shared overrides) | None | 115ddfa (merged to main) |
 | — | 2026-11-12 | Plan revised to v10.3: added sub-phase 2F (universal loading, D23); added Loading primitive to §8.4; added --fs-danger-hover token; refined §6.4 loading row; updated dependency graph. | 2D | None | 5d14422 (merged to main) |
 | 2D | 2026-11-13 | Plain CSS expanded shadow rules authored in theme-components.css for Tables, Forms, Modals (8px ceiling), ConfirmModal, ViewOnlyBanner, ProtectedAction, Pagination, SummaryRow, AnalysisCard, ComponentTable, AppLauncher without editing legacy shared files (Constraint E1 preserved); suppression of legacy blurs to none; DataLoader.js currentColor inheritance; 10/10 dual-mode shared component computed style tests passing; 0 diff across all 326 visual route regression tests (Invariant I13 preserved); tokens (0 drift), tones (0 violations, 0 undefined tokens), ratchet (0 regressions), reference frames (3/3), shell (7/7), manifest (334/334), and CRA unit suites (50/50, 317 tests) green. | 2E (Primitives) | None | 1c441ec (merged to main) |
+| 2E | 2026-11-13 | Extracted 7 React UI primitives in frontend/src/components/ui/ (Button, Card, Badge, Delta, PageHeader, EmptyState, Tabs) plus index.js barrel export; verified category labels data retention with zero derived tint and zero accent usage; authored dual-mode cluster sub-navigation rules in theme-components.css; established 10-file specificity disposition matrix for 46 legacy !important declarations; created static dual-mode HTML fixture (primitives.html) and Playwright spec (primitives.spec.js) verifying computed styles and live ARIA APG keyboard roving focus; 51 new unit/a11y tests passing (jest-axe compliant); full verification passed: tokens (0 drift), tones (0 violations, 0 undefined tokens), ratchet (0 regressions), reference frames (3/3 pass, 0 diff), shell (7/7 pass, 0 diff), shared (10/10 pass, 0 diff), primitives (3/3 pass, 0 diff), 326 visual route regression tests (326/326 pass at 0 diff, Invariant I13 preserved), manifest (334/334 pass), and CRA unit suites (58/58 suites, 368/368 tests pass). | 2F (Universal loading) | None | 6691414 (merged to main) |
+| 2F | 2026-11-14 | Universal loading pattern completed: extracted Primitive #8 Loading.js supporting 5 variants (route, card, table, form-field, inline) with full jest-axe compliance; standardized App.js and ProtectedRoute.js Suspense fallbacks; migrated 5 representative pages (LandingPage, AdminDashboard, CertificateLogPage, EditCertificatePage, PortfolioDashboard); added .fs-loading and .fs-skeleton classes with @keyframes fs-pulse and documented unthemed legacy fallbacks (#ddd, #2c3e50, #6c757d, #e9ecef, 999px) with durable trail in §13 and §6.16 (Phase 12 removal); 0 drift (tokens.js), 0 violations and 0 undefined tokens (lint-tones.js), 0 regressions (lint-ratchet.js), 0 errors (stylelint), 0 testid removals (testid-guard.js); 59 CRA test suites passing (379 tests); Playwright primitives (3/3), reference (3/3), shell (7/7), shared (10/10), visual route regression (326/326 passing at 0 diff), manifest 334/334 verified. | 3A (Dashboard conversion) | None | e2d4df9 (merged to main) |
 
 ```
 Sub-phase:   1A
@@ -2604,6 +2607,20 @@ Branch:      phase-ui-2e-primitives
 Merge SHA:   6691414 (merged to main)
 ```
 
+```
+Sub-phase:   2F
+Status:      done
+Done:        Universal loading pattern completed: extracted Primitive #8 Loading.js with 5 variants (route, card, table, form-field, inline) and accessible role="status"; @keyframes fs-pulse opacity pulsing; standardized Suspense fallbacks in App.js and ProtectedRoute.js; migrated 5 representative pages (LandingPage, AdminDashboard, CertificateLogPage, EditCertificatePage, PortfolioDashboard); added theme.css loading classes with documented unthemed legacy fallbacks (#ddd, #2c3e50, #6c757d, #e9ecef, 999px); recorded durable trail in §13 and §6.16 for Phase 12 removal; dual-mode computed styles in primitives.html & primitives.spec.js; 11 new unit and jest-axe tests in Loading.test.js; full test suite passes (59 CRA suites, 379 tests); 326 visual route regression tests pass with 0 diff (Invariant I13 preserved); manifest 334/334 verified.
+Next:        3A — Chart theme and Dashboard conversion
+Blocked by:  None
+Allowlist:   none (zero production routing changes; empty allowlist preserved)
+Visual diff: zero on unmigrated routes (Invariant I13 verified; 326/326 pass at 0 diff)
+Fixtures:    Loading primitive section added to primitives.html (port 3001 static dual-mode harness)
+Screenshots: dual-mode loading verification in primitives.spec.js
+Branch:      phase-ui-2f-loading
+Merge SHA:   e2d4df9 (merged to main)
+```
+
 ### Sub-phase note template
 
 ```
@@ -2678,6 +2695,7 @@ Merge SHA:   <sha>
 | **Category colour in the log** | Removed by D14; replaced by a text prefix or group-by (G3). If the §1.3 timed task regresses materially, revisit the cue, not the palette | After Phase 4 analytics |
 | **Accent colour** | D14 rejects an accent hue; reintroducing one is a brand decision, not a page-level change | Post-release brand review |
 | **Third-party design skills** (antislop, UIdetox, Taste Skill) | They are instructions agents obey, usually unpinned; the deterministic stylelint rules cover the same patterns and block rather than advise | If a vetted, commit-pinned skill is trialled in 1C |
+| **2F stylelint disable block (theme.css)** | Temporary bridge for unthemed loading fallbacks (`#e9ecef`, `#ddd`, `#2c3e50`, `#6c757d`, `999px`). Sunset: Phase 12 removes the block and migrates values to unconditional `:root` in `tokens.css` | Phase 12 (cleanup) |
 | Full component-library extraction | Only 8 primitives are extracted now, including `Delta` and `Loading` | After Phase 14 |
 | Storybook / permanent styleguide | Not required to ship; patterns are documented in §4 and §6.4 | After Phase 14 |
 | Replacing inline styles with CSS-in-JS | Classes + CSS custom properties suffice | Not planned |

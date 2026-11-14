@@ -12,6 +12,7 @@ import { CertProvider } from '../context/CertContext';
 import { CurrProvider } from '../context/CurrContext';
 import { BankProvider } from '../context/BankContext';
 import { CreditProvider } from '../context/CreditContext';
+import { Loading } from './ui';
 
 // Themed routes allowlist (Phase 2B: empty; populated incrementally in subsequent phases)
 // Phase 3A will add: '/dashboard'
@@ -143,7 +144,7 @@ const ProtectedRoute = () => {
         } ${themed ? 'fs-page' : ''}`}
       >
         <ViewOnlyBanner />
-        <React.Suspense fallback={<div>Loading...</div>}>
+        <React.Suspense fallback={<Loading variant="route" text="Loading session..." />}>
           {requiredProviders.length > 0 ? (
             <ProviderWrapper providers={requiredProviders}>
               <Outlet />
