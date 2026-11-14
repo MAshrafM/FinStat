@@ -81,6 +81,25 @@ frontend/tests/visual/visual.spec.js
 - `frontend/src/components/AnalysisCard.css` — NOT in diff
 - `frontend/src/components/salary/ComponentTable.css` — NOT in diff
 
+### 3.1 Clarifications on Auxiliary File Modifications (`Tabs.js` & `visual.spec.js`)
+
+#### 1. `frontend/src/components/ui/Tabs.js` (C1)
+- **What Changed**: Removed an unused local variable declaration:
+  ```diff
+  -  const enabledTabs = tabs.filter(t => !t.disabled);
+  ```
+- **Why in Scope**: In Phase 2E, `enabledTabs` was authored but never referenced because roving keyboard focus dynamically calculates target enabled tabs via `!tabs[targetIndex].disabled`. During 2F's mandatory `CI=true npm run build` verification gate, Create React App escalated this `no-unused-vars` ESLint warning to a **fatal build error with exit code 1**. Removing this single unused declaration restored clean production build compilation.
+- **Verification**: `Tabs.test.js` was re-verified and passes **100% green (8/8 tests pass)**.
+
+#### 2. `frontend/tests/visual/visual.spec.js` (C2)
+- **What Changed**: Expanded the detachment wait locator before snapshot capture:
+  ```diff
+  -  await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+  +  await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+  ```
+- **Why in Scope**: Required by **Invariant I13** and Section 1 Item 6 of the 2F Implementation Plan: *"326 visual route regression tests pass with 0 diff (loading elements masked and detached prior to snapshot capture)"*. Because Phase 2F standardizes route fallbacks in `App.js` and `ProtectedRoute.js` using `.fs-loading` and `.fs-skeleton`, the visual regression test harness must wait for these elements to detach alongside legacy spinners. Without this detachment check, ephemeral loading states could be captured before data loads, causing false visual diffs.
+- **Pass Rate Impact**: Zero negative impact. All 326 visual route regression tests passed with **0 diff** across all 5 viewports (18.4m runtime).
+
 ---
 
 ## 4. Blocking Issue 3 Evidence: Diffs of the Six `.eslintignore` Files
