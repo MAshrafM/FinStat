@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en" data-fs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Primitives and Dual-Mode Sub-Nav Fixture (Phase 2E)</title>
+  <link rel="stylesheet" href="../../../../src/styles/tokens.css">
+  <link rel="stylesheet" href="../../../../src/styles/theme.css">
+  <link rel="stylesheet" href="../../../../src/styles/theme-components.css">
+  <link rel="stylesheet" href="../../../../src/pages/expenditure/ExpenditureSubNav.css">
+  <link rel="stylesheet" href="../../../../src/components/creditCards/CreditCardSubNav.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #101114;
+      color: #f0f2f5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .fixture-section {
+      margin-bottom: 40px;
+      padding: 24px;
+      border: 1px dashed #323843;
+      border-radius: 8px;
+    }
+    .fixture-section h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 1.25rem;
+      border-bottom: 1px solid #23272f;
+      padding-bottom: 8px;
+    }
+    .grid-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====================================================================
+       1. Legacy Context (Un-scoped, NOT inside .fs-page)
+       Verifies un-themed legacy styling is preserved outside .fs-page
+       ==================================================================== -->
+  <div id="legacy-context" class="fixture-section">
+    <h2>1. Legacy Context (Un-scoped, outside .fs-page)</h2>
+
+    <!-- Legacy Expenditure Sub-Nav -->
+    <div class="expenditure-subnav-container legacy-expenditure-subnav">
+      <div class="expenditure-subnav-track">
+        <a href="#all" class="expenditure-subnav-link active">
+          <span>All Expenses</span>
+        </a>
+        <a href="#recurring" class="expenditure-subnav-link">
+          <span>Recurring</span>
+        </a>
+        <a href="#trends" class="expenditure-subnav-link">
+          <span>Trends</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Legacy Credit Card Sub-Nav -->
+    <div class="cc-subnav-container legacy-cc-subnav">
+      <div class="cc-subnav-track">
+        <a href="#cards" class="cc-subnav-link active">
+          <span>Cards</span>
+        </a>
+        <a href="#statements" class="cc-subnav-link">
+          <span>Statements</span>
+        </a>
+        <a href="#rewards" class="cc-subnav-link">
+          <span>Rewards</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       2. Themed Context (Scoped inside .fs-page)
+       Verifies all 7 primitives and dual-mode sub-nav overrides
+       ==================================================================== -->
+  <div id="themed-context" class="fs-page fixture-section">
+    <h2>2. Themed Context (Scoped inside .fs-page)</h2>
+
+    <!-- Primitive 1: Button -->
+    <h3>1. Button Primitive</h3>
+    <div class="grid-row" id="section-buttons">
+      <button type="button" class="fs-btn fs-btn-primary" id="btn-primary">Primary Button</button>
+      <button type="button" class="fs-btn fs-btn-secondary" id="btn-secondary">Secondary Button</button>
+      <button type="button" class="fs-btn fs-btn-ghost" id="btn-ghost">Ghost Button</button>
+      <button type="button" class="fs-btn fs-btn-danger" id="btn-danger">Danger Button</button>
+      <button type="button" class="fs-btn fs-btn-secondary fs-btn-sm" id="btn-sm">Small Button</button>
+    </div>
+
+    <!-- Primitive 2: Card -->
+    <h3>2. Card Primitive</h3>
+    <div class="grid-row" id="section-cards" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="fs-card" id="card-default">
+        <div class="fs-card-header">
+          <h4 style="margin: 0; font-size: 1rem;">Default Card Header</h4>
+        </div>
+        <div class="fs-card-body">
+          Default card body with opaque background and 1px border ceiling.
+        </div>
+        <div class="fs-card-footer">
+          <button type="button" class="fs-btn fs-btn-secondary fs-btn-sm">Footer Action</button>
+        </div>
+      </div>
+
+      <div class="fs-card fs-card--raised" id="card-raised">
+        <div class="fs-card-header">
+          <h4 style="margin: 0; font-size: 1rem;">Raised Card Header</h4>
+        </div>
+        <div class="fs-card-body">
+          Raised card body with elevated surface and border tokens.
+        </div>
+        <div class="fs-card-footer">
+          <button type="button" class="fs-btn fs-btn-primary fs-btn-sm">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Primitive 3: Badge -->
+    <h3>3. Badge Primitive</h3>
+    <div class="grid-row" id="section-badges">
+      <span class="fs-badge" id="badge-neutral">Neutral Chip</span>
+      <span class="fs-badge fs-badge--positive" id="badge-positive">Active / Positive</span>
+      <span class="fs-badge fs-badge--negative" id="badge-negative">Overdue / Negative</span>
+      <span class="fs-badge fs-badge--warning" id="badge-warning">Pending / Warning</span>
+    </div>
+
+    <!-- Primitive 4: Delta -->
+    <h3>4. Delta Primitive</h3>
+    <div class="grid-row" id="section-deltas">
+      <span class="fs-delta fs-delta--positive" id="delta-positive">
+        <span class="fs-delta-value">+14.2%</span>
+        <span class="fs-delta-label">vs last month</span>
+      </span>
+      <span class="fs-delta fs-delta--negative" id="delta-negative">
+        <span class="fs-delta-value">&#x2212;8.5%</span>
+        <span class="fs-delta-label">YoY</span>
+      </span>
+      <span class="fs-delta fs-delta--warning" id="delta-warning">
+        <span class="fs-delta-value">+0.2%</span>
+        <span class="fs-delta-label">variance</span>
+      </span>
+      <span class="fs-delta fs-delta--neutral" id="delta-neutral">
+        <span class="fs-delta-value">0.0%</span>
+        <span class="fs-delta-label">flat</span>
+      </span>
+    </div>
+
+    <!-- Primitive 5: PageHeader -->
+    <h3>5. PageHeader Primitive</h3>
+    <div style="margin-bottom: 24px;">
+      <header class="fs-page-head" id="header-sample">
+        <div class="fs-page-head-content">
+          <div class="fs-eyebrow" id="header-eyebrow">PORTFOLIO OVERVIEW</div>
+          <h1 class="fs-page-title" id="header-title">Assets & Allocations</h1>
+          <p class="fs-page-subtitle" id="header-subtitle">Real-time valuation across all managed depository and brokerage accounts.</p>
+        </div>
+        <div class="fs-page-actions" id="header-actions">
+          <button type="button" class="fs-btn fs-btn-secondary fs-btn-sm">Export CSV</button>
+          <button type="button" class="fs-btn fs-btn-primary fs-btn-sm">Add Asset</button>
+        </div>
+      </header>
+    </div>
+
+    <!-- Primitive 6: EmptyState -->
+    <h3>6. EmptyState Primitive</h3>
+    <div style="margin-bottom: 24px;">
+      <div class="fs-empty" role="status" id="empty-sample">
+        <div class="fs-empty-icon" aria-hidden="true">&#x1F4C1;</div>
+        <h3 class="fs-empty-title" id="empty-title">No transactions recorded</h3>
+        <p class="fs-empty-desc" id="empty-desc">There are no cleared transfers or payments in the selected settlement cycle.</p>
+        <div class="fs-empty-action" id="empty-action">
+          <button type="button" class="fs-btn fs-btn-primary fs-btn-sm">Import Transactions</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Primitive 7: Tabs (Horizontal and Vertical) -->
+    <h3>7. Tabs Primitive</h3>
+    <div style="margin-bottom: 24px;">
+      <h4>Horizontal Tabs</h4>
+      <div class="fs-tabs" role="tablist" aria-label="Horizontal Sample Navigation" aria-orientation="horizontal" id="tabs-horizontal">
+        <button type="button" role="tab" id="htab-1" class="fs-tab fs-tab--active" aria-selected="true" tabindex="0">
+          <span class="fs-tab-label">Overview</span>
+        </button>
+        <button type="button" role="tab" id="htab-2" class="fs-tab" aria-selected="false" tabindex="-1">
+          <span class="fs-tab-label">Analytics</span>
+        </button>
+        <button type="button" role="tab" id="htab-3" class="fs-tab" aria-selected="false" tabindex="-1" disabled aria-disabled="true">
+          <span class="fs-tab-label">Reports (Locked)</span>
+        </button>
+        <button type="button" role="tab" id="htab-4" class="fs-tab" aria-selected="false" tabindex="-1">
+          <span class="fs-tab-label">Settings</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 24px;">
+      <h4>Vertical Tabs</h4>
+      <div class="fs-tabs" role="tablist" aria-label="Vertical Sample Navigation" aria-orientation="vertical" id="tabs-vertical" style="width: 240px;">
+        <button type="button" role="tab" id="vtab-1" class="fs-tab fs-tab--active" aria-selected="true" tabindex="0">
+          <span class="fs-tab-label">Profile</span>
+        </button>
+        <button type="button" role="tab" id="vtab-2" class="fs-tab" aria-selected="false" tabindex="-1">
+          <span class="fs-tab-label">Security</span>
+        </button>
+        <button type="button" role="tab" id="vtab-3" class="fs-tab" aria-selected="false" tabindex="-1" disabled aria-disabled="true">
+          <span class="fs-tab-label">Audit Log (Admin)</span>
+        </button>
+        <button type="button" role="tab" id="vtab-4" class="fs-tab" aria-selected="false" tabindex="-1">
+          <span class="fs-tab-label">Preferences</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Dual-Mode Cluster Sub-Navigators inside .fs-page -->
+    <h3>8. Dual-Mode Cluster Sub-Navigators (Inside .fs-page)</h3>
+
+    <!-- Themed Expenditure Sub-Nav -->
+    <div class="expenditure-subnav-container themed-expenditure-subnav">
+      <div class="expenditure-subnav-track">
+        <a href="#all" class="expenditure-subnav-link active">
+          <span>All Expenses</span>
+        </a>
+        <a href="#recurring" class="expenditure-subnav-link">
+          <span>Recurring</span>
+        </a>
+        <a href="#trends" class="expenditure-subnav-link">
+          <span>Trends</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Themed Credit Card Sub-Nav -->
+    <div class="cc-subnav-container themed-cc-subnav">
+      <div class="cc-subnav-track">
+        <a href="#cards" class="cc-subnav-link active">
+          <span>Cards</span>
+        </a>
+        <a href="#statements" class="cc-subnav-link">
+          <span>Statements</span>
+        </a>
+        <a href="#rewards" class="cc-subnav-link">
+          <span>Rewards</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Tab roving focus script replicating Tabs.js logic for live browser interaction
+    function setupTablist(tablistId, isVertical) {
+      const tablist = document.getElementById(tablistId);
+      if (!tablist) return;
+      const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('keydown', (e) => {
+          let targetIndex = -1;
+          if (!isVertical) {
+            if (e.key === 'ArrowRight') {
+              e.preventDefault();
+              targetIndex = (index + 1) % tabs.length;
+              while (tabs[targetIndex]?.disabled && targetIndex !== index) {
+                targetIndex = (targetIndex + 1) % tabs.length;
+              }
+            } else if (e.key === 'ArrowLeft') {
+              e.preventDefault();
+              targetIndex = (index - 1 + tabs.length) % tabs.length;
+              while (tabs[targetIndex]?.disabled && targetIndex !== index) {
+                targetIndex = (targetIndex - 1 + tabs.length) % tabs.length;
+              }
+            }
+          } else {
+            if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              targetIndex = (index + 1) % tabs.length;
+              while (tabs[targetIndex]?.disabled && targetIndex !== index) {
+                targetIndex = (targetIndex + 1) % tabs.length;
+              }
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              targetIndex = (index - 1 + tabs.length) % tabs.length;
+              while (tabs[targetIndex]?.disabled && targetIndex !== index) {
+                targetIndex = (targetIndex - 1 + tabs.length) % tabs.length;
+              }
+            }
+          }
+
+          if (e.key === 'Home') {
+            e.preventDefault();
+            targetIndex = tabs.findIndex(t => !t.disabled);
+          } else if (e.key === 'End') {
+            e.preventDefault();
+            for (let i = tabs.length - 1; i >= 0; i--) {
+              if (!tabs[i].disabled) {
+                targetIndex = i;
+                break;
+              }
+            }
+          }
+
+          if (targetIndex >= 0 && targetIndex < tabs.length && !tabs[targetIndex].disabled) {
+            tabs[targetIndex].focus();
+          }
+        });
+      });
+    }
+
+    setupTablist('tabs-horizontal', false);
+    setupTablist('tabs-vertical', true);
+  </script>
+</body>
+</html>
