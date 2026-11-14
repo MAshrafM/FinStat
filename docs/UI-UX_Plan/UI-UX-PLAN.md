@@ -2590,6 +2590,20 @@ Branch:      phase-ui-2d-shared-components
 Merge SHA:   1c441ec (merged to main)
 ```
 
+```
+Sub-phase:   2E
+Status:      done
+Done:        Extracted seven React UI primitives in frontend/src/components/ui/ (Button, Card, Badge, Delta, PageHeader, EmptyState, Tabs) plus index.js barrel export; verified category labels data retention with zero derived tint and zero accent usage; authored dual-mode cluster sub-navigation rules in theme-components.css (.fs-page .expenditure-subnav-*, .fs-page .cc-subnav-*); established 10-file specificity disposition matrix for 46 legacy !important declarations; created static dual-mode HTML fixture (primitives.html) and Playwright spec (primitives.spec.js) verifying computed styles and live ARIA APG keyboard roving focus; 51 new unit/a11y tests passing (jest-axe compliant); full verification passed: tokens (0 drift), tones (0 violations, 0 undefined tokens), ratchet (0 regressions), reference frames (3/3 pass, 0 diff), shell (7/7 pass, 0 diff), shared (10/10 pass, 0 diff), primitives (3/3 pass, 0 diff), 326 visual route regression tests (326/326 pass at 0 diff, Invariant I13 preserved), manifest (334/334 pass), and CRA unit suites (58/58 suites, 368/368 tests pass).
+Next:        2F — Universal loading pattern (D23)
+Blocked by:  None
+Allowlist:   none (zero production routing changes; empty allowlist preserved)
+Visual diff: zero on unmigrated routes (Invariant I13 verified; 326/326 pass at 0 diff)
+Fixtures:    primitives.html added (port 3001 static dual-mode harness)
+Screenshots: 3 dual-mode screenshots captured in frontend/tests/visual/output/phase-2e/
+Branch:      phase-ui-2e-primitives
+Merge SHA:   6691414 (merged to main)
+```
+
 ### Sub-phase note template
 
 ```

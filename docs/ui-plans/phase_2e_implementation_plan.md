@@ -399,12 +399,23 @@ Playwright browser test suite verifying computed styles and keyboard navigation 
 
 ## 6. Exit Gate 2E Checklist
 
-- [ ] All 7 primitives (`Button`, `Card`, `Badge`, `PageHeader`, `EmptyState`, `Tabs`, `Delta`) authored in `frontend/src/components/ui/` with full prop validation and ARIA support.
-- [ ] Primitives tested without altering unmigrated page markup (zero production regression).
-- [ ] `theme.css` updated with `.fs-delta`, `.fs-delta--*`, and primitive layout classes.
-- [ ] `categories.js` verified: hex values kept purely as data, no `tint` derived, passes ESLint and unit test.
-- [ ] Specificity audit for shared classes fully documented with 10-file disposition matrix matching v9/v10.3 phase numbering.
-- [ ] Dual-mode rule for cluster subnavs (`ExpenditureSubNav`, `CreditCardSubNav`, `PayrollRulesHub`) documented and verified in dual-mode browser suite.
-- [ ] Invariant I13 verified: 326/326 visual route regression tests pass with 0 diff.
-- [ ] Constraint E1 preserved: zero legacy shared CSS files edited (`git diff --name-only main` clean of legacy files).
-- [ ] All automated lints, ratchet checks, and unit tests pass clean.
+- [x] All 7 primitives (`Button`, `Card`, `Badge`, `PageHeader`, `EmptyState`, `Tabs`, `Delta`) authored in `frontend/src/components/ui/` with full prop validation and ARIA support.
+- [x] Primitives tested without altering unmigrated page markup (zero production regression).
+- [x] `theme.css` updated with `.fs-delta`, `.fs-delta--*`, and primitive layout classes.
+- [x] `categories.js` verified: hex values kept purely as data, no `tint` derived, passes ESLint and unit test.
+- [x] Specificity audit for shared classes fully documented with 10-file disposition matrix matching v9/v10.3 phase numbering.
+- [x] Dual-mode rule for cluster subnavs (`ExpenditureSubNav`, `CreditCardSubNav`, `PayrollRulesHub`) documented and verified in dual-mode browser suite.
+- [x] Invariant I13 verified: 326/326 visual route regression tests pass with 0 diff.
+- [x] Constraint E1 preserved: zero legacy shared CSS files edited (`git diff --name-only main` clean of legacy files).
+- [x] All automated lints, ratchet checks, and unit tests pass clean.
+
+---
+
+## 7. Sign-Off Record
+
+- **Status**: Completed & Verified
+- **Branch**: `phase-ui-2e-primitives` merged into `main` (`6691414`)
+- **Walkthrough Artifact**: [`docs/ui-plans/phase_2e_walkthrough.md`](docs/ui-plans/phase_2e_walkthrough.md)
+- **Sign-Off Date**: 2026-11-14
+- **Next Sub-Phase**: Phase 2F — Universal Loading Pattern (D23)
+
