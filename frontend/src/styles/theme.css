@@ -878,12 +878,9 @@ section.fs-error {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* stylelint-disable color-no-hex */
   .fs-skeleton {
     animation: none;
-    background: var(--fs-surface-raised, #e9ecef);
   }
-  /* stylelint-enable color-no-hex */
 
   .fs-loading-spinner {
     animation: none;

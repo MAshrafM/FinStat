@@ -239,4 +239,58 @@ test.describe('Phase 2E: Primitives & Dual-Mode Sub-Nav Verification', () => {
     await page.keyboard.press('End');
     expect(await getActiveId()).toBe('vtab-4');
   });
+
+  test('LandingPage: unthemed login spinner renders visible fallback on slow response', async ({ browser }) => {
+    // Unauthenticated context without storageState
+    const context = await browser.newContext({ storageState: undefined });
+    const page = await context.newPage();
+
+    // Intercept auth login to simulate slow response
+    await page.route('**/auth/login', async route => {
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'mock-token', user: { id: 1, name: 'Test User' } }),
+      });
+    });
+
+    await page.goto('http://localhost:3000/', { waitUntil: 'networkidle' });
+
+    // Ensure page has no theme attribute (unthemed landing page)
+    const hasTheme = await page.evaluate(() => document.documentElement.hasAttribute('data-fs-theme'));
+    expect(hasTheme).toBe(false);
+
+    // Fill credentials
+    await page.fill('input[placeholder="Username"]', 'demouser');
+    await page.fill('input[placeholder="Password"]', 'password123');
+
+    // Click Sign In
+    await page.click('button[type="submit"]');
+
+    // Spinner should appear in button
+    const spinner = page.locator('button[type="submit"] .fs-loading-spinner');
+    await expect(spinner).toBeVisible();
+
+    // Assert dimensions and computed colors
+    const bbox = await spinner.boundingBox();
+    expect(bbox).not.toBeNull();
+    expect(bbox.width).toBeGreaterThan(0);
+    expect(bbox.height).toBeGreaterThan(0);
+
+    const borderTopColor = await spinner.evaluate(el => window.getComputedStyle(el).borderTopColor);
+    const borderLeftColor = await spinner.evaluate(el => window.getComputedStyle(el).borderLeftColor);
+
+    expect(borderTopColor).toBe('rgb(44, 62, 80)');      // #2c3e50 (unthemed text fallback)
+    expect(borderLeftColor).toBe('rgb(221, 221, 221)');  // #ddd (unthemed border fallback)
+
+    // Capture screenshot of unthemed login button with active fallback spinner
+    const phase2fOutputDir = path.join(__dirname, 'output/phase-2f');
+    if (!fs.existsSync(phase2fOutputDir)) {
+      fs.mkdirSync(phase2fOutputDir, { recursive: true });
+    }
+    await page.screenshot({ path: path.join(phase2fOutputDir, 'landing-unthemed-spinner.png') });
+
+    await context.close();
+  });
 });
