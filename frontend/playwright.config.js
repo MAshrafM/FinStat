@@ -40,6 +40,10 @@ module.exports = defineConfig({
       testMatch: /shared-components\.spec\.js/,
     },
     {
+      name: 'primitives',
+      testMatch: /primitives\.spec\.js/,
+    },
+    {
       name: 'shell',
       dependencies: ['setup'],
       testMatch: /shell\.spec\.js/,

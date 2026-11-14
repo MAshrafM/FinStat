@@ -1,4 +1,9 @@
 // frontend/src/constants/categories.js
+/**
+ * Category Definitions (§4.3 Rule 4 & §6.6 Phase 2E)
+ * Hex color values are preserved purely as data for charts/analytics.
+ * No `tint` property is derived. Category identity is the label text.
+ */
 
 export const EXPENDITURE_CATEGORIES = [
   { name: 'Food & Dining', color: '#FF6384', keywords: ['lunch', 'dinner', 'breakfast', 'meal', 'dine', 'coffee', 'starbucks', 'cafe'] },

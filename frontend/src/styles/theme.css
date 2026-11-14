@@ -234,6 +234,27 @@
   box-shadow: none;
 }
 
+.fs-card--raised {
+  background: var(--fs-surface-raised);
+}
+
+.fs-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.fs-card-body {
+  flex: 1 1 auto;
+}
+
+.fs-card-footer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: var(--fs-border-width) solid var(--fs-border);
+}
+
 .fs-panel {
   background: var(--fs-surface);
   border: var(--fs-border-width) solid var(--fs-border);
@@ -257,6 +278,19 @@
   align-items: flex-start;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.fs-page-head-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.fs-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
@@ -464,6 +498,48 @@
 }
 
 /* ==========================================================================
+   7.1 Delta (Amount Change Indicators)
+   ========================================================================== */
+
+.fs-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  line-height: var(--fs-line-height-sm);
+  font-weight: var(--fs-weight-medium);
+  color: var(--fs-text-3);
+}
+
+.fs-delta--positive {
+  color: var(--fs-positive);
+}
+
+.fs-delta--negative {
+  color: var(--fs-negative);
+}
+
+.fs-delta--warning {
+  color: var(--fs-warning);
+}
+
+.fs-delta--neutral {
+  color: var(--fs-text-3);
+}
+
+.fs-delta-value {
+  font-family: var(--fs-font-sans);
+  font-feature-settings: 'tnum' on, 'lnum' on;
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-delta-label {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+}
+
+/* ==========================================================================
    8. Dense Tables & Scrolling Affordance
    ========================================================================== */
 
@@ -526,6 +602,63 @@
   border-bottom: var(--fs-border-width) solid var(--fs-border);
 }
 
+.fs-tabs[aria-orientation="vertical"] {
+  flex-direction: column;
+  border-bottom: none;
+  border-right: var(--fs-border-width) solid var(--fs-border);
+}
+
+.fs-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+  color: var(--fs-text-3);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color var(--fs-duration-fast) var(--fs-ease-standard),
+              border-color var(--fs-duration-fast) var(--fs-ease-standard);
+  user-select: none;
+  text-decoration: none;
+}
+
+.fs-tabs[aria-orientation="vertical"] .fs-tab {
+  border-bottom: none;
+  border-right: 2px solid transparent;
+}
+
+.fs-tab:hover:not(:disabled) {
+  color: var(--fs-text);
+}
+
+.fs-tab:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: -2px;
+}
+
+.fs-tab--active,
+.fs-tab[aria-selected="true"] {
+  color: var(--fs-text);
+  border-bottom-color: var(--fs-accent);
+}
+
+.fs-tabs[aria-orientation="vertical"] .fs-tab--active,
+.fs-tabs[aria-orientation="vertical"] .fs-tab[aria-selected="true"] {
+  border-bottom-color: transparent;
+  border-right-color: var(--fs-accent);
+}
+
+.fs-tab:disabled,
+.fs-tab[aria-disabled="true"] {
+  color: var(--fs-text-4);
+  cursor: not-allowed;
+}
+
 .fs-pill {
   border-radius: var(--fs-radius-pill);
 }
@@ -563,6 +696,29 @@
   padding: 3rem 1.5rem;
   text-align: center;
   color: var(--fs-text-3);
+}
+
+.fs-empty-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--fs-text-3);
+}
+
+.fs-empty-title {
+  font-size: var(--fs-text-base);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  margin: 0 0 0.25rem 0;
+}
+
+.fs-empty-desc {
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-3);
+  margin: 0 0 1rem 0;
+}
+
+.fs-empty-action {
+  margin-top: 0.5rem;
 }
 
 .fs-skeleton {
