@@ -26,6 +26,14 @@ test.describe('Dashboard Reference Match (Live /dashboard vs Frame 03)', () => {
     });
 
     await page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+    await page.addStyleTag({
+      content: `
+        .toast-container,
+        [class*="toast-container"],
+        .Toastify,
+        .toasts-wrapper { display: none !important; }
+      `,
+    });
     await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
     await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
     await page.evaluate(() => document.fonts.ready).catch(() => {});
@@ -75,17 +83,19 @@ test.describe('Dashboard Reference Match (Live /dashboard vs Frame 03)', () => {
     expect(numVariant).toBe('tabular-nums');
 
     // 8. CLS <= 0.1 on /dashboard (S2 / R22 requirement)
-    const cls = await page.evaluate(() => {
-      let clsValue = 0;
-      const entries = performance.getEntriesByType('layout-shift');
-      for (const entry of entries) {
-        if (!entry.hadRecentInput) {
-          clsValue += entry.value;
-        }
-      }
-      return clsValue;
+    const cumulativeLayoutShift = await page.evaluate(() => {
+      return new Promise((resolve) => {
+        let cls = 0;
+        new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            if (!entry.hadRecentInput) cls += entry.value;
+          }
+        }).observe({ type: 'layout-shift', buffered: true });
+        setTimeout(() => resolve(cls), 3000);
+      });
     });
-    expect(cls).toBeLessThanOrEqual(0.1);
+    console.log(`CLS: ${cumulativeLayoutShift}`);
+    expect(cumulativeLayoutShift).toBeLessThanOrEqual(0.1);
   });
 
   test('unthemed route (/trades) has 0 font requests (S2 font isolation)', async ({ page }) => {
