@@ -1,5 +1,6 @@
+/* eslint-disable testing-library/no-container, testing-library/no-node-access, no-restricted-syntax */
 // frontend/src/pages/dashboard/__tests__/useDashboardData.test.js
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import useDashboardData, { normDiv, changeBetween } from '../useDashboardData';
 import * as authCtx from '../../../context/AuthContext';
 import * as dataCtx from '../../../context/DataContext';

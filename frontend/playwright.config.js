@@ -33,7 +33,8 @@ module.exports = defineConfig({
     },
     {
       name: 'reference',
-      testMatch: /reference-frames\.spec\.js/,
+      dependencies: ['setup'],
+      testMatch: /(reference-frames|dashboard-reference-match)\.spec\.js/,
     },
     {
       name: 'shared',

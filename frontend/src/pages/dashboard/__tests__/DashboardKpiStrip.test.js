@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-container, testing-library/no-node-access, no-restricted-syntax */
 // frontend/src/pages/dashboard/__tests__/DashboardKpiStrip.test.js
 import React from 'react';
 import { render, screen } from '@testing-library/react';
@@ -37,7 +38,7 @@ describe('Step 8B.1a: DashboardKpiStrip Component Tests [AUD-ARCH-001]', () => {
 
   // Test 2: renders Portfolio Return KPI tile with positive/negative color tone class
   test('2. renders Portfolio Return KPI tile with positive/negative color tone class', () => {
-    const { container, rerender } = renderComponent();
+    const { rerender } = renderComponent();
     expect(screen.getByText('Portfolio return')).toBeInTheDocument();
     expect(screen.getByText('$120,000.00')).toBeInTheDocument();
     expect(screen.getByText('+24.0% vs invested')).toBeInTheDocument();

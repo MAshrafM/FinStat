@@ -39,7 +39,7 @@ const NetWorthHero = ({
           {canModify && (
             <button
               type="button"
-              className="dash-btn dash-btn-primary"
+              className="fs-btn fs-btn-primary"
               onClick={() => onOpenLauncher('create')}
             >
               <FaPlus aria-hidden="true" />
@@ -48,7 +48,7 @@ const NetWorthHero = ({
           )}
           <button
             type="button"
-            className="dash-btn dash-btn-ghost"
+            className="fs-btn fs-btn-ghost"
             onClick={() => onOpenLauncher('explore')}
           >
             <FaCompass aria-hidden="true" />
@@ -56,8 +56,7 @@ const NetWorthHero = ({
           </button>
           <Link
             to="/reports/financial"
-            className="dash-btn dash-btn-ghost"
-            style={{ textDecoration: 'none' }}
+            className="fs-btn fs-btn-ghost"
           >
             📑 Financial Report
           </Link>
@@ -72,21 +71,21 @@ const NetWorthHero = ({
             Live
           </span>
         </div>
-        <div className="dash-hero-value">{formatCurrency(calculations?.netWorth || 0)}</div>
-        <div className={`dash-hero-delta ${gainIsPositive ? 'up' : 'down'}`}>
+        <div className="dash-hero-value fs-num">{formatCurrency(calculations?.netWorth || 0)}</div>
+        <div className={`dash-hero-delta ${gainIsPositive ? 'up positive' : 'down negative'}`}>
           {gainIsPositive ? <FaArrowUp aria-hidden="true" /> : <FaArrowDown aria-hidden="true" />}
-          <strong>{formatCurrency(calculations?.totalGain || 0)}</strong>
-          <span>({formatSignedPercent(calculations?.totalGainPct || 0)})</span>
+          <strong className="fs-num">{formatCurrency(calculations?.totalGain || 0)}</strong>
+          <span className="fs-num">({formatSignedPercent(calculations?.totalGainPct || 0)})</span>
           <em>all-time return</em>
         </div>
 
         <div className="dash-mix-bar" aria-hidden="true">
-          {(assetMix?.list || []).map((asset) => (
+          {(assetMix?.list || []).map((asset, index) => (
             <span
               key={asset.key}
+              className={`dash-mix-segment dash-mix-segment--${index % 4}`}
               style={{
                 width: `${(assetMix?.total || 0) > 0 ? (asset.current / assetMix.total) * 100 : 0}%`,
-                background: asset.color,
               }}
             />
           ))}
@@ -96,11 +95,11 @@ const NetWorthHero = ({
         <div className="dash-hero-card-foot">
           <div>
             <span>Invested</span>
-            <strong>{formatCurrency(calculations?.totalPaid || 0)}</strong>
+            <strong className="fs-num">{formatCurrency(calculations?.totalPaid || 0)}</strong>
           </div>
           <div>
             <span>Credit due</span>
-            <strong>{formatCurrency(calculations?.creditOutstanding || 0)}</strong>
+            <strong className="fs-num">{formatCurrency(calculations?.creditOutstanding || 0)}</strong>
           </div>
         </div>
       </div>
@@ -109,4 +108,3 @@ const NetWorthHero = ({
 };
 
 export default React.memo(NetWorthHero);
-

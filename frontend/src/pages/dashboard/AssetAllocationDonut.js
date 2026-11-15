@@ -5,6 +5,7 @@ import { FaChartPie, FaChevronRight, FaPlus } from 'react-icons/fa';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
+import { getChartPalette, doughnutDefaults, ariaLabel } from '../../styles/chartTheme';
 
 ChartJS.register(ArcElement, Tooltip);
 
@@ -23,49 +24,67 @@ const AssetAllocationDonut = ({
       }))
       .filter((asset) => asset.value > 0);
 
+    const total = list.reduce((sum, asset) => sum + asset.value, 0);
+
+    // Enforce <= 4 segments cap per §4.12
+    let cappedList = list;
+    if (list.length > 4) {
+      const sorted = [...list].sort((a, b) => b.value - a.value);
+      const top3 = sorted.slice(0, 3);
+      const otherTotal = sorted.slice(3).reduce((acc, curr) => acc + curr.value, 0);
+      cappedList = [
+        ...top3,
+        {
+          key: 'other',
+          name: 'Other',
+          value: otherTotal,
+          viewPath: '#',
+        },
+      ];
+    }
+
     return {
       list,
-      total: list.reduce((sum, asset) => sum + asset.value, 0),
+      cappedList,
+      total,
     };
   }, [holdings, chartMode]);
 
-  const chartData = useMemo(
-    () => ({
-      labels: chartSegments.list.map((asset) => asset.name),
+  const palette = getChartPalette();
+
+  const chartData = useMemo(() => {
+    const colors = [
+      palette.greys[0],
+      palette.greys[1],
+      palette.greys[2],
+      palette.greys[3],
+    ];
+
+    return {
+      labels: chartSegments.cappedList.map((asset) => asset.name),
       datasets: [
         {
-          data: chartSegments.list.map((asset) => asset.value),
-          backgroundColor: chartSegments.list.map((asset) => asset.color),
-          borderColor: '#0b1220',
-          borderWidth: 3,
-          hoverOffset: 10,
+          data: chartSegments.cappedList.map((asset) => asset.value),
+          backgroundColor: chartSegments.cappedList.map((_, i) => colors[i % colors.length]),
+          borderColor: 'var(--fs-surface)',
+          borderWidth: 2,
+          hoverOffset: 6,
         },
       ],
-    }),
-    [chartSegments]
-  );
+    };
+  }, [chartSegments, palette]);
 
   const chartOptions = useMemo(
-    () => ({
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '72%',
-      animation: { animateRotate: true, duration: 650 },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: 'rgba(8, 15, 30, 0.96)',
-          borderColor: 'rgba(148, 163, 184, 0.25)',
-          borderWidth: 1,
-          padding: 10,
-          titleColor: '#f8fafc',
-          bodyColor: '#cbd5e1',
-          callbacks: {
-            label: (context) => ` ${formatCurrency(context.raw)}`,
+    () =>
+      doughnutDefaults({
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (context) => ` ${formatCurrency(context.raw)}`,
+            },
           },
         },
-      },
-    }),
+      }),
     []
   );
 
@@ -73,7 +92,7 @@ const AssetAllocationDonut = ({
     <section className="dash-panel dash-allocation">
       <div className="dash-panel-head">
         <div className="dash-panel-title">
-          <span className="dash-panel-icon tone-sky">
+          <span className="dash-panel-icon">
             <FaChartPie aria-hidden="true" />
           </span>
           <div>
@@ -101,24 +120,31 @@ const AssetAllocationDonut = ({
 
       {chartSegments.total > 0 ? (
         <div className="dash-allocation-body">
-          <div className="dash-donut-wrap">
+          <div
+            className="dash-donut-wrap"
+            role="img"
+            aria-label={ariaLabel('Asset allocation', chartSegments.cappedList)}
+          >
             <Doughnut data={chartData} options={chartOptions} />
             <div className="dash-donut-center">
               <span>{chartMode === 'current' ? 'Current value' : 'Total invested'}</span>
-              <strong>{formatCurrency(chartSegments.total)}</strong>
+              <strong className="fs-num">{formatCurrency(chartSegments.total)}</strong>
               <small>{chartSegments.list.length} asset classes</small>
             </div>
           </div>
 
           <div className="dash-legend">
-            {chartSegments.list.map((asset) => {
+            {chartSegments.list.map((asset, index) => {
               const share = (asset.value / chartSegments.total) * 100;
               return (
                 <Link key={asset.key} to={asset.viewPath} className="dash-legend-row">
-                  <span className="dash-legend-dot" style={{ background: asset.color }} />
+                  <span
+                    className={`dash-legend-dot dash-legend-dot--${index % 4}`}
+                    aria-hidden="true"
+                  />
                   <span className="dash-legend-name">{asset.name}</span>
-                  <span className="dash-legend-value">{formatCurrency(asset.value)}</span>
-                  <span className="dash-legend-share">{share.toFixed(1)}%</span>
+                  <span className="dash-legend-value fs-num">{formatCurrency(asset.value)}</span>
+                  <span className="dash-legend-share fs-num">{share.toFixed(1)}%</span>
                   <FaChevronRight className="dash-legend-chevron" aria-hidden="true" />
                 </Link>
               );
@@ -133,7 +159,7 @@ const AssetAllocationDonut = ({
           {canModify && (
             <button
               type="button"
-              className="dash-btn dash-btn-primary"
+              className="fs-btn fs-btn-primary"
               onClick={() => onOpenLauncher('create')}
             >
               <FaPlus aria-hidden="true" /> Add a holding
