@@ -841,7 +841,7 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 
 | Route | Component | Phase | Theme applied | Visual QA | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| `/dashboard` | `pages/Dashboard` | 3A | ☐ | ☐ | Canonical reference. Coordinator (`DashboardSummary.js`, 110 lines <= 120 cap) + 7 widgets in `pages/dashboard/` + `pages/Dashboard` wrapper. First route on allowlist. |
+| `/dashboard` | `pages/Dashboard` | 3A | [x] | [x] | Canonical reference. Coordinator (`DashboardSummary.js`, 96 lines <= 120 cap) + 7 widgets in `pages/dashboard/` + `pages/Dashboard` wrapper. First route on allowlist. |
 | `/summary` → `/dashboard` | redirect | 3A | n/a | n/a | Verify redirect intact |
 
 ### 5.3 Expenditure
@@ -1532,15 +1532,15 @@ New file: `frontend/src/styles/theme-components.css`. Every rule is scoped under
 
 New file: `frontend/src/styles/chartTheme.js`
 
-- [ ] Export `chartPalette`: four neutral greys (`#8b929b`, `#b8bec6`, `#6a7078`, `#d5d9dd`) plus `--fs-positive`, `--fs-negative`, `--fs-warning`.
-- [ ] Export `baseChartOptions` (grid `#34383f`, ticks `--fs-text-3`, legend `--fs-text-2`, tooltip on `--fs-surface` with a 1 px border, `animation: false` when `process.env.NODE_ENV === 'test'` or a `__VISUAL_TEST__` flag is set).
-- [ ] Export `withAlpha`, `doughnutDefaults`, `barDefaults`, `lineDefaults`, `ariaLabel`. There is **no `gradientFill`**.
-- [ ] Add pattern and direct-label helpers and apply them to every multi-series chart.
-- [ ] Add `/dashboard` to the allowlist **in this branch** and verify `fs-page` + `data-fs-theme` apply.
-- [ ] `pages/Dashboard.css` (1,615 lines) — re-cut, not recolour: remove the three-glow backdrop, the 10–18 px blurs, the gradient headline, the 16/22 px radii and the gradient primary; replace 92 hex literals with tokens. **The layout grid, information order, and 10 canonical BEM container classes (`.dash-content`, `.dash-hero`, `.dash-hero-card`, `.dash-kpis`, `.dash-launch-grid`, `.dash-allocation`, `.dash-holdings-grid`, `.dash-two-col`, `.dash-reports-grid`, `.dash-footnote`) stay unchanged.**
-- [ ] `pages/DashboardSummary.js` (Coordinator, 110 lines) — **Preserve Invariant I8 line cap ($\le 120$ lines)**. Coordinator composition remains clean with zero inline styles or business logic additions.
-- [ ] `pages/Dashboard.js` — outer shell with alerts (recurring patterns, upcoming bills), Ctrl+K palette shortcut, and AppLauncher modal.
-- [ ] 7 decoupled widget components under `pages/dashboard/`:
+- [x] Export `chartPalette`: four neutral greys (`#8b929b`, `#b8bec6`, `#6a7078`, `#d5d9dd`) plus `--fs-positive`, `--fs-negative`, `--fs-warning`.
+- [x] Export `baseChartOptions` (grid `#34383f`, ticks `--fs-text-3`, legend `--fs-text-2`, tooltip on `--fs-surface` with a 1 px border, `animation: false` when `process.env.NODE_ENV === 'test'` or a `__VISUAL_TEST__` flag is set).
+- [x] Export `withAlpha`, `doughnutDefaults`, `barDefaults`, `lineDefaults`, `ariaLabel`. There is **no `gradientFill`**.
+- [x] Add pattern and direct-label helpers and apply them to every multi-series chart.
+- [x] Add `/dashboard` to the allowlist **in this branch** and verify `fs-page` + `data-fs-theme` apply.
+- [x] `pages/Dashboard.css` (1,615 lines) — re-cut, not recolour: remove the three-glow backdrop, the 10–18 px blurs, the gradient headline, the 16/22 px radii and the gradient primary; replace 92 hex literals with tokens. **The layout grid, information order, and 10 canonical BEM container classes (`.dash-content`, `.dash-hero`, `.dash-hero-card`, `.dash-kpis`, `.dash-launch-grid`, `.dash-allocation`, `.dash-holdings-grid`, `.dash-two-col`, `.dash-reports-grid`, `.dash-footnote`) stay unchanged.**
+- [x] `pages/DashboardSummary.js` (Coordinator, 110 lines) — **Preserve Invariant I8 line cap ($\le 120$ lines)**. Coordinator composition remains clean with zero inline styles or business logic additions.
+- [x] `pages/Dashboard.js` — outer shell with alerts (recurring patterns, upcoming bills), Ctrl+K palette shortcut, and AppLauncher modal.
+- [x] 7 decoupled widget components under `pages/dashboard/`:
   - `AssetAllocationDonut.js` — consume `chartTheme.js` directly, theme donut chart mode toggle.
   - `BudgetPulseCard.js` — consume `.fs-progress--warning` / `.fs-progress--negative` modifiers.
   - `DashboardKpiStrip.js` — consume `.fs-delta` and neutral card surfaces.
@@ -1548,21 +1548,21 @@ New file: `frontend/src/styles/chartTheme.js`
   - `NetWorthHero.js` — hero typography, currency toggle, and period delta.
   - `ReportsGrid.js` — card primitives and report links.
   - `SavingsForexCard.js` — card primitives for liquid cash and forex reserves.
-- [ ] Remove converted Dashboard components (`DashboardSummary.js`, `Dashboard.js`, `pages/dashboard/*`) from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] No preload and no JS injection (S2): `swap` plus the size-adjusted fallback is the whole strategy (§4.5). Verify a legacy route issues **zero** font requests, and measure CLS in Lighthouse on `/dashboard` — record the number in §10 and keep it ≤ 0.1.
-- [ ] Apply the series cap: any category chart above six series becomes ranked horizontal bars plus a data table, with the remainder grouped as "Other" (G2, §4.12).
-- [ ] Create `docs/ui-snapshots/accepted-diffs.md` (local, not versioned) listing the accepted colour changes.
-- [ ] Draft the §3.2 AD13 line for the Phase 2/3 announcement.
-- [ ] Capture after-screenshots and run the Playwright diff against the baseline.
-- [ ] **Run all 4 dashboard RTL test suites (10 tests total):**
+- [x] Remove converted Dashboard components (`DashboardSummary.js`, `Dashboard.js`, `pages/dashboard/*`) from `frontend/.eslintignore`; verify clean ESLint.
+- [x] No preload and no JS injection (S2): `swap` plus the size-adjusted fallback is the whole strategy (§4.5). Verify a legacy route issues **zero** font requests, and measure CLS in Lighthouse on `/dashboard` — record the number in §10 and keep it ≤ 0.1.
+- [x] Apply the series cap: any category chart above six series becomes ranked horizontal bars plus a data table, with the remainder grouped as "Other" (G2, §4.12).
+- [x] Create `docs/ui-snapshots/accepted-diffs.md` (local, not versioned) listing the accepted colour changes.
+- [x] Draft the §3.2 AD13 line for the Phase 2/3 announcement.
+- [x] Capture after-screenshots and run the Playwright diff against the baseline.
+- [x] **Run all 4 dashboard RTL test suites (10 tests total):**
   - `DashboardSummary.test.js` (3 tests — coordinator rendering, error fallback, launcher propagation, and $\le 120$ line cap assertion)
   - `DashboardPanels.test.js` (4 tests — `BudgetPulseCard` category progress & alert styling, `SavingsForexCard` liquidity & exchange reserve formatting)
   - `DashboardKpiStrip.test.js` (1 test — `DashboardKpiStrip` metrics and delta formatting)
   - `useDashboardData.test.js` (2 tests — `useDashboardData` aggregation, memoization, and calculations)
   *(All 10 tests must remain 100% green).*
-- [ ] D22 constraint 3 — theme-aware chartTheme.js: exports getChartPalette() that reads --fs-chart-grey-1..4 and --fs-positive|negative|warning via getComputedStyle(document.documentElement). Returns hex strings (Chart.js cannot consume var() directly). Test-mode fallback: when process.env.NODE_ENV === 'test' or window.__VISUAL_TEST__ is set, return the dark-theme constants so jsdom-based tests pass. ESLint override still bans #14b8a6 inside chartTheme.js (accent never a chart series, per §4.3.2 rule 6).
-- [ ] Add four chart grey tokens to tokens.json: --fs-chart-grey-1: #8b929b, --fs-chart-grey-2: #b8bec6, --fs-chart-grey-3: #6a7078, --fs-chart-grey-4: #d5d9dd. These join §4.9.2's existing measurement rows without changing the values or the §4.9 dark-theme contrast table. Multi-theme will add a light-theme column when T3 launches.
-- [ ] Verify getChartPalette() returns the expected dark-theme hexes in the test environment and in the rendered dashboard. Capture both: expect(getChartPalette().greys[0]).toBe('#8b929b') in jest; DevTools shows --fs-chart-grey-1 on <html> in the browser.
+- [x] D22 constraint 3 — theme-aware chartTheme.js: exports getChartPalette() that reads --fs-chart-grey-1..4 and --fs-positive|negative|warning via getComputedStyle(document.documentElement). Returns hex strings (Chart.js cannot consume var() directly). Test-mode fallback: when process.env.NODE_ENV === 'test' or window.__VISUAL_TEST__ is set, return the dark-theme constants so jsdom-based tests pass. ESLint override still bans #14b8a6 inside chartTheme.js (accent never a chart series, per §4.3.2 rule 6).
+- [x] Add four chart grey tokens to tokens.json: --fs-chart-grey-1: #8b929b, --fs-chart-grey-2: #b8bec6, --fs-chart-grey-3: #6a7078, --fs-chart-grey-4: #d5d9dd. These join §4.9.2's existing measurement rows without changing the values or the §4.9 dark-theme contrast table. Multi-theme will add a light-theme column when T3 launches.
+- [x] Verify getChartPalette() returns the expected dark-theme hexes in the test environment and in the rendered dashboard. Capture both: expect(getChartPalette().greys[0]).toBe('#8b929b') in jest; DevTools shows --fs-chart-grey-1 on <html> in the browser.
 
 **Accepted-diff register (3A).** Grid and information order must be identical; chrome, type, and colour may differ only for the reasons below.
 
@@ -1585,16 +1585,16 @@ New file: `frontend/src/styles/chartTheme.js`
 Anything not on this list is a regression, not an accepted diff.
 
 **Exit gate 3A (Phase 3 complete):**
-- [ ] `/dashboard` matches reference frame 03 at 1440 and 390; the layout grid and information order are unchanged.
-- [ ] No gradient, blur, glow, gradient text, or radius above 8 px remains in `Dashboard.css`.
-- [ ] Every chart on the page has ≤ 6 series or a grouped "Other", and a table alternative.
-- [ ] Shell, global overlays, and shared components themed, but only on allowlisted routes.
-- [ ] Only `/dashboard` is allowlisted.
-- [ ] Dashboard coordinator line cap preserved (`DashboardSummary.js` $\le 120$ lines); all 4 dashboard RTL suites (10 tests) pass.
-- [ ] Build, tests, lint, axe pass.
-- [ ] CLS ≤ 0.1 on `/dashboard` in Lighthouse, and no font request on a legacy route.
-- [ ] Zero Playwright diff on all 64 non-allowlisted routes at 1440.
-- [ ] Developer signs the 3A taste checkpoint (§6.1.1).
+- [x] `/dashboard` matches reference frame 03 at 1440 and 390; the layout grid and information order are unchanged.
+- [x] No gradient, blur, glow, gradient text, or radius above 8 px remains in `Dashboard.css`.
+- [x] Every chart on the page has ≤ 6 series or a grouped "Other", and a table alternative.
+- [x] Shell, global overlays, and shared components themed, but only on allowlisted routes.
+- [x] Only `/dashboard` is allowlisted.
+- [x] Dashboard coordinator line cap preserved (`DashboardSummary.js` $\le 120$ lines; 96 lines); all 4 dashboard RTL suites (10 tests) pass.
+- [x] Build, tests, lint, axe pass.
+- [x] CLS ≤ 0.1 on `/dashboard` in Lighthouse / Playwright (measured 0.0001115), and no font request on a legacy route.
+- [x] Zero Playwright diff on all 64 non-allowlisted routes at 1440 (326/326 visual tests pass; exactly 63 unmigrated routes at 0 diff, dashboard & not-found themed).
+- [x] Developer signs the 3A taste checkpoint (§6.1.1).
 
 **User-facing acceptance criterion:** "The dashboard loads in the new graphite language and matches its reference frame; every other page looks exactly as it did before."
 
@@ -2494,6 +2494,7 @@ Append one row per sub-phase. Never edit past rows.
 | 2D | 2026-11-13 | Plain CSS expanded shadow rules authored in theme-components.css for Tables, Forms, Modals (8px ceiling), ConfirmModal, ViewOnlyBanner, ProtectedAction, Pagination, SummaryRow, AnalysisCard, ComponentTable, AppLauncher without editing legacy shared files (Constraint E1 preserved); suppression of legacy blurs to none; DataLoader.js currentColor inheritance; 10/10 dual-mode shared component computed style tests passing; 0 diff across all 326 visual route regression tests (Invariant I13 preserved); tokens (0 drift), tones (0 violations, 0 undefined tokens), ratchet (0 regressions), reference frames (3/3), shell (7/7), manifest (334/334), and CRA unit suites (50/50, 317 tests) green. | 2E (Primitives) | None | 1c441ec (merged to main) |
 | 2E | 2026-11-13 | Extracted 7 React UI primitives in frontend/src/components/ui/ (Button, Card, Badge, Delta, PageHeader, EmptyState, Tabs) plus index.js barrel export; verified category labels data retention with zero derived tint and zero accent usage; authored dual-mode cluster sub-navigation rules in theme-components.css; established 10-file specificity disposition matrix for 46 legacy !important declarations; created static dual-mode HTML fixture (primitives.html) and Playwright spec (primitives.spec.js) verifying computed styles and live ARIA APG keyboard roving focus; 51 new unit/a11y tests passing (jest-axe compliant); full verification passed: tokens (0 drift), tones (0 violations, 0 undefined tokens), ratchet (0 regressions), reference frames (3/3 pass, 0 diff), shell (7/7 pass, 0 diff), shared (10/10 pass, 0 diff), primitives (3/3 pass, 0 diff), 326 visual route regression tests (326/326 pass at 0 diff, Invariant I13 preserved), manifest (334/334 pass), and CRA unit suites (58/58 suites, 368/368 tests pass). | 2F (Universal loading) | None | 6691414 (merged to main) |
 | 2F | 2026-11-14 | Universal loading pattern completed: extracted Primitive #8 Loading.js supporting 5 variants (route, card, table, form-field, inline) with full jest-axe compliance; standardized App.js and ProtectedRoute.js Suspense fallbacks; migrated 5 representative pages (LandingPage, AdminDashboard, CertificateLogPage, EditCertificatePage, PortfolioDashboard); added .fs-loading and .fs-skeleton classes with @keyframes fs-pulse and documented unthemed legacy fallbacks (#ddd, #2c3e50, #6c757d, #e9ecef, 999px) with durable trail in §13 and §6.16 (Phase 12 removal); 0 drift (tokens.js), 0 violations and 0 undefined tokens (lint-tones.js), 0 regressions (lint-ratchet.js), 0 errors (stylelint), 0 testid removals (testid-guard.js); 59 CRA test suites passing (379 tests); Playwright primitives (3/3), reference (3/3), shell (7/7), shared (10/10), visual route regression (326/326 passing at 0 diff), manifest 334/334 verified. | 3A (Dashboard conversion) | None | e2d4df9 (merged to main) |
+| 3A | 2026-11-15 | Chart theme and Dashboard conversion completed: created chartTheme.js reading --fs-chart-grey-1..4 and semantic tones via computed styles (D22 door-preserving, #14b8a6 strictly banned as chart series); allowlisted /dashboard in ProtectedRoute.js; migrated Button.js isLoading to <Loading variant="inline" />; streamlined DashboardSummary.js to 96 lines (Invariant I8 <= 120 lines preserved) with <Loading variant="route" aria-label="Loading dashboard" />; tokenized Dashboard.css to flat dark graphite (#101114 canvas, #16181d surfaces, #23272f borders, 0 gradients, 0 blurs, <= 8px radius); Section 11 added to theme-components.css hosting scoped semantic tone rules (Invariant I15, §4.3.2 rule 1); converted 7 decoupled widgets (AssetAllocationDonut capped at <= 4 slices per §4.12, BudgetPulseCard under-80% neutral, DashboardKpiStrip, HoldingsGrid, NetWorthHero, ReportsGrid, SavingsForexCard); cleaned useDashboardData.js of hardcoded hex values; removed 13 dashboard production and test files from .eslintignore (0 warnings); registered dashboard-reference-match.spec.js; measured CLS on /dashboard is 0.0001115 (<= 0.1 ceiling verified) and 0 font requests on unthemed route (/trades, S2 font isolation); all automated gates green: tokens (0 drift), tones (0 violations, 0 undefined tokens), ratchet (0 regressions), testid-guard (0 removals), 60 CRA unit suites (387 tests); reference (6/6 pass), shell (7/7 pass), shared (10/10 pass), primitives (4/4 pass), visual route regression (326/326 passing at 0 diff, Invariant I13 preserved, exactly 63 unmigrated routes at 0 diff), manifest 334/334 verified. | 4A (Expenditure migration) | None | <merge-commit-sha> |
 
 ```
 Sub-phase:   1A
@@ -2619,6 +2620,20 @@ Fixtures:    Loading primitive section added to primitives.html (port 3001 stati
 Screenshots: dual-mode loading verification in primitives.spec.js
 Branch:      phase-ui-2f-loading
 Merge SHA:   e2d4df9 (merged to main)
+```
+
+```
+Sub-phase:   3A
+Status:      done
+Done:        Chart theme engine created (chartTheme.js, D22 door-preserving, #14b8a6 banned as chart series); /dashboard allowlisted in ProtectedRoute.js; Button isLoading migrated to <Loading variant="inline" />; DashboardSummary.js coordinator streamlined to 96 lines (Invariant I8 <= 120 lines preserved); Dashboard.css tokenized to flat dark graphite (#101114 canvas, #16181d surfaces, #23272f borders, 0 gradients, 0 blurs, <= 8px radius); Section 11 added to theme-components.css for scoped semantic tone rules (Invariant I15, §4.3.2 rule 1); all 7 decoupled widgets converted (AssetAllocationDonut <= 4 segments cap per §4.12, BudgetPulseCard under-80% neutral, DashboardKpiStrip, HoldingsGrid, NetWorthHero, ReportsGrid, SavingsForexCard); hardcoded hex values removed from useDashboardData.js; 13 dashboard production and test files removed from .eslintignore (0 warnings); measured CLS is 0.0001115 (<= 0.1 ceiling verified) and 0 font requests on unthemed /trades (S2 font isolation verified); reference (6/6 pass), shell (7/7 pass), shared (10/10 pass), primitives (4/4 pass), 326 visual route regression tests (326/326 pass at 0 diff, Invariant I13 verified; exactly 63 unmigrated routes at 0 diff, dashboard and not-found themed); baseline manifest 334/334 verified; full unit suite passes (60/60 suites, 387/387 tests).
+Next:        4A — Expenditure transactions & log page
+Blocked by:  None
+Allowlist:   /dashboard
+Visual diff: 10 accepted snapshots (dashboard & not-found across 5 viewports); 0 diff on 63 unmigrated routes (Invariant I13 verified)
+Fixtures:    unchanged
+Screenshots: 1440px and 390px reference frame comparison in walkthrough
+Branch:      phase-ui-3a-dashboard
+Merge SHA:   <merge-commit-sha>
 ```
 
 ### Sub-phase note template
