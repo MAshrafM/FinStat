@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax, testing-library/no-node-access, testing-library/no-container */
 // frontend/src/pages/dashboard/__tests__/AssetAllocationDonut.test.js
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';

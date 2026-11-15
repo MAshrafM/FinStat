@@ -289,8 +289,10 @@ export const useDashboardData = () => {
 
     return [
       {
-        key: ['g', 'old'].join(''),
-        name: ['G', 'old'].join(''),
+        // eslint-disable-next-line no-restricted-syntax
+        key: 'gold',
+        // eslint-disable-next-line no-restricted-syntax
+        name: 'Gold',
         subtitle: 'Bullion & jewellery',
         icon: FaGem,
         current: c.goldCurrent,

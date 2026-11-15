@@ -51,7 +51,7 @@ describe('Button Primitive (Phase 2E)', () => {
     const btn = screen.getByRole('button');
     expect(btn).toBeDisabled();
     expect(btn).toHaveAttribute('aria-busy', 'true');
-    expect(btn.querySelector('.fs-loading-spinner')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeInTheDocument();
     fireEvent.click(btn);
     expect(handleClick).not.toHaveBeenCalled();
   });

@@ -65,5 +65,35 @@ test.describe('Dashboard Reference Match (Live /dashboard vs Frame 03)', () => {
       return window.getComputedStyle(shell).backgroundColor;
     });
     expect(pageBg).toBe('rgb(16, 17, 20)');
+
+    // 7. Numeric figures typography (D16 & §4.5: Proportional figures with tabular-nums; Plex Mono is reserved for identifiers)
+    const numFigure = page.locator('.fs-num').first();
+    await expect(numFigure).toBeVisible();
+    const numFontFamily = await numFigure.evaluate(el => window.getComputedStyle(el).fontFamily);
+    const numVariant = await numFigure.evaluate(el => window.getComputedStyle(el).fontVariantNumeric);
+    expect(numFontFamily).toContain('IBM Plex Sans');
+    expect(numVariant).toBe('tabular-nums');
+
+    // 8. CLS <= 0.1 on /dashboard (S2 / R22 requirement)
+    const cls = await page.evaluate(() => {
+      let clsValue = 0;
+      const entries = performance.getEntriesByType('layout-shift');
+      for (const entry of entries) {
+        if (!entry.hadRecentInput) {
+          clsValue += entry.value;
+        }
+      }
+      return clsValue;
+    });
+    expect(cls).toBeLessThanOrEqual(0.1);
+  });
+
+  test('unthemed route (/trades) has 0 font requests (S2 font isolation)', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/trades', { waitUntil: 'networkidle' });
+    const fontRequests = await page.evaluate(() => {
+      return performance.getEntriesByType('resource').filter(r => r.name.match(/\.(?:woff2?|ttf|otf)$/i)).length;
+    });
+    expect(fontRequests).toBe(0);
   });
 });

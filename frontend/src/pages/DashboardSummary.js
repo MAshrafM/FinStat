@@ -29,7 +29,7 @@ const DashboardSummary = ({ onOpenLauncher = () => { } }) => {
   } = useDashboardData();
 
   if (isLoading) {
-    return <Loading variant="route" text="Building your financial overview…" />;
+    return <Loading variant="route" text="Building your financial overview…" aria-label="Loading dashboard" />;
   }
 
   if (error) {

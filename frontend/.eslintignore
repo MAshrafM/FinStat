@@ -48,14 +48,6 @@ src/pages/credit-cards/__tests__/AddTransactionModal.currency.test.js
 src/pages/currency/CurrencyDetailPage.js
 src/pages/currency/CurrencyForm.js
 src/pages/currency/CurrencyLogPage.js
-src/pages/dashboard/__tests__/AssetAllocationDonut.test.js
-src/pages/dashboard/__tests__/DashboardKpiStrip.test.js
-src/pages/dashboard/__tests__/DashboardPanels.test.js
-src/pages/dashboard/__tests__/DashboardSummary.test.js
-src/pages/dashboard/__tests__/HoldingsGrid.test.js
-src/pages/dashboard/__tests__/NetWorthHero.test.js
-src/pages/dashboard/__tests__/ReportsGrid.test.js
-src/pages/dashboard/__tests__/useDashboardData.test.js
 src/pages/expenditure/BudgetsPage.js
 src/pages/expenditure/ExpenditureAnalysisPage.js
 src/pages/expenditure/ExpenditureForm.js
