@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-container, testing-library/no-node-access, no-restricted-syntax */
 // frontend/src/pages/dashboard/__tests__/ReportsGrid.test.js
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';

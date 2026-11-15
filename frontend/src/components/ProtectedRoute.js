@@ -14,10 +14,8 @@ import { BankProvider } from '../context/BankContext';
 import { CreditProvider } from '../context/CreditContext';
 import { Loading } from './ui';
 
-// Themed routes allowlist (Phase 2B: empty; populated incrementally in subsequent phases)
-// Phase 3A will add: '/dashboard'
-// Phase 4A will add: '/portfolio'
-export const THEMED_PATTERNS = [];
+// Themed routes allowlist (Phase 3A: '/dashboard')
+export const THEMED_PATTERNS = ['/dashboard'];
 
 export const isThemedRoute = (pathname) => {
   return THEMED_PATTERNS.some((pattern) =>

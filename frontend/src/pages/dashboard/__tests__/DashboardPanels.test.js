@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-container, testing-library/no-node-access, no-restricted-syntax */
 // frontend/src/pages/dashboard/__tests__/DashboardPanels.test.js
 import React from 'react';
 import { render, screen } from '@testing-library/react';
@@ -39,24 +40,25 @@ describe('Step 8B.1c: DashboardPanels Component Tests [AUD-ARCH-001]', () => {
       expect(screen.getByText('40%')).toBeInTheDocument();
     });
 
-    // Test 2: applies red alert color when budget exceeds threshold percentage
-    test('2. applies red alert color when budget exceeds threshold percentage', () => {
+    // Test 2: applies negative modifier class when budget exceeds threshold percentage
+    test('2. applies negative modifier class when budget exceeds threshold percentage', () => {
       const { container } = render(
         <BudgetPulseCard budgetProgressList={mockBudgetList} monthLabel="November 2026" />
       );
       const spans = container.querySelectorAll('.dash-budget-track span');
-      // Red alert status -> #f87171 -> rgb(248, 113, 113)
-      expect(spans[0].style.background).toBe('rgb(248, 113, 113)');
+      // Groceries: alertStatus 'red' -> negative modifier
+      expect(spans[0]).toHaveClass('dash-budget-bar--negative');
     });
 
-    // Test 3: applies green alert color when budget is within safe threshold
-    test('3. applies green alert color when budget is within safe threshold', () => {
+    // Test 3: applies neutral styling (no modifier) when budget is within safe threshold (AD13)
+    test('3. applies neutral styling when budget is within safe threshold (AD13)', () => {
       const { container } = render(
         <BudgetPulseCard budgetProgressList={mockBudgetList} monthLabel="November 2026" />
       );
       const spans = container.querySelectorAll('.dash-budget-track span');
-      // Green alert status -> #34d399 -> rgb(52, 211, 153)
-      expect(spans[1].style.background).toBe('rgb(52, 211, 153)');
+      // Utilities: 40% -> neutral (no tone modifier)
+      expect(spans[1]).not.toHaveClass('dash-budget-bar--negative');
+      expect(spans[1]).not.toHaveClass('dash-budget-bar--warning');
     });
 
     // Test 4: renders empty budget state with 'Set up budgets' link when no budgets exist

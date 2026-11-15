@@ -111,4 +111,22 @@ describe('Step 8B.1b: AssetAllocationDonut Component Tests [AUD-ARCH-001]', () =
     renderComponent({ holdings: [], canModify: false });
     expect(screen.queryByRole('button', { name: /add a holding/i })).not.toBeInTheDocument();
   });
+
+  // Test 8: caps doughnut chart segments at <= 4 per §4.12
+  test('8. caps doughnut chart segments at <= 4 per §4.12 when holdings exceed 4', () => {
+    const manyHoldings = [
+      { key: 'stocks', name: 'Stocks', current: 500000, invested: 400000, viewPath: '/trades' },
+      { key: 'real-estate', name: 'Real Estate', current: 300000, invested: 250000, viewPath: '/real-estate' },
+      { key: 'gold', name: 'Gold', current: 150000, invested: 100000, viewPath: '/gold-wallet' },
+      { key: 'crypto', name: 'Crypto', current: 50000, invested: 40000, viewPath: '/crypto' },
+      { key: 'cash', name: 'Cash', current: 20000, invested: 20000, viewPath: '/bank-accounts' },
+    ];
+    renderComponent({ holdings: manyHoldings });
+    expect(screen.getByTestId('doughnut-chart')).toBeInTheDocument();
+    expect(screen.getByText('Stocks')).toBeInTheDocument();
+    expect(screen.getByText('Real Estate')).toBeInTheDocument();
+    expect(screen.getByText('Gold')).toBeInTheDocument();
+    expect(screen.getByText('Crypto')).toBeInTheDocument();
+    expect(screen.getByText('Cash')).toBeInTheDocument();
+  });
 });

@@ -1,6 +1,7 @@
 // frontend/src/components/ui/Button.js
 import React from 'react';
 import PropTypes from 'prop-types';
+import Loading from './Loading';
 
 /**
  * Button primitive wrapping .fs-btn and semantic variants (§8.4).
@@ -44,7 +45,7 @@ const Button = ({
       {...rest}
     >
       {isLoading ? (
-        <span className="loading-spinner" aria-hidden="true" />
+        <Loading variant="inline" />
       ) : (
         icon && <span className="fs-btn-icon-left" aria-hidden="true">{icon}</span>
       )}

@@ -1660,3 +1660,68 @@ html[data-fs-theme] .launcher-footer {
   background: var(--fs-accent);
   box-shadow: none;
 }
+
+/* ==========================================================================
+   11. Dashboard Semantic Tones (Phase 3A: Invariant I15 & §4.3.2 rule 1)
+   ========================================================================== */
+
+.fs-page .dash-alert-icon,
+html[data-fs-theme] .dash-alert-icon {
+  color: var(--fs-warning);
+}
+
+.fs-page .dash-live-dot,
+html[data-fs-theme] .dash-live-dot {
+  background: var(--fs-positive);
+}
+
+.fs-page .dash-hero-delta.positive,
+.fs-page .dash-hero-delta.up,
+.fs-page .dash-kpi-sub.positive,
+.fs-page .dash-delta.positive,
+.fs-page .dash-delta.up,
+.fs-page .dash-savings-value.positive,
+html[data-fs-theme] .dash-hero-delta.positive,
+html[data-fs-theme] .dash-hero-delta.up,
+html[data-fs-theme] .dash-kpi-sub.positive,
+html[data-fs-theme] .dash-delta.positive,
+html[data-fs-theme] .dash-delta.up,
+html[data-fs-theme] .dash-savings-value.positive {
+  color: var(--fs-positive);
+}
+
+.fs-page .dash-hero-delta.negative,
+.fs-page .dash-hero-delta.down,
+.fs-page .dash-kpi-sub.negative,
+.fs-page .dash-delta.negative,
+.fs-page .dash-delta.down,
+.fs-page .dash-savings-value.negative,
+html[data-fs-theme] .dash-hero-delta.negative,
+html[data-fs-theme] .dash-hero-delta.down,
+html[data-fs-theme] .dash-kpi-sub.negative,
+html[data-fs-theme] .dash-delta.negative,
+html[data-fs-theme] .dash-delta.down,
+html[data-fs-theme] .dash-savings-value.negative {
+  color: var(--fs-negative);
+}
+
+.fs-page .dash-budget-pct.dash-budget-bar--warning,
+html[data-fs-theme] .dash-budget-pct.dash-budget-bar--warning {
+  color: var(--fs-warning);
+}
+
+.fs-page .dash-budget-pct.dash-budget-bar--negative,
+html[data-fs-theme] .dash-budget-pct.dash-budget-bar--negative {
+  color: var(--fs-negative);
+}
+
+.fs-page .dash-budget-track span.dash-budget-bar--warning,
+html[data-fs-theme] .dash-budget-track span.dash-budget-bar--warning {
+  background: var(--fs-warning);
+}
+
+.fs-page .dash-budget-track span.dash-budget-bar--negative,
+html[data-fs-theme] .dash-budget-track span.dash-budget-bar--negative {
+  background: var(--fs-negative);
+}
+

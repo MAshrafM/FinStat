@@ -8,9 +8,10 @@ import HoldingsGrid from './dashboard/HoldingsGrid';
 import BudgetPulseCard from './dashboard/BudgetPulseCard';
 import SavingsForexCard from './dashboard/SavingsForexCard';
 import ReportsGrid from './dashboard/ReportsGrid';
+import Loading from '../components/ui/Loading';
 import './Dashboard.css';
 
-const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
+const DashboardSummary = ({ onOpenLauncher = () => { } }) => {
   const {
     isLoading,
     error,
@@ -28,22 +29,7 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
   } = useDashboardData();
 
   if (isLoading) {
-    return (
-      <div className="dashboard-loading" aria-busy="true" aria-label="Loading dashboard">
-        <div className="dash-skeleton dash-skeleton-hero" />
-        <div className="dash-skeleton-row">
-          <div className="dash-skeleton" />
-          <div className="dash-skeleton" />
-          <div className="dash-skeleton" />
-          <div className="dash-skeleton" />
-        </div>
-        <div className="dash-skeleton dash-skeleton-panel" />
-        <p className="dash-loading-copy">
-          <span className="dash-loading-spinner" aria-hidden="true" />
-          Building your financial overview…
-        </p>
-      </div>
-    );
+    return <Loading variant="route" text="Building your financial overview…" />;
   }
 
   if (error) {
@@ -51,7 +37,7 @@ const DashboardSummary = ({ onOpenLauncher = () => {} }) => {
       <div className="dash-error">
         <h2>Unable to load your dashboard</h2>
         <p>{error}</p>
-        <button type="button" className="dash-btn dash-btn-primary" onClick={() => window.location.reload()}>
+        <button type="button" className="fs-btn fs-btn-primary" onClick={() => window.location.reload()}>
           Try again
         </button>
       </div>

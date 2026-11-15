@@ -12,13 +12,13 @@ const formatSignedPercent = (value) => {
 
 const HoldingsGrid = ({ holdings = [], totalCurrent = 0, canModify = false }) => {
   return (
-    <section className="dash-section">
+    <section className="dash-section dash-holdings-section">
       <div className="dash-section-head">
         <div>
           <h2>Your holdings</h2>
           <p>Current value, money invested and performance by asset class.</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div className="dash-section-actions">
           <Link to="/analytics/purchasing-power" className="dash-text-btn">
             Purchasing power <FaArrowRight aria-hidden="true" />
           </Link>
@@ -34,7 +34,7 @@ const HoldingsGrid = ({ holdings = [], totalCurrent = 0, canModify = false }) =>
           const share = totalCurrent > 0 ? (asset.current / totalCurrent) * 100 : 0;
 
           return (
-            <article key={asset.key} className={`dash-holding-card tone-${asset.tone}`}>
+            <article key={asset.key} className="dash-holding-card">
               <div className="dash-holding-head">
                 <span className="dash-holding-icon">
                   {Icon ? <Icon aria-hidden="true" /> : null}
@@ -44,7 +44,7 @@ const HoldingsGrid = ({ holdings = [], totalCurrent = 0, canModify = false }) =>
                   <span>{asset.subtitle}</span>
                 </div>
                 {asset.delta !== null ? (
-                  <span className={`dash-delta ${asset.delta >= 0 ? 'up' : 'down'}`}>
+                  <span className={`dash-delta fs-num ${asset.delta >= 0 ? 'up positive' : 'down negative'}`}>
                     {formatSignedPercent(asset.delta)}
                   </span>
                 ) : (
@@ -52,18 +52,17 @@ const HoldingsGrid = ({ holdings = [], totalCurrent = 0, canModify = false }) =>
                 )}
               </div>
 
-              <div className="dash-holding-value">{formatCurrency(asset.current)}</div>
+              <div className="dash-holding-value fs-num">{formatCurrency(asset.current)}</div>
 
               <div className="dash-holding-meta">
                 <span>{asset.metaLabel}</span>
-                <strong>{formatCurrency(asset.metaValue)}</strong>
+                <strong className="fs-num">{formatCurrency(asset.metaValue)}</strong>
               </div>
 
               <div className="dash-holding-track" aria-hidden="true">
                 <span
                   style={{
                     width: `${Math.max(0, Math.min(100, share))}%`,
-                    background: asset.color,
                   }}
                 />
               </div>

@@ -1,6 +1,7 @@
+/* eslint-disable testing-library/no-container, testing-library/no-node-access, no-restricted-syntax */
 // frontend/src/pages/dashboard/__tests__/DashboardSummary.test.js
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import fs from 'fs';
 import path from 'path';
 import DashboardSummary from '../../DashboardSummary';
@@ -96,16 +97,15 @@ describe('Step 8B.1d: DashboardSummary Coordinator Integration Tests [AUD-ARCH-0
     jest.spyOn(dashboardHook, 'default').mockReturnValue(mockDashboardData);
   });
 
-  // Test 1: renders skeleton loading placeholders while useDashboardData returns isLoading true
-  test('1. renders skeleton loading placeholders while useDashboardData returns isLoading true', () => {
+  // Test 1: renders universal route loading indicator while useDashboardData returns isLoading true (D23)
+  test('1. renders universal route loading indicator while useDashboardData returns isLoading true', () => {
     dashboardHook.default.mockReturnValueOnce({
       ...mockDashboardData,
       isLoading: true,
     });
 
-    const { container } = render(<DashboardSummary />);
-    expect(container.querySelector('.dashboard-loading')).toBeInTheDocument();
-    expect(container.querySelectorAll('.dash-skeleton').length).toBeGreaterThan(0);
+    render(<DashboardSummary />);
+    expect(screen.getByRole('status')).toBeInTheDocument();
     expect(screen.getByText(/Building your financial overview/i)).toBeInTheDocument();
   });
 

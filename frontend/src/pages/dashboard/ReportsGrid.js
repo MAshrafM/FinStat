@@ -47,7 +47,7 @@ const ReportsGrid = ({ canModify = false, onOpenLauncher = () => {} }) => {
                 <Link
                   key={action.key}
                   to={action.path}
-                  className={`dash-launch-tile tone-${action.tone}`}
+                  className="dash-launch-tile"
                 >
                   <span className="dash-launch-icon">
                     <Icon aria-hidden="true" />
@@ -80,7 +80,7 @@ const ReportsGrid = ({ canModify = false, onOpenLauncher = () => {} }) => {
           {reports.map((report) => {
             const Icon = report.icon;
             return (
-              <Link key={report.key} to={report.path} className={`dash-report tone-${report.tone}`}>
+              <Link key={report.key} to={report.path} className="dash-report">
                 <span className="dash-report-icon">
                   <Icon aria-hidden="true" />
                 </span>
