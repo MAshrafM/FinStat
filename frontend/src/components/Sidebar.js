@@ -141,8 +141,21 @@ const Sidebar = () => {
     prevPathRef.current = location.pathname;
   }, [location.pathname, hubs]);
 
+  // Auto-close mobile drawer on route navigation
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    if (isMobile) {
+      setMobileOpen(false);
+    }
+  }, [location.pathname, isMobile]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setMobileOpen(false);
+      }
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -166,6 +179,9 @@ const Sidebar = () => {
   };
 
   const handleLogout = async () => {
+    if (isMobile) {
+      setMobileOpen(false);
+    }
     await logout();
     navigate('/');
   };
@@ -229,6 +245,11 @@ const Sidebar = () => {
                           to={item.path}
                           className={`sidebar-item ${isActive ? 'active' : ''}`}
                           title={item.title}
+                          onClick={() => {
+                            if (isMobile) {
+                              setMobileOpen(false);
+                            }
+                          }}
                         >
                           <div className="sidebar-icon">
                             <span className="icon-emoji">{item.icon}</span>

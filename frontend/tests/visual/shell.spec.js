@@ -99,7 +99,18 @@ test.describe('Shell Visual Suite (Option A)', () => {
       await page.locator('.sidebar.expanded').waitFor({ state: 'visible', timeout: 3000 }).catch(() => { });
     }
 
+    // Verify stacking context: sidebar must be above backdrop
+    const sidebarZ = await page.locator('.sidebar').evaluate((el) => Number(window.getComputedStyle(el).zIndex));
+    const backdropZ = await page.locator('.sidebar-backdrop').evaluate((el) => Number(window.getComputedStyle(el).zIndex));
+    expect(sidebarZ).toBeGreaterThan(backdropZ);
+
     await expect(page).toHaveScreenshot('shell-dark-mobile-drawer.png');
+
+    // Verify interactivity: clicking a sidebar item works and closes drawer on mobile
+    const firstItem = page.locator('.sidebar.expanded .sidebar-item').first();
+    await expect(firstItem).toBeVisible();
+    await firstItem.click();
+    await page.locator('.sidebar.collapsed').waitFor({ state: 'attached', timeout: 3000 });
   });
 
   test('shell-dark-account-dropdown', async ({ page }) => {

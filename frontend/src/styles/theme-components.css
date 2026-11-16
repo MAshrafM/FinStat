@@ -63,6 +63,12 @@ html[data-fs-theme] .sidebar {
   z-index: var(--fs-z-sidebar);
 }
 
+@media (max-width: 768px) {
+  html[data-fs-theme] .sidebar {
+    z-index: var(--fs-z-modal);
+  }
+}
+
 html[data-fs-theme] .sidebar-header {
   border-bottom: 1px solid var(--fs-border);
 }
@@ -156,7 +162,7 @@ html[data-fs-theme] .mobile-toggle {
 
 html[data-fs-theme] .sidebar-backdrop {
   background: var(--fs-scrim);
-  z-index: var(--fs-z-modal);
+  z-index: var(--fs-z-overlay);
 }
 
 /* ==========================================================================
