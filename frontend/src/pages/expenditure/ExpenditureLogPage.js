@@ -21,6 +21,7 @@ import ExpenditureSubNav from './ExpenditureSubNav';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
+import { Loading, Badge } from '../../components/ui';
 
 const transactionTypeMap = {
   W: 'Withdraw',
@@ -29,7 +30,7 @@ const transactionTypeMap = {
   na: 'Log',
   Prepaid: 'Prepaid',
   Bank: 'Bank',
-  Cash: 'Cash'
+  Cash: 'Cash',
 };
 
 const ExpenditureLogPage = () => {
@@ -49,6 +50,28 @@ const ExpenditureLogPage = () => {
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [isBulkUpdatingCategory, setIsBulkUpdatingCategory] = useState(false);
+  const [expandedCards, setExpandedCards] = useState(new Set());
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleToggleCardExpand = (id) => {
+    setExpandedCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const handleToggleSelect = (id) => {
     setSelectedIds((prev) => {
@@ -136,7 +159,7 @@ const ExpenditureLogPage = () => {
           setLatestHolding({
             bank: data.runningBalances?.bank ?? data.bank ?? 0,
             cash: data.runningBalances?.cash ?? data.cash ?? 0,
-            prepaid: data.runningBalances?.prepaid ?? data.prepaid ?? 0
+            prepaid: data.runningBalances?.prepaid ?? data.prepaid ?? 0,
           });
         }
       })
@@ -206,38 +229,16 @@ const ExpenditureLogPage = () => {
     setCurrentPage(1); // Reset to first page when changing filter
   };
 
-  const getFilterButtonStyle = (isActive) => ({
-    padding: '0.5rem 1rem',
-    border: isActive ? '2px solid #3b82f6' : '1px solid #d1d5db',
-    borderRadius: '20px',
-    backgroundColor: isActive ? '#eff6ff' : 'white',
-    color: isActive ? '#1e40af' : '#374151',
-    cursor: 'pointer',
-    fontWeight: isActive ? '600' : '400',
-    transition: 'all 0.2s ease',
-  });
-
-  const getCategoryFilterButtonStyle = (isActive, catColor) => ({
-    padding: '0.5rem 1rem',
-    border: isActive ? `2px solid ${catColor}` : '1px solid #d1d5db',
-    borderRadius: '20px',
-    backgroundColor: isActive ? catColor : 'white',
-    color: isActive ? 'white' : '#374151',
-    cursor: 'pointer',
-    fontWeight: isActive ? '600' : '400',
-    transition: 'all 0.2s ease',
-  });
-
   return (
     <div className="page-container">
       {/* Sub-navigation tabs */}
       <ExpenditureSubNav />
 
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="page-header">
         <h1>Expenditure Log</h1>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div className="page-header-actions">
           <ProtectedAction tooltip="View-only access">
-            <Link to="/expenditures/new" className="btn btn-primary" title="Record a new expenditure">
+            <Link to="/expenditures/new" className="fs-btn-primary" title="Record a new expenditure">
               <FaPlus size={13} /> Add Expenditure
             </Link>
           </ProtectedAction>
@@ -245,144 +246,86 @@ const ExpenditureLogPage = () => {
       </div>
 
       {/* Current Holdings Summary Card */}
-      <div className="tax-card animate-fade-in holdings-summary-card" style={{ marginBottom: '2rem' }}>
-        <h3 style={{ margin: '0 0 1.25rem 0', display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1f2937', fontSize: '1.2rem' }}>
-          <FaWallet style={{ color: '#3b82f6' }} /> Current Holdings
-        </h3>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '1.25rem',
-          alignItems: 'center'
-        }}>
+      <div className="holdings-summary-card">
+        <div className="holdings-grid">
           {/* Bank */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            padding: '1rem 1.25rem',
-            backgroundColor: '#eff6ff',
-            borderRadius: '10px',
-            borderLeft: '4px solid #3b82f6'
-          }}>
-            <FaUniversity style={{ fontSize: '1.8rem', color: '#2563eb' }} />
-            <div>
-              <span style={{ display: 'block', fontSize: '0.85rem', color: '#4b5563', fontWeight: '500' }}>Bank</span>
-              <strong style={{ fontSize: '1.35rem', color: '#1e40af' }}>{formatCurrency(latestHolding.bank || 0)}</strong>
-            </div>
+          <div className="holdings-tile">
+            <FaUniversity className="holdings-tile-icon" />
+            <div className="holdings-tile-label">Bank</div>
+            <div className="holdings-tile-value fs-num">{formatCurrency(latestHolding.bank || 0)}</div>
           </div>
 
           {/* Cash */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            padding: '1rem 1.25rem',
-            backgroundColor: '#ecfdf5',
-            borderRadius: '10px',
-            borderLeft: '4px solid #10b981'
-          }}>
-            <FaMoneyBillWave style={{ fontSize: '1.8rem', color: '#059669' }} />
-            <div>
-              <span style={{ display: 'block', fontSize: '0.85rem', color: '#4b5563', fontWeight: '500' }}>Cash</span>
-              <strong style={{ fontSize: '1.35rem', color: '#065f46' }}>{formatCurrency(latestHolding.cash || 0)}</strong>
-            </div>
+          <div className="holdings-tile">
+            <FaMoneyBillWave className="holdings-tile-icon" />
+            <div className="holdings-tile-label">Cash</div>
+            <div className="holdings-tile-value fs-num">{formatCurrency(latestHolding.cash || 0)}</div>
           </div>
 
           {/* Prepaid */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            padding: '1rem 1.25rem',
-            backgroundColor: '#fffbebfb',
-            borderRadius: '10px',
-            borderLeft: '4px solid #f59e0b'
-          }}>
-            <FaCreditCard style={{ fontSize: '1.8rem', color: '#d97706' }} />
-            <div>
-              <span style={{ display: 'block', fontSize: '0.85rem', color: '#4b5563', fontWeight: '500' }}>Prepaid</span>
-              <strong style={{ fontSize: '1.35rem', color: '#92400e' }}>{formatCurrency(latestHolding.prepaid || 0)}</strong>
-            </div>
+          <div className="holdings-tile">
+            <FaCreditCard className="holdings-tile-icon" />
+            <div className="holdings-tile-label">Prepaid</div>
+            <div className="holdings-tile-value fs-num">{formatCurrency(latestHolding.prepaid || 0)}</div>
           </div>
 
           {/* Total Holding */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            padding: '1rem 1.25rem',
-            backgroundColor: '#f3f4f6',
-            borderRadius: '10px',
-            borderLeft: '4px solid #6b7280'
-          }}>
-            <FaWallet style={{ fontSize: '1.8rem', color: '#4b5563' }} />
-            <div>
-              <span style={{ display: 'block', fontSize: '0.85rem', color: '#4b5563', fontWeight: '500' }}>Total Holding</span>
-              <strong style={{ fontSize: '1.35rem', color: '#111827' }}>
-                {formatCurrency((latestHolding.bank || 0) + (latestHolding.cash || 0) + (latestHolding.prepaid || 0))}
-              </strong>
+          <div className="holdings-tile">
+            <FaWallet className="holdings-tile-icon" />
+            <div className="holdings-tile-label">Total Holding</div>
+            <div className="holdings-tile-value fs-num">
+              {formatCurrency((latestHolding.bank || 0) + (latestHolding.cash || 0) + (latestHolding.prepaid || 0))}
             </div>
           </div>
         </div>
       </div>
 
       {/* Filter Section */}
-      <div className="filter-section" style={{ marginBottom: '2rem' }}>
-        <div className="tax-card animate-fade-in">
-          <h3 style={{ margin: '0 0 1.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span>🔍</span> Filter Expenditures
-          </h3>
-          
-          <div style={{ marginBottom: '1.5rem' }}>
-            <h4 style={{ margin: '0 0 0.75rem 0', color: '#4b5563', fontSize: '0.95rem', fontWeight: '600' }}>By Action / Account Type:</h4>
-            <div className="filter-buttons" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <div className="filter-section">
+        <div className="filter-group">
+          <div className="holdings-tile-label">By Action / Account Type:</div>
+          <div className="filter-chips">
+            <button
+              type="button"
+              className={`filter-chip ${selectedType === 'all' ? 'active' : ''}`}
+              onClick={() => handleFilterChange('all')}
+            >
+              All Actions
+            </button>
+            {Object.keys(transactionTypeMap).map(type => (
               <button
-                onClick={() => handleFilterChange('all')}
-                style={getFilterButtonStyle(selectedType === 'all')}
+                type="button"
+                key={type}
+                className={`filter-chip ${selectedType === type ? 'active' : ''}`}
+                onClick={() => handleFilterChange(type)}
               >
-                All Actions
+                {transactionTypeMap[type]}
               </button>
-              {Object.keys(transactionTypeMap).map(type => (
-                <button
-                  key={type}
-                  onClick={() => handleFilterChange(type)}
-                  style={getFilterButtonStyle(selectedType === type)}
-                >
-                  {transactionTypeMap[type]}
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
-
-          <div>
-            <h4 style={{ margin: '0 0 0.75rem 0', color: '#4b5563', fontSize: '0.95rem', fontWeight: '600' }}>By Category:</h4>
-            <div className="filter-buttons" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {EXPENDITURE_CATEGORIES.map(cat => (
-                <button
-                  key={cat.name}
-                  onClick={() => handleFilterChange(cat.name)}
-                  style={getCategoryFilterButtonStyle(selectedType === cat.name, cat.color)}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {selectedType !== 'all' && (
-            <div style={{
-              marginTop: '1.5rem',
-              padding: '0.75rem',
-              backgroundColor: '#f3f4f6',
-              borderRadius: '6px',
-              fontSize: '0.9rem',
-              color: '#4b5563'
-            }}>
-              📅 Showing Expenditures filtered by: <strong>{transactionTypeMap[selectedType] || selectedType}</strong>
-            </div>
-          )}
         </div>
+
+        <div className="filter-group">
+          <div className="holdings-tile-label">By Category:</div>
+          <div className="filter-chips">
+            {EXPENDITURE_CATEGORIES.map(cat => (
+              <button
+                type="button"
+                key={cat.name}
+                className={`filter-chip ${selectedType === cat.name ? 'active' : ''}`}
+                onClick={() => handleFilterChange(cat.name)}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {selectedType !== 'all' && (
+          <div className="filter-notice">
+            Showing Expenditures filtered by: <strong>{transactionTypeMap[selectedType] || selectedType}</strong>
+          </div>
+        )}
       </div>
 
       {selectedIds.size > 0 && (
@@ -391,7 +334,7 @@ const ExpenditureLogPage = () => {
             <span className="bulk-count-badge">{selectedIds.size} selected</span>
             <button
               type="button"
-              className="bulk-btn bulk-btn-clear"
+              className="fs-btn-secondary"
               onClick={handleClearSelection}
               disabled={isBulkUpdatingCategory || isBulkDeleting}
             >
@@ -400,7 +343,7 @@ const ExpenditureLogPage = () => {
           </div>
 
           <div className="bulk-actions-controls">
-            <label htmlFor="bulk-category-select" style={{ fontSize: '0.85rem', color: '#334155', fontWeight: 500 }}>
+            <label htmlFor="bulk-category-select" className="bulk-category-label">
               Category:
             </label>
             <select
@@ -420,7 +363,7 @@ const ExpenditureLogPage = () => {
             <ProtectedAction tooltip="View-only access">
               <button
                 type="button"
-                className="bulk-btn bulk-btn-reassign"
+                className="fs-btn-secondary"
                 onClick={handleBulkCategoryReassign}
                 disabled={isBulkUpdatingCategory || isBulkDeleting}
               >
@@ -431,7 +374,7 @@ const ExpenditureLogPage = () => {
             <ProtectedAction tooltip="View-only access">
               <button
                 type="button"
-                className="bulk-btn bulk-btn-delete"
+                className="fs-btn-secondary"
                 onClick={() => setShowBulkDeleteModal(true)}
                 disabled={isBulkUpdatingCategory || isBulkDeleting}
               >
@@ -442,253 +385,284 @@ const ExpenditureLogPage = () => {
         </div>
       )}
 
-      <div className="table-container">
-        <table className="styled-table">
-          <thead>
-            <tr>
-              <th className="checkbox-cell" style={{ width: '40px' }}>
-                <input
-                  type="checkbox"
-                  aria-label="Select all expenditures on this page"
-                  checked={
-                    processedExpenditures.length > 0 &&
-                    processedExpenditures.every((log) => selectedIds.has(log._id))
-                  }
-                  onChange={handleToggleSelectAll}
-                />
-              </th>
-              <th>Date</th>
-              <th>Bank</th>
-              <th>Cash</th>
-              <th>Prepaid</th>
-              <th>Transaction</th>
-              <th>Type</th>
-              <th>Categories</th>
-              <th>Description</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan="10" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-                  Loading expenditures...
-                </td>
-              </tr>
-            ) : processedExpenditures.length === 0 ? (
-              <tr>
-                <td colSpan="10" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-                  No expenditure records found. Click <strong>Add Expenditure</strong> to record a new transaction.
-                </td>
-              </tr>
-            ) : (
-              processedExpenditures.map(log => (
-                <tr key={log._id}>
-                  <td className="checkbox-cell">
+      {isLoading ? (
+        <Loading variant="table" rows={5} text="Loading expenditures..." />
+      ) : isMobile ? (
+        <div className="fs-mobile-card-list" role="region" aria-label="Expenditures card list">
+          {processedExpenditures.length === 0 ? (
+            <div className="filter-notice">
+              No expenditure records found. Click <strong>Add Expenditure</strong> to record a new transaction.
+            </div>
+          ) : (
+            processedExpenditures.map((log) => (
+              <article
+                key={log._id}
+                className={`fs-card-item ${selectedIds.has(log._id) ? 'fs-row-selected' : ''}`}
+                aria-label={`Expenditure ${log.description || log._id}`}
+              >
+                <div className="fs-card-header">
+                  <label className="fs-checkbox-label">
                     <input
                       type="checkbox"
+                      className="fs-checkbox-input"
                       aria-label={`Select transaction ${log.description || log._id}`}
                       checked={selectedIds.has(log._id)}
                       onChange={() => handleToggleSelect(log._id)}
                     />
-                  </td>
-                  <td data-label="Date">{formatDate(log.date)}</td>
-                  <td data-label="Bank">{formatCurrency(log.runningBalances?.bank ?? log.bank)}</td>
-                  <td data-label="Cash">{formatCurrency(log.runningBalances?.cash ?? log.cash)}</td>
-                  <td data-label="Prepaid">{formatCurrency(log.runningBalances?.prepaid ?? log.prepaid ?? 0)}</td>
-                  <td data-label="Transaction" style={{
-                    color: log.transactionType === 'W' ? 'red' :
-                      log.transactionType === 'S' ? 'rgba(194, 139, 0, 0.9)' :
-                        log.transactionType === 'T' ? 'green' : 'gray'
-                  }}>
-                    <strong>{formatCurrency(log.transactionValue)}</strong>
+                    <span className="fs-checkbox-custom" aria-hidden="true" />
+                  </label>
+                  <span className="fs-card-date">{formatDate(log.date)}</span>
+                  <span className="fs-card-amount fs-num">{formatCurrency(log.transactionValue)}</span>
+                </div>
+
+                <div className="fs-card-primary-info">
+                  {log.splits && log.splits.length > 0 ? (
+                    <div className="split-container">
+                      <span className="split-badge-title">✂ Split ({log.splits.length})</span>
+                      <div className="category-badges-list">
+                        {log.splits.map((s, idx) => (
+                          <span key={idx} className="fs-cat-badge">
+                            {s.category}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="fs-cat-badge">{log.categories?.[0] || 'Uncategorized'}</span>
+                  )}
+                  <span className="fs-card-desc">{log.description || '-'}</span>
+                </div>
+
+                <button
+                  type="button"
+                  className="fs-card-expander-btn"
+                  aria-expanded={expandedCards.has(log._id)}
+                  onClick={() => handleToggleCardExpand(log._id)}
+                >
+                  {expandedCards.has(log._id) ? 'Hide Details ▲' : 'View Details ▼'}
+                </button>
+
+                {expandedCards.has(log._id) && (
+                  <div className="fs-card-details-drawer">
+                    <div className="fs-card-field">
+                      <span className="fs-card-label">Account</span>
+                      <span className="fs-card-value">
+                        {log.paidWithCreditCard ? 'Credit Card' : log.sourceAccount || 'Bank'}
+                      </span>
+                    </div>
+                    <div className="fs-card-field">
+                      <span className="fs-card-label">Bank Balance After</span>
+                      <span className="fs-card-value fs-num">
+                        {log.bankBalanceAfter != null ? formatCurrency(log.bankBalanceAfter) : '—'}
+                      </span>
+                    </div>
+                    <div className="fs-card-field">
+                      <span className="fs-card-label">Type</span>
+                      <span className="fs-card-value">
+                        {transactionTypeMap[log.transactionType] || log.transactionType}
+                      </span>
+                    </div>
                     {log.currency && log.currency !== 'EGP' && log.foreignAmount && (
-                      <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 500, marginTop: '2px' }}>
-                        ({log.foreignAmount.toLocaleString()} {log.currency})
+                      <div className="fs-card-field">
+                        <span className="fs-card-label">Foreign Currency</span>
+                        <span className="fs-card-value fs-num">
+                          {log.foreignAmount.toLocaleString()} {log.currency}
+                        </span>
                       </div>
                     )}
+                    {log.splits && log.splits.length > 0 && (
+                      <div className="fs-card-field split-details-drawer">
+                        <span className="fs-card-label">Split Breakdown</span>
+                        <div className="split-items-list">
+                          {log.splits.map((s, idx) => (
+                            <div key={idx} className="split-detail-row">
+                              <span className="fs-cat-badge">{s.category}</span>
+                              <span className="fs-num">{formatCurrency(s.amount)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div className="fs-card-actions">
+                      <ProtectedAction tooltip="View-only access">
+                        <Link to={`/expenditures/edit/${log._id}`} className="action-icon edit-icon" title="Edit">
+                          <FaPencilAlt />
+                        </Link>
+                      </ProtectedAction>
+                      <ProtectedAction tooltip="View-only access">
+                        <button
+                          type="button"
+                          className="action-icon delete-icon"
+                          title="Delete"
+                          onClick={() => handleDeleteClick(log._id)}
+                        >
+                          <FaTrash />
+                        </button>
+                      </ProtectedAction>
+                    </div>
+                  </div>
+                )}
+              </article>
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="fs-table-scroll">
+          <table className="styled-table">
+            <thead>
+              <tr>
+                <th className="checkbox-cell">
+                  <label className="fs-checkbox-label">
+                    <input
+                      type="checkbox"
+                      className="fs-checkbox-input"
+                      aria-label="Select all expenditures on this page"
+                      checked={
+                        processedExpenditures.length > 0 &&
+                        processedExpenditures.every((log) => selectedIds.has(log._id))
+                      }
+                      onChange={handleToggleSelectAll}
+                    />
+                    <span className="fs-checkbox-custom" aria-hidden="true" />
+                  </label>
+                </th>
+                <th>
+                  Date <span className="fs-sort-arrow" aria-hidden="true">▼</span>
+                </th>
+                <th>Bank</th>
+                <th>Cash</th>
+                <th>Prepaid</th>
+                <th>Transaction</th>
+                <th>Type</th>
+                <th>Categories</th>
+                <th>Description</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {processedExpenditures.length === 0 ? (
+                <tr>
+                  <td colSpan="10" className="empty-state">
+                    No expenditure records found. Click <strong>Add Expenditure</strong> to record a new transaction.
                   </td>
-                  <td data-label="Type">{transactionTypeMap[log.transactionType] || log.transactionType}</td>
-                  <td data-label="Categories">
-                    {log.splits && log.splits.length > 0 ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2563eb' }}>
-                          ✂ Split ({log.splits.length})
-                        </span>
-                        <div className="category-badges-list">
-                          {log.splits.map((s, idx) => {
-                            const catConfig =
-                              EXPENDITURE_CATEGORIES.find((c) => c.name === s.category) || {
-                                color: '#6B7280',
-                              };
-                            return (
+                </tr>
+              ) : (
+                processedExpenditures.map(log => (
+                  <tr key={log._id} className={selectedIds.has(log._id) ? 'fs-row-selected' : ''}>
+                    <td className="checkbox-cell">
+                      <label className="fs-checkbox-label">
+                        <input
+                          type="checkbox"
+                          className="fs-checkbox-input"
+                          aria-label={`Select transaction ${log.description || log._id}`}
+                          checked={selectedIds.has(log._id)}
+                          onChange={() => handleToggleSelect(log._id)}
+                        />
+                        <span className="fs-checkbox-custom" aria-hidden="true" />
+                      </label>
+                    </td>
+                    <td data-label="Date">{formatDate(log.date)}</td>
+                    <td data-label="Bank" className="fs-num">{formatCurrency(log.runningBalances?.bank ?? log.bank)}</td>
+                    <td data-label="Cash" className="fs-num">{formatCurrency(log.runningBalances?.cash ?? log.cash)}</td>
+                    <td data-label="Prepaid" className="fs-num">{formatCurrency(log.runningBalances?.prepaid ?? log.prepaid ?? 0)}</td>
+                    <td data-label="Transaction" className="fs-num">
+                      <strong className="fs-num">{formatCurrency(log.transactionValue)}</strong>
+                      {log.currency && log.currency !== 'EGP' && log.foreignAmount && (
+                        <div className="fs-card-date">
+                          ({log.foreignAmount.toLocaleString()} {log.currency})
+                        </div>
+                      )}
+                    </td>
+                    <td data-label="Type">{transactionTypeMap[log.transactionType] || log.transactionType}</td>
+                    <td data-label="Categories">
+                      {log.splits && log.splits.length > 0 ? (
+                        <div className="split-container">
+                          <span className="split-badge-title">
+                            ✂ Split ({log.splits.length})
+                          </span>
+                          <div className="category-badges-list">
+                            {log.splits.map((s, idx) => (
                               <span
                                 key={idx}
-                                className="category-badge"
-                                style={{
-                                  backgroundColor: catConfig.color,
-                                  fontSize: '0.75rem',
-                                  padding: '0.2rem 0.6rem',
-                                }}
+                                className="fs-cat-badge"
                                 title={`${s.category}: ${formatCurrency(s.amount)}${
                                   s.description ? ` (${s.description})` : ''
                                 }`}
                               >
                                 {s.category} ({formatCurrency(s.amount)})
                               </span>
-                            );
-                          })}
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="category-badges-list">
-                        {(log.categories && log.categories.length > 0
-                          ? log.categories
-                          : ['Other']
-                        ).map((catName) => {
-                          const catConfig =
-                            EXPENDITURE_CATEGORIES.find((c) => c.name === catName) || {
-                              color: '#6B7280',
-                            };
-                          return (
-                            <span
-                              key={catName}
-                              className="category-badge"
-                              style={{ backgroundColor: catConfig.color }}
-                            >
+                      ) : (
+                        <div className="category-badges-list">
+                          {(log.categories && log.categories.length > 0
+                            ? log.categories
+                            : ['Other']
+                          ).map((catName) => (
+                            <span key={catName} className="fs-cat-badge">
                               {catName}
                             </span>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </td>
-                  <td
-                    data-label="Description"
-                    style={{
-                      fontSize: '0.9rem',
-                      color: '#4b5563',
-                      wordBreak: 'break-word',
-                      whiteSpace: 'normal',
-                      minWidth: '160px',
-                    }}
-                    title={log.description}
-                  >
-                    {log.description || '-'}
-                    {log.paidWithCreditCard && !log.settledFromBank && (log.settledAmountInPiastres || 0) === 0 && (
-                      <span
-                        title="Charged to credit card. Bank balance has not been debited."
-                        style={{
-                          marginLeft: '0.4rem',
-                          background: '#fef3c7',
-                          color: '#b45309',
-                          border: '1px solid #fde68a',
-                          padding: '0.15rem 0.45rem',
-                          borderRadius: '4px',
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          display: 'inline-block',
-                        }}
-                      >
-                        💳 Credit Purchase
-                      </span>
-                    )}
-                    {log.paidWithCreditCard && !log.settledFromBank && (log.settledAmountInPiastres || 0) > 0 && (
-                      <span
-                        title={`Partially settled: ${formatCurrency((log.settledAmountInPiastres || 0) / 100)} of ${formatCurrency(log.transactionValue)}`}
-                        style={{
-                          marginLeft: '0.4rem',
-                          background: '#fffbeb',
-                          color: '#d97706',
-                          border: '1px solid #fcd34d',
-                          padding: '0.15rem 0.45rem',
-                          borderRadius: '4px',
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          display: 'inline-block',
-                        }}
-                      >
-                        💳🟡 Partial ({formatCurrency((log.settledAmountInPiastres || 0) / 100)})
-                      </span>
-                    )}
-                    {log.paidWithCreditCard && log.settledFromBank && (
-                      <span
-                        title={log.settlementDate ? `Fully settled from bank on ${formatDate(log.settlementDate)}` : 'Fully settled from bank'}
-                        style={{
-                          marginLeft: '0.4rem',
-                          background: '#eff6ff',
-                          color: '#1d4ed8',
-                          border: '1px solid #bfdbfe',
-                          padding: '0.15rem 0.45rem',
-                          borderRadius: '4px',
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          display: 'inline-block',
-                        }}
-                      >
-                        💳✅ Settled
-                      </span>
-                    )}
-                    {log.categories && log.categories.includes('Credit Card Settlement') && (
-                      <span
-                        title="Credit card settlement payment debited from bank balance."
-                        style={{
-                          marginLeft: '0.4rem',
-                          background: '#f1f5f9',
-                          color: '#475569',
-                          border: '1px solid #cbd5e1',
-                          padding: '0.15rem 0.45rem',
-                          borderRadius: '4px',
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          display: 'inline-block',
-                        }}
-                      >
-                        🔄 Settlement Outflow
-                      </span>
-                    )}
-                    {log.isRecurring && (
-                      <span
-                        title="Recurring Expense"
-                        style={{
-                          marginLeft: '0.4rem',
-                          background: '#ecfdf5',
-                          color: '#059669',
-                          border: '1px solid #a7f3d0',
-                          padding: '0.15rem 0.4rem',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          display: 'inline-block',
-                        }}
-                      >
-                        🔁 Recurring
-                      </span>
-                    )}
-                  </td>
-                  <td data-label="Action" className="action-cell">
-                    <ProtectedAction tooltip="View-only access">
-                      <Link to={`/expenditures/edit/${log._id}`}>
-                        <FaPencilAlt className="action-icon edit-icon" />
-                      </Link>
-                    </ProtectedAction>
-                    <ProtectedAction tooltip="View-only access">
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteClick(log._id)}
-                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-                        title="Delete expenditure"
-                      >
-                        <FaTrash className="action-icon delete-icon" />
-                      </button>
-                    </ProtectedAction>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                    <td
+                      data-label="Description"
+                      className="fs-card-desc"
+                      title={log.description}
+                    >
+                      {log.description || '-'}
+                      {log.paidWithCreditCard && !log.settledFromBank && (log.settledAmountInPiastres || 0) === 0 && (
+                        <Badge label="Credit Purchase">
+                          💳 Credit Purchase
+                        </Badge>
+                      )}
+                      {log.paidWithCreditCard && !log.settledFromBank && (log.settledAmountInPiastres || 0) > 0 && (
+                        <Badge label={`Partially settled: ${formatCurrency((log.settledAmountInPiastres || 0) / 100)} of ${formatCurrency(log.transactionValue)}`}>
+                          💳🟡 Partial ({formatCurrency((log.settledAmountInPiastres || 0) / 100)})
+                        </Badge>
+                      )}
+                      {log.paidWithCreditCard && log.settledFromBank && (
+                        <Badge label={log.settlementDate ? `Fully settled from bank on ${formatDate(log.settlementDate)}` : 'Fully settled from bank'}>
+                          💳✅ Settled
+                        </Badge>
+                      )}
+                      {log.categories && log.categories.includes('Credit Card Settlement') && (
+                        <Badge label="Credit card settlement payment debited from bank balance.">
+                          🔄 Settlement Outflow
+                        </Badge>
+                      )}
+                      {log.isRecurring && (
+                        <Badge label="Recurring Expense">
+                          🔁 Recurring
+                        </Badge>
+                      )}
+                    </td>
+                    <td data-label="Action" className="action-cell">
+                      <ProtectedAction tooltip="View-only access">
+                        <Link to={`/expenditures/edit/${log._id}`}>
+                          <FaPencilAlt className="action-icon edit-icon" />
+                        </Link>
+                      </ProtectedAction>
+                      <ProtectedAction tooltip="View-only access">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteClick(log._id)}
+                          title="Delete expenditure"
+                          className="action-icon delete-icon"
+                        >
+                          <FaTrash />
+                        </button>
+                      </ProtectedAction>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
       <PaginationControls
         page={currentPage}
         totalPages={totalPages}

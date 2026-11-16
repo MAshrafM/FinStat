@@ -1,15 +1,15 @@
 // frontend/src/pages/expenditure/__tests__/ExpenditureBulkActions.test.js
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import ExpenditureLogPage from '../ExpenditureLogPage';
+import * as expenditureService from '../../../services/expenditureService';
+
 jest.mock('react-router-dom', () => ({
   Link: ({ children, to, ...props }) => <a href={to} {...props}>{children}</a>,
   useNavigate: () => jest.fn(),
   useParams: () => ({}),
   useLocation: () => ({ pathname: '/' }),
 }), { virtual: true });
-
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import ExpenditureLogPage from '../ExpenditureLogPage';
-import * as expenditureService from '../../../services/expenditureService';
 
 const mockShowToast = jest.fn();
 
@@ -20,13 +20,15 @@ jest.mock('../../../context/ToastContext', () => ({
   }),
 }));
 
+let mockCanModify = true;
+
 jest.mock('../../../context/AuthContext', () => ({
   useCanModify: () => ({
-    canModify: true,
-    isViewer: false,
+    canModify: mockCanModify,
+    isViewer: !mockCanModify,
     isAdmin: false,
-    isManager: true,
-    role: 'manager',
+    isManager: mockCanModify,
+    role: mockCanModify ? 'manager' : 'viewer',
   }),
 }));
 
@@ -66,6 +68,7 @@ const mockExpenditures = [
 describe('ExpenditureLogPage Bulk Actions [GAP-008]', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCanModify = true;
     expenditureService.getExpenditures.mockResolvedValue({
       data: mockExpenditures,
       totalPages: 1,
@@ -110,27 +113,42 @@ describe('ExpenditureLogPage Bulk Actions [GAP-008]', () => {
     expect(rowCheckboxes[1]).not.toBeChecked();
   });
 
-  test('2. selects individual row and displays bulk actions bar with count badge', async () => {
+  test('2. selecting row checkboxes toggles selection and shows bulk actions bar', async () => {
     renderComponent();
 
     await waitFor(() => {
       expect(screen.getByText('Weekly Market')).toBeInTheDocument();
     });
 
+    // Bulk bar not visible initially
+    expect(screen.queryByRole('region', { name: /bulk actions toolbar/i })).not.toBeInTheDocument();
+
     const rowCheckboxes = screen.getAllByRole('checkbox', {
       name: /select transaction/i,
     });
+
+    // Select first row
     fireEvent.click(rowCheckboxes[0]);
-
     expect(rowCheckboxes[0]).toBeChecked();
-    expect(rowCheckboxes[1]).not.toBeChecked();
 
-    // Toolbar appears
-    expect(screen.getByRole('region', { name: /bulk actions toolbar/i })).toBeInTheDocument();
+    // Bulk bar appears
+    const bulkBar = screen.getByRole('region', { name: /bulk actions toolbar/i });
+    expect(bulkBar).toBeInTheDocument();
     expect(screen.getByText('1 selected')).toBeInTheDocument();
+
+    // Select second row
+    fireEvent.click(rowCheckboxes[1]);
+    expect(rowCheckboxes[1]).toBeChecked();
+    expect(screen.getByText('2 selected')).toBeInTheDocument();
+
+    // Header checkbox should now be checked (all selected)
+    const selectAllCheckbox = screen.getByRole('checkbox', {
+      name: /select all expenditures on this page/i,
+    });
+    expect(selectAllCheckbox).toBeChecked();
   });
 
-  test('3. selects all rows via header checkbox and updates count badge', async () => {
+  test('3. header checkbox toggles select-all across all page transactions', async () => {
     renderComponent();
 
     await waitFor(() => {
@@ -140,6 +158,8 @@ describe('ExpenditureLogPage Bulk Actions [GAP-008]', () => {
     const selectAllCheckbox = screen.getByRole('checkbox', {
       name: /select all expenditures on this page/i,
     });
+
+    // Click select all
     fireEvent.click(selectAllCheckbox);
 
     const rowCheckboxes = screen.getAllByRole('checkbox', {
@@ -148,54 +168,57 @@ describe('ExpenditureLogPage Bulk Actions [GAP-008]', () => {
     expect(rowCheckboxes[0]).toBeChecked();
     expect(rowCheckboxes[1]).toBeChecked();
     expect(screen.getByText('2 selected')).toBeInTheDocument();
+
+    // Click select all again to deselect
+    fireEvent.click(selectAllCheckbox);
+    expect(rowCheckboxes[0]).not.toBeChecked();
+    expect(rowCheckboxes[1]).not.toBeChecked();
+    expect(screen.queryByRole('region', { name: /bulk actions toolbar/i })).not.toBeInTheDocument();
   });
 
-  test('4. calls bulkUpdateCategory and displays success toast when Reassign Category is clicked', async () => {
+  test('4. bulk category reassignment triggers API call and displays toast', async () => {
     renderComponent();
 
     await waitFor(() => {
       expect(screen.getByText('Weekly Market')).toBeInTheDocument();
     });
 
-    // Select all
-    const selectAllCheckbox = screen.getByRole('checkbox', {
-      name: /select all expenditures on this page/i,
+    // Select first item
+    const rowCheckboxes = screen.getAllByRole('checkbox', {
+      name: /select transaction/i,
     });
-    fireEvent.click(selectAllCheckbox);
+    fireEvent.click(rowCheckboxes[0]);
 
-    // Pick category
+    // Select category from dropdown
     const categorySelect = screen.getByLabelText(/category:/i);
-    fireEvent.change(categorySelect, { target: { value: 'Utilities' } });
+    fireEvent.change(categorySelect, { target: { value: 'Transportation' } });
 
     // Click Reassign Category
     const reassignBtn = screen.getByRole('button', { name: /reassign category/i });
     fireEvent.click(reassignBtn);
 
     await waitFor(() => {
-      expect(expenditureService.bulkUpdateCategory).toHaveBeenCalledWith(
-        expect.arrayContaining(['exp1', 'exp2']),
-        'Utilities'
-      );
+      expect(expenditureService.bulkUpdateCategory).toHaveBeenCalledWith(['exp2'], 'Transportation');
     });
 
     expect(mockShowToast).toHaveBeenCalledWith(
-      expect.stringContaining('Updated category to "Utilities"'),
+      expect.stringContaining('Updated category to "Transportation" for 1 transaction'),
       'success'
     );
   });
 
-  test('5. opens ConfirmModal when Delete Selected is clicked and calls bulkDeleteExpenditures upon confirmation', async () => {
+  test('5. bulk delete opens confirmation modal and deletes upon confirm', async () => {
     renderComponent();
 
     await waitFor(() => {
       expect(screen.getByText('Weekly Market')).toBeInTheDocument();
     });
 
-    // Select Weekly Market row (exp1)
-    const checkbox = screen.getByRole('checkbox', {
-      name: /select transaction weekly market/i,
+    // Select first item
+    const rowCheckboxes = screen.getAllByRole('checkbox', {
+      name: /select transaction/i,
     });
-    fireEvent.click(checkbox);
+    fireEvent.click(rowCheckboxes[0]);
 
     // Click Delete Selected
     const deleteBtn = screen.getByRole('button', { name: /delete selected/i });
@@ -211,7 +234,7 @@ describe('ExpenditureLogPage Bulk Actions [GAP-008]', () => {
     fireEvent.click(confirmBtn);
 
     await waitFor(() => {
-      expect(expenditureService.bulkDeleteExpenditures).toHaveBeenCalledWith(['exp1']);
+      expect(expenditureService.bulkDeleteExpenditures).toHaveBeenCalledWith(['exp2']);
     });
 
     expect(mockShowToast).toHaveBeenCalledWith(
@@ -246,5 +269,34 @@ describe('ExpenditureLogPage Bulk Actions [GAP-008]', () => {
     });
     expect(rowCheckboxes[0]).not.toBeChecked();
     expect(rowCheckboxes[1]).not.toBeChecked();
+  });
+
+  test('7. enforces Invariant I4: viewer role disables mutation controls with ProtectedAction', async () => {
+    mockCanModify = false;
+    renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Weekly Market')).toBeInTheDocument();
+    });
+
+    // Add expenditure button should be disabled for viewer
+    const addBtn = screen.getByTitle(/record a new expenditure/i);
+    expect(addBtn).toHaveClass('protected-disabled');
+    expect(addBtn).toHaveAttribute('aria-disabled', 'true');
+
+    // Select a row to show bulk bar
+    const rowCheckboxes = screen.getAllByRole('checkbox', {
+      name: /select transaction/i,
+    });
+    fireEvent.click(rowCheckboxes[0]);
+
+    // Reassign and delete buttons should be disabled for viewer
+    const reassignBtn = screen.getByRole('button', { name: /reassign category/i });
+    expect(reassignBtn).toBeDisabled();
+    expect(reassignBtn).toHaveClass('protected-disabled');
+
+    const deleteBtn = screen.getByRole('button', { name: /delete selected/i });
+    expect(deleteBtn).toBeDisabled();
+    expect(deleteBtn).toHaveClass('protected-disabled');
   });
 });

@@ -535,6 +535,18 @@ html[data-fs-theme] .error-boundary-btn-secondary:hover {
   -webkit-overflow-scrolling: touch;
 }
 
+.fs-page .fs-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  margin: 1.25rem auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 5px;
+}
+
 .fs-page .styled-table {
   width: 100%;
   min-width: 600px;
@@ -593,6 +605,21 @@ html[data-fs-theme] .error-boundary-btn-secondary:hover {
   border-left: 2px solid var(--fs-accent);
 }
 
+.fs-page .styled-table tbody tr.fs-row-selected td:first-child {
+  border-left: 2px solid var(--fs-accent);
+}
+
+.fs-page .fs-card-item.fs-row-selected {
+  border-left: 2px solid var(--fs-accent);
+}
+
+.fs-page .filter-chip.active {
+  background: var(--fs-accent);
+  color: var(--fs-ink);
+  border-color: var(--fs-accent);
+  font-weight: var(--fs-weight-semibold);
+}
+
 .fs-page .styled-table th.fs-th-sortable {
   cursor: pointer;
   user-select: none;
@@ -621,6 +648,7 @@ html[data-fs-theme] .error-boundary-btn-secondary:hover {
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+  color: var(--fs-text);
 }
 
 .fs-page .action-icon {
@@ -644,11 +672,66 @@ html[data-fs-theme] .error-boundary-btn-secondary:hover {
 }
 
 .fs-page .delete-icon {
-  color: var(--fs-danger);
+  color: var(--fs-text-3);
 }
 
 .fs-page .delete-icon:hover {
-  color: var(--fs-danger-hover);
+  color: var(--fs-text);
+}
+
+/* ==========================================================================
+   FinStat Design System — Scoped Custom Checkbox Component
+   ========================================================================== */
+
+.fs-page .fs-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.fs-page .fs-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.fs-page .fs-checkbox-custom {
+  width: 16px;
+  height: 16px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  display: inline-grid;
+  place-content: center;
+  box-sizing: border-box;
+  transition: border-color var(--fs-duration-fast) var(--fs-ease-standard),
+              background var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .fs-checkbox-input:checked + .fs-checkbox-custom {
+  background: var(--fs-accent);
+  border-color: var(--fs-accent);
+}
+
+.fs-page .fs-checkbox-input:checked + .fs-checkbox-custom::after {
+  content: '';
+  width: 4px;
+  height: 8px;
+  border: solid var(--fs-ink);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-top: -2px;
+}
+
+.fs-page .fs-checkbox-input:focus-visible + .fs-checkbox-custom {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
 }
 
 .fs-page .tooltip-container:hover::after {
