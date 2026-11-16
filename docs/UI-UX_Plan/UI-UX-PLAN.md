@@ -848,7 +848,7 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 
 | Route | Component | Phase | Theme applied | Visual QA | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| `/expenditures` | `pages/expenditure/ExpenditureLogPage` | 4A | ☐ | ☐ | 47 inline styles; first pattern added |
+| `/expenditures` | `pages/expenditure/ExpenditureLogPage` | 4A | ☑ | ☑ | Converted to Canonical Reference Frame 01 (Variant B); 47 inline styles eliminated |
 | `/expenditures/new` | `pages/expenditure/AddExpenditurePage` | 4B | ☐ | ☐ | + `ExpenditureForm` (22) |
 | `/expenditures/edit/:id` | `pages/expenditure/EditExpenditurePage` | 4B | ☐ | ☐ | |
 | `/expenditures/rules` | `pages/expenditure/RulesPage` | 4C | ☐ | ☐ | 10 inline styles |
@@ -1044,10 +1044,10 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **2B** | Gated shell and global overlays | `phase-ui-2b-shell` | ☑ | ☑ |
 | **2C** | `App.css` `!important` removal (side branch off 2B, merges before 3A) | `phase-ui-2c-app-css-fix` | ☑ | ☑ |
 | **2D** | Shared component overrides (new file, `.fs-page` scoped) | `phase-ui-2d-shared-components` | ☑ | ☑ |
-| **2E** | Seven primitives, category labels, specificity | `phase-ui-2e-primitives` | ☐ | ☐ |
-| **2F** | Universal loading pattern (D23, `<Loading>` primitive) | `phase-ui-2f-loading` | ☐ | ☐ |
-| **3A** | `chartTheme.js` + Dashboard conversion | `phase-ui-3a-dashboard` | ☐ | ☐ |
-| **4A** | Expenditure log + filters | `phase-ui-4a-expenditure-log` | ☐ | ☐ |
+| **2E** | Seven primitives, category labels, specificity | `phase-ui-2e-primitives` | ☑ | ☑ |
+| **2F** | Universal loading pattern (D23, `<Loading>` primitive) | `phase-ui-2f-loading` | ☑ | ☑ |
+| **3A** | `chartTheme.js` + Dashboard conversion | `phase-ui-3a-dashboard` | ☑ | ☑ |
+| **4A** | Expenditure log + filters | `phase-ui-4a-expenditure-log` | ☑ | ☑ |
 | **4B** | Expenditure forms + sub-nav | `phase-ui-4b-expenditure-forms` | ☐ | ☐ |
 | **4C** | Rules, budgets, recurring, analysis | `phase-ui-4c-expenditure-more` | ☐ | ☐ |
 | **5A** | Payroll profiles, rules, taxes | `phase-ui-5a-payroll-core` | ☐ | ☐ |
@@ -2634,6 +2634,20 @@ Fixtures:    unchanged
 Screenshots: 1440px and 390px reference frame comparison in walkthrough
 Branch:      phase-ui-3a-dashboard
 Merge SHA:   8baf3e5 (merged to main)
+```
+
+```
+Sub-phase:   4A
+Status:      done
+Done:        Converted /expenditures to Canonical Reference Frame 01 (Variant B) with dense table, neutral category chips, tabular numbers, universal loading, and compact-expand mobile cards. Verified ExpenditureSubNav dual-mode. Eliminated all 47 inline styles from ExpenditureLogPage.js. Scoped Section 3 table rules added to theme-components.css. Removed converted files from .eslintignore (0 warnings). Reference match suite passing 4/4 tests (covering 14 checks); PR subset passing 71/71 tests with 0 diff on all 63 unallowlisted routes; manifest 334/334 verified.
+Next:        4B (/expenditures/new & /expenditures/edit/:id form conversion)
+Blocked by:  None
+Allowlist:   ['/dashboard', '/expenditures'] (cumulative: 2 routes)
+Visual diff: 0 regression diff across all 63 unallowlisted routes; /expenditures baseline updated (AD13)
+Fixtures:    Expenditure test fixtures with split transactions and credit purchase tags
+Screenshots: expenditure-1440.png, expenditure-390.png, reference-01-dense-table-1440.png, reference-01-dense-table-390.png, expenditure-390-split-expanded.png
+Branch:      phase-ui-4a-expenditure-log
+Merge SHA:   <recorded upon merge into main>
 ```
 
 ### Sub-phase note template

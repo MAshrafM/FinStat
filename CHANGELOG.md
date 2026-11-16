@@ -344,4 +344,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Audit Registers (`docs/audit/PROGRESS.md`, `docs/audit/AUDIT_REGISTER.md`, `docs/audit/ACTION_PLAN.md`), marking all 36 confirmed audit findings as resolved.
 - Strict scope verification: zero application code, dependency, schema, or configuration files modified.
 
+### Changed - UI Phase 4A: Expenditure Log & Filters
+- Converted `/expenditures` to Canonical Reference Frame 01 (Dense Table Variant B) with flat dark graphite palette.
+- Ordinary expense amounts and ledger balances are neutral (`--fs-text`); color is strictly reserved for actionable deltas, alerts, and performance metrics (AD13, §3.2).
+- Category chips rendered in neutral surface styling (`.fs-cat-badge`) per §4.3 Rule 2; non-color scanning supported via category filter toolbar (G3).
+- Implemented responsive compact-expand cards for viewports <= 768px (D19), strictly eliminating horizontal scroll.
+- Integrated Universal Loading pattern (`Loading variant="table"`) per D23.
+- Verified dual-mode ExpenditureSubNav with zero regression on unallowlisted routes.
+
 

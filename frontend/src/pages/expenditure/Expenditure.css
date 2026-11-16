@@ -623,3 +623,348 @@
     opacity: 1;
   }
 }
+
+/* ==========================================================================
+   UI Phase 4A: Expenditure Log & Filters — Scoped .fs-page Modern Styles
+   Canonical Reference Frame 01: Dense Table (Variant B)
+   Governed by UI-UX-PLAN.md §4.1–§4.9, §4.14, §6.1.1, D19, D23, AD13
+   ========================================================================== */
+
+/* 1. Header & Actions */
+.fs-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.fs-page .page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* 2. Holdings Summary Strip */
+.fs-page .holdings-summary-card {
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.fs-page .holdings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.fs-page .holdings-tile {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 1rem;
+}
+
+.fs-page .holdings-tile-icon {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-lg);
+  margin-bottom: 0.25rem;
+}
+
+.fs-page .holdings-tile-label {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-medium);
+}
+
+.fs-page .holdings-tile-value {
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 3. Filter Section */
+.fs-page .filter-section {
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.fs-page .filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.fs-page .filter-group:last-child {
+  margin-bottom: 0;
+}
+
+.fs-page .filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.fs-page .filter-chip {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-2);
+  padding: 0.375rem 0.75rem;
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-medium);
+  cursor: pointer;
+  transition: background var(--fs-duration-fast) var(--fs-ease-standard),
+              color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .filter-chip:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+.fs-page .filter-notice {
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-3);
+  padding: 0.75rem;
+  font-size: var(--fs-text-xs);
+}
+
+/* 4. Bulk Actions Bar (In-Flow Page Region) */
+.fs-page .bulk-actions-bar {
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.fs-page .bulk-actions-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fs-page .bulk-count-badge {
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text);
+  border-radius: var(--fs-radius-sm);
+  padding: 0.25rem 0.5rem;
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-medium);
+}
+
+.fs-page .bulk-actions-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.fs-page .bulk-category-label {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-medium);
+}
+
+.fs-page .bulk-category-select {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text);
+  font-size: var(--fs-text-sm);
+  padding: 0.375rem 0.75rem;
+  height: 36px;
+}
+
+/* 5. Category Badges & Splits */
+.fs-page .fs-cat-badge {
+  display: inline-block;
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  padding: 2px 8px;
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text);
+  margin-right: 4px;
+}
+
+.fs-page .category-badges-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.fs-page .split-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fs-page .split-badge-title {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+}
+
+.fs-page .split-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.fs-page .split-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2px 0;
+  font-size: var(--fs-text-xs);
+}
+
+/* 6. Scoped Mobile Compact-Expand Cards (<= 768px) */
+.fs-page .fs-mobile-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px;
+}
+
+.fs-page .fs-card-item {
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fs-page .fs-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fs-page .fs-card-date {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-page .fs-card-amount {
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--fs-text);
+}
+
+.fs-page .fs-card-primary-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.fs-page .fs-card-desc {
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  word-break: break-word;
+}
+
+.fs-page .fs-card-expander-btn {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-xs);
+  padding: 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--fs-duration-fast) var(--fs-ease-standard),
+              color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .fs-card-expander-btn:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+.fs-page .fs-card-expander-btn:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+}
+
+.fs-page .fs-card-details-drawer {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.fs-page .fs-card-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  font-size: var(--fs-text-xs);
+}
+
+.fs-page .fs-card-field:last-of-type {
+  border-bottom: none;
+}
+
+.fs-page .split-details-drawer,
+.fs-page .fs-card-field.split-details-drawer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.fs-page .fs-card-label {
+  color: var(--fs-text-3);
+  font-weight: var(--fs-weight-medium);
+}
+
+.fs-page .fs-card-value {
+  color: var(--fs-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-page .fs-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: var(--fs-border-width) solid var(--fs-border);
+}
