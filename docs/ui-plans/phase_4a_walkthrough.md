@@ -290,7 +290,7 @@ Per Action Plan §0.2, §10, and §7.2, and Implementation Plan v5.1 §5.5 (C3),
 | **Fixtures** | Expenditure test fixtures with split transactions and credit purchase tags |
 | **Screenshots** | expenditure-1440.png, expenditure-390.png, reference-01-dense-table-1440.png, reference-01-dense-table-390.png, expenditure-390-split-expanded.png |
 | **Branch** | phase-ui-4a-expenditure-log |
-| **Merge SHA** | `<recorded upon merge into main>` |
+| **Merge SHA** | `91d4278` (merged to main) |
 
 ### 7.2 UI-UX-PLAN §10 Text Block Format
 
@@ -305,5 +305,5 @@ Visual diff: 0 regression diff across all 63 unallowlisted routes; /expenditures
 Fixtures:    Expenditure test fixtures with split transactions and credit purchase tags
 Screenshots: expenditure-1440.png, expenditure-390.png, reference-01-dense-table-1440.png, reference-01-dense-table-390.png, expenditure-390-split-expanded.png
 Branch:      phase-ui-4a-expenditure-log
-Merge SHA:   <recorded upon merge into main>
+Merge SHA:   91d4278 (merged to main)
 ```
