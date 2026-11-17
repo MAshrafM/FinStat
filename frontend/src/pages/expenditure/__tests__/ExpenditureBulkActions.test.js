@@ -299,4 +299,90 @@ describe('ExpenditureLogPage Bulk Actions [GAP-008]', () => {
     expect(deleteBtn).toBeDisabled();
     expect(deleteBtn).toHaveClass('protected-disabled');
   });
+
+  describe('Mobile View & Account Labels', () => {
+    const mobileMockExpenditures = [
+      {
+        _id: 'mob-bank',
+        date: '2024-05-01T00:00:00.000Z',
+        transactionValue: 100,
+        transactionType: 'W',
+        paymentMethod: 'Bank',
+        categories: ['Groceries'],
+        description: 'Bank Purchase',
+        runningBalances: { bank: 1500, cash: 500, prepaid: 200 },
+      },
+      {
+        _id: 'mob-cash',
+        date: '2024-05-02T00:00:00.000Z',
+        transactionValue: 50,
+        transactionType: 'W',
+        paymentMethod: 'Cash',
+        categories: ['Dining Out'],
+        description: 'Cash Purchase',
+        runningBalances: { bank: 1500, cash: 450, prepaid: 200 },
+      },
+      {
+        _id: 'mob-prepaid',
+        date: '2024-05-03T00:00:00.000Z',
+        transactionValue: 25,
+        transactionType: 'W',
+        paymentMethod: 'Prepaid',
+        categories: ['Transport'],
+        description: 'Prepaid Purchase',
+        runningBalances: { bank: 1500, cash: 450, prepaid: 175 },
+      },
+    ];
+
+    beforeEach(() => {
+      window.innerWidth = 390;
+      window.dispatchEvent(new Event('resize'));
+      expenditureService.getExpenditures.mockResolvedValue({
+        data: mobileMockExpenditures,
+        totalPages: 1,
+        currentPage: 1,
+      });
+    });
+
+    afterEach(() => {
+      window.innerWidth = 1440;
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    test('8. mobile header button uses Button component with .fs-btn and .fs-btn-primary', async () => {
+      renderComponent();
+      await waitFor(() => {
+        expect(screen.getByText('Bank Purchase')).toBeInTheDocument();
+      });
+
+      const addBtn = screen.getByRole('link', { name: /add expenditure/i });
+      expect(addBtn).toHaveClass('fs-btn', 'fs-btn-primary');
+    });
+
+    test('9. mobile cards show correct Account and Balance After labels and numerical values', async () => {
+      renderComponent();
+      await waitFor(() => {
+        expect(screen.getByText('Prepaid Purchase')).toBeInTheDocument();
+      });
+
+      // Expand all details buttons
+      const expandButtons = screen.getAllByRole('button', { name: /view details/i });
+      expect(expandButtons).toHaveLength(3);
+
+      // Expand Prepaid card (sorted newest first: index 0 is Prepaid)
+      fireEvent.click(expandButtons[0]);
+      expect(screen.getByText('Prepaid Balance After')).toBeInTheDocument();
+      expect(screen.getByText('$175.00')).toBeInTheDocument();
+
+      // Expand Cash card (index 1 is Cash)
+      fireEvent.click(expandButtons[1]);
+      expect(screen.getByText('Cash Balance After')).toBeInTheDocument();
+      expect(screen.getByText('$450.00')).toBeInTheDocument();
+
+      // Expand Bank card (index 2 is Bank)
+      fireEvent.click(expandButtons[2]);
+      expect(screen.getByText('Bank Balance After')).toBeInTheDocument();
+      expect(screen.getByText('$1,500.00')).toBeInTheDocument();
+    });
+  });
 });
