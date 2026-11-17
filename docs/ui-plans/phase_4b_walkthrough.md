@@ -263,7 +263,7 @@ All conditions noted during plan reviews and execution were systematically resol
 The following entry has been appended to `docs/UI-UX_Plan/UI-UX-PLAN.md` §10:
 
 ```markdown
-| 4B | 2026-11-17 | Expenditure form conversion completed: converted /expenditures/new and /expenditures/edit/:id to Canonical Reference Frame 02 (Variant B stacked field cards); eliminated all 22 inline styles from ExpenditureForm.js; roving tabindex category selector with W3C APG radiogroup keyboard navigation; mobile split table collapse into vertical cards; dual-mode ExpenditureSubNav verified; Invariant I4 viewer mutation gating; removed ExpenditureForm.js and its test from .eslintignore (0 warnings); added expenditure-form-reference-match spec (13/13 reference tests passing); PR subset passing 71/71 tests with 0 diff on all 61 unallowlisted routes; manifest 334/334 verified; 10 baseline snapshots regenerated. | 4C (Expenditure rules, budgets & analytics) | None | Branch head SHA: 0465784 (Merge SHA: pending merge to main) |
+| 4B | 2026-11-17 | Expenditure form conversion completed: converted /expenditures/new and /expenditures/edit/:id to Canonical Reference Frame 02 (Variant B stacked field cards); eliminated all 22 inline styles from ExpenditureForm.js; roving tabindex category selector with W3C APG radiogroup keyboard navigation; mobile split table collapse into vertical cards; dual-mode ExpenditureSubNav verified; Invariant I4 viewer mutation gating; removed ExpenditureForm.js and its test from .eslintignore (0 warnings); added expenditure-form-reference-match spec (13/13 reference tests passing); PR subset passing 71/71 tests with 0 diff on all 61 unallowlisted routes; manifest 334/334 verified; 10 baseline snapshots regenerated. | 4C (Expenditure rules, budgets & analytics) | None | 9e49604 (merged to main) |
 ```
 
 And the sub-phase summary block:
@@ -278,8 +278,7 @@ Visual diff: 0 regression diff across all 61 unallowlisted routes; /expenditures
 Fixtures:    unchanged
 Screenshots: expenditures-new-1440.png, expenditures-new-390.png, expenditures-edit-1440.png, expenditures-edit-390.png, reference-02-form-1440.png, reference-02-form-390.png
 Branch:      phase-ui-4b-expenditure-forms
-Branch head: 0465784
-Merge SHA:   pending merge to main
+Merge SHA:   9e49604 (merged to main)
 ```
 
 ---
