@@ -99,10 +99,10 @@ describe('Phase 2B: ProtectedRoute & Shell Gating Integration Tests', () => {
     expect(document.documentElement.dataset.fsTheme).toBeUndefined();
   });
 
-  describe('Phase 4A: isThemedRoute allowlist exactness', () => {
+  describe('Phase 4B: isThemedRoute allowlist exactness', () => {
     beforeEach(() => {
       THEMED_PATTERNS.length = 0;
-      THEMED_PATTERNS.push('/dashboard', '/expenditures');
+      THEMED_PATTERNS.push('/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id');
     });
 
     afterEach(() => {
@@ -112,11 +112,11 @@ describe('Phase 2B: ProtectedRoute & Shell Gating Integration Tests', () => {
     test('identifies allowlisted routes', () => {
       expect(isThemedRoute('/dashboard')).toBe(true);
       expect(isThemedRoute('/expenditures')).toBe(true);
+      expect(isThemedRoute('/expenditures/new')).toBe(true);
+      expect(isThemedRoute('/expenditures/edit/123')).toBe(true);
     });
 
     test('rejects unallowlisted child and sibling routes (Invariant I13)', () => {
-      expect(isThemedRoute('/expenditures/new')).toBe(false);
-      expect(isThemedRoute('/expenditures/edit/123')).toBe(false);
       expect(isThemedRoute('/expenditures/rules')).toBe(false);
       expect(isThemedRoute('/expenditure-analysis')).toBe(false);
       expect(isThemedRoute('/portfolio')).toBe(false);

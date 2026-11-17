@@ -1,8 +1,12 @@
+// frontend/src/pages/expenditure/AddExpenditurePage.js
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { createExpenditure, getLatestExpenditure } from '../../services/expenditureService';
 import { useToast } from '../../context/ToastContext';
+import { PageHeader, Loading } from '../../components/ui';
+import ExpenditureSubNav from './ExpenditureSubNav';
 import ExpenditureForm from './ExpenditureForm';
+import './Expenditure.css';
 
 const AddExpenditurePage = () => {
   const navigate = useNavigate();
@@ -12,14 +16,14 @@ const AddExpenditurePage = () => {
 
   useEffect(() => {
     getLatestExpenditure()
-      .then(data => {
+      .then((data) => {
         if (data) {
           setLastRecord({ bank: data.bank, cash: data.cash, prepaid: data.prepaid || 0 });
         }
         setIsLoading(false);
       })
-      .catch(err => {
-        console.error("Failed to fetch latest expenditure:", err);
+      .catch((err) => {
+        console.error('Failed to fetch latest expenditure:', err);
         setIsLoading(false);
       });
   }, []);
@@ -30,24 +34,27 @@ const AddExpenditurePage = () => {
       showToast('Expenditure added successfully', 'success');
       navigate('/expenditures');
     } catch (error) {
-      console.error("Failed to create expenditure:", error);
+      console.error('Failed to create expenditure:', error);
     }
   };
 
-  if (isLoading) {
-    return <div className="page-container">Loading latest record...</div>;
-  }
-
   return (
-    <div className="page-container">
-      <ExpenditureForm
-        onSubmit={handleSubmit}
-        mode="create"
-        lastRecord={lastRecord}
+    <div className="fs-page">
+      <PageHeader
+        title="New Expenditure"
+        subtitle="Record a single or split transaction"
       />
-      <Link to="/expenditures" className="cancel-button" style={{ textDecoration: 'none' }}>
-        Cancel
-      </Link>
+      <ExpenditureSubNav />
+      {isLoading ? (
+        <Loading variant="form-field" text="Loading expenditure..." />
+      ) : (
+        <ExpenditureForm
+          onSubmit={handleSubmit}
+          onCancel={() => navigate('/expenditures')}
+          mode="create"
+          lastRecord={lastRecord}
+        />
+      )}
     </div>
   );
 };

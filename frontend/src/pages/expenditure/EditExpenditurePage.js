@@ -1,8 +1,12 @@
+// frontend/src/pages/expenditure/EditExpenditurePage.js
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { updateExpenditure, getExpenditureById } from '../../services/expenditureService';
 import { useToast } from '../../context/ToastContext';
+import { PageHeader, Loading } from '../../components/ui';
+import ExpenditureSubNav from './ExpenditureSubNav';
 import ExpenditureForm from './ExpenditureForm';
+import './Expenditure.css';
 
 const EditExpenditurePage = () => {
   const navigate = useNavigate();
@@ -13,12 +17,12 @@ const EditExpenditurePage = () => {
 
   useEffect(() => {
     getExpenditureById(id)
-      .then(data => {
+      .then((data) => {
         setExpenditure(data);
         setIsLoading(false);
       })
-      .catch(err => {
-        console.error("Failed to fetch expenditure:", err);
+      .catch((err) => {
+        console.error('Failed to fetch expenditure:', err);
         setIsLoading(false);
       });
   }, [id]);
@@ -29,28 +33,31 @@ const EditExpenditurePage = () => {
       showToast('Expenditure updated successfully', 'success');
       navigate('/expenditures');
     } catch (error) {
-      console.error("Failed to update expenditure:", error);
+      console.error('Failed to update expenditure:', error);
     }
   };
 
-  if (isLoading) {
-    return <div className="page-container">Loading expenditure...</div>;
-  }
-
-  if (!expenditure) {
-    return <div className="page-container">Expenditure not found</div>;
-  }
-
   return (
-    <div className="page-container">
-      <ExpenditureForm 
-        onSubmit={handleSubmit}
-        mode="edit"
-        initialData={expenditure}
+    <div className="fs-page">
+      <PageHeader
+        title="Edit Expenditure"
+        subtitle="Modify transaction details or category splits"
       />
-      <Link to="/expenditures" className="cancel-button" style={{textDecoration: 'none'}}>
-        Cancel
-      </Link>
+      <ExpenditureSubNav />
+      {isLoading ? (
+        <Loading variant="form-field" text="Loading expenditure..." />
+      ) : !expenditure ? (
+        <div className="fs-form-container">
+          <p className="fs-error">Expenditure not found</p>
+        </div>
+      ) : (
+        <ExpenditureForm
+          onSubmit={handleSubmit}
+          onCancel={() => navigate('/expenditures')}
+          mode="edit"
+          initialData={expenditure}
+        />
+      )}
     </div>
   );
 };

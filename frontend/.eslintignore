@@ -50,10 +50,8 @@ src/pages/currency/CurrencyForm.js
 src/pages/currency/CurrencyLogPage.js
 src/pages/expenditure/BudgetsPage.js
 src/pages/expenditure/ExpenditureAnalysisPage.js
-src/pages/expenditure/ExpenditureForm.js
 src/pages/expenditure/RecurringSuggestionsPage.js
 src/pages/expenditure/RulesPage.js
-src/pages/expenditure/__tests__/ExpenditureForm.test.js
 src/pages/gold/GoldForm.js
 src/pages/gold/GoldLogPage.js
 src/pages/gold/GoldSummaryPage.js

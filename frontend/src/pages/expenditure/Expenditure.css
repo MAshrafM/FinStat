@@ -993,3 +993,521 @@
   padding-top: 0.5rem;
   border-top: var(--fs-border-width) solid var(--fs-border);
 }
+
+/* ==========================================================================
+   FinStat Phase 4B: Scoped Form & Sub-Nav Rules (Canonical Ref Frame 02)
+   All rules strictly scoped under .fs-page (Decision D22 / Invariant I15)
+   Zero direct tone tokens referenced (Invariant I15 compliant)
+   ========================================================================== */
+
+/* Page Form Container */
+.fs-page .fs-form-container {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.fs-page .fs-form-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Stacked Sub-Panel Cards (Variant B Canonical) */
+.fs-page .fs-section-card {
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fs-page .fs-section-title {
+  font-size: var(--fs-text-base);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  padding-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 2-Column Responsive Form Grid */
+.fs-page .fs-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+}
+
+.fs-page .fs-col-full {
+  grid-column: 1 / -1;
+}
+
+/* Form Fields, Labels, Inputs */
+.fs-page .fs-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fs-page .fs-field-label {
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-medium);
+  color: var(--fs-text-2);
+  display: flex;
+  align-items: center;
+}
+
+.fs-page .fs-req {
+  color: var(--fs-text-3);
+  margin-left: 4px;
+  font-weight: var(--fs-weight-semibold);
+}
+
+.fs-page .fs-input,
+.fs-page .fs-select,
+.fs-page .fs-textarea {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text);
+  padding: 8px 12px;
+  font-size: var(--fs-text-sm);
+  font-family: inherit;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fs-page .fs-input:focus,
+.fs-page .fs-select:focus,
+.fs-page .fs-textarea:focus {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+  border-color: var(--fs-border-strong);
+}
+
+/* Balance Preview Card (Sunken Sub-Inset per S-3) */
+.fs-page .fs-balance-preview-card {
+  display: flex;
+  justify-content: space-around;
+  padding: 16px;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+}
+
+.fs-page .fs-balance-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.fs-page .fs-balance-label {
+  font-size: var(--fs-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--fs-text-3);
+  font-weight: var(--fs-weight-semibold);
+}
+
+.fs-page .fs-balance-val {
+  font-size: var(--fs-text-xl);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-page .edit-mode-notice {
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  padding: 10px 14px;
+  margin-top: 12px;
+  text-align: center;
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
+}
+
+.fs-page .edit-mode-notice p {
+  margin: 0;
+  color: var(--fs-text-2);
+}
+
+/* Log / Transfer Operations (Bank/Cash/Prepaid +/-/Off)
+   Neutral selected state per AD13 (F-2) */
+.fs-page .log-operations {
+  display: flex;
+  justify-content: space-around;
+  gap: 16px;
+  padding: 16px;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  flex-wrap: wrap;
+}
+
+.fs-page .operation-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.fs-page .operation-group h4 {
+  margin: 0;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-semibold);
+}
+
+.fs-page .radio-group {
+  display: flex;
+  gap: 8px;
+}
+
+.fs-page .radio-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  min-width: 44px;
+  min-height: 44px;
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  background: var(--fs-surface);
+  color: var(--fs-text-2);
+  transition: background var(--fs-duration-fast) var(--fs-ease-standard);
+  user-select: none;
+}
+
+.fs-page .radio-option:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+  border-color: var(--fs-border-control);
+}
+
+/* Neutral selected state for user-choice operations per AD13 (F-2) */
+.fs-page .radio-option.selected-plus,
+.fs-page .radio-option.selected-minus,
+.fs-page .radio-option.selected-off {
+  background: var(--fs-surface-raised);
+  border-color: var(--fs-border-strong);
+  color: var(--fs-text);
+  font-weight: var(--fs-weight-semibold);
+}
+
+.fs-page .radio-option.option-off {
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-semibold);
+}
+
+.fs-page .radio-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.fs-page .radio-option:focus-within {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+}
+
+/* Currency Conversion Confirmation Card */
+.fs-page .currency-conversion-card {
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fs-page .conversion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fs-page .conversion-label {
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fs-page .rate-badge {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  padding: 2px 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-page .conversion-value-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fs-page .foreign-pill {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  padding: 4px 10px;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-page .conversion-arrow {
+  color: var(--fs-text-3);
+}
+
+.fs-page .egp-equivalent {
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-page .conversion-hint {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+}
+
+.fs-page .conversion-hint strong {
+  color: var(--fs-text);
+}
+
+/* Auto-Categorization Rule Pill */
+.fs-page .fs-rule-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  padding: 8px 12px;
+  margin-top: 8px;
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
+}
+
+.fs-page .fs-rule-icon {
+  margin-right: 6px;
+  color: var(--fs-text-3);
+}
+
+/* Category Selection Chips Container */
+.fs-page .fs-category-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Split Transaction Elements */
+.fs-page .split-toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  color: var(--fs-text);
+}
+
+.fs-page .split-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--fs-text);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+}
+
+.fs-page .fs-split-allocated-text {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.fs-page .fs-split-table-wrapper {
+  margin-bottom: 20px;
+}
+
+.fs-page .fs-split-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fs-page .fs-split-table th {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+  font-weight: var(--fs-weight-semibold);
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+.fs-page .fs-split-table td {
+  padding: 8px 6px;
+  vertical-align: middle;
+}
+
+.fs-page .col-split-category { width: 40%; }
+.fs-page .col-split-amount { width: 25%; }
+.fs-page .col-split-note { width: 25%; }
+.fs-page .col-split-action { width: 10%; text-align: center; }
+
+.fs-page .col-split-action button {
+  background: transparent;
+  border: none;
+  color: var(--fs-text-3);
+  padding: 6px;
+  border-radius: var(--fs-radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--fs-duration-fast) var(--fs-ease-standard), background var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .col-split-action button:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+.fs-page .fs-split-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.fs-page .fs-split-balance-bar {
+  font-size: var(--fs-text-xs);
+  padding: 6px 12px;
+  border-radius: var(--fs-radius-sm);
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Neutral balanced state per AD13 (F-2) */
+.fs-page .fs-split-balance-bar.balanced {
+  color: var(--fs-text-2);
+  border-color: var(--fs-border);
+}
+
+/* Form Actions Footer */
+.fs-page .fs-form-footer {
+  padding: 16px 24px;
+  background: var(--fs-surface-sunken);
+  border-top: var(--fs-border-width) solid var(--fs-border);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   Mobile Responsive Rules (390px / <= 768px) per Decision D19 & Invariant I6
+   ========================================================================== */
+@media (max-width: 768px) {
+  .fs-page .fs-grid-2col {
+    grid-template-columns: 1fr;
+  }
+
+  .fs-page .fs-form-footer {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+
+  .fs-page .fs-form-footer .fs-btn,
+  .fs-page .fs-form-footer a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .fs-page .fs-balance-preview-card {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .fs-page .fs-balance-item {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  /* Interactive touch targets >= 44px (B-5)
+     Scoped strictly to form category chips grid to prevent diffing /expenditures at 390px (I-2) */
+  .fs-page .fs-category-chips-grid .filter-chip {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  .fs-page .radio-option {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Split table mobile card transformation (D-3, S-1) */
+  .fs-page .fs-split-table,
+  .fs-page .fs-split-table tbody,
+  .fs-page .fs-split-table tr,
+  .fs-page .fs-split-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .fs-page .fs-split-table thead {
+    display: none;
+  }
+
+  .fs-page .fs-split-table tbody tr {
+    background: var(--fs-surface);
+    border: var(--fs-border-width) solid var(--fs-border);
+    border-radius: var(--fs-radius-sm);
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fs-page .fs-split-table td {
+    padding: 0;
+  }
+
+  .fs-page .col-split-action {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .fs-page .fs-split-actions-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
