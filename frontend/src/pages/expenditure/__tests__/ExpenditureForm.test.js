@@ -1,8 +1,10 @@
+// frontend/src/pages/expenditure/__tests__/ExpenditureForm.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ExpenditureForm from '../ExpenditureForm';
 import { getCurrencyPrice } from '../../../services/currencyService';
 import { getRules } from '../../../services/categorizationRuleService';
+import { expectNoA11yViolations } from '../../../../tests/a11y/expectNoA11yViolations';
 
 jest.mock('../../../services/currencyService', () => ({
   getCurrencyPrice: jest.fn(),
@@ -12,9 +14,25 @@ jest.mock('../../../services/categorizationRuleService', () => ({
   getRules: jest.fn(),
 }));
 
+let mockCanModifyValue = true;
+jest.mock('../../../context/AuthContext', () => ({
+  useCanModify: () => ({
+    canModify: mockCanModifyValue,
+    isViewer: !mockCanModifyValue,
+    isAdmin: false,
+    isManager: mockCanModifyValue,
+    role: mockCanModifyValue ? 'manager' : 'viewer',
+  }),
+}));
+
+jest.mock('../../../context/ToastContext', () => ({
+  useToast: () => ({ showToast: jest.fn(), addToast: jest.fn() }),
+}));
+
 describe('ExpenditureForm - Multi-Currency Selector & Foreign Amount Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCanModifyValue = true;
     getRules.mockResolvedValue({ data: [] });
     getCurrencyPrice.mockResolvedValue([
       { currencyID: 'USD', buyRate: 48.2, sellRate: 48.5 },
@@ -22,13 +40,17 @@ describe('ExpenditureForm - Multi-Currency Selector & Foreign Amount Tests', () 
     ]);
   });
 
-  it('renders with EGP as default currency and hides foreignAmount input', async () => {
-    render(<ExpenditureForm onSubmit={jest.fn()} />);
+  const renderForm = (props = {}) => {
+    return render(
+      <ExpenditureForm onSubmit={jest.fn()} {...props} />
+    );
+  };
 
-    await waitFor(() => {
-      expect(getRules).toHaveBeenCalled();
-      expect(getCurrencyPrice).toHaveBeenCalled();
-    });
+  it('renders with EGP as default currency and hides foreignAmount input', async () => {
+    renderForm();
+
+    await waitFor(() => expect(getRules).toHaveBeenCalled());
+    expect(getCurrencyPrice).toHaveBeenCalled();
 
     const currencySelect = screen.getByLabelText(/currency/i);
     expect(currencySelect.value).toBe('EGP');
@@ -42,11 +64,9 @@ describe('ExpenditureForm - Multi-Currency Selector & Foreign Amount Tests', () 
   });
 
   it('displays foreignAmount input and conversion confirmation card when currency is changed to USD', async () => {
-    render(<ExpenditureForm onSubmit={jest.fn()} />);
+    renderForm();
 
-    await waitFor(() => {
-      expect(getRules).toHaveBeenCalled();
-    });
+    await waitFor(() => expect(getRules).toHaveBeenCalled());
 
     const currencySelect = screen.getByLabelText(/currency/i);
     fireEvent.change(currencySelect, { target: { value: 'USD' } });
@@ -62,11 +82,9 @@ describe('ExpenditureForm - Multi-Currency Selector & Foreign Amount Tests', () 
   });
 
   it('auto-displays the converted EGP equivalent when foreignAmount is typed', async () => {
-    render(<ExpenditureForm onSubmit={jest.fn()} />);
+    renderForm();
 
-    await waitFor(() => {
-      expect(getRules).toHaveBeenCalled();
-    });
+    await waitFor(() => expect(getRules).toHaveBeenCalled());
 
     // Switch to USD
     const currencySelect = screen.getByLabelText(/currency/i);
@@ -86,11 +104,9 @@ describe('ExpenditureForm - Multi-Currency Selector & Foreign Amount Tests', () 
   });
 
   it('updates converted EGP equivalent when exchange rate changes', async () => {
-    render(<ExpenditureForm onSubmit={jest.fn()} />);
+    renderForm();
 
-    await waitFor(() => {
-      expect(getRules).toHaveBeenCalled();
-    });
+    await waitFor(() => expect(getRules).toHaveBeenCalled());
 
     // Switch to EUR
     const currencySelect = screen.getByLabelText(/currency/i);
@@ -108,11 +124,9 @@ describe('ExpenditureForm - Multi-Currency Selector & Foreign Amount Tests', () 
 
   it('submits correct payload with foreignAmount and exchangeRateSnapshot when currency !== EGP', async () => {
     const handleSubmit = jest.fn();
-    render(<ExpenditureForm onSubmit={handleSubmit} mode="create" />);
+    renderForm({ onSubmit: handleSubmit, mode: 'create' });
 
-    await waitFor(() => {
-      expect(getRules).toHaveBeenCalled();
-    });
+    await waitFor(() => expect(getRules).toHaveBeenCalled());
 
     // Select USD
     const currencySelect = screen.getByLabelText(/currency/i);
@@ -141,11 +155,9 @@ describe('ExpenditureForm - Multi-Currency Selector & Foreign Amount Tests', () 
 
   it('submits standard EGP payload without foreignAmount when currency === EGP', async () => {
     const handleSubmit = jest.fn();
-    render(<ExpenditureForm onSubmit={handleSubmit} mode="create" />);
+    renderForm({ onSubmit: handleSubmit, mode: 'create' });
 
-    await waitFor(() => {
-      expect(getRules).toHaveBeenCalled();
-    });
+    await waitFor(() => expect(getRules).toHaveBeenCalled());
 
     const valueInput = screen.getByLabelText(/transaction value \(egp\)/i);
     fireEvent.change(valueInput, { target: { value: '500' } });
@@ -177,11 +189,9 @@ describe('ExpenditureForm - Multi-Currency Selector & Foreign Amount Tests', () 
       prepaid: 0,
     };
 
-    render(<ExpenditureForm onSubmit={jest.fn()} mode="edit" initialData={initialData} />);
+    renderForm({ mode: 'edit', initialData });
 
-    await waitFor(() => {
-      expect(getRules).toHaveBeenCalled();
-    });
+    await waitFor(() => expect(getRules).toHaveBeenCalled());
 
     const currencySelect = screen.getByLabelText(/currency/i);
     expect(currencySelect.value).toBe('USD');
@@ -195,8 +205,31 @@ describe('ExpenditureForm - Multi-Currency Selector & Foreign Amount Tests', () 
     const convertedEgpValue = screen.getByTestId('converted-egp-value');
     expect(convertedEgpValue).toHaveTextContent(/7,237\.5/);
   });
-});
 
-jest.mock('../../../context/ToastContext', () => ({
-  useToast: () => ({ showToast: jest.fn(), addToast: jest.fn() }),
-}));
+  it('passes WCAG 2.1 AA accessibility checks via jest-axe (D-1)', async () => {
+    const { container } = renderForm();
+    await waitFor(() => expect(getRules).toHaveBeenCalled());
+    await expectNoA11yViolations(container);
+  });
+
+  it('disables submit button when viewer role is active via ProtectedAction (Invariant I4, B-6, S-6)', async () => {
+    mockCanModifyValue = false;
+    renderForm({ mode: 'create' });
+    await waitFor(() => expect(getRules).toHaveBeenCalled());
+
+    const submitBtn = screen.getByRole('button', { name: /create new log/i });
+    expect(submitBtn).toBeDisabled();
+    expect(submitBtn).toHaveAttribute('aria-disabled', 'true');
+    mockCanModifyValue = true;
+  });
+
+  it('invokes onCancel callback when Cancel button is clicked', async () => {
+    const onCancelMock = jest.fn();
+    renderForm({ onCancel: onCancelMock });
+    await waitFor(() => expect(getRules).toHaveBeenCalled());
+
+    const cancelBtn = screen.getByRole('button', { name: /cancel/i });
+    fireEvent.click(cancelBtn);
+    expect(onCancelMock).toHaveBeenCalledTimes(1);
+  });
+});

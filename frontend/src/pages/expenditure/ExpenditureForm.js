@@ -1,13 +1,14 @@
 // frontend/src/pages/expenditure/ExpenditureForm.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { formatDateForInput, formatCurrency } from '../../utils/formatters';
-import '../../components/Form.css'; // Reuse form styles
 import { FaPlus, FaMinus, FaTrash, FaMagic } from 'react-icons/fa';
-import './Expenditure.css'; // For new styles
+import './Expenditure.css';
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import { getRules } from '../../services/categorizationRuleService';
 import { getCurrencyPrice } from '../../services/currencyService';
 import { useToast } from '../../context/ToastContext';
+import { Button, Badge } from '../../components/ui';
+import ProtectedAction from '../../components/common/ProtectedAction';
 
 export const CURRENCY_OPTIONS = [
   { code: 'EGP', label: 'EGP (Egyptian Pound)' },
@@ -38,12 +39,15 @@ export const DEFAULT_RATES = {
 
 const ExpenditureForm = ({
   onSubmit,
+  onCancel,
   initialData = {},
   mode = 'create',
   lastRecord = { bank: 0, cash: 0, prepaid: 0 },
 }) => {
   const { showToast, addToast } = useToast();
   const notify = showToast || addToast;
+  const categoryChipsRef = useRef([]);
+
   // Currency and FX state
   const [currency, setCurrency] = useState('EGP');
   const [foreignAmount, setForeignAmount] = useState('');
@@ -309,6 +313,37 @@ const ExpenditureForm = ({
     setSplits(updated);
   };
 
+  const handleCategoryKeyDown = (e, index) => {
+    const total = EXPENDITURE_CATEGORIES.length;
+    let nextIndex = null;
+
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      nextIndex = (index + 1) % total;
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      nextIndex = (index - 1 + total) % total;
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      nextIndex = total - 1;
+    } else if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      setCategories([EXPENDITURE_CATEGORIES[index].name]);
+      return;
+    }
+
+    if (nextIndex !== null) {
+      const nextCategory = EXPENDITURE_CATEGORIES[nextIndex].name;
+      setCategories([nextCategory]);
+      if (categoryChipsRef.current[nextIndex]) {
+        categoryChipsRef.current[nextIndex].focus();
+      }
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const isForeign = currency !== 'EGP';
@@ -346,7 +381,7 @@ const ExpenditureForm = ({
         }
       }
       if (!isBalanced) {
-                if (notify) notify(
+        if (notify) notify(
           `Sum of split amounts (${totalSplitAmount.toFixed(2)} EGP) must equal total transaction value (${value.toFixed(2)} EGP). Difference: ${splitDifference.toFixed(2)} EGP.`,
           'error'
         );
@@ -390,503 +425,577 @@ const ExpenditureForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="paycheck-form-container" style={{ maxWidth: '750px' }}>
-      <h3>{mode === 'create' ? 'Create New Expenditure Log' : 'Edit Expenditure Log'}</h3>
+    <form onSubmit={handleSubmit} className="fs-form-container">
+      <div className="fs-form-content">
+        {/* Card 1: Balances & Transaction Basics */}
+        <section className="fs-section-card" aria-labelledby="section-basics-heading">
+          <h3 id="section-basics-heading" className="fs-section-title">
+            Balances & Basics
+          </h3>
 
-      {/* Current/Target Balances Display */}
-      <div className="current-balances">
-        <div className="balance-item">
-          <span>Bank</span>
-          <strong style={{ color: newBank >= 0 ? 'green' : 'red' }}>
-            {formatCurrency(newBank)}
-          </strong>
-        </div>
-        <div className="balance-item">
-          <span>Cash</span>
-          <strong style={{ color: newCash >= 0 ? 'green' : 'red' }}>
-            {formatCurrency(newCash)}
-          </strong>
-        </div>
-        <div className="balance-item">
-          <span>Prepaid</span>
-          <strong style={{ color: newPrepaid >= 0 ? 'green' : 'red' }}>
-            {formatCurrency(newPrepaid)}
-          </strong>
-        </div>
-      </div>
-
-      <hr className="form-divider" />
-
-      {/* Currency and Transaction Type Side by Side */}
-      <div className="value-type-row">
-        <div className="form-group">
-          <label htmlFor="expenditure-currency">Currency</label>
-          <select
-            id="expenditure-currency"
-            value={currency}
-            onChange={handleCurrencyChange}
-          >
-            {CURRENCY_OPTIONS.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="transaction-type">Transaction Type</label>
-          <select
-            id="transaction-type"
-            value={transactionType}
-            onChange={(e) => setTransactionType(e.target.value)}
-            required
-          >
-            <option value="W">Withdraw</option>
-            <option value="T">Top-up</option>
-            <option value="S">Saving</option>
-            <option value="na">Log / Transfer</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Amount Section: Base Currency (EGP) vs Foreign Currency */}
-      {currency === 'EGP' ? (
-        <div className="form-group">
-          <label htmlFor="transaction-value">Transaction Value (EGP)</label>
-          <input
-            id="transaction-value"
-            type="number"
-            step="any"
-            value={transactionValue}
-            onChange={(e) => setTransactionValue(e.target.value)}
-            placeholder="Enter amount in EGP"
-            required
-          />
-        </div>
-      ) : (
-        <>
-          <div className="value-type-row">
-            <div className="form-group">
-              <label htmlFor="foreign-amount">
-                Foreign Amount ({currency})
-              </label>
-              <input
-                id="foreign-amount"
-                type="number"
-                step="any"
-                value={foreignAmount}
-                onChange={handleForeignAmountChange}
-                placeholder={`Enter amount in ${currency}`}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="exchange-rate">
-                Exchange Rate (1 {currency} in EGP)
-              </label>
-              <input
-                id="exchange-rate"
-                type="number"
-                step="any"
-                value={exchangeRate}
-                onChange={handleExchangeRateChange}
-                placeholder="Exchange rate"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Auto-displayed Converted EGP Equivalent Confirmation */}
-          <div className="currency-conversion-card" data-testid="conversion-confirmation-card">
-            <div className="conversion-header">
-              <span className="conversion-label">Converted EGP Equivalent (Confirmation)</span>
-              <span className="rate-badge">
-                1 {currency} = {parseFloat(exchangeRate || 0).toFixed(4)} EGP
-              </span>
-            </div>
-            <div className="conversion-value-row">
-              <span className="foreign-pill">
-                {foreignAmount
-                  ? `${parseFloat(foreignAmount).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })} ${currency}`
-                  : `0.00 ${currency}`}
-              </span>
-              <span className="conversion-arrow">→</span>
-              <strong className="egp-equivalent" data-testid="converted-egp-value">
-                {formatCurrency(convertedEgpValue)}
+          {/* Running Balance Preview Banner */}
+          <div className="fs-balance-preview-card" aria-label="Projected Balances">
+            <div className="fs-balance-item">
+              <span className="fs-balance-label">Bank</span>
+              <strong className={`fs-balance-val fs-num ${newBank < 0 ? 'fs-delta--negative' : ''}`}>
+                {formatCurrency(newBank)}
               </strong>
             </div>
-            <div className="conversion-hint">
-              This transaction will be recorded in your ledger as <strong>{formatCurrency(convertedEgpValue)}</strong>.
+            <div className="fs-balance-item">
+              <span className="fs-balance-label">Cash</span>
+              <strong className={`fs-balance-val fs-num ${newCash < 0 ? 'fs-delta--negative' : ''}`}>
+                {formatCurrency(newCash)}
+              </strong>
             </div>
-          </div>
-        </>
-      )}
-
-      {/* Conditional Options Based on Transaction Type */}
-      {transactionType === 'W' && (
-        <div className="form-group">
-          <label>Withdraw From</label>
-          <select value={withdrawSource} onChange={(e) => setWithdrawSource(e.target.value)}>
-            <option value="Bank">Bank</option>
-            <option value="Cash">Cash</option>
-            <option value="Prepaid">Prepaid</option>
-          </select>
-        </div>
-      )}
-
-      {transactionType === 'T' && (
-        <div className="form-group">
-          <label>Top-up Target</label>
-          <select value={topupTarget} onChange={(e) => setTopupTarget(e.target.value)}>
-            <option value="Bank">Bank</option>
-            <option value="Prepaid">Prepaid</option>
-          </select>
-        </div>
-      )}
-
-      {transactionType === 'na' && (
-        <div className="log-operations" style={{ gap: '2rem', flexWrap: 'wrap' }}>
-          <div className="operation-group">
-            <h4>Bank</h4>
-            <div className="radio-group">
-              <label
-                className={`radio-option ${logBankOp === '+' ? 'selected-plus' : ''}`}
-                title="Deposit to Bank"
-              >
-                <input
-                  type="radio"
-                  name="bankOp"
-                  value="+"
-                  checked={logBankOp === '+'}
-                  onChange={(e) => setLogBankOp(e.target.value)}
-                />
-                <FaPlus />
-              </label>
-              <label
-                className={`radio-option ${logBankOp === '-' ? 'selected-minus' : ''}`}
-                title="Withdraw from Bank"
-              >
-                <input
-                  type="radio"
-                  name="bankOp"
-                  value="-"
-                  checked={logBankOp === '-'}
-                  onChange={(e) => setLogBankOp(e.target.value)}
-                />
-                <FaMinus />
-              </label>
-              <label
-                className={`radio-option ${logBankOp === 'none' ? 'selected-off' : ''}`}
-                title="No change to Bank"
-                style={{ fontSize: '0.85rem', fontWeight: 'bold' }}
-              >
-                <input
-                  type="radio"
-                  name="bankOp"
-                  value="none"
-                  checked={logBankOp === 'none'}
-                  onChange={(e) => setLogBankOp(e.target.value)}
-                />
-                Off
-              </label>
+            <div className="fs-balance-item">
+              <span className="fs-balance-label">Prepaid</span>
+              <strong className={`fs-balance-val fs-num ${newPrepaid < 0 ? 'fs-delta--negative' : ''}`}>
+                {formatCurrency(newPrepaid)}
+              </strong>
             </div>
           </div>
 
-          <div className="operation-group">
-            <h4>Cash</h4>
-            <div className="radio-group">
-              <label
-                className={`radio-option ${logCashOp === '+' ? 'selected-plus' : ''}`}
-                title="Add to Cash"
-              >
-                <input
-                  type="radio"
-                  name="cashOp"
-                  value="+"
-                  checked={logCashOp === '+'}
-                  onChange={(e) => setLogCashOp(e.target.value)}
-                />
-                <FaPlus />
+          {mode === 'edit' && (
+            <div className="edit-mode-notice">
+              <p>
+                <em>Note: In edit mode, the balances shown reflect the target values after this transaction.</em>
+              </p>
+            </div>
+          )}
+
+          {/* Currency and Transaction Type Side by Side */}
+          <div className="fs-grid-2col">
+            <div className="fs-field">
+              <label htmlFor="expenditure-currency" className="fs-field-label">
+                Currency
               </label>
-              <label
-                className={`radio-option ${logCashOp === '-' ? 'selected-minus' : ''}`}
-                title="Subtract from Cash"
+              <select
+                id="expenditure-currency"
+                className="fs-select"
+                value={currency}
+                onChange={handleCurrencyChange}
               >
-                <input
-                  type="radio"
-                  name="cashOp"
-                  value="-"
-                  checked={logCashOp === '-'}
-                  onChange={(e) => setLogCashOp(e.target.value)}
-                />
-                <FaMinus />
+                {CURRENCY_OPTIONS.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="fs-field">
+              <label htmlFor="transaction-type" className="fs-field-label">
+                Transaction Type <span className="fs-req" aria-hidden="true">*</span>
               </label>
-              <label
-                className={`radio-option ${logCashOp === 'none' ? 'selected-off' : ''}`}
-                title="No change to Cash"
-                style={{ fontSize: '0.85rem', fontWeight: 'bold' }}
+              <select
+                id="transaction-type"
+                className="fs-select"
+                value={transactionType}
+                onChange={(e) => setTransactionType(e.target.value)}
+                required
+                aria-required="true"
               >
-                <input
-                  type="radio"
-                  name="cashOp"
-                  value="none"
-                  checked={logCashOp === 'none'}
-                  onChange={(e) => setLogCashOp(e.target.value)}
-                />
-                Off
-              </label>
+                <option value="W">Withdraw</option>
+                <option value="T">Top-up</option>
+                <option value="S">Saving</option>
+                <option value="na">Log / Transfer</option>
+              </select>
             </div>
           </div>
 
-          <div className="operation-group">
-            <h4>Prepaid</h4>
-            <div className="radio-group">
-              <label
-                className={`radio-option ${logPrepaidOp === '+' ? 'selected-plus' : ''}`}
-                title="Add to Prepaid"
-              >
-                <input
-                  type="radio"
-                  name="prepaidOp"
-                  value="+"
-                  checked={logPrepaidOp === '+'}
-                  onChange={(e) => setLogPrepaidOp(e.target.value)}
-                />
-                <FaPlus />
+          {/* Amount Section: Base Currency (EGP) vs Foreign Currency */}
+          {currency === 'EGP' ? (
+            <div className="fs-field">
+              <label htmlFor="transaction-value" className="fs-field-label">
+                Transaction Value (EGP) <span className="fs-req" aria-hidden="true">*</span>
               </label>
-              <label
-                className={`radio-option ${logPrepaidOp === '-' ? 'selected-minus' : ''}`}
-                title="Subtract from Prepaid"
-              >
-                <input
-                  type="radio"
-                  name="prepaidOp"
-                  value="-"
-                  checked={logPrepaidOp === '-'}
-                  onChange={(e) => setLogPrepaidOp(e.target.value)}
-                />
-                <FaMinus />
-              </label>
-              <label
-                className={`radio-option ${logPrepaidOp === 'none' ? 'selected-off' : ''}`}
-                title="No change to Prepaid"
-                style={{ fontSize: '0.85rem', fontWeight: 'bold' }}
-              >
-                <input
-                  type="radio"
-                  name="prepaidOp"
-                  value="none"
-                  checked={logPrepaidOp === 'none'}
-                  onChange={(e) => setLogPrepaidOp(e.target.value)}
-                />
-                Off
-              </label>
+              <input
+                id="transaction-value"
+                className="fs-input"
+                type="number"
+                step="any"
+                value={transactionValue}
+                onChange={(e) => setTransactionValue(e.target.value)}
+                placeholder="Enter amount in EGP"
+                required
+                aria-required="true"
+              />
             </div>
-          </div>
-        </div>
-      )}
-
-      {mode === 'edit' && (
-        <div className="edit-mode-notice">
-          <p>
-            <em>Note: In edit mode, the balances shown reflect the target values after this transaction.</em>
-          </p>
-        </div>
-      )}
-
-      <hr className="form-divider" />
-
-      {/* Date */}
-      <div className="form-group">
-        <label>Date</label>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-      </div>
-
-      {/* Description & Auto-categorization Suggestion */}
-      <div className="form-group">
-        <label>Description (Optional Details)</label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows="2"
-          placeholder="e.g. Amazon order, Netflix subscription, supermarket receipt..."
-        ></textarea>
-
-        {suggestedCategory && !isSplit && (
-          <div className="auto-rule-pill">
-            <span>
-              <FaMagic style={{ marginRight: '0.4rem', color: '#2563eb' }} />
-              Auto-categorized as <strong>{suggestedCategory.category}</strong> via rule "{suggestedCategory.ruleName}"
-            </span>
-            <button
-              type="button"
-              className="btn-apply-rule"
-              onClick={() => setCategories([suggestedCategory.category])}
-            >
-              Apply Category
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Split Transaction Toggle */}
-      <div className="split-toggle-container">
-        <label className="split-toggle-label">
-          <input
-            type="checkbox"
-            checked={isSplit}
-            onChange={(e) => {
-              setIsSplit(e.target.checked);
-              if (e.target.checked && splits.length === 0) {
-                handleAddSplitRow();
-              }
-            }}
-          />
-          <span>Split across multiple categories</span>
-        </label>
-        {isSplit && (
-          <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-            Allocated: {formatCurrency(totalSplitAmount)} / {formatCurrency(numericTxValue)}
-          </span>
-        )}
-      </div>
-
-      {/* If Split Enabled: Dynamic Splits Table */}
-      {isSplit ? (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <table className="split-table">
-            <thead>
-              <tr>
-                <th style={{ width: '40%' }}>Category</th>
-                <th style={{ width: '25%' }}>Amount (EGP)</th>
-                <th style={{ width: '25%' }}>Note</th>
-                <th style={{ width: '10%' }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {splits.map((split, index) => (
-                <tr key={index}>
-                  <td>
-                    <select
-                      className="split-input"
-                      value={split.category}
-                      onChange={(e) => handleSplitChange(index, 'category', e.target.value)}
-                    >
-                      {EXPENDITURE_CATEGORIES.map((c) => (
-                        <option key={c.name} value={c.name}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      step="any"
-                      className="split-input"
-                      placeholder="Amount"
-                      value={split.amount}
-                      onChange={(e) => handleSplitChange(index, 'amount', e.target.value)}
-                      required
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="split-input"
-                      placeholder="Note"
-                      value={split.description}
-                      onChange={(e) => handleSplitChange(index, 'description', e.target.value)}
-                    />
-                  </td>
-                  <td style={{ textAlign: 'center' }}>
-                    {splits.length > 1 && (
-                      <button
-                        type="button"
-                        className="rule-action-btn delete"
-                        onClick={() => handleRemoveSplitRow(index)}
-                      >
-                        <FaTrash />
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}
-              onClick={handleAddSplitRow}
-            >
-              <FaPlus /> Add Split Row
-            </button>
-
-            <div
-              className={`split-balance-bar ${isBalanced ? 'balanced' : 'unbalanced'}`}
-              style={{ margin: 0 }}
-            >
-              {isBalanced ? (
-                <span>✓ Splits balanced with transaction value ({formatCurrency(numericTxValue)})</span>
-              ) : (
-                <span>
-                  ⚠ Remaining to allocate: <strong>{formatCurrency(Math.abs(splitDifference))}</strong>{' '}
-                  ({splitDifference > 0 ? 'under' : 'over'})
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* If Single Category: Categories Multi-Tag Picker */
-        <div className="form-group">
-          <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: '600' }}>
-            Categories (Select all that apply)
-          </label>
-          <div className="category-tags-container">
-            {EXPENDITURE_CATEGORIES.map((cat) => {
-              const isChecked = categories.includes(cat.name);
-              return (
-                <div
-                  key={cat.name}
-                  className={`category-tag-checkbox ${isChecked ? 'checked' : ''}`}
-                  style={{
-                    borderColor: cat.color,
-                    backgroundColor: isChecked ? cat.color : 'transparent',
-                    color: isChecked ? 'white' : cat.color,
-                  }}
-                  onClick={() => {
-                    setCategories((prev) => {
-                      let next;
-                      if (prev.includes(cat.name)) {
-                        next = prev.filter((c) => c !== cat.name);
-                        if (next.length === 0) next = ['Other'];
-                      } else {
-                        next = [...prev.filter((c) => c !== 'Other'), cat.name];
-                      }
-                      return next;
-                    });
-                  }}
-                >
-                  {cat.name}
+          ) : (
+            <>
+              <div className="fs-grid-2col">
+                <div className="fs-field">
+                  <label htmlFor="foreign-amount" className="fs-field-label">
+                    Foreign Amount ({currency}) <span className="fs-req" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="foreign-amount"
+                    className="fs-input"
+                    type="number"
+                    step="any"
+                    value={foreignAmount}
+                    onChange={handleForeignAmountChange}
+                    placeholder={`Enter amount in ${currency}`}
+                    required
+                    aria-required="true"
+                  />
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
-      <button type="submit" className="submit-button" style={{ marginTop: '1.5rem' }}>
-        {mode === 'create' ? 'Create New Log' : 'Save Changes'}
-      </button>
+                <div className="fs-field">
+                  <label htmlFor="exchange-rate" className="fs-field-label">
+                    Exchange Rate (1 {currency} in EGP) <span className="fs-req" aria-hidden="true">*</span>
+                  </label>
+                  <input
+                    id="exchange-rate"
+                    className="fs-input"
+                    type="number"
+                    step="any"
+                    value={exchangeRate}
+                    onChange={handleExchangeRateChange}
+                    placeholder="Exchange rate"
+                    required
+                    aria-required="true"
+                  />
+                </div>
+              </div>
+
+              {/* Auto-displayed Converted EGP Equivalent Confirmation */}
+              <div className="currency-conversion-card" data-testid="conversion-confirmation-card">
+                <div className="conversion-header">
+                  <span className="conversion-label">Converted EGP Equivalent (Confirmation)</span>
+                  <span className="rate-badge">
+                    1 {currency} = {parseFloat(exchangeRate || 0).toFixed(4)} EGP
+                  </span>
+                </div>
+                <div className="conversion-value-row">
+                  <span className="foreign-pill">
+                    {foreignAmount
+                      ? `${parseFloat(foreignAmount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })} ${currency}`
+                      : `0.00 ${currency}`}
+                  </span>
+                  <span className="conversion-arrow">→</span>
+                  <strong className="egp-equivalent" data-testid="converted-egp-value">
+                    {formatCurrency(convertedEgpValue)}
+                  </strong>
+                </div>
+                <div className="conversion-hint">
+                  This transaction will be recorded in your ledger as <strong>{formatCurrency(convertedEgpValue)}</strong>.
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Conditional Options Based on Transaction Type */}
+          {transactionType === 'W' && (
+            <div className="fs-field">
+              <label htmlFor="withdraw-source" className="fs-field-label">
+                Withdraw From
+              </label>
+              <select
+                id="withdraw-source"
+                className="fs-select"
+                value={withdrawSource}
+                onChange={(e) => setWithdrawSource(e.target.value)}
+              >
+                <option value="Bank">Bank</option>
+                <option value="Cash">Cash</option>
+                <option value="Prepaid">Prepaid</option>
+              </select>
+            </div>
+          )}
+
+          {transactionType === 'T' && (
+            <div className="fs-field">
+              <label htmlFor="topup-target" className="fs-field-label">
+                Top-up Target
+              </label>
+              <select
+                id="topup-target"
+                className="fs-select"
+                value={topupTarget}
+                onChange={(e) => setTopupTarget(e.target.value)}
+              >
+                <option value="Bank">Bank</option>
+                <option value="Prepaid">Prepaid</option>
+              </select>
+            </div>
+          )}
+
+          {transactionType === 'na' && (
+            <div className="log-operations">
+              <div className="operation-group">
+                <h4>Bank</h4>
+                <div className="radio-group" role="radiogroup" aria-label="Bank operation">
+                  <label
+                    className={`radio-option ${logBankOp === '+' ? 'selected-plus' : ''}`}
+                    title="Deposit to Bank"
+                  >
+                    <input
+                      type="radio"
+                      name="bankOp"
+                      value="+"
+                      checked={logBankOp === '+'}
+                      onChange={(e) => setLogBankOp(e.target.value)}
+                      aria-label="Deposit to Bank"
+                    />
+                    <FaPlus />
+                  </label>
+                  <label
+                    className={`radio-option ${logBankOp === '-' ? 'selected-minus' : ''}`}
+                    title="Withdraw from Bank"
+                  >
+                    <input
+                      type="radio"
+                      name="bankOp"
+                      value="-"
+                      checked={logBankOp === '-'}
+                      onChange={(e) => setLogBankOp(e.target.value)}
+                      aria-label="Withdraw from Bank"
+                    />
+                    <FaMinus />
+                  </label>
+                  <label
+                    className={`radio-option option-off ${logBankOp === 'none' ? 'selected-off' : ''}`}
+                    title="No change to Bank"
+                  >
+                    <input
+                      type="radio"
+                      name="bankOp"
+                      value="none"
+                      checked={logBankOp === 'none'}
+                      onChange={(e) => setLogBankOp(e.target.value)}
+                      aria-label="No change to Bank"
+                    />
+                    Off
+                  </label>
+                </div>
+              </div>
+
+              <div className="operation-group">
+                <h4>Cash</h4>
+                <div className="radio-group" role="radiogroup" aria-label="Cash operation">
+                  <label
+                    className={`radio-option ${logCashOp === '+' ? 'selected-plus' : ''}`}
+                    title="Add to Cash"
+                  >
+                    <input
+                      type="radio"
+                      name="cashOp"
+                      value="+"
+                      checked={logCashOp === '+'}
+                      onChange={(e) => setLogCashOp(e.target.value)}
+                      aria-label="Add to Cash"
+                    />
+                    <FaPlus />
+                  </label>
+                  <label
+                    className={`radio-option ${logCashOp === '-' ? 'selected-minus' : ''}`}
+                    title="Subtract from Cash"
+                  >
+                    <input
+                      type="radio"
+                      name="cashOp"
+                      value="-"
+                      checked={logCashOp === '-'}
+                      onChange={(e) => setLogCashOp(e.target.value)}
+                      aria-label="Subtract from Cash"
+                    />
+                    <FaMinus />
+                  </label>
+                  <label
+                    className={`radio-option option-off ${logCashOp === 'none' ? 'selected-off' : ''}`}
+                    title="No change to Cash"
+                  >
+                    <input
+                      type="radio"
+                      name="cashOp"
+                      value="none"
+                      checked={logCashOp === 'none'}
+                      onChange={(e) => setLogCashOp(e.target.value)}
+                      aria-label="No change to Cash"
+                    />
+                    Off
+                  </label>
+                </div>
+              </div>
+
+              <div className="operation-group">
+                <h4>Prepaid</h4>
+                <div className="radio-group" role="radiogroup" aria-label="Prepaid operation">
+                  <label
+                    className={`radio-option ${logPrepaidOp === '+' ? 'selected-plus' : ''}`}
+                    title="Add to Prepaid"
+                  >
+                    <input
+                      type="radio"
+                      name="prepaidOp"
+                      value="+"
+                      checked={logPrepaidOp === '+'}
+                      onChange={(e) => setLogPrepaidOp(e.target.value)}
+                      aria-label="Add to Prepaid"
+                    />
+                    <FaPlus />
+                  </label>
+                  <label
+                    className={`radio-option ${logPrepaidOp === '-' ? 'selected-minus' : ''}`}
+                    title="Subtract from Prepaid"
+                  >
+                    <input
+                      type="radio"
+                      name="prepaidOp"
+                      value="-"
+                      checked={logPrepaidOp === '-'}
+                      onChange={(e) => setLogPrepaidOp(e.target.value)}
+                      aria-label="Subtract from Prepaid"
+                    />
+                    <FaMinus />
+                  </label>
+                  <label
+                    className={`radio-option option-off ${logPrepaidOp === 'none' ? 'selected-off' : ''}`}
+                    title="No change to Prepaid"
+                  >
+                    <input
+                      type="radio"
+                      name="prepaidOp"
+                      value="none"
+                      checked={logPrepaidOp === 'none'}
+                      onChange={(e) => setLogPrepaidOp(e.target.value)}
+                      aria-label="No change to Prepaid"
+                    />
+                    Off
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Card 2: Transaction Details & Categorization */}
+        <section className="fs-section-card" aria-labelledby="section-details-heading">
+          <h3 id="section-details-heading" className="fs-section-title">
+            Details & Categorization
+          </h3>
+
+          {/* Date */}
+          <div className="fs-field">
+            <label htmlFor="expenditure-date" className="fs-field-label">
+              Date <span className="fs-req" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="expenditure-date"
+              className="fs-input"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              aria-required="true"
+            />
+          </div>
+
+          {/* Description & Auto-categorization Suggestion */}
+          <div className="fs-field">
+            <label htmlFor="expenditure-description" className="fs-field-label">
+              Description (Optional Details)
+            </label>
+            <textarea
+              id="expenditure-description"
+              className="fs-textarea"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows="2"
+              placeholder="e.g. Amazon order, Netflix subscription, supermarket receipt..."
+            />
+
+            {suggestedCategory && !isSplit && (
+              <div className="fs-rule-pill">
+                <span>
+                  <FaMagic className="fs-rule-icon" />
+                  Auto-categorized as <strong>{suggestedCategory.category}</strong> via rule "{suggestedCategory.ruleName}"
+                </span>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setCategories([suggestedCategory.category])}
+                >
+                  Apply Category
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Split Transaction Toggle */}
+          <div className="split-toggle-container">
+            <label className="split-toggle-label">
+              <input
+                type="checkbox"
+                checked={isSplit}
+                onChange={(e) => {
+                  setIsSplit(e.target.checked);
+                  if (e.target.checked && splits.length === 0) {
+                    handleAddSplitRow();
+                  }
+                }}
+              />
+              <span>Split across multiple categories</span>
+            </label>
+            {isSplit && (
+              <span className="fs-split-allocated-text">
+                Allocated: {formatCurrency(totalSplitAmount)} / {formatCurrency(numericTxValue)}
+              </span>
+            )}
+          </div>
+
+          {/* If Split Enabled: Dynamic Splits Table */}
+          {isSplit ? (
+            <div className="fs-split-table-wrapper">
+              <table className="fs-split-table">
+                <thead>
+                  <tr>
+                    <th className="col-split-category">Category</th>
+                    <th className="col-split-amount">Amount (EGP)</th>
+                    <th className="col-split-note">Note</th>
+                    <th className="col-split-action"><span className="fs-sr-only">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {splits.map((split, index) => (
+                    <tr key={index}>
+                      <td className="col-split-category">
+                        <select
+                          className="fs-select"
+                          aria-label="Split category"
+                          value={split.category}
+                          onChange={(e) => handleSplitChange(index, 'category', e.target.value)}
+                        >
+                          {EXPENDITURE_CATEGORIES.map((c) => (
+                            <option key={c.name} value={c.name}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="col-split-amount">
+                        <input
+                          type="number"
+                          step="any"
+                          className="fs-input"
+                          aria-label="Split amount"
+                          placeholder="Amount"
+                          value={split.amount}
+                          onChange={(e) => handleSplitChange(index, 'amount', e.target.value)}
+                          required
+                          aria-required="true"
+                        />
+                      </td>
+                      <td className="col-split-note">
+                        <input
+                          type="text"
+                          className="fs-input"
+                          aria-label="Split note"
+                          placeholder="Note"
+                          value={split.description}
+                          onChange={(e) => handleSplitChange(index, 'description', e.target.value)}
+                        />
+                      </td>
+                      <td className="col-split-action">
+                        {splits.length > 1 && (
+                          <button
+                            type="button"
+                            aria-label="Remove split row"
+                            onClick={() => handleRemoveSplitRow(index)}
+                          >
+                            <FaTrash />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="fs-split-actions-bar">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  icon={<FaPlus />}
+                  onClick={handleAddSplitRow}
+                >
+                  Add Split Row
+                </Button>
+
+                <div
+                  className={`fs-split-balance-bar ${isBalanced ? 'balanced' : 'unbalanced'}`}
+                >
+                  {isBalanced ? (
+                    <span>✓ Splits balanced with transaction value ({formatCurrency(numericTxValue)})</span>
+                  ) : (
+                    <span>
+                      <Badge tone="warning">Allocation</Badge>{' '}
+                      Remaining to allocate: <strong>{formatCurrency(Math.abs(splitDifference))}</strong>{' '}
+                      ({splitDifference > 0 ? 'under' : 'over'})
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* If Single Category: Categories Multi-Tag Picker */
+            <div className="fs-field">
+              <span id="category-picker-label" className="fs-field-label">
+                Category
+              </span>
+              <div
+                className="fs-category-chips-grid"
+                role="radiogroup"
+                aria-labelledby="category-picker-label"
+              >
+                {EXPENDITURE_CATEGORIES.map((cat, index) => {
+                  const isSelected = categories.includes(cat.name);
+                  const hasSelection = EXPENDITURE_CATEGORIES.some((c) => categories.includes(c.name));
+                  return (
+                    <button
+                      key={cat.name}
+                      ref={(el) => {
+                        categoryChipsRef.current[index] = el;
+                      }}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      tabIndex={isSelected || (!hasSelection && index === 0) ? 0 : -1}
+                      className={`filter-chip ${isSelected ? 'active' : ''}`}
+                      onClick={() => setCategories([cat.name])}
+                      onKeyDown={(e) => handleCategoryKeyDown(e, index)}
+                    >
+                      {cat.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Footer Actions */}
+        <div className="fs-form-footer">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onCancel || (() => { if (typeof window !== 'undefined' && window.location) { window.location.href = '/expenditures'; } })}
+          >
+            Cancel
+          </Button>
+          <ProtectedAction tooltip="View-only access">
+            <Button type="submit" variant="primary">
+              {mode === 'create' ? 'Create New Log' : 'Save Changes'}
+            </Button>
+          </ProtectedAction>
+        </div>
+      </div>
     </form>
   );
 };
