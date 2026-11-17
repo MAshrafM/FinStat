@@ -854,7 +854,7 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | `/expenditures/rules` | `pages/expenditure/RulesPage` | 4C | ☐ | ☐ | 10 inline styles |
 | `/expenditures/budgets` | `pages/expenditure/BudgetsPage` | 4C | ☐ | ☐ | 53 inline styles |
 | `/expenditures/recurring` | `pages/expenditure/RecurringSuggestionsPage` | 4C | ☐ | ☐ | 21 inline styles |
-| `/expenditures/bills` | `pages/expenditure/RecurringBills` | 4C | ☐ | ☐ | 18 inline styles; upcoming bills calendar |
+| `/expenditures/bills` | `pages/expenditure/RecurringBills` | 4C | ☐ | ☐ | 1 inline style (18 in initial audit); upcoming bills calendar |
 | `/expenditure-analysis` | `pages/expenditure/ExpenditureAnalysisPage` | 4C | ☐ | ☐ | 32 inline styles; chart |
 
 **Phase 4 count: 8.**

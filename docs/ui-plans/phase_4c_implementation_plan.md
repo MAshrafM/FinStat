@@ -1,4 +1,4 @@
-# Implementation Plan — UI Phase 4C: Expenditure Cluster Completion (v2 — Revised)
+# Implementation Plan — UI Phase 4C: Expenditure Cluster Completion (v3 — Finalized)
 
 > **Sub-phase**: UI Phase 4C  
 > **Target Routes**:  
@@ -7,8 +7,12 @@
 > 3. `/expenditures/recurring` (`RecurringSuggestionsPage.js`)  
 > 4. `/expenditures/bills` (`RecurringBills.js`)  
 > 5. `/expenditure-analysis` (`ExpenditureAnalysisPage.js`)  
-> **Status**: Ready for Review (v2 — Revised)  
-> **Precondition**: UI Phase 4B merged to `main` at commit `9e49604` (verified: `git log --oneline -1 main` contains `9e49604`)  
+> **Status**: Ready for Execution (v3 — Finalized)  
+> **Precondition**: UI Phase 4B merged to `main` at commit `9e49604`  
+> - Verified via `git log --oneline -1 main`:  
+>   `9cbd875 docs(ui): revise Phase 4C implementation plan to v2 addressing HB-1..HB-4 and RC-1..RC-12`  
+> - Verified via `git branch --contains 9e49604`:  
+>   `* main`  
 
 ---
 
@@ -22,8 +26,13 @@ UI Phase 4C is the concluding sub-phase of **Phase 4: Expenditure Ledger & Analy
 5. **Spending Analysis** (`/expenditure-analysis`): Themed multi-series monthly comparison bar chart, accessible ranked horizontal category bar charts capped at 6 series with "Other" (§4.12, G2), data-table alternatives, and KPI tiles.
 
 ### Objectives:
-- **Allowlist Expansion**: Add all 5 routes to `THEMED_PATTERNS` in `ProtectedRoute.js`, bringing cumulative allowlist coverage to **9 routes** (all 7 Expenditure routes now fully themed).
-- **Inline Style Elimination**: Eliminate all **117 legacy inline styles** across the 5 files (`BudgetsPage.js`: 53, `ExpenditureAnalysisPage.js`: 32, `RecurringSuggestionsPage.js`: 21, `RulesPage.js`: 10, `RecurringBills.js`: 1).
+- **Allowlist Expansion**: Add all 5 routes to `THEMED_PATTERNS` in `ProtectedRoute.js`, bringing cumulative allowlist coverage to **9 routes** (all **8** Expenditure routes now fully themed: `/expenditures`, `/expenditures/new`, `/expenditures/edit/:id`, `/expenditures/rules`, `/expenditures/budgets`, `/expenditures/recurring`, `/expenditures/bills`, `/expenditure-analysis`).
+- **Inline Style Elimination**: Eliminate all **117 legacy inline styles** across the 5 files:
+  - `BudgetsPage.js`: 53
+  - `ExpenditureAnalysisPage.js`: 32
+  - `RecurringSuggestionsPage.js`: 21
+  - `RulesPage.js`: 10
+  - `RecurringBills.js`: 1 (Line 320: `<td style={{ textTransform: 'capitalize' }}>{bill.frequency}</td>`; historical "18" in Action Plan §5.3 updated to reflect post-7C.1b extraction).
 - **ESLint Hygiene**: Remove all 4 remaining expenditure files from `frontend/.eslintignore` (`BudgetsPage.js`, `ExpenditureAnalysisPage.js`, `RecurringSuggestionsPage.js`, `RulesPage.js`), achieving zero ignored files in the expenditure domain.
 - **Design System Conformance**:
   - All pages wrapped in `.fs-page` shell with `<PageHeader>`, `<ExpenditureSubNav />`, and `<Loading>` primitives.
@@ -32,16 +41,17 @@ UI Phase 4C is the concluding sub-phase of **Phase 4: Expenditure Ledger & Analy
   - Dark graphite surfaces (`#101114` canvas, `#1a1c20` surfaces, `#22252a` raised panels, `#34383f` borders).
   - Interactive accent teal (`#14b8a6`) reserved exclusively for interactive controls with `#101114` ink text (never white).
 - **Chart Modernization & Accessibility (§4.12, G2)**:
-  - Migrate all 4 charts on `ExpenditureAnalysisPage.js` to `chartTheme.js`:
+  - Migrate all 5 charts on `ExpenditureAnalysisPage.js` to `chartTheme.js`:
     - Volume charts with $\le 4$ segments: `Doughnut` with `doughnutDefaults` and `getChartPalette()`.
     - Category breakdowns with $> 4$ segments: Ranked horizontal bar charts (`indexAxis: 'y'`) capped at 6 series + neutral "Other", accompanied by accessible data table alternatives.
+    - Monthly Volume Comparison bar chart: Styled via `chartTheme.js` palette, preserving dataset names and unit tests.
 - **Budget Threshold Fidelity (§4.3.1)**:
   - Progress meters display neutral fill below 80%, `.fs-progress--warning` at 80–100% (`Warning`), and `.fs-progress--negative` strictly over 100% (`Over budget`, `pct > 100`).
   - Characterization fixtures in `tests/fixtures/calculations/budgets.snapshot.json` remain 100% passing.
 - **ExpenditureSubNav Dual-Mode Retirement**:
-  - Because Phase 4C finishes the Expenditure cluster, all 7 routes now run under `.fs-page`. Retire the legacy unscoped fallback branch in `ExpenditureSubNav.css` and rely on `.fs-page .expenditure-subnav-*` in `theme-components.css` (matching 9B precedent for `CreditCardSubNav.css`).
+  - Because Phase 4C finishes the Expenditure cluster, all 8 routes now run under `.fs-page`. Retire the legacy unscoped fallback branch in `ExpenditureSubNav.css` and rely on `.fs-page .expenditure-subnav-*` in `theme-components.css` (matching 9B precedent for `CreditCardSubNav.css`).
 - **Visual Regression Gate (Invariant I13)**:
-  - 0 diff across all **56 unallowlisted routes**.
+  - 0 diff across all **56 unallowlisted routes** (65 total rendering routes minus 9 allowlisted = 56).
   - Exactly 5 accepted diffs (25 baseline replacement snapshots at `1440px`, `1024px`, `768px`, `480px`, `390px`) verified in `D:\Projects\FinStat-visual-baselines` (manifest 334/334).
 
 ---
@@ -50,7 +60,7 @@ UI Phase 4C is the concluding sub-phase of **Phase 4: Expenditure Ledger & Analy
 
 > [!IMPORTANT]
 > ### 1. Chart Modernization on `/expenditure-analysis` (§4.12 & Decision D14)
-> An audit of `ExpenditureAnalysisPage.js` reveals four charts that currently use raw hex colors:
+> An audit of `ExpenditureAnalysisPage.js` reveals four pie/doughnut charts plus one monthly volume bar chart (five charts total) that currently use raw hex colors:
 > 1. **Overall Volume Breakdown** (line 234, `overallPieChartData`): 3 segments (`Withdrawals`, `Top-ups`, `Savings`). Since $3 \le 4$, this will be rendered as a `Doughnut` using `doughnutDefaults` and `getChartPalette()` from `chartTheme.js`.
 > 2. **Yearly Volume Breakdown** (line 247, `yearlyPieChartData`): 3 segments for the selected year. Converted to `Doughnut` using `doughnutDefaults` and `getChartPalette()`.
 > 3. **Overall Category Breakdown** (line 267, `overallCategoryPieChartData`): 12+ categories ($> 4$ segments). Per §4.12 Series Discipline (G2), this is converted to a **ranked horizontal bar chart** (`indexAxis: 'y'`) capped at top 6 categories + neutral "Other", accompanied by an accessible tabular data alternative.
@@ -58,25 +68,65 @@ UI Phase 4C is the concluding sub-phase of **Phase 4: Expenditure Ledger & Analy
 > 5. **Monthly Volume Comparison** (line 88, `data-testid="bar-chart"`): Preserves all 12 month buckets and dataset names (`Withdrawals`, `Top-ups`, `Savings`), styled via `baseChartOptions` and `getChartPalette().greys` (`grey1`, `grey2`, `grey3`), keeping existing unit tests green.
 
 > [!TIP]
-> ### 2. Sub-Navigation Completion Across All 5 Pages
+> ### 2. Sub-Navigation Completion Across All 8 Expenditure Routes
 > Currently, `RulesPage`, `BudgetsPage`, and `RecurringSuggestionsPage` mount `<ExpenditureSubNav />`.
 > For cluster consistency, `RecurringBills.js` and `ExpenditureAnalysisPage.js` will also mount `<ExpenditureSubNav />` below `<PageHeader>`.
-> With all 7 routes in the cluster converted, the legacy fallback classes in `ExpenditureSubNav.css` are retired, finalizing dual-mode retirement for this cluster.
+> Two tabs pointing to existing routes (`/expenditures/bills` and `/expenditure-analysis`) are added to `ExpenditureSubNav.js`. These point to existing routes already handled in `App.js`, so Invariant I1 (route stability) is fully preserved.
+> With all 8 routes in the cluster converted, the legacy fallback classes in `ExpenditureSubNav.css` are retired, finalizing dual-mode retirement for this cluster.
 
 > [!NOTE]
-> ### 3. Bill Status Threshold Provenance
+> ### 3. Bill Status Threshold Provenance (§4.3.1 Traceability)
 > Audit of `RecurringBills.js` confirms that status thresholds and labels originate directly from the existing application source:
 > - Line 69: `getUpcomingBills({ days: 3 })` defines the 3-day upcoming window.
 > - Lines 210–227 (`getBillStatus`):
->   - `!bill.isActive` $\rightarrow$ `bill-badge-paused` $\rightarrow$ `<Badge tone="neutral" label="Paused">Paused</Badge>`
->   - `diffDays < 0` $\rightarrow$ `bill-badge-overdue` $\rightarrow$ `<Badge tone="negative" label="Overdue">Overdue</Badge>`
->   - `diffDays <= 3` $\rightarrow$ `bill-badge-due-soon` $\rightarrow$ `<Badge tone="warning" label="Due Soon">Due Soon</Badge>`
->   - `diffDays > 3` $\rightarrow$ `bill-badge-active` $\rightarrow$ `<Badge tone="neutral" label="Active">Active</Badge>`
-> These are preserved with 100% fidelity using the `Badge` primitive.
+>   - `!bill.isActive` $\rightarrow$ `bill-badge-paused` $\rightarrow$ `{ tone: 'neutral', label: 'Paused' }`
+>   - `diffDays < 0` $\rightarrow$ `bill-badge-overdue` $\rightarrow$ `{ tone: 'negative', label: 'Overdue' }`
+>   - `diffDays <= 3` $\rightarrow$ `bill-badge-due-soon` $\rightarrow$ `{ tone: 'warning', label: 'Due Soon' }`
+>   - `diffDays > 3` $\rightarrow$ `bill-badge-active` $\rightarrow$ `{ tone: 'neutral', label: 'Active' }`
+> The Overdue/Due Soon escalation mirrors the §4.3.1 pattern for debt and credit-card balances (due soon $\rightarrow$ Warning; overdue $\rightarrow$ Negative). The 3-day window is a per-domain specificity matching the backend query; the escalation logic matches §4.3.1 semantics.
 
 ---
 
 ## 3. Detailed Implementation Steps
+
+### Precondition Verifications (Mandatory Before Opening Branch)
+
+1. **Verify Progress Classes in `theme.css` (RC-A)**:
+   Lines 666–685 of `frontend/src/styles/theme.css` contain:
+   ```css
+   .fs-progress { ... }
+   .fs-progress-bar { ... }
+   .fs-progress--warning .fs-progress-bar { background: var(--fs-warning); }
+   .fs-progress--negative .fs-progress-bar { background: var(--fs-negative); }
+   ```
+   Both base and modifier classes are pre-existing from Phase 2E.
+
+2. **Verify `.eslintignore` Pre-Condition State (HB-B)**:
+   Command:
+   ```powershell
+   git grep -in "expenditure" frontend/.eslintignore
+   ```
+   Verified Output:
+   ```
+   frontend/.eslintignore:51:src/pages/expenditure/BudgetsPage.js
+   frontend/.eslintignore:52:src/pages/expenditure/ExpenditureAnalysisPage.js
+   frontend/.eslintignore:53:src/pages/expenditure/RecurringSuggestionsPage.js
+   frontend/.eslintignore:54:src/pages/expenditure/RulesPage.js
+   ```
+   *Note*: The 4B walkthrough ran `git grep -n "Expenditure"` with a capital "E", which matched only `ExpenditureAnalysisPage.js` due to case sensitivity. All 4 files above are verified present. `RecurringBills.js` is not in `.eslintignore` (it was never ignored).  
+   > [!IMPORTANT]
+   > If the grep output does not match the 4 expected entries above, HALT and investigate before opening the branch.
+
+3. **Verify Baseline Snapshot Pre-Existence in `D:\Projects\FinStat-visual-baselines` (RC-E)**:
+   All 25 snapshots (5 routes $\times$ 5 viewports) pre-exist:
+   - `expenditures-rules-{1440,1024,768,480,390}.png`
+   - `expenditures-budgets-{1440,1024,768,480,390}.png`
+   - `expenditures-recurring-{1440,1024,768,480,390}.png`
+   - `expenditures-bills-{1440,1024,768,480,390}.png`
+   - `expenditure-analysis-{1440,1024,768,480,390}.png`  
+   All 25 will be in-place replacements. Net baseline manifest count remains **334/334**.
+
+---
 
 ### 3.1 Route Allowlist (`frontend/src/components/ProtectedRoute.js`)
 
@@ -108,7 +158,7 @@ Update `ProtectedRoute.test.js` to assert `true` for all 9 routes and `false` fo
 - Replace custom header with `<PageHeader title="Auto-Categorization Rules" subtitle="Automate transaction category tagging with priority-based pattern matching" />`.
 - Mount `<ExpenditureSubNav />`.
 - Replace raw spinners with `<Loading variant="card" text="Loading categorization rules..." />`.
-- Eliminate all 10 inline styles (button flex, condition spacing, priority badges, modal inputs).
+- Eliminate all 10 inline styles.
 - Wrap create, edit, delete, and test triggers with `<ProtectedAction tooltip="View-only access">` (Invariant I4).
 - Use `Button` primitive for action controls (`variant="primary"`, `variant="secondary"`).
 - Style priority indicators using `<Badge tone="neutral" label={`Priority ${rule.priority}`}>`.
@@ -118,7 +168,7 @@ Update `ProtectedRoute.test.js` to assert `true` for all 9 routes and `false` fo
 - De-escalate button gradients to FinStat tokens (`--fs-accent` with `--fs-ink`, `--fs-surface-raised` with `--fs-border`).
 - Convert rule cards to `--fs-surface` (`#1a1c20`) with 1px border `--fs-border` (`#34383f`) and 6px radius (`--fs-radius-md`).
 - Active rule toggle indicator styled with `--fs-accent`.
-- Replace raw hex colors (`#111827`, `#6b7280`, `#3b82f6`) with token variables (`--fs-text`, `--fs-text-2`, `--fs-text-3`). Zero tone tokens in page CSS.
+- Replace raw hex colors with token variables (`--fs-text`, `--fs-text-2`, `--fs-text-3`). Zero tone tokens in page CSS.
 
 ---
 
@@ -130,7 +180,7 @@ Update `ProtectedRoute.test.js` to assert `true` for all 9 routes and `false` fo
 - Mount `<ExpenditureSubNav />`.
 - Replace loading text with `<Loading variant="table" text="Calculating budget progress..." />`.
 - Eliminate all 53 inline styles.
-- **Budget Threshold Implementation (§4.3.1)**:
+- **Budget Threshold Implementation (§4.3.1 — HB-2 fix)**:
   ```jsx
   // Calculate tone modifier class per §4.3.1 source fidelity (pct > 100)
   const getProgressModifier = (pct) => {
@@ -139,7 +189,7 @@ Update `ProtectedRoute.test.js` to assert `true` for all 9 routes and `false` fo
     return ''; // neutral under 80%
   };
   ```
-- Render progress track and bar:
+- Render progress track and bar (RC-F & RC-9):
   ```jsx
   <div
     className={`fs-progress ${getProgressModifier(bp.percentageUsed)}`}
@@ -221,17 +271,17 @@ Update `ProtectedRoute.test.js` to assert `true` for all 9 routes and `false` fo
 ### 3.5 Recurring Bills & Schedules (`RecurringBills.js` & `RecurringBills.css`)
 
 #### [MODIFY] `frontend/src/pages/expenditure/RecurringBills.js`
-- Outer element: `<div className="fs-page recurring-bills-container" data-testid="recurring-bills-page">`.
+- Outer element: `<div className="fs-page recurring-bills-container" data-testid="recurring-bills-page">` (`data-testid="recurring-bills-page"` pre-exists on line 230 and is preserved per I5 — RC-H).
 - Header: `<PageHeader title="Recurring Bills & Schedules" subtitle="Track subscriptions, utilities, and scheduled payments with automatic due-date roll-forward" />`.
 - Mount `<ExpenditureSubNav />`.
 - Replace spinners with `<Loading variant="table" text="Loading bills and schedules..." />`.
-- Eliminate inline styles.
-- **Status Chips with `Badge` Primitive (HB-3 & RC-3 fix)**:
-  Update `getBillStatus` to return semantic props for `Badge`:
+- Eliminate the 1 inline style on line 320 (`textTransform: 'capitalize'`).
+- **Status Chips with `Badge` Primitive (HB-3, RC-3 & RC-D fix)**:
+  Rewrite `getBillStatus` to return semantic props `{ tone, label }`:
   ```jsx
-  const getBillStatusBadge = (bill) => {
+  const getBillStatus = (bill) => {
     if (!bill.isActive) {
-      return <Badge tone="neutral" label="Paused">Paused</Badge>;
+      return { tone: 'neutral', label: 'Paused' };
     }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -240,13 +290,20 @@ Update `ProtectedRoute.test.js` to assert `true` for all 9 routes and `false` fo
     const diffDays = Math.round((dueDate - today) / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
-      return <Badge tone="negative" label="Overdue">Overdue</Badge>;
+      return { tone: 'negative', label: 'Overdue' };
     }
     if (diffDays <= 3) {
-      return <Badge tone="warning" label="Due Soon">Due Soon</Badge>;
+      return { tone: 'warning', label: 'Due Soon' };
     }
-    return <Badge tone="neutral" label="Active">Active</Badge>;
+    return { tone: 'neutral', label: 'Active' };
   };
+  ```
+  In JSX:
+  ```jsx
+  const status = getBillStatus(bill);
+  <Badge tone={status.tone} label={status.label}>
+    {status.label}
+  </Badge>
   ```
 - **Mobile Responsive Pattern (Decision D19)**:
   - Desktop: Dense bills table with tabular amounts.
@@ -297,13 +354,14 @@ Update `ProtectedRoute.test.js` to assert `true` for all 9 routes and `false` fo
 ### 3.7 ExpenditureSubNav Dual-Mode Retirement (`ExpenditureSubNav.css` & `ExpenditureSubNav.js`)
 
 #### [MODIFY] `frontend/src/pages/expenditure/ExpenditureSubNav.js`
-- Add missing tabs so all 7 cluster routes are reachable from the sub-nav:
+- Add missing tabs so all 8 cluster routes are reachable from the sub-nav:
   - `/expenditures/bills` ("Bills & Schedules", short: "Bills")
   - `/expenditure-analysis` ("Spending Analysis", short: "Analysis")
 - Retain `active` detection based on `location.pathname`.
+- Both new tabs point to existing routes in `App.js`; no route is added or changed (Invariant I1 preserved — RC-G).
 
 #### [MODIFY] `frontend/src/pages/expenditure/ExpenditureSubNav.css`
-- Retire the legacy unscoped `.expenditure-subnav-*` rules now that all 7 expenditure routes are allowlisted under `.fs-page` (RC-4 fix).
+- Retire the legacy unscoped `.expenditure-subnav-*` rules now that all 8 expenditure routes are allowlisted under `.fs-page` (RC-4 fix).
 - Sub-nav styling is fully handled by `.fs-page .expenditure-subnav-*` in `theme-components.css`.
 
 ---
@@ -392,21 +450,43 @@ node frontend/scripts/verify-baseline-manifest.js
 
 ---
 
-## 5. Invariant Checklist (Action Plan §2 Verbatim)
+## 5. Invariant Compliance Checklist (Action Plan §2 Verbatim)
 
-- [ ] **I1: Route stability**: Production routes and URLs unchanged — 75 entries (74 protected + `*`), 10 redirects.
-- [ ] **I2: DTO & API contract stability**: No API call, payload shape, or service file changed. Presentation layer only.
-- [ ] **I3: Characterization test stability**: No calculation changed on any page; calculation tests pass identical inputs to identical outputs.
-- [ ] **I4: Allowlist gate integrity**: Auth, roles, ProtectedAction, and useCanModify gating unchanged. Viewers cannot mutate.
-- [ ] **I5: Test-ID & ARIA preservation**: Test IDs, data-* attributes, and accessible labels preserved.
-- [ ] **I6: Mobile responsive pattern (D19)**: Tables collapse into compact-expand cards $\le 768\text{px}$; no horizontal scroll.
-- [ ] **I7: Mid-migration continuity**: No page loses functionality mid-migration. Unallowlisted pages render legacy views intact.
-- [ ] **I8: Coordinator line cap (N/A)**: Preserved for DashboardSummary.js ($\le 120$ lines; not touched in this phase).
-- [ ] **I9: Production build pass**: Production build passes with zero errors and no new warnings.
-- [ ] **I10: CRA suite stability**: `npm test -- --watchAll=false` passes for touched modules and the app route suite.
-- [ ] **I11: Bundle-size ratchet**: Bundle size within budget; no new font weight loaded; zero new runtime dependencies.
-- [ ] **I12: Reference-frame fidelity**: Pages match canonical reference frames (01 dense table, 02 form, 03 dashboard).
-- [ ] **I13: Visual regression gate**: 0 diff across all unallowlisted routes; exactly the targeted allowlisted diffs; manifest verified (334/334).
-- [ ] **I14: Single source of truth (tokens.json)**: All visual tokens trace directly to `tokens.json`. Zero hardcoded hex/radii outside tokens.
-- [ ] **I15: Zero tone tokens in page CSS**: Page CSS contains zero direct tone tokens (`--fs-positive`, `--fs-negative`, `--fs-warning`). Tone via primitives only.
-- [ ] **I16: Multi-theme door preservation (D22)**: Scoped theme blocks in `tokens.css`; attribute-existence selectors `[data-fs-theme]`; theme-aware chart palette.
+The table below is copied verbatim from `docs/UI-UX_Plan/UI-UX-PLAN.md` §2. Every invariant will be evidenced in the sub-phase walkthrough.
+
+| # | Rule (Verbatim from Action Plan §2) | Verification Method |
+| :--- | :--- | :--- |
+| **I1** | Production routes and URLs unchanged — 75 entries (74 protected + `*`), 10 redirects. | `App.test.js` route-resolution test; `ui-coverage.js` diff |
+| **I2** | No API call, payload shape, or service file changed. | PR diff review; blocked path list in CI |
+| **I3** | No calculation changed on **any** page: payroll, installment schedules, debt payoff, trade P&L, certificate maturity/interest, FX conversion, budget thresholds, real-estate yield. | Characterization fixtures (§9.6) |
+| **I4** | Auth, roles, `ProtectedAction`, and `useCanModify` gating unchanged. | Viewer-role checklist per phase |
+| **I5** | Test IDs, `data-*` attributes, and accessible labels preserved — 37 `data-testid`, 39 `aria-label`. | test-ID guard script (§9.2) |
+| **I6** | Tables render as compact-expand cards at ≤ 768px (D19). Horizontal scroll preserved only for tables with ≥ 12 columns (audit logs) where the card pattern is impractical. No page-level horizontal scroll at 390px. | 390 px visual check: card layout renders, no page-level horizontal scroll, all fields reachable via expander. |
+| **I7** | No page loses functionality mid-migration. | Pattern added only in the converting PR (§6.3) |
+| **I8** | Dashboard coordinator line cap preserved — `DashboardSummary.js` must remain $\le 120$ lines (post-audit architecture decomposition invariant). All 10 RTL dashboard tests must remain green. | Line count assertion + `npm test` in 3A |
+| **I9** | Production build passes with zero errors and no new warnings. | CI (authoritative); local proxy via `npm start` + ESLint/stylelint (§15) |
+| **I10** | `npm test -- --watchAll=false` passes for touched modules **and** the app route suite. | CI (frontend test job added in 1C); local proxy: touched suites via `npx jest --runInBand` (§15) |
+| **I11** | No new `!important`; a file's count in the 1C lint ratchet may only fall. | stylelint + `lint-ratchet.js` (§9.2) |
+| **I12** | No new dependency except the Phase 1C tooling list (§9.2). | `package.json` review |
+| **I13** | Every non-allowlisted route is pixel-identical to its 1B baseline. | Walkthrough-evidenced per §7.1: developer-run Playwright diff report attached to each phase walkthrough, with zero unexplained diffs. |
+| **I14** | No `backdrop-filter`, gradient, gradient text, glow, `filter: blur()` / `drop-shadow()`, `text-shadow`, `mask`, `-webkit-mask`, `-webkit-mask-image`, `mask-image`, `border-image`, or `border-image-source` anywhere in app CSS or JS; only the reference frames illustrate them. | stylelint (§9.2) |
+| **I15** | Neutral by default: a tone encodes **deviation from expectation or attention**, never the sign of an ordinary amount. Expense amounts, income, and balances are neutral (§4.3). A page never references a tone token directly; it uses `Delta`, `Badge`, or a `.fs-progress--*` modifier. | stylelint + `lint-tones.js` + §4.3 domain table + §7.2 |
+| **I16** | No radius above 8 px except `var(--fs-radius-pill)` on status chips and avatars. | stylelint (§9.2) |
+
+---
+
+## 6. Walkthrough Progress Log Template (§10)
+
+```
+Sub-phase:   UI Phase 4C: Expenditure Cluster Completion
+Status:      DONE
+Done:        Converted 5 expenditure routes to dark graphite tokens; eliminated all 117 inline styles; modernized 5 charts on /expenditure-analysis with chartTheme.js; budget threshold source fidelity (pct > 100); mobile cards on /expenditures/bills (D19); Tabs primitive on /expenditures/recurring; dual-mode sub-nav retired; removed 4 remaining files from .eslintignore (0 warnings); 25 visual baselines updated; 0 diff on 56 unallowlisted routes; manifest 334/334 verified.
+Next:        UI Phase 5A: Payroll & Salary Overview
+Blocked by:  None
+Allowlist:   THEMED_PATTERNS expanded to 9 routes (+5: /expenditures/rules, /expenditures/budgets, /expenditures/recurring, /expenditures/bills, /expenditure-analysis)
+Visual diff: 0 diff across 56 unallowlisted routes; exactly 5 accepted diffs (25 snapshots regenerated)
+Fixtures:    calculations.spec.js passing 100% (byte-identical)
+Screenshots: Captured across 5 viewports (1440, 1024, 768, 480, 390)
+Branch:      phase-ui-4c-expenditure-cluster
+Merge SHA:   <pending merge to main>
+```
