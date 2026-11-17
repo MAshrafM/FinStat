@@ -56,6 +56,14 @@ describe('Button Primitive (Phase 2E)', () => {
     expect(handleClick).not.toHaveBeenCalled();
   });
 
+  it('supports polymorphic rendering via as prop', () => {
+    render(<Button as="a" href="/test">Link Action</Button>);
+    const link = screen.getByRole('link', { name: /link action/i });
+    expect(link).toHaveAttribute('href', '/test');
+    expect(link).toHaveClass('fs-btn', 'fs-btn-secondary');
+    expect(link).not.toHaveAttribute('type');
+  });
+
   it('forwards custom className and data-testid', () => {
     render(<Button className="custom-action" data-testid="test-btn">Custom</Button>);
     const btn = screen.getByTestId('test-btn');

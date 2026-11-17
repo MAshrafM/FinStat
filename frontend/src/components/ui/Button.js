@@ -7,6 +7,7 @@ import Loading from './Loading';
  * Button primitive wrapping .fs-btn and semantic variants (§8.4).
  *
  * @param {Object} props
+ * @param {React.ElementType} [props.as='button']
  * @param {'primary' | 'secondary' | 'ghost' | 'danger'} [props.variant='secondary']
  * @param {'sm' | 'md'} [props.size='md']
  * @param {boolean} [props.isLoading=false]
@@ -18,28 +19,30 @@ import Loading from './Loading';
  * @param {React.ReactNode} [props.children]
  */
 const Button = ({
+  as: Component = 'button',
   variant = 'secondary',
   size = 'md',
   isLoading = false,
   disabled = false,
-  type = 'button',
+  type = Component === 'button' ? 'button' : undefined,
   icon,
   iconRight,
   className = '',
   children,
+  'aria-disabled': ariaDisabled,
   ...rest
 }) => {
   const variantClass = `fs-btn-${variant}`;
   const sizeClass = size === 'sm' ? 'fs-btn-sm' : '';
   const classes = ['fs-btn', variantClass, sizeClass, className].filter(Boolean).join(' ');
 
-  const isDisabled = disabled || isLoading;
+  const isDisabled = Boolean(disabled || isLoading || ariaDisabled === 'true' || ariaDisabled === true);
 
   return (
-    <button
+    <Component
       type={type}
       className={classes}
-      disabled={isDisabled}
+      disabled={Component === 'button' ? isDisabled : undefined}
       aria-busy={isLoading ? 'true' : undefined}
       aria-disabled={isDisabled ? 'true' : undefined}
       {...rest}
@@ -53,11 +56,12 @@ const Button = ({
       {!isLoading && iconRight && (
         <span className="fs-btn-icon-right" aria-hidden="true">{iconRight}</span>
       )}
-    </button>
+    </Component>
   );
 };
 
 Button.propTypes = {
+  as: PropTypes.elementType,
   variant: PropTypes.oneOf(['primary', 'secondary', 'ghost', 'danger']),
   size: PropTypes.oneOf(['sm', 'md']),
   isLoading: PropTypes.bool,

@@ -21,7 +21,7 @@ import ExpenditureSubNav from './ExpenditureSubNav';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
-import { Loading, Badge } from '../../components/ui';
+import { Loading, Badge, Button } from '../../components/ui';
 
 const transactionTypeMap = {
   W: 'Withdraw',
@@ -31,6 +31,41 @@ const transactionTypeMap = {
   Prepaid: 'Prepaid',
   Bank: 'Bank',
   Cash: 'Cash',
+};
+
+const getAccountInfo = (log) => {
+  if (log.paidWithCreditCard || log.paymentMethod === 'Credit Card') {
+    return {
+      accountName: 'Credit Card',
+      balanceLabel: 'Bank Balance After',
+      balanceValue: log.runningBalances?.bank ?? log.bank,
+    };
+  }
+
+  const rawMethod = (log.paymentMethod || log.sourceAccount || log.fromAccount || 'Bank').trim();
+  const lowerMethod = rawMethod.toLowerCase();
+
+  if (lowerMethod === 'cash') {
+    return {
+      accountName: 'Cash',
+      balanceLabel: 'Cash Balance After',
+      balanceValue: log.runningBalances?.cash ?? log.cash,
+    };
+  }
+
+  if (lowerMethod === 'prepaid') {
+    return {
+      accountName: 'Prepaid',
+      balanceLabel: 'Prepaid Balance After',
+      balanceValue: log.runningBalances?.prepaid ?? log.prepaid,
+    };
+  }
+
+  return {
+    accountName: rawMethod || 'Bank',
+    balanceLabel: `${rawMethod || 'Bank'} Balance After`,
+    balanceValue: log.runningBalances?.bank ?? log.bank,
+  };
 };
 
 const ExpenditureLogPage = () => {
@@ -238,9 +273,15 @@ const ExpenditureLogPage = () => {
         <h1>Expenditure Log</h1>
         <div className="page-header-actions">
           <ProtectedAction tooltip="View-only access">
-            <Link to="/expenditures/new" className="fs-btn-primary" title="Record a new expenditure">
-              <FaPlus size={13} /> Add Expenditure
-            </Link>
+            <Button
+              as={Link}
+              to="/expenditures/new"
+              variant="primary"
+              icon={<FaPlus size={13} />}
+              title="Record a new expenditure"
+            >
+              Add Expenditure
+            </Button>
           </ProtectedAction>
         </div>
       </div>
@@ -332,14 +373,13 @@ const ExpenditureLogPage = () => {
         <div className="bulk-actions-bar" role="region" aria-label="Bulk actions toolbar">
           <div className="bulk-actions-info">
             <span className="bulk-count-badge">{selectedIds.size} selected</span>
-            <button
-              type="button"
-              className="fs-btn-secondary"
+            <Button
+              variant="secondary"
               onClick={handleClearSelection}
               disabled={isBulkUpdatingCategory || isBulkDeleting}
             >
               Deselect All
-            </button>
+            </Button>
           </div>
 
           <div className="bulk-actions-controls">
@@ -361,25 +401,23 @@ const ExpenditureLogPage = () => {
             </select>
 
             <ProtectedAction tooltip="View-only access">
-              <button
-                type="button"
-                className="fs-btn-secondary"
+              <Button
+                variant="secondary"
                 onClick={handleBulkCategoryReassign}
                 disabled={isBulkUpdatingCategory || isBulkDeleting}
               >
                 {isBulkUpdatingCategory ? 'Updating...' : 'Reassign Category'}
-              </button>
+              </Button>
             </ProtectedAction>
 
             <ProtectedAction tooltip="View-only access">
-              <button
-                type="button"
-                className="fs-btn-secondary"
+              <Button
+                variant="secondary"
                 onClick={() => setShowBulkDeleteModal(true)}
                 disabled={isBulkUpdatingCategory || isBulkDeleting}
               >
                 Delete Selected
-              </button>
+              </Button>
             </ProtectedAction>
           </div>
         </div>
@@ -394,116 +432,119 @@ const ExpenditureLogPage = () => {
               No expenditure records found. Click <strong>Add Expenditure</strong> to record a new transaction.
             </div>
           ) : (
-            processedExpenditures.map((log) => (
-              <article
-                key={log._id}
-                className={`fs-card-item ${selectedIds.has(log._id) ? 'fs-row-selected' : ''}`}
-                aria-label={`Expenditure ${log.description || log._id}`}
-              >
-                <div className="fs-card-header">
-                  <label className="fs-checkbox-label">
-                    <input
-                      type="checkbox"
-                      className="fs-checkbox-input"
-                      aria-label={`Select transaction ${log.description || log._id}`}
-                      checked={selectedIds.has(log._id)}
-                      onChange={() => handleToggleSelect(log._id)}
-                    />
-                    <span className="fs-checkbox-custom" aria-hidden="true" />
-                  </label>
-                  <span className="fs-card-date">{formatDate(log.date)}</span>
-                  <span className="fs-card-amount fs-num">{formatCurrency(log.transactionValue)}</span>
-                </div>
-
-                <div className="fs-card-primary-info">
-                  {log.splits && log.splits.length > 0 ? (
-                    <div className="split-container">
-                      <span className="split-badge-title">✂ Split ({log.splits.length})</span>
-                      <div className="category-badges-list">
-                        {log.splits.map((s, idx) => (
-                          <span key={idx} className="fs-cat-badge">
-                            {s.category}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <span className="fs-cat-badge">{log.categories?.[0] || 'Uncategorized'}</span>
-                  )}
-                  <span className="fs-card-desc">{log.description || '-'}</span>
-                </div>
-
-                <button
-                  type="button"
-                  className="fs-card-expander-btn"
-                  aria-expanded={expandedCards.has(log._id)}
-                  onClick={() => handleToggleCardExpand(log._id)}
+            processedExpenditures.map((log) => {
+              const accountInfo = getAccountInfo(log);
+              return (
+                <article
+                  key={log._id}
+                  className={`fs-card-item ${selectedIds.has(log._id) ? 'fs-row-selected' : ''}`}
+                  aria-label={`Expenditure ${log.description || log._id}`}
                 >
-                  {expandedCards.has(log._id) ? 'Hide Details ▲' : 'View Details ▼'}
-                </button>
+                  <div className="fs-card-header">
+                    <label className="fs-checkbox-label">
+                      <input
+                        type="checkbox"
+                        className="fs-checkbox-input"
+                        aria-label={`Select transaction ${log.description || log._id}`}
+                        checked={selectedIds.has(log._id)}
+                        onChange={() => handleToggleSelect(log._id)}
+                      />
+                      <span className="fs-checkbox-custom" aria-hidden="true" />
+                    </label>
+                    <span className="fs-card-date">{formatDate(log.date)}</span>
+                    <span className="fs-card-amount fs-num">{formatCurrency(log.transactionValue)}</span>
+                  </div>
 
-                {expandedCards.has(log._id) && (
-                  <div className="fs-card-details-drawer">
-                    <div className="fs-card-field">
-                      <span className="fs-card-label">Account</span>
-                      <span className="fs-card-value">
-                        {log.paidWithCreditCard ? 'Credit Card' : log.sourceAccount || 'Bank'}
-                      </span>
-                    </div>
-                    <div className="fs-card-field">
-                      <span className="fs-card-label">Bank Balance After</span>
-                      <span className="fs-card-value fs-num">
-                        {log.bankBalanceAfter != null ? formatCurrency(log.bankBalanceAfter) : '—'}
-                      </span>
-                    </div>
-                    <div className="fs-card-field">
-                      <span className="fs-card-label">Type</span>
-                      <span className="fs-card-value">
-                        {transactionTypeMap[log.transactionType] || log.transactionType}
-                      </span>
-                    </div>
-                    {log.currency && log.currency !== 'EGP' && log.foreignAmount && (
-                      <div className="fs-card-field">
-                        <span className="fs-card-label">Foreign Currency</span>
-                        <span className="fs-card-value fs-num">
-                          {log.foreignAmount.toLocaleString()} {log.currency}
-                        </span>
-                      </div>
-                    )}
-                    {log.splits && log.splits.length > 0 && (
-                      <div className="fs-card-field split-details-drawer">
-                        <span className="fs-card-label">Split Breakdown</span>
-                        <div className="split-items-list">
+                  <div className="fs-card-primary-info">
+                    {log.splits && log.splits.length > 0 ? (
+                      <div className="split-container">
+                        <span className="split-badge-title">✂ Split ({log.splits.length})</span>
+                        <div className="category-badges-list">
                           {log.splits.map((s, idx) => (
-                            <div key={idx} className="split-detail-row">
-                              <span className="fs-cat-badge">{s.category}</span>
-                              <span className="fs-num">{formatCurrency(s.amount)}</span>
-                            </div>
+                            <span key={idx} className="fs-cat-badge">
+                              {s.category}
+                            </span>
                           ))}
                         </div>
                       </div>
+                    ) : (
+                      <span className="fs-cat-badge">{log.categories?.[0] || 'Uncategorized'}</span>
                     )}
-                    <div className="fs-card-actions">
-                      <ProtectedAction tooltip="View-only access">
-                        <Link to={`/expenditures/edit/${log._id}`} className="action-icon edit-icon" title="Edit">
-                          <FaPencilAlt />
-                        </Link>
-                      </ProtectedAction>
-                      <ProtectedAction tooltip="View-only access">
-                        <button
-                          type="button"
-                          className="action-icon delete-icon"
-                          title="Delete"
-                          onClick={() => handleDeleteClick(log._id)}
-                        >
-                          <FaTrash />
-                        </button>
-                      </ProtectedAction>
-                    </div>
+                    <span className="fs-card-desc">{log.description || '-'}</span>
                   </div>
-                )}
-              </article>
-            ))
+
+                  <button
+                    type="button"
+                    className="fs-card-expander-btn"
+                    aria-expanded={expandedCards.has(log._id)}
+                    onClick={() => handleToggleCardExpand(log._id)}
+                  >
+                    {expandedCards.has(log._id) ? 'Hide Details ▲' : 'View Details ▼'}
+                  </button>
+
+                  {expandedCards.has(log._id) && (
+                    <div className="fs-card-details-drawer">
+                      <div className="fs-card-field">
+                        <span className="fs-card-label">Account</span>
+                        <span className="fs-card-value">
+                          {accountInfo.accountName}
+                        </span>
+                      </div>
+                      <div className="fs-card-field">
+                        <span className="fs-card-label">{accountInfo.balanceLabel}</span>
+                        <span className="fs-card-value fs-num">
+                          {accountInfo.balanceValue != null ? formatCurrency(accountInfo.balanceValue) : '—'}
+                        </span>
+                      </div>
+                      <div className="fs-card-field">
+                        <span className="fs-card-label">Type</span>
+                        <span className="fs-card-value">
+                          {transactionTypeMap[log.transactionType] || log.transactionType}
+                        </span>
+                      </div>
+                      {log.currency && log.currency !== 'EGP' && log.foreignAmount && (
+                        <div className="fs-card-field">
+                          <span className="fs-card-label">Foreign Currency</span>
+                          <span className="fs-card-value fs-num">
+                            {log.foreignAmount.toLocaleString()} {log.currency}
+                          </span>
+                        </div>
+                      )}
+                      {log.splits && log.splits.length > 0 && (
+                        <div className="fs-card-field split-details-drawer">
+                          <span className="fs-card-label">Split Breakdown</span>
+                          <div className="split-items-list">
+                            {log.splits.map((s, idx) => (
+                              <div key={idx} className="split-detail-row">
+                                <span className="fs-cat-badge">{s.category}</span>
+                                <span className="fs-num">{formatCurrency(s.amount)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div className="fs-card-actions">
+                        <ProtectedAction tooltip="View-only access">
+                          <Link to={`/expenditures/edit/${log._id}`} className="action-icon edit-icon" title="Edit">
+                            <FaPencilAlt />
+                          </Link>
+                        </ProtectedAction>
+                        <ProtectedAction tooltip="View-only access">
+                          <button
+                            type="button"
+                            className="action-icon delete-icon"
+                            title="Delete"
+                            onClick={() => handleDeleteClick(log._id)}
+                          >
+                            <FaTrash />
+                          </button>
+                        </ProtectedAction>
+                      </div>
+                    </div>
+                  )}
+                </article>
+              );
+            })
           )}
         </div>
       ) : (

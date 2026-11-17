@@ -30,9 +30,11 @@ const MOCK_EXPENDITURES = [
     date: '2026-01-15T10:00:00.000Z',
     transactionValue: 125.50,
     transactionType: 'W',
+    paymentMethod: 'Bank',
     categories: ['Groceries'],
     description: 'Weekly Supermarket Restock',
     sourceAccount: 'Checking',
+    runningBalances: { bank: 4874.50, cash: 850.00, prepaid: 200.00 },
     bankBalanceAfter: 4874.50,
     paidWithCreditCard: false,
     settledFromBank: false,
@@ -43,10 +45,10 @@ const MOCK_EXPENDITURES = [
     date: '2026-01-14T14:30:00.000Z',
     transactionValue: 350.00,
     transactionType: 'W',
+    paymentMethod: 'Prepaid',
     categories: ['Shopping'],
     description: 'Department Store Split',
-    sourceAccount: 'Checking',
-    bankBalanceAfter: 4524.50,
+    runningBalances: { bank: 5000.00, cash: 850.00, prepaid: 200.00 },
     paidWithCreditCard: false,
     settledFromBank: false,
     isRecurring: false,
@@ -60,8 +62,10 @@ const MOCK_EXPENDITURES = [
     date: '2026-01-12T09:15:00.000Z',
     transactionValue: 1200.00,
     transactionType: 'W',
+    paymentMethod: 'Credit Card',
     categories: ['Electronics'],
     description: 'New Office Monitor',
+    runningBalances: { bank: 5000.00, cash: 850.00, prepaid: 550.00 },
     paidWithCreditCard: true,
     settledFromBank: false,
     settledAmountInPiastres: 0,
@@ -72,10 +76,10 @@ const MOCK_EXPENDITURES = [
     date: '2026-01-10T08:00:00.000Z',
     transactionValue: 45.00,
     transactionType: 'W',
+    paymentMethod: 'Cash',
     categories: ['Utilities'],
     description: 'Cloud Server Hosting',
-    sourceAccount: 'Checking',
-    bankBalanceAfter: 4479.50,
+    runningBalances: { bank: 5000.00, cash: 805.00, prepaid: 550.00 },
     paidWithCreditCard: false,
     settledFromBank: false,
     isRecurring: true,
@@ -277,6 +281,11 @@ test.describe('Expenditure Reference Match (Live /expenditures vs Frame 01)', ()
     const tableCount = await page.locator('table.styled-table').count();
     expect(tableCount).toBe(0);
 
+    // Primary CTA button under header uses Button primitive
+    const mobileAddBtn = page.locator('.page-header-actions .fs-btn-primary');
+    await expect(mobileAddBtn).toBeVisible();
+    await expect(mobileAddBtn).toHaveClass(/fs-btn/);
+
     const cardList = page.locator('.fs-mobile-card-list');
     await expect(cardList).toBeVisible();
 
@@ -314,6 +323,35 @@ test.describe('Expenditure Reference Match (Live /expenditures vs Frame 01)', ()
 
     const drawer = splitCard.locator('.fs-card-details-drawer');
     await expect(drawer).toBeVisible();
+
+    // Verify Prepaid account and Prepaid Balance After (Bugs 2 & 3 fix)
+    const prepaidAccountField = drawer.locator('.fs-card-field').filter({ hasText: 'Account' });
+    await expect(prepaidAccountField.locator('.fs-card-value')).toHaveText('Prepaid');
+    const prepaidBalanceField = drawer.locator('.fs-card-field').filter({ hasText: 'Prepaid Balance After' });
+    await expect(prepaidBalanceField).toBeVisible();
+    await expect(prepaidBalanceField.locator('.fs-card-value')).toContainText('$200.00');
+
+    // Verify Cash account and Cash Balance After (exp-4 at index 3)
+    const cashCard = cards.nth(3);
+    const cashExpander = cashCard.locator('.fs-card-expander-btn');
+    await cashExpander.click();
+    const cashDrawer = cashCard.locator('.fs-card-details-drawer');
+    const cashAccountField = cashDrawer.locator('.fs-card-field').filter({ hasText: 'Account' });
+    await expect(cashAccountField.locator('.fs-card-value')).toHaveText('Cash');
+    const cashBalanceField = cashDrawer.locator('.fs-card-field').filter({ hasText: 'Cash Balance After' });
+    await expect(cashBalanceField).toBeVisible();
+    await expect(cashBalanceField.locator('.fs-card-value')).toContainText('$805.00');
+
+    // Verify Bank account and Bank Balance After (exp-1 at index 0)
+    const bankCard = cards.nth(0);
+    const bankExpander = bankCard.locator('.fs-card-expander-btn');
+    await bankExpander.click();
+    const bankDrawer = bankCard.locator('.fs-card-details-drawer');
+    const bankAccountField = bankDrawer.locator('.fs-card-field').filter({ hasText: 'Account' });
+    await expect(bankAccountField.locator('.fs-card-value')).toHaveText('Bank');
+    const bankBalanceField = bankDrawer.locator('.fs-card-field').filter({ hasText: 'Bank Balance After' });
+    await expect(bankBalanceField).toBeVisible();
+    await expect(bankBalanceField.locator('.fs-card-value')).toContainText('$4,874.50');
 
     // Verify split breakdown drawer layout (S1 align-items: stretch override)
     const splitDrawer = drawer.locator('.split-details-drawer');

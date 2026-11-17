@@ -639,10 +639,35 @@
   margin-bottom: 1rem;
 }
 
+.fs-page .page-header h1 {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-2xl);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  margin: 0;
+}
+
 .fs-page .page-header-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .fs-page .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .fs-page .page-header-actions {
+    width: 100%;
+  }
+
+  .fs-page .page-header-actions .fs-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* 2. Holdings Summary Strip */

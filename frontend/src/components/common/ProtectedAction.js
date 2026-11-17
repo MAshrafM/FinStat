@@ -45,7 +45,11 @@ export const ProtectedAction = ({
   };
 
   if (React.isValidElement(children)) {
-    const isNativeButton = children.type === 'button' || children.props?.type === 'submit';
+    const isNativeButton =
+      children.type === 'button' ||
+      children.props?.type === 'submit' ||
+      children.props?.type === 'button' ||
+      typeof children.type !== 'string';
 
     const cloned = React.cloneElement(children, {
       disabled: isNativeButton ? true : undefined,
