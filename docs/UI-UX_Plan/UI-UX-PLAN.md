@@ -358,6 +358,8 @@ Every conditional tone above is audited in 1A before a page implements it. The a
 | Budget progress | over 100% | `Over budget` | `pages/expenditure/BudgetsPage.js` (`pct > 100`) & `pages/dashboard/BudgetPulseCard.js` | Neutral, no label |
 | Debt and card balance | payment due within 7 days | `Due soon` | `pages/credit-cards/CreditCardPage.js` & `pages/credit-cards/DebtPayoffPage.js` (`dueDiffDays <= 7`) | Neutral, no label |
 | Debt and card balance | overdue | `Overdue` | `pages/credit-cards/CreditCardPage.js` & `pages/credit-cards/DebtPayoffPage.js` (`dueDiffDays < 0`) | Neutral, no label |
+| Recurring bills | payment due within 3 days | `Due Soon` | `pages/expenditure/RecurringBills.js` (`getUpcomingBills({ days: 3 })` on line 69; `getBillStatus` lines 210–227) | Neutral, no label |
+| Recurring bills | overdue | `Overdue` | `pages/expenditure/RecurringBills.js` (`diffDays < 0` in `getBillStatus` lines 210–227) | Neutral, no label |
 | Card utilization | 30–70% | `Elevated` | `pages/credit-cards/CreditCardPage.js` (`utilizationRate >= 30`) | Neutral, no label |
 | Card utilization | over 70% | `High` | `pages/credit-cards/CreditCardPage.js` (`utilizationRate >= 70`) | Neutral, no label |
 | Yield and ROI | delta against a stated target | target label | *(Audit confirmed no comparative target constant in code)* | Neutral, no delta, no label |

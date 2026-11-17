@@ -1,4 +1,4 @@
-# Implementation Plan — UI Phase 4C: Expenditure Cluster Completion (v3 — Finalized)
+# Implementation Plan — UI Phase 4C: Expenditure Cluster Completion (v3.1 — Finalized)
 
 > **Sub-phase**: UI Phase 4C  
 > **Target Routes**:  
@@ -7,10 +7,10 @@
 > 3. `/expenditures/recurring` (`RecurringSuggestionsPage.js`)  
 > 4. `/expenditures/bills` (`RecurringBills.js`)  
 > 5. `/expenditure-analysis` (`ExpenditureAnalysisPage.js`)  
-> **Status**: Ready for Execution (v3 — Finalized)  
+> **Status**: Ready for Execution (v3.1 — Finalized)  
 > **Precondition**: UI Phase 4B merged to `main` at commit `9e49604`  
 > - Verified via `git log --oneline -1 main`:  
->   `9cbd875 docs(ui): revise Phase 4C implementation plan to v2 addressing HB-1..HB-4 and RC-1..RC-12`  
+>   `c800358 docs(ui): finalize Phase 4C plan v3 with verbatim invariants, verified preconditions, and walkthrough template`  
 > - Verified via `git branch --contains 9e49604`:  
 >   `* main`  
 
@@ -23,7 +23,7 @@ UI Phase 4C is the concluding sub-phase of **Phase 4: Expenditure Ledger & Analy
 2. **Budget Tracker** (`/expenditures/budgets`): Period selector, budget progress meters adhering to §4.3.1 threshold rules, KPI metrics, and budget create/edit modals.
 3. **Recurring Expense Automation** (`/expenditures/recurring`): Statistical detection scanner, pending/accepted recurrence cards, frequency actions, and accept modal using the `Tabs` primitive.
 4. **Recurring Bills & Schedules** (`/expenditures/bills`): Bill calendar, upcoming payments, payment status chips, and bill action modals with mobile card collapse (D19).
-5. **Spending Analysis** (`/expenditure-analysis`): Themed multi-series monthly comparison bar chart, accessible ranked horizontal category bar charts capped at 6 series with "Other" (§4.12, G2), data-table alternatives, and KPI tiles.
+5. **Spending Analysis** (`/expenditure-analysis`): Critical-route analytics view (§4.12) with multi-series monthly comparison bar chart, accessible ranked horizontal category bar charts capped at 6 series with "Other" (G2), data-table alternatives for all 5 charts, and KPI tiles.
 
 ### Objectives:
 - **Allowlist Expansion**: Add all 5 routes to `THEMED_PATTERNS` in `ProtectedRoute.js`, bringing cumulative allowlist coverage to **9 routes** (all **8** Expenditure routes now fully themed: `/expenditures`, `/expenditures/new`, `/expenditures/edit/:id`, `/expenditures/rules`, `/expenditures/budgets`, `/expenditures/recurring`, `/expenditures/bills`, `/expenditure-analysis`).
@@ -32,7 +32,7 @@ UI Phase 4C is the concluding sub-phase of **Phase 4: Expenditure Ledger & Analy
   - `ExpenditureAnalysisPage.js`: 32
   - `RecurringSuggestionsPage.js`: 21
   - `RulesPage.js`: 10
-  - `RecurringBills.js`: 1 (Line 320: `<td style={{ textTransform: 'capitalize' }}>{bill.frequency}</td>`; historical "18" in Action Plan §5.3 updated to reflect post-7C.1b extraction).
+  - `RecurringBills.js`: 1 (Line 320: `<td style={{ textTransform: 'capitalize' }}>{bill.frequency}</td>`; Action plan §5.3 shows '18' from the 2026-11-09 audit; the current code has 1, verified at line 320 — C-1 resolution).
 - **ESLint Hygiene**: Remove all 4 remaining expenditure files from `frontend/.eslintignore` (`BudgetsPage.js`, `ExpenditureAnalysisPage.js`, `RecurringSuggestionsPage.js`, `RulesPage.js`), achieving zero ignored files in the expenditure domain.
 - **Design System Conformance**:
   - All pages wrapped in `.fs-page` shell with `<PageHeader>`, `<ExpenditureSubNav />`, and `<Loading>` primitives.
@@ -40,11 +40,11 @@ UI Phase 4C is the concluding sub-phase of **Phase 4: Expenditure Ledger & Analy
   - Zero tone tokens directly in page CSS (`lint-tones.js` and Invariant I15 compliance). Shared tone classes from `theme.css` used exclusively.
   - Dark graphite surfaces (`#101114` canvas, `#1a1c20` surfaces, `#22252a` raised panels, `#34383f` borders).
   - Interactive accent teal (`#14b8a6`) reserved exclusively for interactive controls with `#101114` ink text (never white).
-- **Chart Modernization & Accessibility (§4.12, G2)**:
-  - Migrate all 5 charts on `ExpenditureAnalysisPage.js` to `chartTheme.js`:
-    - Volume charts with $\le 4$ segments: `Doughnut` with `doughnutDefaults` and `getChartPalette()`.
-    - Category breakdowns with $> 4$ segments: Ranked horizontal bar charts (`indexAxis: 'y'`) capped at 6 series + neutral "Other", accompanied by accessible data table alternatives.
-    - Monthly Volume Comparison bar chart: Styled via `chartTheme.js` palette, preserving dataset names and unit tests.
+- **Critical-Route Chart Modernization & Accessibility (§4.12, G2 — C-2 resolution)**:
+  - Designate `/expenditure-analysis` as a critical route requiring accessible data-table alternatives for **all 5 charts**:
+    - Charts 1 & 2 (Volume breakdowns with $\le 4$ segments): `Doughnut` with `doughnutDefaults` and `getChartPalette()`, paired with an accessible volume table alternative.
+    - Charts 3 & 4 (Category breakdowns with $> 4$ segments): Ranked horizontal bar charts (`indexAxis: 'y'`) capped at 6 series + neutral "Other", paired with an accessible category distribution table alternative.
+    - Chart 5 (Monthly Volume Comparison bar chart): Styled via `chartTheme.js` palette, preserving dataset names and unit tests, paired with an accessible monthly breakdown table alternative.
 - **Budget Threshold Fidelity (§4.3.1)**:
   - Progress meters display neutral fill below 80%, `.fs-progress--warning` at 80–100% (`Warning`), and `.fs-progress--negative` strictly over 100% (`Over budget`, `pct > 100`).
   - Characterization fixtures in `tests/fixtures/calculations/budgets.snapshot.json` remain 100% passing.
@@ -59,13 +59,14 @@ UI Phase 4C is the concluding sub-phase of **Phase 4: Expenditure Ledger & Analy
 ## 2. User Review Required & Design Decisions
 
 > [!IMPORTANT]
-> ### 1. Chart Modernization on `/expenditure-analysis` (§4.12 & Decision D14)
-> An audit of `ExpenditureAnalysisPage.js` reveals four pie/doughnut charts plus one monthly volume bar chart (five charts total) that currently use raw hex colors:
-> 1. **Overall Volume Breakdown** (line 234, `overallPieChartData`): 3 segments (`Withdrawals`, `Top-ups`, `Savings`). Since $3 \le 4$, this will be rendered as a `Doughnut` using `doughnutDefaults` and `getChartPalette()` from `chartTheme.js`.
-> 2. **Yearly Volume Breakdown** (line 247, `yearlyPieChartData`): 3 segments for the selected year. Converted to `Doughnut` using `doughnutDefaults` and `getChartPalette()`.
-> 3. **Overall Category Breakdown** (line 267, `overallCategoryPieChartData`): 12+ categories ($> 4$ segments). Per §4.12 Series Discipline (G2), this is converted to a **ranked horizontal bar chart** (`indexAxis: 'y'`) capped at top 6 categories + neutral "Other", accompanied by an accessible tabular data alternative.
-> 4. **Yearly Category Breakdown** (line 283, `yearlyCategoryPieChartData`): 12+ categories ($> 4$ segments). Converted to a **ranked horizontal bar chart** (`indexAxis: 'y'`) capped at top 6 categories + neutral "Other", accompanied by an accessible tabular data alternative.
-> 5. **Monthly Volume Comparison** (line 88, `data-testid="bar-chart"`): Preserves all 12 month buckets and dataset names (`Withdrawals`, `Top-ups`, `Savings`), styled via `baseChartOptions` and `getChartPalette().greys` (`grey1`, `grey2`, `grey3`), keeping existing unit tests green.
+> ### 1. Critical Route Designation & Chart Modernization on `/expenditure-analysis` (§4.12 & Decision D14 — C-2 Resolution)
+> Per §4.12 Series Discipline: *"a data-table alternative for every chart on a critical route."*
+> `/expenditure-analysis` is FinStat's primary expenditure analytics interface and is formally designated a **critical route**. Therefore, all 5 charts on this page are provided with accessible data-table alternatives:
+> 1. **Overall Volume Breakdown** (line 234, `overallPieChartData`): 3 segments (`Withdrawals`, `Top-ups`, `Savings`). Converted to `Doughnut` with `doughnutDefaults` and `getChartPalette()`, accompanied by a structured table alternative displaying total volume and percentages.
+> 2. **Yearly Volume Breakdown** (line 247, `yearlyPieChartData`): 3 segments for the selected year. Converted to `Doughnut` with `doughnutDefaults` and `getChartPalette()`, accompanied by a structured annual volume table alternative.
+> 3. **Overall Category Breakdown** (line 267, `overallCategoryPieChartData`): 12+ categories ($> 4$ segments). Per §4.12 (G2), converted to a **ranked horizontal bar chart** (`indexAxis: 'y'`) capped at top 6 categories + neutral "Other", accompanied by a comprehensive category table alternative.
+> 4. **Yearly Category Breakdown** (line 283, `yearlyCategoryPieChartData`): 12+ categories ($> 4$ segments). Converted to a **ranked horizontal bar chart** (`indexAxis: 'y'`) capped at top 6 categories + neutral "Other", accompanied by an annual category table alternative.
+> 5. **Monthly Volume Comparison** (line 88, `data-testid="bar-chart"`): Preserves all 12 month buckets and dataset names (`Withdrawals`, `Top-ups`, `Savings`), styled via `baseChartOptions` and `getChartPalette().greys` (`grey1`, `grey2`, `grey3`), accompanied by a 12-month data table alternative.
 
 > [!TIP]
 > ### 2. Sub-Navigation Completion Across All 8 Expenditure Routes
@@ -79,11 +80,11 @@ UI Phase 4C is the concluding sub-phase of **Phase 4: Expenditure Ledger & Analy
 > Audit of `RecurringBills.js` confirms that status thresholds and labels originate directly from the existing application source:
 > - Line 69: `getUpcomingBills({ days: 3 })` defines the 3-day upcoming window.
 > - Lines 210–227 (`getBillStatus`):
->   - `!bill.isActive` $\rightarrow$ `bill-badge-paused` $\rightarrow$ `{ tone: 'neutral', label: 'Paused' }`
->   - `diffDays < 0` $\rightarrow$ `bill-badge-overdue` $\rightarrow$ `{ tone: 'negative', label: 'Overdue' }`
->   - `diffDays <= 3` $\rightarrow$ `bill-badge-due-soon` $\rightarrow$ `{ tone: 'warning', label: 'Due Soon' }`
->   - `diffDays > 3` $\rightarrow$ `bill-badge-active` $\rightarrow$ `{ tone: 'neutral', label: 'Active' }`
-> The Overdue/Due Soon escalation mirrors the §4.3.1 pattern for debt and credit-card balances (due soon $\rightarrow$ Warning; overdue $\rightarrow$ Negative). The 3-day window is a per-domain specificity matching the backend query; the escalation logic matches §4.3.1 semantics.
+>   - `!bill.isActive` → `bill-badge-paused` → `{ tone: 'neutral', label: 'Paused' }`
+>   - `diffDays < 0` → `bill-badge-overdue` → `{ tone: 'negative', label: 'Overdue' }`
+>   - `diffDays <= 3` → `bill-badge-due-soon` → `{ tone: 'warning', label: 'Due Soon' }`
+>   - `diffDays > 3` → `bill-badge-active` → `{ tone: 'neutral', label: 'Active' }`
+> The Overdue/Due Soon escalation has been recorded directly in `docs/UI-UX_Plan/UI-UX-PLAN.md` §4.3.1, matching debt and credit-card balance semantics.
 
 ---
 
@@ -118,7 +119,7 @@ UI Phase 4C is the concluding sub-phase of **Phase 4: Expenditure Ledger & Analy
    > If the grep output does not match the 4 expected entries above, HALT and investigate before opening the branch.
 
 3. **Verify Baseline Snapshot Pre-Existence in `D:\Projects\FinStat-visual-baselines` (RC-E)**:
-   All 25 snapshots (5 routes $\times$ 5 viewports) pre-exist:
+   All 25 snapshots (5 routes × 5 viewports) pre-exist:
    - `expenditures-rules-{1440,1024,768,480,390}.png`
    - `expenditures-budgets-{1440,1024,768,480,390}.png`
    - `expenditures-recurring-{1440,1024,768,480,390}.png`
@@ -262,7 +263,7 @@ Update `ProtectedRoute.test.js` to assert `true` for all 9 routes and `false` fo
 
 #### [MODIFY] `frontend/src/pages/expenditure/RecurringSuggestionsPage.css`
 - Scope all rules under `.fs-page .recur-page-container`.
-- Remove legacy button gradients and border radii $> 8\text{px}$.
+- Remove legacy button gradients and border radii > 8px.
 - Tokenize card surfaces (`--fs-surface`, `--fs-surface-raised`, `--fs-border`).
 - Zero tone tokens in page CSS.
 
@@ -275,7 +276,11 @@ Update `ProtectedRoute.test.js` to assert `true` for all 9 routes and `false` fo
 - Header: `<PageHeader title="Recurring Bills & Schedules" subtitle="Track subscriptions, utilities, and scheduled payments with automatic due-date roll-forward" />`.
 - Mount `<ExpenditureSubNav />`.
 - Replace spinners with `<Loading variant="table" text="Loading bills and schedules..." />`.
-- Eliminate the 1 inline style on line 320 (`textTransform: 'capitalize'`).
+- **Inline Style Elimination (Line 320 — C-3 resolution)**:
+  Replace line 320:
+  ```jsx
+  <td className="bill-frequency">{bill.frequency}</td>
+  ```
 - **Status Chips with `Badge` Primitive (HB-3, RC-3 & RC-D fix)**:
   Rewrite `getBillStatus` to return semantic props `{ tone, label }`:
   ```jsx
@@ -307,12 +312,13 @@ Update `ProtectedRoute.test.js` to assert `true` for all 9 routes and `false` fo
   ```
 - **Mobile Responsive Pattern (Decision D19)**:
   - Desktop: Dense bills table with tabular amounts.
-  - Mobile ($\le 768\text{px}$ / $390\text{px}$): Conditionally collapse bills into vertical cards with status badges, due date, payment method, and actions.
-  - Calendar strip tested at $390\text{px}$; collapses to a vertical list of upcoming schedules on mobile viewports.
+  - Mobile (≤ 768px / 390px): Conditionally collapse bills into vertical cards with status badges, due date, payment method, and actions.
+  - Calendar strip tested at 390px; collapses to a vertical list of upcoming schedules on mobile viewports.
 - Actions gated with `<ProtectedAction tooltip="View-only access">`.
 
 #### [MODIFY] `frontend/src/pages/expenditure/RecurringBills.css`
 - Scope all rules under `.fs-page .recurring-bills-container`.
+- Add `.fs-page .bill-frequency { text-transform: capitalize; }` replacing line 320 inline style (C-3 resolution).
 - Tokenize KPI grid and summary tiles (`--fs-surface`, `--fs-border`, `--fs-radius-md`).
 - Zero tone tokens in page CSS.
 
@@ -326,28 +332,32 @@ Update `ProtectedRoute.test.js` to assert `true` for all 9 routes and `false` fo
 - Header: `<PageHeader title="Spending Analysis" subtitle="Annual and multi-year expenditure trends, volume breakdowns, and category distributions" />`.
 - Mount `<ExpenditureSubNav />`.
 - Eliminate all 32 inline styles.
-- **Chart.js Modernization (§4.12 & Decision D14 — RC-7 fix)**:
+- **Critical-Route Chart Modernization & Data Tables (§4.12 & Decision D14 — C-2 resolution)**:
   - Import `getChartPalette`, `baseChartOptions`, `barDefaults`, `doughnutDefaults`, `withAlpha`, `ariaLabel` from `../../styles/chartTheme`.
   - **Chart 1: Overall Volume Breakdown** (`overallPieChartData`, 3 segments $\le 4$):
     - Converted to `Doughnut` with `doughnutDefaults` and palette `[greys[0], greys[1], greys[2]]`.
+    - Accompanied by accessible data table rendering total withdrawals, top-ups, savings, and volume percentages.
   - **Chart 2: Yearly Volume Breakdown** (`yearlyPieChartData`, 3 segments $\le 4$):
     - Converted to `Doughnut` with `doughnutDefaults` and palette `[greys[0], greys[1], greys[2]]`.
+    - Accompanied by accessible data table rendering selected-year volume totals and percentages.
   - **Chart 3: Overall Category Breakdown** (`overallCategoryPieChartData`, 12+ categories $> 4$):
     - Converted to ranked horizontal bar chart (`Bar` with `options.indexAxis = 'y'`).
     - Capped at top 6 categories; remaining categories aggregated into neutral `"Other"`.
-    - Adjacent accessible data table displaying complete un-truncated category totals and percentages.
+    - Accompanied by accessible data table displaying complete un-truncated category totals and percentages.
   - **Chart 4: Yearly Category Breakdown** (`yearlyCategoryPieChartData`, 12+ categories $> 4$):
     - Converted to ranked horizontal bar chart (`Bar` with `options.indexAxis = 'y'`).
-    - Capped at top 6 categories + neutral `"Other"`, accompanied by an accessible data table.
+    - Capped at top 6 categories + neutral `"Other"`.
+    - Accompanied by accessible data table displaying selected-year un-truncated category totals and percentages.
   - **Chart 5: Monthly Volume Comparison** (`data-testid="bar-chart"`):
     - Update datasets (`Withdrawals`, `Top-ups`, `Savings`) to use `chartTheme.js` palette:
       - Withdrawals: `palette.grey1` (`#8b929b`)
       - Top-ups: `palette.grey2` (`#b8bec6`)
       - Savings: `palette.grey3` (`#6a7078`)
     - Preserve `data-testid="bar-chart"` and dataset indexing to keep existing tests green.
+    - Accompanied by accessible 12-month summary data table.
 
 #### [MODIFY] `frontend/src/pages/expenditure/Expenditure.css`
-- Add scoped rules for analysis summary cards, search filter toolbar, and chart card containers under `.fs-page .expenditure-analysis-container`.
+- Add scoped rules for analysis summary cards, search filter toolbar, accessible data tables, and chart card containers under `.fs-page .expenditure-analysis-container`.
 
 ---
 
@@ -480,7 +490,7 @@ The table below is copied verbatim from `docs/UI-UX_Plan/UI-UX-PLAN.md` §2. Eve
 ```
 Sub-phase:   UI Phase 4C: Expenditure Cluster Completion
 Status:      DONE
-Done:        Converted 5 expenditure routes to dark graphite tokens; eliminated all 117 inline styles; modernized 5 charts on /expenditure-analysis with chartTheme.js; budget threshold source fidelity (pct > 100); mobile cards on /expenditures/bills (D19); Tabs primitive on /expenditures/recurring; dual-mode sub-nav retired; removed 4 remaining files from .eslintignore (0 warnings); 25 visual baselines updated; 0 diff on 56 unallowlisted routes; manifest 334/334 verified.
+Done:        Converted 5 expenditure routes to dark graphite tokens; eliminated all 117 inline styles; modernized 5 charts on /expenditure-analysis with chartTheme.js and added accessible data tables; budget threshold source fidelity (pct > 100); mobile cards on /expenditures/bills (D19); Tabs primitive on /expenditures/recurring; dual-mode sub-nav retired; removed 4 remaining files from .eslintignore (0 warnings); 25 visual baselines updated; 0 diff on 56 unallowlisted routes; manifest 334/334 verified.
 Next:        UI Phase 5A: Payroll & Salary Overview
 Blocked by:  None
 Allowlist:   THEMED_PATTERNS expanded to 9 routes (+5: /expenditures/rules, /expenditures/budgets, /expenditures/recurring, /expenditures/bills, /expenditure-analysis)
