@@ -25,6 +25,8 @@ export function getChartPalette() {
   const positive = getTokenValue('--fs-positive', '#4fa87c');
   const negative = getTokenValue('--fs-negative', '#d97076');
   const warning = getTokenValue('--fs-warning', '#cfa24f');
+  const surface = getTokenValue('--fs-surface', '#1a1c20');
+  const text2 = getTokenValue('--fs-text-2', '#c9cdd3');
 
   return {
     greys: [grey1, grey2, grey3, grey4],
@@ -35,6 +37,8 @@ export function getChartPalette() {
     grey2,
     grey3,
     grey4,
+    surface,
+    text2,
   };
 }
 

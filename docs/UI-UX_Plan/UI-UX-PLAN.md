@@ -1631,23 +1631,23 @@ Daily-use flow; 185 inline styles across six files.
 
 #### 4C — Rules, budgets, recurring, bills, analysis
 
-- [ ] `RulesPage.css` — `.btn-primary`/`.btn-secondary` → `.fs-btn-*`; rule cards, condition rows, modal.
-- [ ] `RulesPage.js` — 10 inline styles → classes.
-- [ ] `BudgetsPage.css` + `BudgetsPage.js` (53) — flat cards; monochrome progress bars whose threshold state is a `.fs-progress--warning` or `.fs-progress--negative` modifier plus text and icon. Use only the thresholds recorded in §4.3.1; if absent, the bar stays neutral with no label.
-- [ ] `RecurringSuggestionsPage.css` + `.js` (21) — suggestion cards.
-- [ ] `RecurringBills.js` (18) + `RecurringBills.css` — bills calendar, payment status chips, grace period warnings.
-- [ ] `ExpenditureAnalysisPage.js` (32) — chart via `chartTheme`; the category breakdown is ranked horizontal bars plus a data table, capped at six series with the remainder as "Other" (G2, §4.12).
-- [ ] Verify budget thresholds, recurring accept/dismiss, bill payment toggles, rule evaluation.
-- [ ] **Add the five remaining patterns**: rules, budgets, recurring, bills, analysis.
+- [x] `RulesPage.css` — `.btn-primary`/`.btn-secondary` → `.fs-btn-*`; rule cards, condition rows, modal.
+- [x] `RulesPage.js` — 10 inline styles → classes.
+- [x] `BudgetsPage.css` + `BudgetsPage.js` (53) — flat cards; monochrome progress bars whose threshold state is a `.fs-progress--warning` or `.fs-progress--negative` modifier plus text and icon. Use only the thresholds recorded in §4.3.1; if absent, the bar stays neutral with no label.
+- [x] `RecurringSuggestionsPage.css` + `.js` (21) — suggestion cards.
+- [x] `RecurringBills.js` (18) + `RecurringBills.css` — bills calendar, payment status chips, grace period warnings.
+- [x] `ExpenditureAnalysisPage.js` (32) — chart via `chartTheme`; the category breakdown is ranked horizontal bars plus a data table, capped at six series with the remainder as "Other" (G2, §4.12).
+- [x] Verify budget thresholds, recurring accept/dismiss, bill payment toggles, rule evaluation.
+- [x] **Add the five remaining patterns**: rules, budgets, recurring, bills, analysis.
 
 **Exit gate Phase 4:**
-- [ ] All 7 rendering routes converted, then allowlisted — in that order, per branch.
-- [ ] Every branch satisfies `ui-coverage.js --assert-allowlist`.
-- [ ] Category labels legible on dark surfaces, and the prefix/group-by cue works at 390 px (§4.3, G3).
-- [ ] Chart themed and colour-independent.
-- [ ] Budget threshold fixtures (§9.6) unchanged.
-- [ ] Build, tests, lint, axe, screenshots.
-- [ ] Zero diff on non-allowlisted routes.
+- [x] All 7 rendering routes converted, then allowlisted — in that order, per branch.
+- [x] Every branch satisfies `ui-coverage.js --assert-allowlist`.
+- [x] Category labels legible on dark surfaces, and the prefix/group-by cue works at 390 px (§4.3, G3).
+- [x] Chart themed and colour-independent.
+- [x] Budget threshold fixtures (§9.6) unchanged.
+- [x] Build, tests, lint, axe, screenshots.
+- [x] Zero diff on non-allowlisted routes.
 
 **User-facing acceptance criterion:** "A user can log an expense, filter the list, and edit it on a 390 px phone without page-level horizontal scroll."
 
@@ -2499,6 +2499,7 @@ Append one row per sub-phase. Never edit past rows.
 | 3A | 2026-11-15 | Chart theme and Dashboard conversion completed: created chartTheme.js reading --fs-chart-grey-1..4 and semantic tones via computed styles (D22 door-preserving, #14b8a6 strictly banned as chart series); allowlisted /dashboard in ProtectedRoute.js; migrated Button.js isLoading to <Loading variant="inline" />; streamlined DashboardSummary.js to 96 lines (Invariant I8 <= 120 lines preserved) with <Loading variant="route" aria-label="Loading dashboard" />; tokenized Dashboard.css to flat dark graphite (#101114 canvas, #16181d surfaces, #23272f borders, 0 gradients, 0 blurs, <= 8px radius); Section 11 added to theme-components.css hosting scoped semantic tone rules (Invariant I15, §4.3.2 rule 1); converted 7 decoupled widgets (AssetAllocationDonut capped at <= 4 slices per §4.12, BudgetPulseCard under-80% neutral, DashboardKpiStrip, HoldingsGrid, NetWorthHero, ReportsGrid, SavingsForexCard); cleaned useDashboardData.js of hardcoded hex values; removed 13 dashboard production and test files from .eslintignore (0 warnings); registered dashboard-reference-match.spec.js; measured CLS on /dashboard is 0.0001115 (<= 0.1 ceiling verified) and 0 font requests on unthemed route (/trades, S2 font isolation); all automated gates green: tokens (0 drift), tones (0 violations, 0 undefined tokens), ratchet (0 regressions), testid-guard (0 removals), 60 CRA unit suites (387 tests); reference (6/6 pass), shell (7/7 pass), shared (10/10 pass), primitives (4/4 pass), visual route regression (326/326 passing at 0 diff, Invariant I13 preserved, exactly 63 unmigrated routes at 0 diff), manifest 334/334 verified. | 4A (Expenditure migration) | None | 8baf3e5 (merged to main) |
 | 4A | 2026-11-16 | Converted /expenditures to Canonical Reference Frame 01 (Variant B) with dense table, neutral category chips, tabular numbers, universal loading, and compact-expand mobile cards. Verified ExpenditureSubNav dual-mode. Eliminated all 47 inline styles from ExpenditureLogPage.js. Scoped Section 3 table rules added to theme-components.css. Removed converted files from .eslintignore (0 warnings). Reference match suite passing 4/4 tests (covering 14 checks); PR subset passing 71/71 tests with 0 diff on all 63 unallowlisted routes; manifest 334/334 verified. | 4B (Expenditure forms & sub-nav) | None | 91d4278 (merged to main) |
 | 4B | 2026-11-17 | Expenditure form conversion completed: converted /expenditures/new and /expenditures/edit/:id to Canonical Reference Frame 02 (Variant B stacked field cards); eliminated all 22 inline styles from ExpenditureForm.js; roving tabindex category selector with W3C APG radiogroup keyboard navigation; mobile split table collapse into vertical cards; dual-mode ExpenditureSubNav verified; Invariant I4 viewer mutation gating; removed ExpenditureForm.js and its test from .eslintignore (0 warnings); added expenditure-form-reference-match spec (13/13 reference tests passing); PR subset passing 71/71 tests with 0 diff on all 61 unallowlisted routes; manifest 334/334 verified; 10 baseline snapshots regenerated. | 4C (Expenditure rules, budgets & analytics) | None | 9e49604 (merged to main) |
+| 4C | 2026-11-17 | Expenditure cluster completion: converted remaining 5 expenditure routes (/expenditures/rules, /expenditures/budgets, /expenditures/recurring, /expenditures/bills, /expenditure-analysis) to the dark graphite design system; eliminated all 117 legacy inline styles across the 5 page files (0 remaining); purged all 4 expenditure entries from frontend/.eslintignore (0 warnings); integrated Chart.js theme with accessible data tables for all 5 charts on /expenditure-analysis (§4.12, G2); strict budget threshold fidelity (§4.3.1: pct > 100 negative, pct >= 80 warning, neutral under 80%); added unit and jest-axe tests for all converted routes (8 suites, 54 tests passing); Invariant I3 calculation characterization passing (11/11); PR subset visual regression passing 71/71 tests with 0 diff on all 66 non-4C routes; manifest 334/334 verified; 25 baseline snapshots replaced in D:\Projects\FinStat-visual-baselines. | 5A (Trade log & trade entry conversion) | None | Pending Merge |
 
 ```
 Sub-phase:   1A
@@ -2666,6 +2667,20 @@ Fixtures:    unchanged
 Screenshots: expenditures-new-1440.png, expenditures-new-390.png, expenditures-edit-1440.png, expenditures-edit-390.png, reference-02-form-1440.png, reference-02-form-390.png
 Branch:      phase-ui-4b-expenditure-forms
 Merge SHA:   9e49604 (merged to main)
+```
+
+```
+Sub-phase:   4C
+Status:      done
+Done:        Converted remaining 5 expenditure routes (/expenditures/rules, /expenditures/budgets, /expenditures/recurring, /expenditures/bills, /expenditure-analysis); eliminated all 117 inline styles (0 remaining across all 5 files); removed 4 expenditure entries from .eslintignore (0 warnings); accessible data tables for all 5 charts on /expenditure-analysis; strict budget threshold fidelity (§4.3.1); all 8 test suites (54 tests) passing with jest-axe compliance; calculations characterization passing (11/11); PR subset passing 71/71 tests with 0 diff on all 66 non-4C routes; manifest 334/334 verified; 25 baseline snapshots replaced in baseline repo.
+Next:        5A (/trades, /trades/new, /trades/edit/:id)
+Blocked by:  None
+Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis'] (cumulative: 9 routes)
+Visual diff: 0 regression diff across all 66 non-4C routes; 25 baseline snapshots updated for Phase 4C routes
+Fixtures:    unchanged
+Screenshots: expenditures-rules-1440.png, expenditures-rules-390.png, expenditures-budgets-1440.png, expenditures-budgets-390.png, expenditures-recurring-1440.png, expenditures-recurring-390.png, expenditures-bills-1440.png, expenditures-bills-390.png, expenditure-analysis-1440.png, expenditure-analysis-390.png
+Branch:      phase-ui-4c-expenditure-cluster
+Merge SHA:   Pending Merge
 ```
 
 ### Sub-phase note template

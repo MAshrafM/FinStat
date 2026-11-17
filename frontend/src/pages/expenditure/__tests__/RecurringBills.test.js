@@ -3,6 +3,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import RecurringBills from '../RecurringBills';
 import * as recurringBillService from '../../../services/recurringBillService';
+import { expectNoA11yViolations } from '../../../../tests/a11y/expectNoA11yViolations';
 
 jest.mock('react-router-dom', () => ({
   Link: ({ children, to, ...props }) => <a href={to} {...props}>{children}</a>,
@@ -112,9 +113,9 @@ describe('Step 7C.1b: [FEAT-005, GAP-009] RecurringBills Component Unit Tests', 
       expect(screen.getByTestId('bills-table')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Home Fiber Internet')).toBeInTheDocument();
-    expect(screen.getByText('Gym Membership')).toBeInTheDocument();
-    expect(screen.getByText('Streaming Service')).toBeInTheDocument();
+    expect(screen.getAllByText('Home Fiber Internet').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Gym Membership').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Streaming Service').length).toBeGreaterThanOrEqual(1);
 
     // Check status badges
     expect(screen.getByTestId('status-badge-bill1')).toHaveTextContent('Due Soon');
@@ -277,6 +278,16 @@ describe('Step 7C.1b: [FEAT-005, GAP-009] RecurringBills Component Unit Tests', 
     expect(screen.getByTestId('toggle-bill-bill1')).toBeDisabled();
     expect(screen.getByTestId('edit-bill-bill1')).toBeDisabled();
     expect(screen.getByTestId('delete-bill-bill1')).toBeDisabled();
+  });
+
+  it('11. passes WCAG 2.1 AA accessibility audit with expectNoA11yViolations', async () => {
+    const { container } = render(<RecurringBills />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('bills-table')).toBeInTheDocument();
+    });
+
+    await expectNoA11yViolations(container);
   });
 });
 

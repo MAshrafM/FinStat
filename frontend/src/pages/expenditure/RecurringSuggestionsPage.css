@@ -1,255 +1,228 @@
 /* frontend/src/pages/expenditure/RecurringSuggestionsPage.css */
 
-.recur-page-container {
-  padding: 2rem;
-  max-width: 1200px;
+.fs-page .recur-page-container {
+  padding: 1.5rem;
+  max-width: 1440px;
   margin: 0 auto;
 }
 
-.recur-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.recur-header-titles h1 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.85rem;
-  font-weight: 700;
-  color: #111827;
-}
-
-.recur-header-titles p {
-  margin: 0;
-  color: #6b7280;
-  font-size: 0.95rem;
-}
-
-.recur-tabs {
-  display: flex;
-  gap: 0.5rem;
+.fs-page .recur-tabs-container {
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid #e5e7eb;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  max-width: 100%;
-  box-sizing: border-box;
 }
 
-.recur-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.recur-tab {
-  padding: 0.75rem 1.25rem;
-  font-weight: 600;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: #6b7280;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.recur-tab.active {
-  color: #2563eb;
-  border-bottom-color: #2563eb;
-}
-
-.badge-count {
-  background: #ef4444;
-  color: white;
-  font-size: 0.75rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 9999px;
-  font-weight: 700;
-}
-
-.badge-count.neutral {
-  background: #e5e7eb;
-  color: #4b5563;
-}
-
-.suggestions-grid {
+/* Suggestions Grid */
+.fs-page .suggestions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
-.suggestion-card {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
+.fs-page .suggestion-card {
+  background: var(--fs-surface);
+  border-radius: var(--fs-radius-lg);
+  border: var(--fs-border-width, 1px) solid var(--fs-border);
+  box-shadow: none;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.suggestion-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+.fs-page .suggestion-card.accepted {
+  border-left: 4px solid var(--fs-border-strong);
 }
 
-.suggestion-card-top {
+.fs-page .suggestion-card-top {
   margin-bottom: 1rem;
 }
 
-.suggestion-header-row {
+.fs-page .suggestion-header-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 0.75rem;
 }
 
-.suggestion-title {
-  font-size: 1.15rem;
+.fs-page .suggestion-title {
+  font-size: var(--fs-text-base);
   font-weight: 700;
-  color: #111827;
-  margin: 0 0 0.35rem 0;
+  color: var(--fs-text);
+  margin: 0 0 0.25rem 0;
 }
 
-.suggestion-amount {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #059669;
+.fs-page .suggestion-cat-badge {
+  margin-top: 0.25rem;
 }
 
-.freq-badge {
-  text-transform: capitalize;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  background: #f3f4f6;
-  color: #374151;
-  display: inline-block;
+.fs-page .suggestion-amount {
+  font-size: var(--fs-text-xl);
+  font-weight: 700;
+  color: var(--fs-text);
 }
 
-.confidence-section {
+.fs-page .suggestion-freq-row {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.fs-page .active-rule-badge {
+  margin-left: 0.25rem;
+}
+
+.fs-page .confidence-section {
   margin: 1rem 0;
 }
 
-.confidence-header {
+.fs-page .confidence-header {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
-  color: #4b5563;
-  margin-bottom: 0.4rem;
-  font-weight: 500;
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
+  margin-bottom: 0.35rem;
 }
 
-.confidence-track {
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 9999px;
-  overflow: hidden;
+.fs-page .suggestion-card .fs-progress {
+  margin: 0.35rem 0;
 }
 
-.confidence-fill {
-  height: 100%;
-  border-radius: 9999px;
-  transition: width 0.4s ease;
-}
-
-.confidence-high {
-  background: linear-gradient(90deg, #10b981, #059669);
-}
-
-.confidence-medium {
-  background: linear-gradient(90deg, #f59e0b, #d97706);
-}
-
-.confidence-low {
-  background: linear-gradient(90deg, #ef4444, #dc2626);
-}
-
-.date-span {
-  font-size: 0.8rem;
-  color: #6b7280;
+.fs-page .date-span {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
   display: flex;
   align-items: center;
   gap: 0.4rem;
   margin-top: 0.5rem;
 }
 
-.suggestion-card-actions {
+.fs-page .date-span-icon {
+  font-size: var(--fs-text-xs);
+}
+
+.fs-page .suggestion-card-actions {
   display: flex;
   gap: 0.75rem;
   margin-top: 1rem;
-  border-top: 1px solid #f3f4f6;
+  border-top: var(--fs-border-width, 1px) solid var(--fs-border);
   padding-top: 1rem;
 }
 
-.btn-accept {
+.fs-page .suggestion-card-actions button {
   flex: 1;
-  background: #10b981;
-  color: white;
-  border: none;
-  padding: 0.55rem;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease;
 }
 
-.btn-accept:hover {
-  background: #059669;
+/* Flagged Recurring Entries Table */
+.fs-page .recurring-history-container {
+  background: var(--fs-surface);
+  border-radius: var(--fs-radius-lg);
+  border: var(--fs-border-width, 1px) solid var(--fs-border);
+  overflow: hidden;
 }
 
-.btn-reject {
-  flex: 1;
-  background: #f3f4f6;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  padding: 0.55rem;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
+.fs-page .recurring-history-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.btn-reject:hover {
-  background: #fee2e2;
+.fs-page .recurring-history-table th,
+.fs-page .recurring-history-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.fs-page .recurring-history-table thead tr {
+  background: var(--fs-chrome);
+  border-bottom: var(--fs-border-width, 1px) solid var(--fs-border);
+}
+
+.fs-page .recurring-history-table tbody tr {
+  border-bottom: var(--fs-border-width, 1px) solid var(--fs-border);
+}
+
+.fs-page .recurring-history-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.fs-page .cell-right {
+  text-align: right !important;
+}
+
+.fs-page .cell-center {
+  text-align: center !important;
+}
+
+.fs-page .cell-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--fs-text-3);
+}
+
+.fs-page .recur-modal-help-text {
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  margin: 0;
+}
+
+/* D19 Mobile Collapsed Cards */
+.fs-page .recurring-history-mobile-cards {
+  display: none;
 }
 
 @media (max-width: 768px) {
-  .recur-page-container {
-    padding: 0.5rem 0;
-    max-width: 100%;
-    box-sizing: border-box;
+  .fs-page .recur-page-container {
+    padding: 0.75rem;
   }
 
-  .recur-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .recur-header-titles h1 {
-    font-size: 1.5rem;
-  }
-
-  .suggestions-grid {
+  .fs-page .suggestions-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
-  .recur-tab {
-    padding: 0.55rem 0.85rem;
-    font-size: 0.85rem;
+  .fs-page .suggestion-card-actions {
+    flex-direction: column;
+  }
+
+  .fs-page .recurring-history-desktop-table {
+    display: none;
+  }
+
+  .fs-page .recurring-history-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .fs-page .recurring-mobile-card {
+    background: var(--fs-surface-raised);
+    border: var(--fs-border-width, 1px) solid var(--fs-border);
+    border-radius: var(--fs-radius-md);
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .fs-page .recurring-mobile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--fs-text-base);
+    border-bottom: var(--fs-border-width, 1px) solid var(--fs-border);
+    padding-bottom: 0.35rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .fs-page .recurring-mobile-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--fs-text-sm);
+  }
+
+  .fs-page .recurring-mobile-label {
+    color: var(--fs-text-3);
   }
 }

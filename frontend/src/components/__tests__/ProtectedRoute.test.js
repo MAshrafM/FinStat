@@ -99,10 +99,20 @@ describe('Phase 2B: ProtectedRoute & Shell Gating Integration Tests', () => {
     expect(document.documentElement.dataset.fsTheme).toBeUndefined();
   });
 
-  describe('Phase 4B: isThemedRoute allowlist exactness', () => {
+  describe('Phase 4C: isThemedRoute allowlist exactness', () => {
     beforeEach(() => {
       THEMED_PATTERNS.length = 0;
-      THEMED_PATTERNS.push('/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id');
+      THEMED_PATTERNS.push(
+        '/dashboard',
+        '/expenditures',
+        '/expenditures/new',
+        '/expenditures/edit/:id',
+        '/expenditures/rules',
+        '/expenditures/budgets',
+        '/expenditures/recurring',
+        '/expenditures/bills',
+        '/expenditure-analysis'
+      );
     });
 
     afterEach(() => {
@@ -114,12 +124,18 @@ describe('Phase 2B: ProtectedRoute & Shell Gating Integration Tests', () => {
       expect(isThemedRoute('/expenditures')).toBe(true);
       expect(isThemedRoute('/expenditures/new')).toBe(true);
       expect(isThemedRoute('/expenditures/edit/123')).toBe(true);
+      expect(isThemedRoute('/expenditures/rules')).toBe(true);
+      expect(isThemedRoute('/expenditures/budgets')).toBe(true);
+      expect(isThemedRoute('/expenditures/recurring')).toBe(true);
+      expect(isThemedRoute('/expenditures/bills')).toBe(true);
+      expect(isThemedRoute('/expenditure-analysis')).toBe(true);
     });
 
-    test('rejects unallowlisted child and sibling routes (Invariant I13)', () => {
-      expect(isThemedRoute('/expenditures/rules')).toBe(false);
-      expect(isThemedRoute('/expenditure-analysis')).toBe(false);
+    test('rejects unallowlisted routes (Invariant I13)', () => {
       expect(isThemedRoute('/portfolio')).toBe(false);
+      expect(isThemedRoute('/salary-profile')).toBe(false);
+      expect(isThemedRoute('/trades')).toBe(false);
+      expect(isThemedRoute('/reports')).toBe(false);
     });
   });
 });

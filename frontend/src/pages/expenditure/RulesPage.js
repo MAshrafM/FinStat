@@ -14,10 +14,12 @@ import ProtectedAction from '../../components/common/ProtectedAction';
 import { useCanModify } from '../../context/AuthContext';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
+import { PageHeader, Loading, EmptyState, Badge, Button } from '../../components/ui';
 import './RulesPage.css';
 
 const RulesPage = () => {
-  const canModify = useCanModify();
+  const canModifyContext = useCanModify();
+  const canModify = typeof canModifyContext === 'boolean' ? canModifyContext : canModifyContext?.canModify ?? true;
   const { showToast, addToast } = useToast();
   const notify = showToast || addToast;
   const [ruleToDelete, setRuleToDelete] = useState(null);
@@ -108,9 +110,9 @@ const RulesPage = () => {
     }
   };
 
-    const handleDeleteRule = (ruleOrId) => {
+  const handleDeleteRule = (ruleOrId) => {
     if (!canModify) return;
-    const ruleObj = typeof ruleOrId === 'object' ? ruleOrId : rules.find(r => r._id === ruleOrId) || { _id: ruleOrId };
+    const ruleObj = typeof ruleOrId === 'object' ? ruleOrId : rules.find((r) => r._id === ruleOrId) || { _id: ruleOrId };
     setRuleToDelete(ruleObj);
   };
 
@@ -151,70 +153,65 @@ const RulesPage = () => {
     }
   };
 
-  const getCategoryColor = (catName) => {
-    const found = EXPENDITURE_CATEGORIES.find((c) => c.name === catName);
-    return found ? found.color : '#6b7280';
-  };
-
   return (
-    <div className="rules-page-container">
+    <div className="fs-page rules-page-container" data-testid="rules-page">
+      <PageHeader
+        title="Auto-Categorization Rules"
+        subtitle="Define rules to automatically classify transactions by description, merchant, or payment method"
+        actions={
+          <div className="rules-header-actions">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setTestInput('');
+                setTestResult(null);
+                setIsTestModalOpen(true);
+              }}
+              data-testid="test-simulator-btn"
+            >
+              <FaFlask aria-hidden="true" /> Test Simulator
+            </Button>
+            <ProtectedAction tooltip="View-only access">
+              <Button
+                variant="primary"
+                onClick={handleOpenCreate}
+                data-testid="create-rule-btn"
+              >
+                <FaPlus aria-hidden="true" /> New Rule
+              </Button>
+            </ProtectedAction>
+          </div>
+        }
+      />
+
       {/* Navigation tabs */}
       <ExpenditureSubNav />
 
-      <div className="rules-header">
-        <div className="rules-header-titles">
-          <h1>Auto-Categorization Rules</h1>
-          <p>Define rules to automatically classify transactions by description, merchant, or payment method.</p>
-        </div>
-        <div className="rules-header-actions">
-          <button
-            className="btn-secondary"
-            onClick={() => {
-              setTestInput('');
-              setTestResult(null);
-              setIsTestModalOpen(true);
-            }}
-          >
-            <FaFlask /> Test Simulator
-          </button>
-          <ProtectedAction tooltip="View-only access">
-            <button className="btn-primary" onClick={handleOpenCreate}>
-              <FaPlus /> New Rule
-            </button>
-          </ProtectedAction>
-        </div>
-      </div>
-
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Loading rules...</div>
+        <Loading variant="card" text="Loading categorization rules..." />
       ) : rules.length === 0 ? (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '3rem',
-            background: 'white',
-            borderRadius: '12px',
-            border: '1px dashed #d1d5db',
-            color: '#6b7280',
-          }}
-        >
-          <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>No categorization rules configured yet.</p>
-          <ProtectedAction tooltip="View-only access">
-            <button className="btn-primary" onClick={handleOpenCreate}>
-              <FaPlus /> Create Your First Rule
-            </button>
-          </ProtectedAction>
-        </div>
+        <EmptyState
+          title="No categorization rules configured yet"
+          description="Create priority-based rules to automatically tag transactions as they are logged"
+          action={
+            <ProtectedAction tooltip="View-only access">
+              <Button variant="primary" onClick={handleOpenCreate}>
+                <FaPlus aria-hidden="true" /> Create Your First Rule
+              </Button>
+            </ProtectedAction>
+          }
+        />
       ) : (
         <div className="rules-grid">
           {rules.map((rule) => {
-            const catColor = getCategoryColor(rule.category);
             return (
               <div key={rule._id} className={`rule-card ${rule.isActive === false ? 'inactive' : ''}`}>
                 <div>
                   <div className="rule-card-header">
-                    <h3 className="rule-card-title">{rule.name}</h3>
-                    <span className="priority-badge">Priority {rule.priority || 0}</span>
+                    <h2 className="rule-card-title">{rule.name}</h2>
+                    <Badge tone="neutral" label={`Priority ${rule.priority || 0}`}>
+                      Priority {rule.priority || 0}
+                    </Badge>
                   </div>
 
                   <div className="rule-condition">
@@ -223,7 +220,7 @@ const RulesPage = () => {
                     <span className="condition-val">"{rule.value}"</span>
                     <div className="rule-target-cat">
                       <span>Set category:</span>
-                      <span className="cat-pill" style={{ backgroundColor: catColor }}>
+                      <span className="cat-pill">
                         {rule.category}
                       </span>
                     </div>
@@ -232,20 +229,23 @@ const RulesPage = () => {
 
                 <div className="rule-card-footer">
                   <ProtectedAction tooltip="View-only access">
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem' }}>
+                    <label className="rule-toggle-label">
                       <input
                         type="checkbox"
                         checked={rule.isActive !== false}
                         onChange={() => handleToggleActive(rule)}
+                        aria-label={`Toggle active state for rule ${rule.name}`}
                       />
-                      {rule.isActive !== false ? 'Active' : 'Disabled'}
+                      <span>{rule.isActive !== false ? 'Active' : 'Disabled'}</span>
                     </label>
                   </ProtectedAction>
 
                   <div className="rule-actions">
                     <button
+                      type="button"
                       className="rule-action-btn"
                       title="Test this rule"
+                      aria-label={`Test rule ${rule.name}`}
                       onClick={() => {
                         setTestTargetRule({
                           operator: rule.operator,
@@ -257,20 +257,28 @@ const RulesPage = () => {
                         setIsTestModalOpen(true);
                       }}
                     >
-                      <FaFlask />
+                      <FaFlask aria-hidden="true" />
                     </button>
                     <ProtectedAction tooltip="View-only access">
-                      <button className="rule-action-btn" title="Edit rule" onClick={() => handleOpenEdit(rule)}>
-                        <FaPencilAlt />
+                      <button
+                        type="button"
+                        className="rule-action-btn"
+                        title="Edit rule"
+                        aria-label={`Edit rule ${rule.name}`}
+                        onClick={() => handleOpenEdit(rule)}
+                      >
+                        <FaPencilAlt aria-hidden="true" />
                       </button>
                     </ProtectedAction>
                     <ProtectedAction tooltip="View-only access">
                       <button
+                        type="button"
                         className="rule-action-btn delete"
                         title="Delete rule"
+                        aria-label={`Delete rule ${rule.name}`}
                         onClick={() => handleDeleteRule(rule._id)}
                       >
-                        <FaTrash />
+                        <FaTrash aria-hidden="true" />
                       </button>
                     </ProtectedAction>
                   </div>
@@ -283,12 +291,26 @@ const RulesPage = () => {
 
       {/* Create / Edit Modal */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          role="presentation"
+          onClick={() => setIsModalOpen(false)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setIsModalOpen(false); }}
+        >
+          <div
+            className="modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-rule-title"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
-              <h2>{editingRule ? 'Edit Rule' : 'Create Categorization Rule'}</h2>
+              <h2 id="modal-rule-title">{editingRule ? 'Edit Rule' : 'Create Categorization Rule'}</h2>
               <button
-                style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer' }}
+                type="button"
+                className="modal-close-btn"
+                aria-label="Close modal"
                 onClick={() => setIsModalOpen(false)}
               >
                 &times;
@@ -297,8 +319,9 @@ const RulesPage = () => {
             <form onSubmit={handleSaveRule}>
               <div className="modal-body">
                 <div className="form-row">
-                  <label>Rule Name</label>
+                  <label htmlFor="rule-name-input">Rule Name</label>
                   <input
+                    id="rule-name-input"
                     type="text"
                     required
                     placeholder="e.g. Amazon to Shopping"
@@ -308,8 +331,9 @@ const RulesPage = () => {
                 </div>
 
                 <div className="form-row">
-                  <label>Target Field</label>
+                  <label htmlFor="rule-field-select">Target Field</label>
                   <select
+                    id="rule-field-select"
                     value={formData.field}
                     onChange={(e) => setFormData({ ...formData, field: e.target.value })}
                   >
@@ -320,8 +344,9 @@ const RulesPage = () => {
                 </div>
 
                 <div className="form-row">
-                  <label>Operator</label>
+                  <label htmlFor="rule-operator-select">Operator</label>
                   <select
+                    id="rule-operator-select"
                     value={formData.operator}
                     onChange={(e) => setFormData({ ...formData, operator: e.target.value })}
                   >
@@ -334,8 +359,9 @@ const RulesPage = () => {
                 </div>
 
                 <div className="form-row">
-                  <label>Match Value</label>
+                  <label htmlFor="rule-value-input">Match Value</label>
                   <input
+                    id="rule-value-input"
                     type="text"
                     required
                     placeholder="e.g. amazon or uber"
@@ -345,8 +371,9 @@ const RulesPage = () => {
                 </div>
 
                 <div className="form-row">
-                  <label>Assign Category</label>
+                  <label htmlFor="rule-category-select">Assign Category</label>
                   <select
+                    id="rule-category-select"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   >
@@ -359,8 +386,9 @@ const RulesPage = () => {
                 </div>
 
                 <div className="form-row">
-                  <label>Priority (Higher priority rules evaluate first)</label>
+                  <label htmlFor="rule-priority-input">Priority (Higher priority rules evaluate first)</label>
                   <input
+                    id="rule-priority-input"
                     type="number"
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value, 10) || 0 })}
@@ -369,13 +397,13 @@ const RulesPage = () => {
               </div>
 
               <div className="modal-footer">
-                <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>
+                <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
                   Cancel
-                </button>
+                </Button>
                 <ProtectedAction tooltip="View-only access">
-                  <button type="submit" className="btn-primary">
+                  <Button type="submit" variant="primary">
                     {editingRule ? 'Update Rule' : 'Create Rule'}
-                  </button>
+                  </Button>
                 </ProtectedAction>
               </div>
             </form>
@@ -383,7 +411,7 @@ const RulesPage = () => {
         </div>
       )}
 
-            <ConfirmModal
+      <ConfirmModal
         isOpen={Boolean(ruleToDelete)}
         title="Delete Categorization Rule"
         message={`Are you sure you want to delete the rule "${ruleToDelete?.name || ''}"?`}
@@ -395,12 +423,26 @@ const RulesPage = () => {
 
       {/* Test Rule Simulator Modal */}
       {isTestModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsTestModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          role="presentation"
+          onClick={() => setIsTestModalOpen(false)}
+          onKeyDown={(e) => { if (e.key === 'Escape') setIsTestModalOpen(false); }}
+        >
+          <div
+            className="modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-test-title"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
-              <h2>Rule Test Simulator</h2>
+              <h2 id="modal-test-title">Rule Test Simulator</h2>
               <button
-                style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer' }}
+                type="button"
+                className="modal-close-btn"
+                aria-label="Close test simulator"
                 onClick={() => setIsTestModalOpen(false)}
               >
                 &times;
@@ -408,8 +450,9 @@ const RulesPage = () => {
             </div>
             <div className="modal-body">
               <div className="form-row">
-                <label>Operator</label>
+                <label htmlFor="test-operator-select">Operator</label>
                 <select
+                  id="test-operator-select"
                   value={testTargetRule.operator}
                   onChange={(e) => setTestTargetRule({ ...testTargetRule, operator: e.target.value })}
                 >
@@ -422,8 +465,9 @@ const RulesPage = () => {
               </div>
 
               <div className="form-row">
-                <label>Value Pattern</label>
+                <label htmlFor="test-value-input">Value Pattern</label>
                 <input
+                  id="test-value-input"
                   type="text"
                   placeholder="e.g. amazon"
                   value={testTargetRule.value}
@@ -432,8 +476,9 @@ const RulesPage = () => {
               </div>
 
               <div className="form-row">
-                <label>Assigned Category</label>
+                <label htmlFor="test-category-select">Assigned Category</label>
                 <select
+                  id="test-category-select"
                   value={testTargetRule.category}
                   onChange={(e) => setTestTargetRule({ ...testTargetRule, category: e.target.value })}
                 >
@@ -446,8 +491,9 @@ const RulesPage = () => {
               </div>
 
               <div className="form-row">
-                <label>Sample Text to Test</label>
+                <label htmlFor="test-sample-input">Sample Text to Test</label>
                 <input
+                  id="test-sample-input"
                   type="text"
                   placeholder="e.g. Amazon Prime Video #4491"
                   value={testInput}
@@ -455,20 +501,21 @@ const RulesPage = () => {
                 />
               </div>
 
-              <button
-                type="button"
-                className="btn-primary"
-                style={{ marginTop: '0.5rem' }}
-                onClick={handleRunTest}
-              >
-                Run Match Simulation
-              </button>
+              <div className="sim-run-actions">
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={handleRunTest}
+                >
+                  Run Match Simulation
+                </Button>
+              </div>
 
               {testResult && (
                 <div className={`test-result-box ${testResult.matched ? 'match' : 'no-match'}`}>
                   {testResult.matched ? (
                     <>
-                      <FaCheckCircle style={{ fontSize: '1.25rem', color: '#10b981' }} />
+                      <FaCheckCircle className="test-status-icon fs-tone-positive" aria-hidden="true" />
                       <div>
                         <strong>Match Found!</strong>
                         <div>Auto-assigned Category: <strong>{testResult.category}</strong></div>
@@ -476,7 +523,7 @@ const RulesPage = () => {
                     </>
                   ) : (
                     <>
-                      <FaTimesCircle style={{ fontSize: '1.25rem', color: '#ef4444' }} />
+                      <FaTimesCircle className="test-status-icon fs-tone-negative" aria-hidden="true" />
                       <div>
                         <strong>No Match</strong>
                         <div>Rule pattern does not match the sample text.</div>
@@ -488,9 +535,9 @@ const RulesPage = () => {
             </div>
 
             <div className="modal-footer">
-              <button type="button" className="btn-secondary" onClick={() => setIsTestModalOpen(false)}>
+              <Button type="button" variant="secondary" onClick={() => setIsTestModalOpen(false)}>
                 Close
-              </button>
+              </Button>
             </div>
           </div>
         </div>
