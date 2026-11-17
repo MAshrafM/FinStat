@@ -99,6 +99,7 @@ jobs:
         run: npm run build
         env:
           CI: true
+          NODE_OPTIONS: --max-old-space-size=4096
 
   frontend-tests:
     name: Frontend Unit & Calculation Tests
@@ -128,6 +129,7 @@ jobs:
           npx jest --runInBand tests/calculations.spec.js
         env:
           CI: true
+          NODE_OPTIONS: --max-old-space-size=4096
 
   frontend-lint:
     name: Frontend Anti-Slop, Ratchet & ESLint Gate
