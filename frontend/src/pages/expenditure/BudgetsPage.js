@@ -14,6 +14,7 @@ import ProtectedAction from '../../components/common/ProtectedAction';
 import { useCanModify } from '../../context/AuthContext';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
+import { PageHeader, Button, Badge, Loading, EmptyState } from '../../components/ui';
 import './BudgetsPage.css';
 import './RulesPage.css';
 
@@ -23,7 +24,8 @@ const MONTH_NAMES = [
 ];
 
 const BudgetsPage = () => {
-  const canModify = useCanModify();
+  const canModifyContext = useCanModify();
+  const canModify = canModifyContext?.canModify ?? (typeof canModifyContext === 'boolean' ? canModifyContext : true);
   const { showToast, addToast } = useToast();
   const notify = showToast || addToast;
   const [budgetToDelete, setBudgetToDelete] = useState(null);
@@ -148,7 +150,7 @@ const BudgetsPage = () => {
     }
   };
 
-    const handleDelete = (budgetId) => {
+  const handleDelete = (budgetId) => {
     if (!canModify) return;
     setBudgetToDelete(budgetId);
   };
@@ -194,63 +196,59 @@ const BudgetsPage = () => {
     setIsModalOpen(true);
   };
 
-  const getCategoryColor = (catName) => {
-    const found = EXPENDITURE_CATEGORIES.find((c) => c.name === catName);
-    return found ? found.color : '#6b7280';
+  const getProgressModifier = (pct) => {
+    if (pct > 100) return 'fs-progress--negative';
+    if (pct >= 80) return 'fs-progress--warning';
+    return '';
   };
 
   return (
-    <div className="budgets-page-container">
+    <div className="fs-page budgets-page-container" data-testid="budgets-page">
       {/* Sub-navigation tabs */}
       <ExpenditureSubNav />
 
-      <div className="budgets-header">
-        <div className="budgets-header-titles">
-          <h1>Budget vs. Actual Tracker</h1>
-          <p>
-            Monitor real-time spending against your monthly, quarterly, or yearly targets with color-coded
-            alerts.
-          </p>
-        </div>
-        <ProtectedAction tooltip="View-only access">
-          <button className="btn-primary" onClick={handleOpenCreate}>
-            <FaPlus /> Set New Budget
-          </button>
-        </ProtectedAction>
-      </div>
+      <PageHeader
+        title="Budget vs. Actual Tracker"
+        subtitle="Monitor real-time spending against your monthly, quarterly, or yearly targets with color-coded alerts."
+        actions={
+          <ProtectedAction tooltip="View-only access">
+            <Button
+              variant="primary"
+              onClick={handleOpenCreate}
+              data-testid="set-budget-btn"
+            >
+              <FaPlus /> Set New Budget
+            </Button>
+          </ProtectedAction>
+        }
+      />
 
       {/* KPI Cards */}
       <div className="budget-kpis-grid">
-        <div className="budget-kpi-card" style={{ borderLeft: '4px solid #3b82f6' }}>
+        <div className="budget-kpi-card" data-testid="kpi-total-allocated">
           <div className="budget-kpi-label">Total Allocated</div>
-          <div className="budget-kpi-val" style={{ color: '#1e40af' }}>
+          <div className="budget-kpi-val fs-num">
             {formatCurrency(totalBudgeted)}
           </div>
         </div>
 
-        <div className="budget-kpi-card" style={{ borderLeft: '4px solid #f59e0b' }}>
+        <div className="budget-kpi-card" data-testid="kpi-total-spent">
           <div className="budget-kpi-label">Total Spent</div>
-          <div className="budget-kpi-val" style={{ color: '#b45309' }}>
+          <div className="budget-kpi-val fs-num">
             {formatCurrency(totalSpent)}
           </div>
         </div>
 
-        <div
-          className="budget-kpi-card"
-          style={{ borderLeft: `4px solid ${totalRemaining >= 0 ? '#10b981' : '#ef4444'}` }}
-        >
+        <div className="budget-kpi-card" data-testid="kpi-remaining-balance">
           <div className="budget-kpi-label">Remaining Safe Balance</div>
-          <div
-            className="budget-kpi-val"
-            style={{ color: totalRemaining >= 0 ? '#047857' : '#b91c1c' }}
-          >
+          <div className={`budget-kpi-val fs-num ${totalRemaining >= 0 ? 'fs-delta--positive' : 'fs-delta--negative'}`}>
             {formatCurrency(totalRemaining)}
           </div>
         </div>
 
-        <div className="budget-kpi-card" style={{ borderLeft: '4px solid #8b5cf6' }}>
+        <div className="budget-kpi-card" data-testid="kpi-burn-rate">
           <div className="budget-kpi-label">Overall Burn Rate</div>
-          <div className="budget-kpi-val" style={{ color: '#6d28d9' }}>
+          <div className="budget-kpi-val fs-num">
             {overallBurnRate}%
           </div>
         </div>
@@ -259,8 +257,12 @@ const BudgetsPage = () => {
       {/* Period Filter Bar */}
       <div className="budgets-filter-bar">
         <div className="filter-group">
-          <label>Period:</label>
-          <select value={selectedPeriod} onChange={(e) => setSelectedPeriod(e.target.value)}>
+          <label htmlFor="budget-period-select">Period:</label>
+          <select
+            id="budget-period-select"
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+          >
             <option value="monthly">Monthly</option>
             <option value="quarterly">Quarterly</option>
             <option value="yearly">Yearly</option>
@@ -268,8 +270,12 @@ const BudgetsPage = () => {
         </div>
 
         <div className="filter-group">
-          <label>Year:</label>
-          <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}>
+          <label htmlFor="budget-year-select">Year:</label>
+          <select
+            id="budget-year-select"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
+          >
             {[2024, 2025, 2026, 2027].map((y) => (
               <option key={y} value={y}>
                 {y}
@@ -280,8 +286,9 @@ const BudgetsPage = () => {
 
         {selectedPeriod === 'monthly' && (
           <div className="filter-group">
-            <label>Month:</label>
+            <label htmlFor="budget-month-select">Month:</label>
             <select
+              id="budget-month-select"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(parseInt(e.target.value, 10))}
             >
@@ -296,8 +303,9 @@ const BudgetsPage = () => {
 
         {selectedPeriod === 'quarterly' && (
           <div className="filter-group">
-            <label>Quarter:</label>
+            <label htmlFor="budget-quarter-select">Quarter:</label>
             <select
+              id="budget-quarter-select"
               value={selectedQuarter}
               onChange={(e) => setSelectedQuarter(parseInt(e.target.value, 10))}
             >
@@ -314,7 +322,7 @@ const BudgetsPage = () => {
       <div className="budget-section">
         <div className="budget-section-header">
           <h2 className="budget-section-title">
-            <FaCalendarAlt style={{ color: '#3b82f6', marginRight: '8px' }} />
+            <FaCalendarAlt className="budget-section-icon" />
             {selectedPeriod === 'monthly'
               ? `Current Month Targets (${MONTH_NAMES[selectedMonth - 1]} ${selectedYear})`
               : selectedPeriod === 'quarterly'
@@ -327,45 +335,39 @@ const BudgetsPage = () => {
         </div>
 
         {isLoading ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Loading budget progress...</div>
+          <Loading variant="card" message="Loading budget progress..." />
         ) : budgetsProgress.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '3.5rem',
-              background: 'white',
-              borderRadius: '12px',
-              border: '1px dashed #d1d5db',
-              color: '#6b7280',
-            }}
-          >
-            <FaChartPie style={{ fontSize: '2.5rem', color: '#9ca3af', marginBottom: '1rem' }} />
-            <h3>No budgets found for this period</h3>
-            <p style={{ margin: '0.5rem 0 1.5rem 0' }}>
-              Set a spending limit for categories like Groceries, Dining, or Utilities to track progress.
-            </p>
-            <ProtectedAction tooltip="View-only access">
-              <button className="btn-primary" onClick={handleOpenCreate}>
-                <FaPlus /> Set New Budget
-              </button>
-            </ProtectedAction>
-          </div>
+          <EmptyState
+            icon={<FaChartPie />}
+            title="No budgets found for this period"
+            description="Set a spending limit for categories like Groceries, Dining, or Utilities to track progress."
+            action={
+              <ProtectedAction tooltip="View-only access">
+                <Button
+                  variant="primary"
+                  onClick={handleOpenCreate}
+                  data-testid="empty-set-budget-btn"
+                >
+                  <FaPlus /> Set New Budget
+                </Button>
+              </ProtectedAction>
+            }
+          />
         ) : (
           <div className="budget-cards-grid">
             {budgetsProgress.map((bp) => {
-              const catColor = getCategoryColor(bp.category);
               const statusClass = `status-${bp.alertStatus}`;
               const barWidth = Math.min(100, Math.max(0, bp.percentageUsed));
 
               return (
-                <div key={bp.budgetId} className={`budget-card ${statusClass}`}>
-                  <div>
+                <div key={bp.budgetId} className={`budget-card ${statusClass}`} data-testid={`budget-card-${bp.category}`}>
+                  <div className="budget-card-body">
                     <div className="budget-card-header">
                       <div>
                         <h3 className="budget-category-title">{bp.category}</h3>
-                        <span className="cat-pill" style={{ backgroundColor: catColor, marginTop: '0.35rem' }}>
+                        <Badge tone="neutral" className="budget-cat-badge">
                           {bp.category}
-                        </span>
+                        </Badge>
                       </div>
                       <span className="budget-period-badge">
                         {bp.period === 'monthly'
@@ -376,49 +378,58 @@ const BudgetsPage = () => {
                       </span>
                     </div>
 
-                    <div className="progress-track">
+                    <div
+                      className={`fs-progress ${getProgressModifier(bp.percentageUsed)}`}
+                      role="progressbar"
+                      aria-valuenow={Math.min(bp.percentageUsed, 100)}
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                      aria-label={`${bp.category} budget usage: ${bp.percentageUsed}%`}
+                    >
                       <div
-                        className={`progress-bar ${bp.alertStatus}`}
-                        style={{ width: `${barWidth}%` }}
-                      ></div>
+                        className="fs-progress-bar"
+                        ref={(el) => {
+                          if (el) el.style.width = `${barWidth}%`;
+                        }}
+                      />
                     </div>
 
                     <div className="budget-financials-row">
                       <div>
-                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Spent</span>
-                        <span className="budget-spent-val">{formatCurrency(bp.spentAmount)}</span>
+                        <span className="budget-fin-label">Spent</span>
+                        <span className="budget-spent-val fs-num">{formatCurrency(bp.spentAmount)}</span>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <span style={{ fontSize: '0.8rem', color: '#6b7280', display: 'block' }}>Limit</span>
-                        <strong style={{ fontSize: '1.1rem', color: '#374151' }}>
+                      <div className="budget-limit-col">
+                        <span className="budget-fin-label">Limit</span>
+                        <strong className="budget-limit-val fs-num">
                           {formatCurrency(bp.budgetedAmount)}
                         </strong>
                       </div>
                     </div>
 
-                    <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span
-                        className={`budget-remaining-tag ${bp.remainingAmount >= 0 ? 'safe' : 'danger'}`}
-                      >
+                    <div className="budget-status-row">
+                      <Badge tone={bp.remainingAmount >= 0 ? 'neutral' : 'negative'}>
                         {bp.remainingAmount >= 0
                           ? `${formatCurrency(bp.remainingAmount)} remaining`
                           : `${formatCurrency(Math.abs(bp.remainingAmount))} over limit`}
-                      </span>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>
+                      </Badge>
+                      <span className={`budget-pct-val fs-num ${bp.percentageUsed > 100 ? 'fs-delta--negative' : bp.percentageUsed >= 80 ? 'fs-delta--warning' : ''}`}>
                         {bp.percentageUsed}% used
                       </span>
                     </div>
                   </div>
 
-                  <div className="rule-card-footer" style={{ marginTop: '1.25rem' }}>
-                    <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-                       Alert at {bp.alertThreshold}%
+                  <div className="rule-card-footer">
+                    <div className="budget-alert-threshold">
+                      Alert at {bp.alertThreshold}%
                     </div>
                     <div className="rule-actions">
                       <ProtectedAction tooltip="View-only access">
                         <button
+                          type="button"
                           className="rule-action-btn"
                           title="Edit budget"
+                          aria-label={`Edit ${bp.category} budget`}
                           onClick={() => handleOpenEdit(bp)}
                         >
                           <FaPencilAlt />
@@ -426,8 +437,10 @@ const BudgetsPage = () => {
                       </ProtectedAction>
                       <ProtectedAction tooltip="View-only access">
                         <button
+                          type="button"
                           className="rule-action-btn delete"
                           title="Delete budget"
+                          aria-label={`Delete ${bp.category} budget`}
                           onClick={() => handleDelete(bp.budgetId)}
                         >
                           <FaTrash />
@@ -449,7 +462,7 @@ const BudgetsPage = () => {
             <div className="previous-month-header-content">
               <div>
                 <h2 className="budget-section-title">
-                  <FaHistory style={{ color: '#8b5cf6', marginRight: '8px' }} />
+                  <FaHistory className="budget-section-icon" />
                   Previous Month Final Outcome ({MONTH_NAMES[prevMonth - 1]} {prevYear})
                 </h2>
                 <span className="budget-section-sub">
@@ -457,171 +470,206 @@ const BudgetsPage = () => {
                 </span>
               </div>
               {prevBudgetsProgress.length > 0 && (
-                <div className={`budget-outcome-summary-tag ${prevTotalRemaining >= 0 ? 'safe' : 'danger'}`}>
+                <Badge
+                  tone={prevTotalRemaining >= 0 ? 'positive' : 'negative'}
+                  className="budget-outcome-summary-badge"
+                >
                   Overall Result: {prevTotalRemaining >= 0 ? `Net Saved ${formatCurrency(prevTotalRemaining)}` : `Net Over ${formatCurrency(Math.abs(prevTotalRemaining))}`} ({prevOverallBurnRate}% burn rate)
-                </div>
+                </Badge>
               )}
             </div>
           </div>
 
           {isLoadingPrev ? (
-            <div style={{ textAlign: 'center', padding: '2.5rem', color: '#6b7280' }}>
-              Loading previous month final outcome...
-            </div>
+            <Loading variant="table" message="Loading previous month final outcome..." />
           ) : prevBudgetsProgress.length === 0 ? (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '2.5rem',
-                background: 'white',
-                borderRadius: '12px',
-                border: '1px dashed #d1d5db',
-                color: '#6b7280',
-              }}
-            >
-              <FaHistory style={{ fontSize: '2rem', color: '#9ca3af', marginBottom: '0.75rem' }} />
-              <h4 style={{ margin: '0 0 0.5rem 0', color: '#374151' }}>
-                No budget entries found for {MONTH_NAMES[prevMonth - 1]} {prevYear}
-              </h4>
-              <p style={{ margin: '0 0 1.25rem 0', fontSize: '0.9rem' }}>
-                You can retroactively record budget allocations for previous months to track historical performance.
-              </p>
-              <button
-                className="btn-secondary"
-                onClick={() => handleOpenCreateForMonth(prevYear, prevMonth)}
-              >
-                <FaPlus /> Set Budget for {MONTH_NAMES[prevMonth - 1]} {prevYear}
-              </button>
-            </div>
+            <EmptyState
+              icon={<FaHistory />}
+              title={`No budget entries found for ${MONTH_NAMES[prevMonth - 1]} ${prevYear}`}
+              description="You can retroactively record budget allocations for previous months to track historical performance."
+              action={
+                <ProtectedAction tooltip="View-only access">
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleOpenCreateForMonth(prevYear, prevMonth)}
+                  >
+                    <FaPlus /> Set Budget for {MONTH_NAMES[prevMonth - 1]} {prevYear}
+                  </Button>
+                </ProtectedAction>
+              }
+            />
           ) : (
-            <div className="table-container">
-              <table className="styled-table budget-outcome-table">
-                <thead>
-                  <tr>
-                    <th>Category</th>
-                    <th style={{ textAlign: 'right' }}>Budget Target</th>
-                    <th style={{ textAlign: 'right' }}>Actual Spent</th>
-                    <th style={{ textAlign: 'right' }}>Variance / Diff</th>
-                    <th style={{ textAlign: 'center' }}>% Used</th>
-                    <th style={{ textAlign: 'center' }}>Final Outcome</th>
-                    <th style={{ textAlign: 'center' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {prevBudgetsProgress.map((bp) => {
-                    const catColor = getCategoryColor(bp.category);
-                    const isUnderBudget = bp.remainingAmount >= 0;
-                    return (
-                      <tr key={bp.budgetId}>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <>
+              {/* Desktop Outcome Table */}
+              <div className="table-container budget-outcome-desktop-table fs-table-container">
+                <table className="styled-table budget-outcome-table" data-testid="budget-outcome-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Category</th>
+                      <th scope="col" className="cell-right">Budget Target</th>
+                      <th scope="col" className="cell-right">Actual Spent</th>
+                      <th scope="col" className="cell-right">Variance / Diff</th>
+                      <th scope="col" className="cell-center">% Used</th>
+                      <th scope="col" className="cell-center">Final Outcome</th>
+                      <th scope="col" className="cell-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prevBudgetsProgress.map((bp) => {
+                      const isUnderBudget = bp.remainingAmount >= 0;
+                      return (
+                        <tr key={bp.budgetId}>
+                          <td>
+                            <Badge tone="neutral">{bp.category}</Badge>
+                          </td>
+                          <td className="cell-right fs-num">
+                            {formatCurrency(bp.budgetedAmount)}
+                          </td>
+                          <td className="cell-right fs-num">
+                            {formatCurrency(bp.spentAmount)}
+                          </td>
+                          <td className="cell-right fs-num">
+                            <span className={isUnderBudget ? 'fs-delta--positive' : 'fs-delta--negative'}>
+                              {isUnderBudget
+                                ? `+${formatCurrency(bp.remainingAmount)}`
+                                : `-${formatCurrency(Math.abs(bp.remainingAmount))}`}
+                            </span>
+                          </td>
+                          <td className="cell-center fs-num">
                             <span
-                              style={{
-                                width: '10px',
-                                height: '10px',
-                                borderRadius: '50%',
-                                backgroundColor: catColor,
-                                display: 'inline-block',
-                                flexShrink: 0,
-                              }}
-                            />
-                            <strong>{bp.category}</strong>
-                          </div>
-                        </td>
-                        <td style={{ textAlign: 'right', fontWeight: 600 }}>
-                          {formatCurrency(bp.budgetedAmount)}
-                        </td>
-                        <td style={{ textAlign: 'right', fontWeight: 600, color: '#374151' }}>
-                          {formatCurrency(bp.spentAmount)}
-                        </td>
-                        <td style={{ textAlign: 'right', fontWeight: 700 }}>
-                          <span style={{ color: isUnderBudget ? '#059669' : '#dc2626' }}>
-                            {isUnderBudget
-                              ? `+${formatCurrency(bp.remainingAmount)}`
-                              : `-${formatCurrency(Math.abs(bp.remainingAmount))}`}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'center', fontWeight: 600 }}>
-                          <span
-                            style={{
-                              color: bp.alertStatus === 'red' ? '#dc2626' : bp.alertStatus === 'yellow' ? '#d97706' : '#059669',
-                            }}
-                          >
-                            {bp.percentageUsed}%
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          <span
-                            className={`budget-outcome-pill ${isUnderBudget ? 'safe' : 'danger'}`}
-                          >
-                            {isUnderBudget ? 'Within Budget' : 'Over Budget'}
-                          </span>
-                        </td>
-                        <td className="action-cell">
-                          <button
-                            className="rule-action-btn"
-                            title="Edit budget"
+                              className={
+                                bp.percentageUsed > 100
+                                  ? 'fs-delta--negative'
+                                  : bp.percentageUsed >= 80
+                                  ? 'fs-delta--warning'
+                                  : ''
+                              }
+                            >
+                              {bp.percentageUsed}%
+                            </span>
+                          </td>
+                          <td className="cell-center">
+                            <Badge tone={isUnderBudget ? 'neutral' : 'negative'}>
+                              {isUnderBudget ? 'Within Budget' : 'Over Budget'}
+                            </Badge>
+                          </td>
+                          <td className="action-cell cell-center">
+                            <div className="table-actions">
+                              <ProtectedAction tooltip="View-only access">
+                                <button
+                                  type="button"
+                                  className="rule-action-btn"
+                                  title="Edit budget"
+                                  aria-label={`Edit ${bp.category} budget`}
+                                  onClick={() => handleOpenEdit(bp)}
+                                >
+                                  <FaPencilAlt />
+                                </button>
+                              </ProtectedAction>
+                              <ProtectedAction tooltip="View-only access">
+                                <button
+                                  type="button"
+                                  className="rule-action-btn delete"
+                                  title="Delete budget"
+                                  aria-label={`Delete ${bp.category} budget`}
+                                  onClick={() => handleDelete(bp.budgetId)}
+                                >
+                                  <FaTrash />
+                                </button>
+                              </ProtectedAction>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="budget-table-total-row">
+                      <th scope="row">Total</th>
+                      <td className="cell-right fs-num">{formatCurrency(prevTotalBudgeted)}</td>
+                      <td className="cell-right fs-num">{formatCurrency(prevTotalSpent)}</td>
+                      <td className="cell-right fs-num">
+                        <span className={prevTotalRemaining >= 0 ? 'fs-delta--positive' : 'fs-delta--negative'}>
+                          {prevTotalRemaining >= 0
+                            ? `+${formatCurrency(prevTotalRemaining)}`
+                            : `-${formatCurrency(Math.abs(prevTotalRemaining))}`}
+                        </span>
+                      </td>
+                      <td className="cell-center fs-num">{prevOverallBurnRate}%</td>
+                      <td className="cell-center">
+                        <Badge tone={prevTotalRemaining >= 0 ? 'neutral' : 'negative'}>
+                          {prevTotalRemaining >= 0 ? 'Net Surplus' : 'Net Deficit'}
+                        </Badge>
+                      </td>
+                      <td />
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {/* Mobile D19 Outcome Cards (<= 768px) */}
+              <div className="budget-outcome-mobile-cards">
+                {prevBudgetsProgress.map((bp) => {
+                  const isUnderBudget = bp.remainingAmount >= 0;
+                  return (
+                    <div key={bp.budgetId} className="budget-outcome-mobile-card">
+                      <div className="budget-outcome-mobile-header">
+                        <Badge tone="neutral">{bp.category}</Badge>
+                        <Badge tone={isUnderBudget ? 'neutral' : 'negative'}>
+                          {isUnderBudget ? 'Within Budget' : 'Over Budget'}
+                        </Badge>
+                      </div>
+                      <div className="budget-outcome-mobile-row">
+                        <span className="budget-outcome-mobile-label">Target</span>
+                        <span className="fs-num">{formatCurrency(bp.budgetedAmount)}</span>
+                      </div>
+                      <div className="budget-outcome-mobile-row">
+                        <span className="budget-outcome-mobile-label">Spent</span>
+                        <span className="fs-num">{formatCurrency(bp.spentAmount)}</span>
+                      </div>
+                      <div className="budget-outcome-mobile-row">
+                        <span className="budget-outcome-mobile-label">Variance</span>
+                        <span className={`fs-num ${isUnderBudget ? 'fs-delta--positive' : 'fs-delta--negative'}`}>
+                          {isUnderBudget
+                            ? `+${formatCurrency(bp.remainingAmount)}`
+                            : `-${formatCurrency(Math.abs(bp.remainingAmount))}`}
+                        </span>
+                      </div>
+                      <div className="budget-outcome-mobile-row">
+                        <span className="budget-outcome-mobile-label">Usage</span>
+                        <span className="fs-num">{bp.percentageUsed}%</span>
+                      </div>
+                      <div className="budget-outcome-mobile-actions">
+                        <ProtectedAction tooltip="View-only access">
+                          <Button
+                            variant="secondary"
+                            size="sm"
                             onClick={() => handleOpenEdit(bp)}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              cursor: 'pointer',
-                              color: '#2563eb',
-                              marginRight: '8px',
-                            }}
                           >
-                            <FaPencilAlt />
-                          </button>
-                          <button
-                            className="rule-action-btn delete"
-                            title="Delete budget"
+                            <FaPencilAlt /> Edit
+                          </Button>
+                        </ProtectedAction>
+                        <ProtectedAction tooltip="View-only access">
+                          <Button
+                            variant="danger"
+                            size="sm"
                             onClick={() => handleDelete(bp.budgetId)}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              cursor: 'pointer',
-                              color: '#ef4444',
-                            }}
                           >
-                            <FaTrash />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr style={{ background: '#f8fafc', fontWeight: 700 }}>
-                    <td>Total</td>
-                    <td style={{ textAlign: 'right' }}>{formatCurrency(prevTotalBudgeted)}</td>
-                    <td style={{ textAlign: 'right' }}>{formatCurrency(prevTotalSpent)}</td>
-                    <td
-                      style={{
-                        textAlign: 'right',
-                        color: prevTotalRemaining >= 0 ? '#059669' : '#dc2626',
-                      }}
-                    >
-                      {prevTotalRemaining >= 0
-                        ? `+${formatCurrency(prevTotalRemaining)}`
-                        : `-${formatCurrency(Math.abs(prevTotalRemaining))}`}
-                    </td>
-                    <td style={{ textAlign: 'center' }}>{prevOverallBurnRate}%</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className={`budget-outcome-pill ${prevTotalRemaining >= 0 ? 'safe' : 'danger'}`}>
-                        {prevTotalRemaining >= 0 ? 'Net Surplus' : 'Net Deficit'}
-                      </span>
-                    </td>
-                    <td></td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+                            <FaTrash /> Delete
+                          </Button>
+                        </ProtectedAction>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       )}
 
-      {/* Create / Edit Budget Modal */}
-            <ConfirmModal
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
         isOpen={Boolean(budgetToDelete)}
         title="Delete Budget Allocation"
         message="Are you sure you want to delete this budget allocation?"
@@ -631,13 +679,32 @@ const BudgetsPage = () => {
         onCancel={() => setBudgetToDelete(null)}
       />
 
+      {/* Create / Edit Budget Modal */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          role="presentation"
+          onClick={() => setIsModalOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setIsModalOpen(false);
+          }}
+        >
+          <div
+            className="modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="budget-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
-              <h2>{editingBudget ? 'Edit Budget' : 'Set Category Budget'}</h2>
+              <h2 id="budget-modal-title" className="modal-title">
+                {editingBudget ? 'Edit Budget' : 'Set Category Budget'}
+              </h2>
               <button
-                style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer' }}
+                type="button"
+                className="modal-close-btn"
+                aria-label="Close modal"
                 onClick={() => setIsModalOpen(false)}
               >
                 &times;
@@ -646,8 +713,9 @@ const BudgetsPage = () => {
             <form onSubmit={handleSave}>
               <div className="modal-body">
                 <div className="form-row">
-                  <label>Category</label>
+                  <label htmlFor="budget-form-category">Category</label>
                   <select
+                    id="budget-form-category"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   >
@@ -660,8 +728,9 @@ const BudgetsPage = () => {
                 </div>
 
                 <div className="form-row">
-                  <label>Period</label>
+                  <label htmlFor="budget-form-period">Period</label>
                   <select
+                    id="budget-form-period"
                     value={formData.period}
                     onChange={(e) => setFormData({ ...formData, period: e.target.value })}
                   >
@@ -672,8 +741,9 @@ const BudgetsPage = () => {
                 </div>
 
                 <div className="form-row">
-                  <label>Year</label>
+                  <label htmlFor="budget-form-year">Year</label>
                   <input
+                    id="budget-form-year"
                     type="number"
                     required
                     value={formData.year}
@@ -683,8 +753,9 @@ const BudgetsPage = () => {
 
                 {formData.period === 'monthly' && (
                   <div className="form-row">
-                    <label>Month</label>
+                    <label htmlFor="budget-form-month">Month</label>
                     <select
+                      id="budget-form-month"
                       value={formData.month}
                       onChange={(e) => setFormData({ ...formData, month: e.target.value })}
                     >
@@ -699,8 +770,9 @@ const BudgetsPage = () => {
 
                 {formData.period === 'quarterly' && (
                   <div className="form-row">
-                    <label>Quarter</label>
+                    <label htmlFor="budget-form-quarter">Quarter</label>
                     <select
+                      id="budget-form-quarter"
                       value={formData.quarter}
                       onChange={(e) => setFormData({ ...formData, quarter: e.target.value })}
                     >
@@ -713,8 +785,9 @@ const BudgetsPage = () => {
                 )}
 
                 <div className="form-row">
-                  <label>Budget Allocation Amount (EGP)</label>
+                  <label htmlFor="budget-form-amount">Budget Allocation Amount (EGP)</label>
                   <input
+                    id="budget-form-amount"
                     type="number"
                     step="any"
                     required
@@ -725,8 +798,9 @@ const BudgetsPage = () => {
                 </div>
 
                 <div className="form-row">
-                  <label>Alert Trigger Threshold (%)</label>
+                  <label htmlFor="budget-form-alert">Alert Trigger Threshold (%)</label>
                   <input
+                    id="budget-form-alert"
                     type="number"
                     min="10"
                     max="100"
@@ -737,13 +811,21 @@ const BudgetsPage = () => {
               </div>
 
               <div className="modal-footer">
-                <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setIsModalOpen(false)}
+                >
                   Cancel
-                </button>
+                </Button>
                 <ProtectedAction tooltip="View-only access">
-                  <button type="submit" className="btn-primary">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    data-testid="save-budget-submit-btn"
+                  >
                     {editingBudget ? 'Update Budget' : 'Save Budget'}
-                  </button>
+                  </Button>
                 </ProtectedAction>
               </div>
             </form>

@@ -4,525 +4,711 @@ import { getAllExpendituresForAnalysis } from '../../services/expenditureService
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
 import { formatCurrency } from '../../utils/formatters';
-import './Expenditure.css'; // Reuse styles
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
+import { PageHeader, Badge, Loading } from '../../components/ui';
+import { getChartPalette, baseChartOptions, doughnutDefaults, ariaLabel } from '../../styles/chartTheme';
+import './Expenditure.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 const parseDateParts = (dateInput) => {
-    if (!dateInput) return { year: null, month: null };
-    if (typeof dateInput === 'string') {
-        const match = dateInput.match(/^(\d{4})-(\d{2})/);
-        if (match) {
-            return {
-                year: match[1],
-                month: parseInt(match[2], 10) - 1, // 0-indexed (0 = Jan, 8 = Sep)
-            };
-        }
+  if (!dateInput) return { year: null, month: null };
+  if (typeof dateInput === 'string') {
+    const match = dateInput.match(/^(\d{4})-(\d{2})/);
+    if (match) {
+      return {
+        year: match[1],
+        month: parseInt(match[2], 10) - 1, // 0-indexed (0 = Jan, 8 = Sep)
+      };
     }
-    const d = new Date(dateInput);
-    if (isNaN(d.getTime())) return { year: null, month: null };
-    return {
-        year: d.getUTCFullYear().toString(),
-        month: d.getUTCMonth(),
-    };
+  }
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return { year: null, month: null };
+  return {
+    year: d.getUTCFullYear().toString(),
+    month: d.getUTCMonth(),
+  };
 };
 
 const ExpenditureAnalysisPage = () => {
-    const [yearlyData, setYearlyData] = useState({});
-    const [overallSummary, setOverallSummary] = useState({
-        totalWithdrawals: 0,
-        totalTopups: 0,
-        totalSavings: 0,
-        volumeByType: { W: 0, T: 0, S: 0 }
+  const [yearlyData, setYearlyData] = useState({});
+  const [overallSummary, setOverallSummary] = useState({
+    totalWithdrawals: 0,
+    totalTopups: 0,
+    totalSavings: 0,
+    volumeByType: { W: 0, T: 0, S: 0 },
+  });
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [allExpenditures, setAllExpenditures] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTotal, setSearchTotal] = useState(null);
+  const [includeSettlements, setIncludeSettlements] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+    getAllExpendituresForAnalysis()
+      .then((expenditures) => {
+        setAllExpenditures(Array.isArray(expenditures) ? expenditures : []);
+      })
+      .catch((err) => console.error('Failed to load analysis data:', err))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const processData = (expenditures, currentSearchTerm, shouldIncludeSettlements) => {
+    // Exclude credit card settlement expenditures by default to avoid double-counting
+    let workingExpenditures = expenditures;
+    if (!shouldIncludeSettlements) {
+      workingExpenditures = workingExpenditures.filter(
+        (item) => !(item.categories && item.categories.includes('Credit Card Settlement'))
+      );
+    }
+
+    // Filter data based on search term
+    let filteredExpenditures = workingExpenditures;
+    let currentSearchTotal = null;
+
+    if (currentSearchTerm && currentSearchTerm.trim() !== '') {
+      const lowercasedTerm = currentSearchTerm.toLowerCase();
+      filteredExpenditures = expenditures.filter((item) => {
+        const descMatches = item.description && item.description.toLowerCase().includes(lowercasedTerm);
+        const catMatches = item.categories && item.categories.some((cat) => cat.toLowerCase().includes(lowercasedTerm));
+        return descMatches || catMatches;
+      });
+
+      currentSearchTotal = filteredExpenditures.reduce((sum, item) => {
+        return sum + Math.abs(Number(item.transactionValue) || 0);
+      }, 0);
+    }
+    setSearchTotal(currentSearchTotal);
+
+    const groupedData = {};
+    const overallCategoryVolumes = {};
+    EXPENDITURE_CATEGORIES.forEach((c) => {
+      overallCategoryVolumes[c.name] = 0;
     });
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
-    const [allExpenditures, setAllExpenditures] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [searchTotal, setSearchTotal] = useState(null);
-    const [includeSettlements, setIncludeSettlements] = useState(false);
+    const overallTotals = {
+      totalWithdrawals: 0,
+      totalTopups: 0,
+      totalSavings: 0,
+      volumeByType: { W: 0, T: 0, S: 0 },
+      categoryVolumes: overallCategoryVolumes,
+    };
 
-    useEffect(() => {
-        getAllExpendituresForAnalysis()
-            .then(expenditures => {
-                setAllExpenditures(Array.isArray(expenditures) ? expenditures : []);
-            })
-            .catch(err => console.error("Failed to load analysis data:", err));
-    }, []);
-
-    useEffect(() => {
-        if (allExpenditures.length > 0) {
-            processData(allExpenditures, searchTerm, includeSettlements);
-        }
-    }, [allExpenditures, searchTerm, includeSettlements]);
-
-    const processData = (expenditures, currentSearchTerm, shouldIncludeSettlements) => {
-        // Exclude credit card settlement expenditures by default to avoid double-counting
-        let workingExpenditures = expenditures;
-        if (!shouldIncludeSettlements) {
-            workingExpenditures = workingExpenditures.filter(item =>
-                !(item.categories && item.categories.includes('Credit Card Settlement'))
-            );
-        }
-
-        // Filter data based on search term
-        let filteredExpenditures = workingExpenditures;
-        let currentSearchTotal = null;
-
-        if (currentSearchTerm && currentSearchTerm.trim() !== '') {
-            const lowercasedTerm = currentSearchTerm.toLowerCase();
-            filteredExpenditures = expenditures.filter(item => {
-                const descMatches = item.description && item.description.toLowerCase().includes(lowercasedTerm);
-                const catMatches = item.categories && item.categories.some(cat => cat.toLowerCase().includes(lowercasedTerm));
-                return descMatches || catMatches;
-            });
-
-            currentSearchTotal = filteredExpenditures.reduce((sum, item) => {
-                return sum + (Math.abs(Number(item.transactionValue) || 0));
-            }, 0);
-        }
-        setSearchTotal(currentSearchTotal);
-
-        const groupedData = {};
-        const overallCategoryVolumes = {};
-        EXPENDITURE_CATEGORIES.forEach(c => {
-            overallCategoryVolumes[c.name] = 0;
+    const initializeYear = (year) => {
+      if (!groupedData[year]) {
+        const categoryVolumes = {};
+        EXPENDITURE_CATEGORIES.forEach((c) => {
+          categoryVolumes[c.name] = 0;
         });
-        const overallTotals = {
-            totalWithdrawals: 0,
-            totalTopups: 0,
-            totalSavings: 0,
-            volumeByType: { W: 0, T: 0, S: 0 },
-            categoryVolumes: overallCategoryVolumes
+        groupedData[year] = {
+          byType: { W: 0, T: 0, S: 0, log: 0 },
+          volumeByType: { W: 0, T: 0, S: 0 },
+          byMonth: Array(12).fill(0).map(() => ({ withdrawals: 0, topups: 0, savings: 0 })),
+          totalWithdrawals: 0,
+          totalTopups: 0,
+          totalSavings: 0,
+          categoryVolumes,
         };
+      }
+    };
 
-        const initializeYear = (year) => {
-            if (!groupedData[year]) {
-                const categoryVolumes = {};
-                EXPENDITURE_CATEGORIES.forEach(c => {
-                    categoryVolumes[c.name] = 0;
-                });
-                groupedData[year] = {
-                    byType: { W: 0, T: 0, S: 0, log: 0 },
-                    volumeByType: { W: 0, T: 0, S: 0 }, // Add volume tracking by type
-                    byMonth: Array(12).fill(0).map(() => ({ withdrawals: 0, topups: 0, savings: 0 })),
-                    totalWithdrawals: 0,
-                    totalTopups: 0,
-                    totalSavings: 0,
-                    categoryVolumes,
-                };
+    expenditures.forEach((item) => {
+      const { year, month } = parseDateParts(item.date);
+      if (!year || month === null || month < 0 || month > 11) return;
+      initializeYear(year);
+
+      const transactionValue = Math.abs(Number(item.transactionValue) || 0);
+
+      if (item.transactionType === 'W') {
+        groupedData[year].byMonth[month].withdrawals += transactionValue;
+        groupedData[year].totalWithdrawals += transactionValue;
+        groupedData[year].volumeByType.W += transactionValue;
+        overallTotals.totalWithdrawals += transactionValue;
+        overallTotals.volumeByType.W += transactionValue;
+
+        // Split categories values (explicit splits or fallback)
+        if (item.splits && Array.isArray(item.splits) && item.splits.length > 0) {
+          item.splits.forEach((split) => {
+            const catName = split.category || 'Other';
+            const splitVal = Math.abs(Number(split.amount) || 0);
+            if (groupedData[year].categoryVolumes[catName] !== undefined) {
+              groupedData[year].categoryVolumes[catName] += splitVal;
             }
-        };
-
-        expenditures.forEach((item) => {
-            const { year, month } = parseDateParts(item.date);
-            if (!year || month === null || month < 0 || month > 11) return;
-            initializeYear(year);
-
-            const transactionValue = Math.abs(Number(item.transactionValue) || 0);
-
-            if (item.transactionType === 'W') {
-                groupedData[year].byMonth[month].withdrawals += transactionValue;
-                groupedData[year].totalWithdrawals += transactionValue;
-                groupedData[year].volumeByType.W += transactionValue;
-                overallTotals.totalWithdrawals += transactionValue;
-                overallTotals.volumeByType.W += transactionValue;
-
-                // Split categories values (explicit splits or fallback)
-                if (item.splits && Array.isArray(item.splits) && item.splits.length > 0) {
-                    item.splits.forEach(split => {
-                        const catName = split.category || 'Other';
-                        const splitVal = Math.abs(Number(split.amount) || 0);
-                        if (groupedData[year].categoryVolumes[catName] !== undefined) {
-                            groupedData[year].categoryVolumes[catName] += splitVal;
-                        }
-                        if (overallTotals.categoryVolumes[catName] !== undefined) {
-                            overallTotals.categoryVolumes[catName] += splitVal;
-                        }
-                    });
-                } else {
-                    const itemCats = item.categories && item.categories.length > 0 ? item.categories : ['Other'];
-                    const splitVal = transactionValue / itemCats.length;
-                    itemCats.forEach(catName => {
-                        if (groupedData[year].categoryVolumes[catName] !== undefined) {
-                            groupedData[year].categoryVolumes[catName] += splitVal;
-                        }
-                        if (overallTotals.categoryVolumes[catName] !== undefined) {
-                            overallTotals.categoryVolumes[catName] += splitVal;
-                        }
-                    });
-                }
-            } else if (item.transactionType === 'T') {
-                groupedData[year].byMonth[month].topups += transactionValue;
-                groupedData[year].totalTopups += transactionValue;
-                groupedData[year].volumeByType.T += transactionValue;
-                overallTotals.totalTopups += transactionValue;
-                overallTotals.volumeByType.T += transactionValue;
-            } else if (item.transactionType === 'S') {
-                groupedData[year].byMonth[month].savings += transactionValue;
-                groupedData[year].totalSavings += transactionValue;
-                groupedData[year].volumeByType.S += transactionValue;
-                overallTotals.totalSavings += transactionValue;
-                overallTotals.volumeByType.S += transactionValue;
+            if (overallTotals.categoryVolumes[catName] !== undefined) {
+              overallTotals.categoryVolumes[catName] += splitVal;
             }
-
-            if (groupedData[year].byType[item.transactionType] !== undefined) {
-                groupedData[year].byType[item.transactionType]++;
+          });
+        } else {
+          const itemCats = item.categories && item.categories.length > 0 ? item.categories : ['Other'];
+          const splitVal = transactionValue / itemCats.length;
+          itemCats.forEach((catName) => {
+            if (groupedData[year].categoryVolumes[catName] !== undefined) {
+              groupedData[year].categoryVolumes[catName] += splitVal;
             }
-        });
-
-        // Calculate and Add Passive Bank Savings
-        const monthlyBankRecords = {};
-
-        expenditures.forEach(item => {
-            const { year, month } = parseDateParts(item.date);
-            if (!year || month === null || month < 0 || month > 11) return;
-            const key = `${year}-${month}`;
-
-            if (!monthlyBankRecords[key]) {
-                monthlyBankRecords[key] = [];
+            if (overallTotals.categoryVolumes[catName] !== undefined) {
+              overallTotals.categoryVolumes[catName] += splitVal;
             }
-            monthlyBankRecords[key].push({
-                date: new Date(item.date),
-                bank: item.runningBalances?.bank ?? item.bank ?? 0
-            });
-        });
-
-        for (const key in monthlyBankRecords) {
-            const records = monthlyBankRecords[key];
-
-            records.sort((a, b) => a.date - b.date);
-
-            const startBank = records[0].bank;
-            const endBank = records[records.length - 1].bank;
-            const bankChange = endBank - startBank;
-
-            if (bankChange > 0) {
-                const [year, month] = key.split('-');
-                const monthIndex = parseInt(month, 10);
-                if (groupedData[year] && groupedData[year].byMonth[monthIndex]) {
-                    groupedData[year].byMonth[monthIndex].savings += bankChange;
-                    groupedData[year].totalSavings += bankChange;
-                    groupedData[year].volumeByType.S += bankChange;
-                    overallTotals.totalSavings += bankChange;
-                    overallTotals.volumeByType.S += bankChange;
-                }
-            }
+          });
         }
+      } else if (item.transactionType === 'T') {
+        groupedData[year].byMonth[month].topups += transactionValue;
+        groupedData[year].totalTopups += transactionValue;
+        groupedData[year].volumeByType.T += transactionValue;
+        overallTotals.totalTopups += transactionValue;
+        overallTotals.volumeByType.T += transactionValue;
+      } else if (item.transactionType === 'S') {
+        groupedData[year].byMonth[month].savings += transactionValue;
+        groupedData[year].totalSavings += transactionValue;
+        groupedData[year].volumeByType.S += transactionValue;
+        overallTotals.totalSavings += transactionValue;
+        overallTotals.volumeByType.S += transactionValue;
+      }
 
-        setYearlyData(groupedData);
-        setOverallSummary(overallTotals);
-    };
-
-    const availableYears = Object.keys(yearlyData).sort((a, b) => b - a);
-    const initialCategoryVolumes = {};
-    EXPENDITURE_CATEGORIES.forEach(c => {
-        initialCategoryVolumes[c.name] = 0;
+      if (groupedData[year].byType[item.transactionType] !== undefined) {
+        groupedData[year].byType[item.transactionType]++;
+      }
     });
 
-    const dataForYear = yearlyData[selectedYear] || {
-        byType: {},
-        volumeByType: { W: 0, T: 0, S: 0 },
-        byMonth: [],
-        totalWithdrawals: 0,
-        totalTopups: 0,
-        totalSavings: 0,
-        categoryVolumes: initialCategoryVolumes
-    };
+    // Calculate and Add Passive Bank Savings
+    const monthlyBankRecords = {};
 
-    // Overall pie chart data (by volume)
-    const overallPieChartData = {
-        labels: ['Withdrawals', 'Top-ups', 'Savings'],
-        datasets: [{
-            data: [
-                overallSummary.volumeByType.W || 0,
-                overallSummary.volumeByType.T || 0,
-                overallSummary.volumeByType.S || 0
-            ],
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-        }],
-    };
+    expenditures.forEach((item) => {
+      const { year, month } = parseDateParts(item.date);
+      if (!year || month === null || month < 0 || month > 11) return;
+      const key = `${year}-${month}`;
 
-    // Yearly pie chart data (by volume)
-    const yearlyPieChartData = {
-        labels: ['Withdrawals', 'Top-ups', 'Savings'],
-        datasets: [{
-            data: [
-                dataForYear.volumeByType.W || 0,
-                dataForYear.volumeByType.T || 0,
-                dataForYear.volumeByType.S || 0
-            ],
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-        }],
-    };
-
-    // Overall category pie chart data
-    const overallCategoryLabels = EXPENDITURE_CATEGORIES.map(c => c.name);
-    const overallCategoryValues = EXPENDITURE_CATEGORIES.map(c => {
-        const val = overallSummary.categoryVolumes ? (overallSummary.categoryVolumes[c.name] || 0) : 0;
-        return Math.round(val);
+      if (!monthlyBankRecords[key]) {
+        monthlyBankRecords[key] = [];
+      }
+      monthlyBankRecords[key].push({
+        date: new Date(item.date),
+        bank: item.runningBalances?.bank ?? item.bank ?? 0,
+      });
     });
-    const overallCategoryColors = EXPENDITURE_CATEGORIES.map(c => c.color);
 
-    const overallCategoryPieChartData = {
-        labels: overallCategoryLabels,
-        datasets: [{
-            data: overallCategoryValues,
-            backgroundColor: overallCategoryColors,
-        }],
-    };
+    for (const key in monthlyBankRecords) {
+      const records = monthlyBankRecords[key];
+      records.sort((a, b) => a.date - b.date);
 
-    // Yearly category pie chart data
-    const yearlyCategoryLabels = EXPENDITURE_CATEGORIES.map(c => c.name);
-    const yearlyCategoryValues = EXPENDITURE_CATEGORIES.map(c => {
-        const val = dataForYear.categoryVolumes ? (dataForYear.categoryVolumes[c.name] || 0) : 0;
-        return Math.round(val);
-    });
-    const yearlyCategoryColors = EXPENDITURE_CATEGORIES.map(c => c.color);
+      const startBank = records[0].bank;
+      const endBank = records[records.length - 1].bank;
+      const bankChange = endBank - startBank;
 
-    const yearlyCategoryPieChartData = {
-        labels: yearlyCategoryLabels,
-        datasets: [{
-            data: yearlyCategoryValues,
-            backgroundColor: yearlyCategoryColors,
-        }],
-    };
+      if (bankChange > 0) {
+        const [year, month] = key.split('-');
+        const monthIndex = parseInt(month, 10);
+        if (groupedData[year] && groupedData[year].byMonth[monthIndex]) {
+          groupedData[year].byMonth[monthIndex].savings += bankChange;
+          groupedData[year].totalSavings += bankChange;
+          groupedData[year].volumeByType.S += bankChange;
+          overallTotals.totalSavings += bankChange;
+          overallTotals.volumeByType.S += bankChange;
+        }
+      }
+    }
 
-    const barChartData = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        datasets: [
-            {
-                label: 'Withdrawals',
-                data: dataForYear.byMonth.map(m => m.withdrawals),
-                backgroundColor: 'rgba(255, 99, 132, 0.7)',
-            },
-            {
-                label: 'Top-ups',
-                data: dataForYear.byMonth.map(m => m.topups),
-                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-            },
-            {
-                label: 'Savings',
-                data: dataForYear.byMonth.map(m => m.savings),
-                backgroundColor: 'rgba(255, 206, 86, 0.7)',
-            },
-        ],
-    };
-
-   const barChartOptions = {
-    responsive: true,
-    plugins: {
-      legend: { position: 'top' },
-      title: { display: true, text: `Overall Expenditure` },
-    },
+    setYearlyData(groupedData);
+    setOverallSummary(overallTotals);
   };
 
-    return (
-        <div className="page-container">
-            <div className="page-header">
-                <h1>Expenditure Analysis</h1>
-            </div>
+  useEffect(() => {
+    if (allExpenditures.length > 0) {
+      processData(allExpenditures, searchTerm, includeSettlements);
+    }
+  }, [allExpenditures, searchTerm, includeSettlements]);
 
-            {/* Overall Summary Card */}
-            <div className="top-summary-container" style={{ marginBottom: '2rem' }}>
-                <div className="tax-card">
-                    <h3>Overall Summary (All Years)</h3>
-                    <div className="yearly-summary-grid">
-                        <div className="summary-item highlight" style={{ backgroundColor: '#fff0f2' }}>
-                            <span>Total Withdrawals</span>
-                            <strong>{formatCurrency(overallSummary.totalWithdrawals)}</strong>
-                        </div>
-                        <div className="summary-item highlight" style={{ backgroundColor: '#eef7ff' }}>
-                            <span>Total Top-ups</span>
-                            <strong>{formatCurrency(overallSummary.totalTopups)}</strong>
-                        </div>
-                        <div className="summary-item highlight" style={{ backgroundColor: '#fff9e9' }}>
-                            <span>Total Savings</span>
-                            <strong>{formatCurrency(overallSummary.totalSavings)}</strong>
-                        </div>
-                    </div>
-                </div>
-                <div className="tax-card">
-                    <h3>Volume by Type (All Years)</h3>
-                    <div style={{ height: '250px', display: 'flex', justifyContent: 'center' }}>
-                        <Pie data={overallPieChartData} options={{ maintainAspectRatio: false, responsive: true }} />
-                    </div>
-                </div>
-            </div>
+  const availableYears = Object.keys(yearlyData).sort((a, b) => b - a);
+  const initialCategoryVolumes = {};
+  EXPENDITURE_CATEGORIES.forEach((c) => {
+    initialCategoryVolumes[c.name] = 0;
+  });
 
-            {/* Enhanced Search Input */}
-            <div className="tax-card" style={{ marginBottom: '2rem' }}>
-                <h3>Filter Expenditures</h3>
-                <div className="search-container" style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    alignItems: 'end',
-                    flexWrap: 'wrap'
-                }}>
-                    <div className="form-group" style={{ flex: '1', minWidth: '250px' }}>
-                        <label htmlFor="search-input" style={{
-                            display: 'block',
-                            marginBottom: '0.5rem',
-                            fontWeight: '500',
-                            color: '#374151'
-                        }}>
-                            Search by Description or Category
-                        </label>
-                        <div style={{ position: 'relative' }}>
-                            <input
-                                type="text"
-                                id="search-input"
-                                placeholder="e.g., Groceries, Food & Dining, rent..."
-                                value={searchTerm}
-                                onChange={e => setSearchTerm(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '0.75rem 1rem',
-                                    border: '2px solid #e5e7eb',
-                                    borderRadius: '8px',
-                                    fontSize: '1rem',
-                                    transition: 'border-color 0.2s',
-                                    outline: 'none'
-                                }}
-                                onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-                            />
-                            <div style={{
-                                position: 'absolute',
-                                right: '1rem',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                color: '#9ca3af',
-                                pointerEvents: 'none'
-                            }}>
-                                🔍
-                            </div>
-                        </div>
-                    </div>
+  const dataForYear = yearlyData[selectedYear] || {
+    byType: {},
+    volumeByType: { W: 0, T: 0, S: 0 },
+    byMonth: [],
+    totalWithdrawals: 0,
+    totalTopups: 0,
+    totalSavings: 0,
+    categoryVolumes: initialCategoryVolumes,
+  };
 
-                    <div className="form-group" style={{ minWidth: '150px' }}>
-                        <label htmlFor="year-select" style={{
-                            display: 'block',
-                            marginBottom: '0.5rem',
-                            fontWeight: '500',
-                            color: '#374151'
-                        }}>
-                            Select Year
-                        </label>
-                        <select
-                            id="year-select"
-                            value={selectedYear}
-                            onChange={e => setSelectedYear(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '0.75rem 1rem',
-                                border: '2px solid #e5e7eb',
-                                borderRadius: '8px',
-                                fontSize: '1rem',
-                                backgroundColor: 'white',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            {availableYears.map(year =>
-                                <option key={year} value={year}>{year}</option>
-                            )}
-                        </select>
-                    </div>
-                </div>
+  const palette = getChartPalette();
 
-                <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
-                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', fontSize: '0.88rem', color: '#4b5563', fontWeight: 500 }}>
-                        <input
-                            type="checkbox"
-                            checked={includeSettlements}
-                            onChange={(e) => setIncludeSettlements(e.target.checked)}
-                            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                        />
-                        Include Credit Card Settlements (Gross Outflow View)
-                    </label>
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.2rem' }}>
-                        Settlements are excluded by default to avoid double-counting card purchases and bank payoff debits.
-                    </span>
-                </div>
-            </div>
+  // Chart 1: Overall pie chart data (by volume)
+  const overallPieChartData = {
+    labels: ['Withdrawals', 'Top-ups', 'Savings'],
+    datasets: [{
+      data: [
+        overallSummary.volumeByType.W || 0,
+        overallSummary.volumeByType.T || 0,
+        overallSummary.volumeByType.S || 0,
+      ],
+      backgroundColor: [palette.grey1, palette.grey2, palette.grey3],
+      borderWidth: 1,
+      borderColor: palette.surface,
+    }],
+  };
 
-            {/* Search Result Card */}
-            {searchTotal !== null && (
-                <div className="tax-card search-result-card" style={{
-                    marginBottom: '2rem',
-                    border: '2px solid #3b82f6',
-                    backgroundColor: '#eff6ff'
-                }}>
-                    <h3 style={{ color: '#1e40af', marginBottom: '1rem' }}>
-                        📊 Search Results for "{searchTerm}"
-                    </h3>
-                    <div className="summary-item highlight" style={{
-                        backgroundColor: '#dbeafe',
-                        border: '1px solid #93c5fd',
-                        padding: '1rem',
-                        borderRadius: '6px'
-                    }}>
-                        <span style={{ fontSize: '1.1rem' }}>Total Spending</span>
-                        <strong style={{ fontSize: '1.3rem', color: '#1e40af' }}>
-                            {formatCurrency(searchTotal)}
-                        </strong>
-                    </div>
-                </div>
-            )}
+  // Chart 2: Yearly pie chart data (by volume)
+  const yearlyPieChartData = {
+    labels: ['Withdrawals', 'Top-ups', 'Savings'],
+    datasets: [{
+      data: [
+        dataForYear.volumeByType.W || 0,
+        dataForYear.volumeByType.T || 0,
+        dataForYear.volumeByType.S || 0,
+      ],
+      backgroundColor: [palette.grey1, palette.grey2, palette.grey3],
+      borderWidth: 1,
+      borderColor: palette.surface,
+    }],
+  };
 
-            {/* Yearly Analysis */}
-            <div className="top-summary-container">
-                <div className="tax-card">
-                    <h3>Summary for {selectedYear}</h3>
-                    <div className="yearly-summary-grid">
-                        <div className="summary-item highlight" style={{ backgroundColor: '#fff0f2' }}>
-                            <span>Total Withdrawals</span>
-                            <strong>{formatCurrency(dataForYear.totalWithdrawals)}</strong>
-                        </div>
-                        <div className="summary-item highlight" style={{ backgroundColor: '#eef7ff' }}>
-                            <span>Total Top-ups</span>
-                            <strong>{formatCurrency(dataForYear.totalTopups)}</strong>
-                        </div>
-                        <div className="summary-item highlight" style={{ backgroundColor: '#fff9e9' }}>
-                            <span>Total Savings</span>
-                            <strong>{formatCurrency(dataForYear.totalSavings)}</strong>
-                        </div>
-                    </div>
-                </div>
-                <div className="tax-card">
-                    <h3>Volume by Type - {selectedYear}</h3>
-                    <div style={{ height: '250px', display: 'flex', justifyContent: 'center' }}>
-                        <Pie data={yearlyPieChartData} options={{ maintainAspectRatio: false, responsive: true }} />
-                    </div>
-                </div>
-            </div>
+  // Chart 3: Overall category pie chart data
+  const overallCategoryLabels = EXPENDITURE_CATEGORIES.map((c) => c.name);
+  const overallCategoryValues = EXPENDITURE_CATEGORIES.map((c) => {
+    const val = overallSummary.categoryVolumes ? (overallSummary.categoryVolumes[c.name] || 0) : 0;
+    return Math.round(val);
+  });
+  const overallCategoryColors = EXPENDITURE_CATEGORIES.map((c) => c.color);
 
-            {/* Category Analysis Pie Charts */}
-            <div className="top-summary-container" style={{ marginTop: '2rem' }}>
-                <div className="tax-card">
-                    <h3>Category Breakdown (All Years)</h3>
-                    <div style={{ height: '350px', display: 'flex', justifyContent: 'center' }}>
-                        <Pie data={overallCategoryPieChartData} options={{ maintainAspectRatio: false, responsive: true }} />
-                    </div>
-                </div>
-                <div className="tax-card">
-                    <h3>Category Breakdown for {selectedYear}</h3>
-                    <div style={{ height: '350px', display: 'flex', justifyContent: 'center' }}>
-                        <Pie data={yearlyCategoryPieChartData} options={{ maintainAspectRatio: false, responsive: true }} />
-                    </div>
-                </div>
-            </div>
+  const overallCategoryPieChartData = {
+    labels: overallCategoryLabels,
+    datasets: [{
+      data: overallCategoryValues,
+      backgroundColor: overallCategoryColors,
+      borderWidth: 1,
+      borderColor: palette.surface,
+    }],
+  };
 
-            <div className="tax-card" style={{ marginTop: '2rem' }}>
-                <h3>Monthly Breakdown for {selectedYear}</h3>
-                <div className="ex-chart-wrapper">
-                    <div className="ex-chart-container">
-                        <Bar options={barChartOptions} data={barChartData}  />
-                    </div>
-                </div>
-            </div>
+  // Chart 4: Yearly category pie chart data
+  const yearlyCategoryLabels = EXPENDITURE_CATEGORIES.map((c) => c.name);
+  const yearlyCategoryValues = EXPENDITURE_CATEGORIES.map((c) => {
+    const val = dataForYear.categoryVolumes ? (dataForYear.categoryVolumes[c.name] || 0) : 0;
+    return Math.round(val);
+  });
+  const yearlyCategoryColors = EXPENDITURE_CATEGORIES.map((c) => c.color);
+
+  const yearlyCategoryPieChartData = {
+    labels: yearlyCategoryLabels,
+    datasets: [{
+      data: yearlyCategoryValues,
+      backgroundColor: yearlyCategoryColors,
+      borderWidth: 1,
+      borderColor: palette.surface,
+    }],
+  };
+
+  // Chart 5: Bar chart data
+  const barChartData = {
+    labels: MONTH_NAMES,
+    datasets: [
+      {
+        label: 'Withdrawals',
+        data: dataForYear.byMonth.map((m) => m.withdrawals),
+        backgroundColor: palette.grey1,
+      },
+      {
+        label: 'Top-ups',
+        data: dataForYear.byMonth.map((m) => m.topups),
+        backgroundColor: palette.grey2,
+      },
+      {
+        label: 'Savings',
+        data: dataForYear.byMonth.map((m) => m.savings),
+        backgroundColor: palette.grey3,
+      },
+    ],
+  };
+
+  const barChartOptions = baseChartOptions({
+    plugins: {
+      legend: { position: 'top' },
+      title: { display: false },
+    },
+  });
+
+  const pieChartOptions = doughnutDefaults({
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+        labels: {
+          color: palette.text2,
+          font: { family: 'IBM Plex Sans, -apple-system, sans-serif', size: 12 },
+        },
+      },
+    },
+  });
+
+  // Table calculations for Volume by Type
+  const totalOverallVolume =
+    (overallSummary.volumeByType.W || 0) +
+    (overallSummary.volumeByType.T || 0) +
+    (overallSummary.volumeByType.S || 0);
+
+  const totalYearVolume =
+    (dataForYear.volumeByType.W || 0) +
+    (dataForYear.volumeByType.T || 0) +
+    (dataForYear.volumeByType.S || 0);
+
+  const totalOverallCategorySpend = overallCategoryValues.reduce((s, v) => s + v, 0);
+  const totalYearCategorySpend = yearlyCategoryValues.reduce((s, v) => s + v, 0);
+
+  return (
+    <div className="fs-page expenditure-analysis-container" data-testid="expenditure-analysis-page">
+      <PageHeader
+        title="Expenditure Analysis"
+        subtitle="Long-term cash outflow dynamics, multi-year volume breakdowns, and category concentrations."
+      />
+
+      {/* Overall Summary KPI Cards */}
+      <div className="analysis-summary-grid">
+        <div className="analysis-kpi-card" data-testid="kpi-total-withdrawals">
+          <div className="analysis-kpi-label">Total Withdrawals (All Years)</div>
+          <div className="analysis-kpi-val fs-num">{formatCurrency(overallSummary.totalWithdrawals)}</div>
         </div>
-    );
+        <div className="analysis-kpi-card" data-testid="kpi-total-topups">
+          <div className="analysis-kpi-label">Total Top-ups (All Years)</div>
+          <div className="analysis-kpi-val fs-num">{formatCurrency(overallSummary.totalTopups)}</div>
+        </div>
+        <div className="analysis-kpi-card" data-testid="kpi-total-savings">
+          <div className="analysis-kpi-label">Total Savings (All Years)</div>
+          <div className="analysis-kpi-val fs-num">{formatCurrency(overallSummary.totalSavings)}</div>
+        </div>
+      </div>
+
+      {/* Filter / Search Card */}
+      <div className="analysis-card filter-card">
+        <h2 className="analysis-card-title">Filter Expenditures</h2>
+        <div className="analysis-filter-row">
+          <div className="filter-group-search">
+            <label htmlFor="analysis-search-input">Search by Description or Category</label>
+            <div className="search-input-wrapper">
+              <input
+                id="analysis-search-input"
+                type="text"
+                className="form-control"
+                placeholder="e.g., Groceries, Food & Dining, rent..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="filter-group-year">
+            <label htmlFor="analysis-year-select">Select Year</label>
+            <select
+              id="analysis-year-select"
+              className="form-control"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+            >
+              {availableYears.map((year) => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="settlement-toggle-row">
+          <label className="settlement-toggle-label">
+            <input
+              type="checkbox"
+              checked={includeSettlements}
+              onChange={(e) => setIncludeSettlements(e.target.checked)}
+            />
+            Include Credit Card Settlements (Gross Outflow View)
+          </label>
+          <span className="settlement-toggle-help">
+            Settlements are excluded by default to avoid double-counting card purchases and bank payoff debits.
+          </span>
+        </div>
+      </div>
+
+      {/* Search Result Banner */}
+      {searchTotal !== null && (
+        <div className="analysis-card search-result-card" data-testid="search-results-summary">
+          <h2 className="analysis-card-title">Search Results for &ldquo;{searchTerm}&rdquo;</h2>
+          <div className="search-result-stat">
+            <span className="search-result-label">Total Matching Spending</span>
+            <strong className="search-result-val fs-num">{formatCurrency(searchTotal)}</strong>
+          </div>
+        </div>
+      )}
+
+      {/* Multi-Year & Selected Year Volume Charts (Charts 1 & 2) */}
+      <div className="analysis-grid-2col">
+        {/* Chart 1: Volume by Type (All Years) */}
+        <div className="analysis-card chart-card" data-testid="card-chart-1">
+          <h2 className="analysis-card-title">Volume by Type (All Years)</h2>
+          <div
+            className="chart-canvas-container"
+            role="img"
+            aria-label={ariaLabel('Volume by Type (All Years)', [
+              { label: 'Withdrawals', value: formatCurrency(overallSummary.volumeByType.W) },
+              { label: 'Top-ups', value: formatCurrency(overallSummary.volumeByType.T) },
+              { label: 'Savings', value: formatCurrency(overallSummary.volumeByType.S) },
+            ])}
+          >
+            <Pie data={overallPieChartData} options={pieChartOptions} />
+          </div>
+
+          {/* Accessible Table Alternative 1 */}
+          <div className="table-container chart-data-table-wrapper fs-table-container">
+            <table className="styled-table chart-data-table" data-testid="table-chart-1">
+              <caption className="table-caption">Volume by Type (All Years) Alternative Data Table</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Transaction Type</th>
+                  <th scope="col" className="cell-right">Total Volume</th>
+                  <th scope="col" className="cell-right">Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Withdrawals</td>
+                  <td className="cell-right fs-num">{formatCurrency(overallSummary.volumeByType.W || 0)}</td>
+                  <td className="cell-right fs-num">
+                    {totalOverallVolume > 0
+                      ? `${Math.round(((overallSummary.volumeByType.W || 0) / totalOverallVolume) * 100)}%`
+                      : '0%'}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Top-ups</td>
+                  <td className="cell-right fs-num">{formatCurrency(overallSummary.volumeByType.T || 0)}</td>
+                  <td className="cell-right fs-num">
+                    {totalOverallVolume > 0
+                      ? `${Math.round(((overallSummary.volumeByType.T || 0) / totalOverallVolume) * 100)}%`
+                      : '0%'}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Savings</td>
+                  <td className="cell-right fs-num">{formatCurrency(overallSummary.volumeByType.S || 0)}</td>
+                  <td className="cell-right fs-num">
+                    {totalOverallVolume > 0
+                      ? `${Math.round(((overallSummary.volumeByType.S || 0) / totalOverallVolume) * 100)}%`
+                      : '0%'}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Chart 2: Volume by Type for Selected Year */}
+        <div className="analysis-card chart-card" data-testid="card-chart-2">
+          <h2 className="analysis-card-title">Volume by Type ({selectedYear})</h2>
+          <div
+            className="chart-canvas-container"
+            role="img"
+            aria-label={ariaLabel(`Volume by Type (${selectedYear})`, [
+              { label: 'Withdrawals', value: formatCurrency(dataForYear.volumeByType.W) },
+              { label: 'Top-ups', value: formatCurrency(dataForYear.volumeByType.T) },
+              { label: 'Savings', value: formatCurrency(dataForYear.volumeByType.S) },
+            ])}
+          >
+            <Pie data={yearlyPieChartData} options={pieChartOptions} />
+          </div>
+
+          {/* Accessible Table Alternative 2 */}
+          <div className="table-container chart-data-table-wrapper fs-table-container">
+            <table className="styled-table chart-data-table" data-testid="table-chart-2">
+              <caption className="table-caption">Volume by Type ({selectedYear}) Alternative Data Table</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Transaction Type</th>
+                  <th scope="col" className="cell-right">Total Volume</th>
+                  <th scope="col" className="cell-right">Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Withdrawals</td>
+                  <td className="cell-right fs-num">{formatCurrency(dataForYear.volumeByType.W || 0)}</td>
+                  <td className="cell-right fs-num">
+                    {totalYearVolume > 0
+                      ? `${Math.round(((dataForYear.volumeByType.W || 0) / totalYearVolume) * 100)}%`
+                      : '0%'}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Top-ups</td>
+                  <td className="cell-right fs-num">{formatCurrency(dataForYear.volumeByType.T || 0)}</td>
+                  <td className="cell-right fs-num">
+                    {totalYearVolume > 0
+                      ? `${Math.round(((dataForYear.volumeByType.T || 0) / totalYearVolume) * 100)}%`
+                      : '0%'}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Savings</td>
+                  <td className="cell-right fs-num">{formatCurrency(dataForYear.volumeByType.S || 0)}</td>
+                  <td className="cell-right fs-num">
+                    {totalYearVolume > 0
+                      ? `${Math.round(((dataForYear.volumeByType.S || 0) / totalYearVolume) * 100)}%`
+                      : '0%'}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Analysis Charts (Charts 3 & 4) */}
+      <div className="analysis-grid-2col">
+        {/* Chart 3: Category Breakdown (All Years) */}
+        <div className="analysis-card chart-card" data-testid="card-chart-3">
+          <h2 className="analysis-card-title">Category Breakdown (All Years)</h2>
+          <div
+            className="chart-canvas-container tall"
+            role="img"
+            aria-label={ariaLabel('Category Breakdown (All Years)', overallCategoryLabels.map((l, i) => ({
+              label: l,
+              value: formatCurrency(overallCategoryValues[i]),
+            })))}
+          >
+            <Pie data={overallCategoryPieChartData} options={pieChartOptions} />
+          </div>
+
+          {/* Accessible Table Alternative 3 */}
+          <div className="table-container chart-data-table-wrapper fs-table-container">
+            <table className="styled-table chart-data-table" data-testid="table-chart-3">
+              <caption className="table-caption">Category Breakdown (All Years) Alternative Data Table</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Category</th>
+                  <th scope="col" className="cell-right">Total Spent</th>
+                  <th scope="col" className="cell-right">Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                {overallCategoryLabels.map((cat, i) => {
+                  const val = overallCategoryValues[i];
+                  const pct = totalOverallCategorySpend > 0 ? Math.round((val / totalOverallCategorySpend) * 100) : 0;
+                  return (
+                    <tr key={cat}>
+                      <td><Badge tone="neutral">{cat}</Badge></td>
+                      <td className="cell-right fs-num">{formatCurrency(val)}</td>
+                      <td className="cell-right fs-num">{pct}%</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Chart 4: Category Breakdown for Selected Year */}
+        <div className="analysis-card chart-card" data-testid="card-chart-4">
+          <h2 className="analysis-card-title">Category Breakdown for {selectedYear}</h2>
+          <div
+            className="chart-canvas-container tall"
+            role="img"
+            aria-label={ariaLabel(`Category Breakdown for ${selectedYear}`, yearlyCategoryLabels.map((l, i) => ({
+              label: l,
+              value: formatCurrency(yearlyCategoryValues[i]),
+            })))}
+          >
+            <Pie data={yearlyCategoryPieChartData} options={pieChartOptions} />
+          </div>
+
+          {/* Accessible Table Alternative 4 */}
+          <div className="table-container chart-data-table-wrapper fs-table-container">
+            <table className="styled-table chart-data-table" data-testid="table-chart-4">
+              <caption className="table-caption">Category Breakdown for {selectedYear} Alternative Data Table</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Category</th>
+                  <th scope="col" className="cell-right">Total Spent</th>
+                  <th scope="col" className="cell-right">Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                {yearlyCategoryLabels.map((cat, i) => {
+                  const val = yearlyCategoryValues[i];
+                  const pct = totalYearCategorySpend > 0 ? Math.round((val / totalYearCategorySpend) * 100) : 0;
+                  return (
+                    <tr key={cat}>
+                      <td><Badge tone="neutral">{cat}</Badge></td>
+                      <td className="cell-right fs-num">{formatCurrency(val)}</td>
+                      <td className="cell-right fs-num">{pct}%</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Monthly Breakdown Bar Chart (Chart 5) */}
+      <div className="analysis-card chart-card" data-testid="card-chart-5">
+        <h2 className="analysis-card-title">Monthly Breakdown for {selectedYear}</h2>
+        <div
+          className="ex-chart-wrapper"
+          role="img"
+          aria-label={ariaLabel(`Monthly Breakdown for ${selectedYear}`, MONTH_NAMES.map((m, i) => ({
+            label: m,
+            value: `Withdrawals: ${formatCurrency(dataForYear.byMonth[i]?.withdrawals || 0)}`,
+          })))}
+        >
+          <div className="ex-chart-container">
+            <Bar options={barChartOptions} data={barChartData} />
+          </div>
+        </div>
+
+        {/* Accessible Table Alternative 5 */}
+        <div className="table-container chart-data-table-wrapper fs-table-container">
+          <table className="styled-table chart-data-table" data-testid="table-chart-5">
+            <caption className="table-caption">Monthly Breakdown for {selectedYear} Alternative Data Table</caption>
+            <thead>
+              <tr>
+                <th scope="col">Month</th>
+                <th scope="col" className="cell-right">Withdrawals</th>
+                <th scope="col" className="cell-right">Top-ups</th>
+                <th scope="col" className="cell-right">Savings</th>
+                <th scope="col" className="cell-right">Net Flow</th>
+              </tr>
+            </thead>
+            <tbody>
+              {MONTH_NAMES.map((monthName, idx) => {
+                const m = dataForYear.byMonth[idx] || { withdrawals: 0, topups: 0, savings: 0 };
+                const net = m.topups - m.withdrawals;
+                return (
+                  <tr key={monthName}>
+                    <td><strong>{monthName}</strong></td>
+                    <td className="cell-right fs-num">{formatCurrency(m.withdrawals)}</td>
+                    <td className="cell-right fs-num">{formatCurrency(m.topups)}</td>
+                    <td className="cell-right fs-num">{formatCurrency(m.savings)}</td>
+                    <td className="cell-right fs-num">
+                      <span className={net >= 0 ? 'fs-delta--positive' : 'fs-delta--negative'}>
+                        {net >= 0 ? `+${formatCurrency(net)}` : `-${formatCurrency(Math.abs(net))}`}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {isLoading && (
+        <div className="analysis-loading-overlay">
+          <Loading variant="card" message="Loading expenditure analysis..." />
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default ExpenditureAnalysisPage;

@@ -14,7 +14,9 @@ import { formatCurrency, formatDate } from '../../utils/formatters';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { useToast } from '../../context/ToastContext';
+import { PageHeader, Button, Badge, Loading, EmptyState } from '../../components/ui';
 import './RecurringBills.css';
+import './RulesPage.css'; // For modal styles
 
 const FREQUENCIES = [
   { value: 'weekly', label: 'Weekly' },
@@ -209,7 +211,7 @@ const RecurringBills = () => {
 
   const getBillStatus = (bill) => {
     if (!bill.isActive) {
-      return { label: 'Paused', className: 'bill-badge-paused' };
+      return { label: 'Paused', tone: 'neutral' };
     }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -218,32 +220,31 @@ const RecurringBills = () => {
 
     const diffDays = Math.round((dueDate - today) / (1000 * 60 * 60 * 24));
     if (diffDays < 0) {
-      return { label: 'Overdue', className: 'bill-badge-overdue' };
+      return { label: 'Overdue', tone: 'negative' };
     }
     if (diffDays <= 3) {
-      return { label: 'Due Soon', className: 'bill-badge-due-soon' };
+      return { label: 'Due Soon', tone: 'warning' };
     }
-    return { label: 'Active', className: 'bill-badge-active' };
+    return { label: 'Active', tone: 'positive' };
   };
 
   return (
-    <div className="recurring-bills-container" data-testid="recurring-bills-page">
-      <div className="recurring-bills-header">
-        <div className="recurring-bills-title">
-          <h1>Recurring Bills & Schedules</h1>
-          <p>Track subscriptions, utilities, and scheduled payments with automatic due-date roll-forward</p>
-        </div>
-        <ProtectedAction>
-          <button
-            type="button"
-            className="btn-bill-action btn-bill-pay"
-            onClick={openCreateModal}
-            data-testid="add-bill-button"
-          >
-            <FaPlus aria-hidden="true" /> Add Recurring Bill
-          </button>
-        </ProtectedAction>
-      </div>
+    <div className="fs-page recurring-bills-container" data-testid="recurring-bills-page">
+      <PageHeader
+        title="Recurring Bills & Schedules"
+        subtitle="Track subscriptions, utilities, and scheduled payments with automatic due-date roll-forward."
+        actions={
+          <ProtectedAction>
+            <Button
+              variant="primary"
+              onClick={openCreateModal}
+              data-testid="add-bill-button"
+            >
+              <FaPlus aria-hidden="true" /> Add Recurring Bill
+            </Button>
+          </ProtectedAction>
+        }
+      />
 
       {/* KPI Cards */}
       <div className="recurring-bills-kpi-grid">
@@ -253,7 +254,7 @@ const RecurringBills = () => {
           </div>
           <div className="recurring-kpi-content">
             <span className="recurring-kpi-label">Scheduled Monthly Total</span>
-            <span className="recurring-kpi-value">{formatCurrency(monthlyTotal)}</span>
+            <span className="recurring-kpi-value fs-num">{formatCurrency(monthlyTotal)}</span>
           </div>
         </div>
 
@@ -263,7 +264,7 @@ const RecurringBills = () => {
           </div>
           <div className="recurring-kpi-content">
             <span className="recurring-kpi-label">Due in Next 3 Days</span>
-            <span className="recurring-kpi-value">
+            <span className="recurring-kpi-value fs-num">
               {upcomingCount} ({formatCurrency(upcomingTotal)})
             </span>
           </div>
@@ -275,122 +276,240 @@ const RecurringBills = () => {
           </div>
           <div className="recurring-kpi-content">
             <span className="recurring-kpi-label">Active Schedules</span>
-            <span className="recurring-kpi-value">{activeCount} bills</span>
+            <span className="recurring-kpi-value fs-num">{activeCount} bills</span>
           </div>
         </div>
       </div>
 
-      {/* Bills Table */}
-      <div className="recurring-bills-table-wrapper">
+      {/* Bills Table Container */}
+      <div className="table-container recurring-bills-table-wrapper fs-table-container">
         {isLoading ? (
-          <div className="empty-state">Loading recurring bills...</div>
+          <Loading variant="table" message="Loading recurring bills..." />
         ) : bills.length === 0 ? (
-          <div className="empty-state" data-testid="empty-bills-state">
-            <div className="empty-state-icon">
-              <FaCalendarCheck aria-hidden="true" />
-            </div>
-            <h3>No recurring bills configured yet</h3>
-            <p>Schedule your monthly rent, streaming subscriptions, and utilities to stay organized.</p>
+          <div data-testid="empty-bills-state">
+            <EmptyState
+              icon={<FaCalendarCheck />}
+              title="No recurring bills configured yet"
+              description="Schedule your monthly rent, streaming subscriptions, and utilities to stay organized."
+              action={
+                <ProtectedAction>
+                  <Button variant="primary" onClick={openCreateModal}>
+                    <FaPlus aria-hidden="true" /> Add Recurring Bill
+                  </Button>
+                </ProtectedAction>
+              }
+            />
           </div>
         ) : (
-          <table className="recurring-bills-table" data-testid="bills-table">
-            <thead>
-              <tr>
-                <th>Bill Name</th>
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Frequency</th>
-                <th>Next Due Date</th>
-                <th>Account</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Desktop Table View */}
+            <div className="recurring-bills-desktop-table">
+              <table className="styled-table recurring-bills-table" data-testid="bills-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Bill Name</th>
+                    <th scope="col">Category</th>
+                    <th scope="col" className="cell-right">Amount</th>
+                    <th scope="col">Frequency</th>
+                    <th scope="col">Next Due Date</th>
+                    <th scope="col">Account</th>
+                    <th scope="col" className="cell-center">Status</th>
+                    <th scope="col" className="cell-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bills.map((bill) => {
+                    const status = getBillStatus(bill);
+                    return (
+                      <tr key={bill._id} data-testid={`bill-row-${bill._id}`}>
+                        <td className="bill-name-cell">
+                          <strong>{bill.name}</strong>
+                          {bill.notes && <div className="bill-notes">{bill.notes}</div>}
+                        </td>
+                        <td>
+                          <Badge tone="neutral">{bill.category}</Badge>
+                        </td>
+                        <td className="cell-right fs-num">{formatCurrency(bill.amount)}</td>
+                        <td className="bill-frequency">{bill.frequency}</td>
+                        <td className="fs-num">{bill.nextDueDate ? formatDate(bill.nextDueDate) : '-'}</td>
+                        <td>{bill.paymentMethod}</td>
+                        <td className="cell-center">
+                          <Badge tone={status.tone} data-testid={`status-badge-${bill._id}`}>
+                            {status.label}
+                          </Badge>
+                        </td>
+                        <td className="cell-center">
+                          <div className="bill-actions">
+                            <ProtectedAction>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setBillToPay(bill)}
+                                title="Pay & Log Expense"
+                                aria-label={`Pay ${bill.name}`}
+                                data-testid={`pay-bill-${bill._id}`}
+                              >
+                                <FaCheckCircle aria-hidden="true" /> Pay
+                              </Button>
+                            </ProtectedAction>
+
+                            <ProtectedAction>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => handleToggleActive(bill)}
+                                title={bill.isActive ? 'Pause Schedule' : 'Resume Schedule'}
+                                aria-label={`${bill.isActive ? 'Pause' : 'Resume'} ${bill.name}`}
+                                data-testid={`toggle-bill-${bill._id}`}
+                              >
+                                {bill.isActive ? <FaPause aria-hidden="true" /> : <FaPlay aria-hidden="true" />}
+                              </Button>
+                            </ProtectedAction>
+
+                            <ProtectedAction>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => openEditModal(bill)}
+                                title="Edit Bill"
+                                aria-label={`Edit ${bill.name}`}
+                                data-testid={`edit-bill-${bill._id}`}
+                              >
+                                <FaEdit aria-hidden="true" />
+                              </Button>
+                            </ProtectedAction>
+
+                            <ProtectedAction>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => setBillToDelete(bill)}
+                                title="Delete Schedule"
+                                aria-label={`Delete ${bill.name}`}
+                                data-testid={`delete-bill-${bill._id}`}
+                              >
+                                <FaTrash aria-hidden="true" />
+                              </Button>
+                            </ProtectedAction>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View (D19) */}
+            <div className="recurring-bills-mobile-cards">
               {bills.map((bill) => {
                 const status = getBillStatus(bill);
                 return (
-                  <tr key={bill._id} data-testid={`bill-row-${bill._id}`}>
-                    <td className="bill-name-cell">
-                      {bill.name}
-                      {bill.notes && <div className="bill-notes">{bill.notes}</div>}
-                    </td>
-                    <td>{bill.category}</td>
-                    <td>{formatCurrency(bill.amount)}</td>
-                    <td style={{ textTransform: 'capitalize' }}>{bill.frequency}</td>
-                    <td>{bill.nextDueDate ? formatDate(bill.nextDueDate) : '-'}</td>
-                    <td>{bill.paymentMethod}</td>
-                    <td>
-                      <span className={`bill-badge ${status.className}`} data-testid={`status-badge-${bill._id}`}>
-                        {status.label}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="bill-actions">
-                        <ProtectedAction>
-                          <button
-                            type="button"
-                            className="btn-bill-action btn-bill-pay"
-                            onClick={() => setBillToPay(bill)}
-                            title="Pay & Log Expense"
-                            data-testid={`pay-bill-${bill._id}`}
-                          >
-                            <FaCheckCircle aria-hidden="true" /> Pay
-                          </button>
-                        </ProtectedAction>
-
-                        <ProtectedAction>
-                          <button
-                            type="button"
-                            className="btn-bill-action btn-bill-secondary"
-                            onClick={() => handleToggleActive(bill)}
-                            title={bill.isActive ? 'Pause Schedule' : 'Resume Schedule'}
-                            data-testid={`toggle-bill-${bill._id}`}
-                          >
-                            {bill.isActive ? <FaPause aria-hidden="true" /> : <FaPlay aria-hidden="true" />}
-                          </button>
-                        </ProtectedAction>
-
-                        <ProtectedAction>
-                          <button
-                            type="button"
-                            className="btn-bill-action btn-bill-secondary"
-                            onClick={() => openEditModal(bill)}
-                            title="Edit Bill"
-                            data-testid={`edit-bill-${bill._id}`}
-                          >
-                            <FaEdit aria-hidden="true" />
-                          </button>
-                        </ProtectedAction>
-
-                        <ProtectedAction>
-                          <button
-                            type="button"
-                            className="btn-bill-action btn-bill-danger"
-                            onClick={() => setBillToDelete(bill)}
-                            title="Delete Schedule"
-                            data-testid={`delete-bill-${bill._id}`}
-                          >
-                            <FaTrash aria-hidden="true" />
-                          </button>
-                        </ProtectedAction>
+                  <div key={bill._id} className="recurring-bill-mobile-card">
+                    <div className="recurring-bill-mobile-header">
+                      <div>
+                        <strong>{bill.name}</strong>
+                        {bill.notes && <div className="bill-notes">{bill.notes}</div>}
                       </div>
-                    </td>
-                  </tr>
+                      <Badge tone={status.tone}>{status.label}</Badge>
+                    </div>
+                    <div className="recurring-bill-mobile-row">
+                      <span className="recurring-bill-mobile-label">Amount</span>
+                      <strong className="fs-num">{formatCurrency(bill.amount)}</strong>
+                    </div>
+                    <div className="recurring-bill-mobile-row">
+                      <span className="recurring-bill-mobile-label">Category</span>
+                      <Badge tone="neutral">{bill.category}</Badge>
+                    </div>
+                    <div className="recurring-bill-mobile-row">
+                      <span className="recurring-bill-mobile-label">Frequency</span>
+                      <span className="bill-frequency">{bill.frequency}</span>
+                    </div>
+                    <div className="recurring-bill-mobile-row">
+                      <span className="recurring-bill-mobile-label">Next Due</span>
+                      <span className="fs-num">{bill.nextDueDate ? formatDate(bill.nextDueDate) : '-'}</span>
+                    </div>
+                    <div className="recurring-bill-mobile-row">
+                      <span className="recurring-bill-mobile-label">Account</span>
+                      <span>{bill.paymentMethod}</span>
+                    </div>
+                    <div className="recurring-bill-mobile-actions">
+                      <ProtectedAction>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setBillToPay(bill)}
+                          aria-label={`Pay ${bill.name}`}
+                        >
+                          <FaCheckCircle aria-hidden="true" /> Pay
+                        </Button>
+                      </ProtectedAction>
+                      <ProtectedAction>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleToggleActive(bill)}
+                          aria-label={`${bill.isActive ? 'Pause' : 'Resume'} ${bill.name}`}
+                        >
+                          {bill.isActive ? <FaPause aria-hidden="true" /> : <FaPlay aria-hidden="true" />}
+                        </Button>
+                      </ProtectedAction>
+                      <ProtectedAction>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => openEditModal(bill)}
+                          aria-label={`Edit ${bill.name}`}
+                        >
+                          <FaEdit aria-hidden="true" />
+                        </Button>
+                      </ProtectedAction>
+                      <ProtectedAction>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => setBillToDelete(bill)}
+                          aria-label={`Delete ${bill.name}`}
+                        >
+                          <FaTrash aria-hidden="true" />
+                        </Button>
+                      </ProtectedAction>
+                    </div>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
 
       {/* Add / Edit Bill Modal */}
       {isModalOpen && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" data-testid="bill-modal">
-          <div className="modal-content">
+        <div
+          className="modal-overlay"
+          role="presentation"
+          onClick={closeModal}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') closeModal();
+          }}
+          data-testid="bill-modal"
+        >
+          <div
+            className="modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="bill-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
-              <h2>{editingBill ? 'Edit Recurring Bill' : 'Add Recurring Bill'}</h2>
-              <button type="button" className="btn-bill-action btn-bill-secondary" onClick={closeModal}>
+              <h2 id="bill-modal-title">{editingBill ? 'Edit Recurring Bill' : 'Add Recurring Bill'}</h2>
+              <button
+                type="button"
+                className="modal-close-btn"
+                aria-label="Close modal"
+                onClick={closeModal}
+              >
                 &times;
               </button>
             </div>
@@ -526,22 +645,22 @@ const RecurringBills = () => {
               </div>
 
               <div className="modal-footer">
-                <button
+                <Button
                   type="button"
-                  className="btn-bill-action btn-bill-secondary"
+                  variant="secondary"
                   onClick={closeModal}
                   disabled={isSubmitting}
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  className="btn-bill-action btn-bill-pay"
+                  variant="primary"
                   disabled={isSubmitting}
                   data-testid="submit-bill-form"
                 >
                   {isSubmitting ? 'Saving...' : editingBill ? 'Update Schedule' : 'Create Schedule'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -586,4 +705,3 @@ const RecurringBills = () => {
 };
 
 export default RecurringBills;
-

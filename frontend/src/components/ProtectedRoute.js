@@ -14,12 +14,17 @@ import { BankProvider } from '../context/BankContext';
 import { CreditProvider } from '../context/CreditContext';
 import { Loading } from './ui';
 
-// Themed routes allowlist (Phase 3A: '/dashboard', Phase 4A: '/expenditures', Phase 4B: forms)
+// Themed routes allowlist (Phase 3A: '/dashboard', Phase 4A: '/expenditures', Phase 4B: forms, Phase 4C: cluster)
 export const THEMED_PATTERNS = [
   '/dashboard',
   '/expenditures',
   '/expenditures/new',
   '/expenditures/edit/:id',
+  '/expenditures/rules',
+  '/expenditures/budgets',
+  '/expenditures/recurring',
+  '/expenditures/bills',
+  '/expenditure-analysis',
 ];
 
 export const isThemedRoute = (pathname) => {

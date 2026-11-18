@@ -2,6 +2,13 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import ExpenditureAnalysisPage from '../ExpenditureAnalysisPage';
 import { getAllExpendituresForAnalysis } from '../../../services/expenditureService';
+import { expectNoA11yViolations } from '../../../../tests/a11y/expectNoA11yViolations';
+
+jest.mock('react-router-dom', () => ({
+  Link: ({ children, to, ...props }) => <a href={to} {...props}>{children}</a>,
+  useNavigate: () => jest.fn(),
+  useLocation: () => ({ pathname: '/expenditure-analysis' }),
+}), { virtual: true });
 
 jest.mock('../../../services/expenditureService', () => ({
   getAllExpendituresForAnalysis: jest.fn(),
@@ -145,5 +152,23 @@ describe('ExpenditureAnalysisPage - Calculation and Breakdown Tests', () => {
 
     // Sep withdrawal should be total transaction value 1000
     expect(withdrawalsDataset.data[8]).toBe(1000);
+  });
+
+  it('renders all 5 accessible chart alternative tables and passes WCAG 2.1 AA', async () => {
+    getAllExpendituresForAnalysis.mockResolvedValue([]);
+
+    const { container } = render(<ExpenditureAnalysisPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId('table-chart-1')).toBeInTheDocument();
+    expect(screen.getByTestId('table-chart-2')).toBeInTheDocument();
+    expect(screen.getByTestId('table-chart-3')).toBeInTheDocument();
+    expect(screen.getByTestId('table-chart-4')).toBeInTheDocument();
+    expect(screen.getByTestId('table-chart-5')).toBeInTheDocument();
+
+    await expectNoA11yViolations(container);
   });
 });

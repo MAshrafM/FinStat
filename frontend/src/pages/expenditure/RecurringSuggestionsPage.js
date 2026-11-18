@@ -15,11 +15,13 @@ import ProtectedAction from '../../components/common/ProtectedAction';
 import { useCanModify } from '../../context/AuthContext';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
+import { PageHeader, Button, Badge, Loading, EmptyState, Tabs } from '../../components/ui';
 import './RecurringSuggestionsPage.css';
 import './RulesPage.css'; // For common subnav and modal styles
 
 const RecurringSuggestionsPage = () => {
-  const canModify = useCanModify();
+  const canModifyContext = useCanModify();
+  const canModify = canModifyContext?.canModify ?? (typeof canModifyContext === 'boolean' ? canModifyContext : true);
   const { showToast, addToast } = useToast();
   const notify = showToast || addToast;
   const [suggestionToDismiss, setSuggestionToDismiss] = useState(null);
@@ -65,7 +67,7 @@ const RecurringSuggestionsPage = () => {
     setIsScanning(true);
     try {
       const res = await triggerDetection();
-            if (notify) notify(`Pattern scan complete! Processed ${res.count || 0} suggestion(s).`, 'success');
+      if (notify) notify(`Pattern scan complete! Processed ${res.count || 0} suggestion(s).`, 'success');
       loadData();
     } catch (err) {
       if (notify) notify('Failed to run recurring pattern scan.', 'error');
@@ -101,7 +103,7 @@ const RecurringSuggestionsPage = () => {
     }
   };
 
-    const handleReject = (id) => {
+  const handleReject = (id) => {
     if (!canModify) return;
     setSuggestionToDismiss(id);
   };
@@ -118,143 +120,140 @@ const RecurringSuggestionsPage = () => {
     }
   };
 
-  const getConfidenceClass = (score) => {
-    if (score >= 80) return 'confidence-high';
-    if (score >= 65) return 'confidence-medium';
-    return 'confidence-low';
-  };
-
-  const getCategoryColor = (catName) => {
-    const found = EXPENDITURE_CATEGORIES.find((c) => c.name === catName);
-    return found ? found.color : '#6b7280';
-  };
-
   return (
-    <div className="recur-page-container">
+    <div className="fs-page recur-page-container" data-testid="recurring-suggestions-page">
       {/* Sub-navigation tabs */}
       <ExpenditureSubNav />
 
-      <div className="recur-header">
-        <div className="recur-header-titles">
-          <h1>Recurring Expense Automation</h1>
-          <p>
-            Machine learning &amp; statistical pattern detector identifies repeated bills and subscriptions
-            from your expenditure history.
-          </p>
-        </div>
-        <ProtectedAction tooltip="View-only access">
-          <button
-            className="btn-primary"
-            onClick={handleTriggerScan}
-            disabled={isScanning}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          >
-            <FaSyncAlt className={isScanning ? 'animate-spin' : ''} />
-            {isScanning ? 'Scanning History...' : 'Scan Patterns Now'}
-          </button>
-        </ProtectedAction>
-      </div>
+      <PageHeader
+        title="Recurring Expense Automation"
+        subtitle="Machine learning & statistical pattern detector identifies repeated bills and subscriptions from your expenditure history."
+        actions={
+          <ProtectedAction tooltip="View-only access">
+            <Button
+              variant="primary"
+              onClick={handleTriggerScan}
+              disabled={isScanning}
+              data-testid="scan-patterns-btn"
+            >
+              <FaSyncAlt className={isScanning ? 'animate-spin' : ''} />
+              {isScanning ? 'Scanning History...' : 'Scan Patterns Now'}
+            </Button>
+          </ProtectedAction>
+        }
+      />
 
-      {/* Internal Tabs */}
-      <div className="recur-tabs">
-        <button
-          className={`recur-tab ${activeTab === 'pending' ? 'active' : ''}`}
-          onClick={() => setActiveTab('pending')}
-        >
-          Pending Suggestions{' '}
-          <span className={`badge-count ${pendingSuggestions.length > 0 ? '' : 'neutral'}`}>
-            {pendingSuggestions.length}
-          </span>
-        </button>
-        <button
-          className={`recur-tab ${activeTab === 'accepted' ? 'active' : ''}`}
-          onClick={() => setActiveTab('accepted')}
-        >
-          Accepted Recurrences{' '}
-          <span className="badge-count neutral">{acceptedSuggestions.length}</span>
-        </button>
-        <button
-          className={`recur-tab ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-        >
-          Flagged Recurring Entries{' '}
-          <span className="badge-count neutral">{recurringExpenditures.length}</span>
-        </button>
+      {/* Primary Tab Navigation */}
+      <div className="recur-tabs-container">
+        <Tabs
+          tabs={[
+            {
+              id: 'pending',
+              label: 'Pending Suggestions',
+              badge: pendingSuggestions.length || undefined,
+            },
+            {
+              id: 'accepted',
+              label: 'Accepted Recurrences',
+              badge: acceptedSuggestions.length || undefined,
+            },
+            {
+              id: 'history',
+              label: 'Flagged Recurring Entries',
+              badge: recurringExpenditures.length || undefined,
+            },
+          ]}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          ariaLabel="Recurring suggestions views"
+        />
       </div>
 
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Loading recurrence data...</div>
+        <Loading variant="card" message="Loading recurrence data..." />
       ) : activeTab === 'pending' ? (
         pendingSuggestions.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '3.5rem',
-              background: 'white',
-              borderRadius: '12px',
-              border: '1px dashed #d1d5db',
-              color: '#6b7280',
-            }}
-          >
-            <FaRedoAlt style={{ fontSize: '2.5rem', color: '#9ca3af', marginBottom: '1rem' }} />
-            <h3>No pending recurring suggestions</h3>
-            <p style={{ margin: '0.5rem 0 1.5rem 0' }}>
-              FinStat scans your expenditure logs for recurring rent, bills, and subscriptions. Click below to
-              trigger an immediate detection pass.
-            </p>
-            <button className="btn-primary" onClick={handleTriggerScan} disabled={isScanning}>
-              <FaSyncAlt /> Scan Patterns Now
-            </button>
-          </div>
+          <EmptyState
+            icon={<FaRedoAlt />}
+            title="No pending recurring suggestions"
+            description="FinStat scans your expenditure logs for recurring rent, bills, and subscriptions. Click below to trigger an immediate detection pass."
+            action={
+              <ProtectedAction tooltip="View-only access">
+                <Button
+                  variant="primary"
+                  onClick={handleTriggerScan}
+                  disabled={isScanning}
+                >
+                  <FaSyncAlt /> Scan Patterns Now
+                </Button>
+              </ProtectedAction>
+            }
+          />
         ) : (
           <div className="suggestions-grid">
             {pendingSuggestions.map((sug) => {
-              const catColor = getCategoryColor(sug.category);
               return (
-                <div key={sug._id} className="suggestion-card">
+                <div key={sug._id} className="suggestion-card" data-testid={`suggestion-card-${sug._id}`}>
                   <div className="suggestion-card-top">
                     <div className="suggestion-header-row">
                       <div>
-                        <h3 className="suggestion-title">{sug.description}</h3>
-                        <span className="cat-pill" style={{ backgroundColor: catColor }}>
+                        <h2 className="suggestion-title">{sug.description}</h2>
+                        <Badge tone="neutral" className="suggestion-cat-badge">
                           {sug.category}
-                        </span>
+                        </Badge>
                       </div>
-                      <div className="suggestion-amount">{formatCurrency(sug.amount)}</div>
+                      <div className="suggestion-amount fs-num">{formatCurrency(sug.amount)}</div>
                     </div>
 
-                    <div style={{ marginTop: '0.75rem' }}>
-                      <span className="freq-badge">{sug.frequency} frequency</span>
+                    <div className="suggestion-freq-row">
+                      <Badge tone="neutral">{sug.frequency} frequency</Badge>
                     </div>
 
                     <div className="confidence-section">
                       <div className="confidence-header">
                         <span>Pattern Confidence</span>
-                        <strong>{sug.confidenceScore}%</strong>
+                        <strong className="fs-num">{sug.confidenceScore}%</strong>
                       </div>
-                      <div className="confidence-track">
+                      <div
+                        className="fs-progress"
+                        role="progressbar"
+                        aria-valuenow={sug.confidenceScore}
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        aria-label={`Pattern confidence: ${sug.confidenceScore}%`}
+                      >
                         <div
-                          className={`confidence-fill ${getConfidenceClass(sug.confidenceScore)}`}
-                          style={{ width: `${sug.confidenceScore}%` }}
-                        ></div>
+                          className="fs-progress-bar"
+                          ref={(el) => {
+                            if (el) el.style.width = `${sug.confidenceScore}%`;
+                          }}
+                        />
                       </div>
                     </div>
 
                     <div className="date-span">
-                      <FaCalendarAlt /> Detected from {formatDate(sug.detectedFrom)} to {formatDate(sug.detectedTo)}
+                      <FaCalendarAlt className="date-span-icon" /> Detected from {formatDate(sug.detectedFrom)} to {formatDate(sug.detectedTo)}
                     </div>
                   </div>
 
                   <div className="suggestion-card-actions">
                     <ProtectedAction tooltip="View-only access">
-                      <button className="btn-accept" onClick={() => handleOpenAcceptModal(sug)}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleOpenAcceptModal(sug)}
+                        data-testid={`accept-btn-${sug._id}`}
+                      >
                         <FaCheck /> Confirm &amp; Accept
-                      </button>
+                      </Button>
                     </ProtectedAction>
                     <ProtectedAction tooltip="View-only access">
-                      <button className="btn-reject" onClick={() => handleReject(sug._id)}>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleReject(sug._id)}
+                        data-testid={`dismiss-btn-${sug._id}`}
+                      >
                         <FaTimes /> Dismiss
-                      </button>
+                      </Button>
                     </ProtectedAction>
                   </div>
                 </div>
@@ -264,30 +263,31 @@ const RecurringSuggestionsPage = () => {
         )
       ) : activeTab === 'accepted' ? (
         acceptedSuggestions.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
-            No accepted recurring expenses yet.
-          </div>
+          <EmptyState
+            icon={<FaCheck />}
+            title="No accepted recurring expenses yet"
+            description="Accepted recurring expenses will appear here and provide continuous forecasting data."
+          />
         ) : (
           <div className="suggestions-grid">
             {acceptedSuggestions.map((sug) => {
-              const catColor = getCategoryColor(sug.category);
               return (
-                <div key={sug._id} className="suggestion-card" style={{ borderLeft: '4px solid #10b981' }}>
+                <div key={sug._id} className="suggestion-card accepted" data-testid={`accepted-card-${sug._id}`}>
                   <div className="suggestion-card-top">
                     <div className="suggestion-header-row">
                       <div>
-                        <h3 className="suggestion-title">{sug.description}</h3>
-                        <span className="cat-pill" style={{ backgroundColor: catColor }}>
+                        <h2 className="suggestion-title">{sug.description}</h2>
+                        <Badge tone="neutral" className="suggestion-cat-badge">
                           {sug.category}
-                        </span>
+                        </Badge>
                       </div>
-                      <div className="suggestion-amount">{formatCurrency(sug.amount)}</div>
+                      <div className="suggestion-amount fs-num">{formatCurrency(sug.amount)}</div>
                     </div>
-                    <div style={{ marginTop: '0.75rem' }}>
-                      <span className="freq-badge">{sug.frequency} frequency</span>
-                      <span style={{ marginLeft: '0.5rem', color: '#059669', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <div className="suggestion-freq-row">
+                      <Badge tone="neutral">{sug.frequency} frequency</Badge>
+                      <Badge tone="positive" className="active-rule-badge">
                         Active recurring rule
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                 </div>
@@ -297,53 +297,87 @@ const RecurringSuggestionsPage = () => {
         )
       ) : (
         /* History of flagged recurring expenditures */
-        <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-          <table className="styled-table" style={{ margin: 0 }}>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Amount</th>
-                <th>Category</th>
-                <th>Payment Method</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recurringExpenditures.length === 0 ? (
+        <div className="table-container recurring-history-container fs-table-container">
+          {/* Desktop Table View */}
+          <div className="recurring-history-desktop-table">
+            <table className="styled-table recurring-history-table" data-testid="recurring-history-table">
+              <thead>
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-                    No expenditures are currently flagged as recurring.
-                  </td>
+                  <th scope="col">Date</th>
+                  <th scope="col">Description</th>
+                  <th scope="col" className="cell-right">Amount</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Payment Method</th>
+                  <th scope="col" className="cell-center">Status</th>
                 </tr>
-              ) : (
-                recurringExpenditures.map((exp) => (
-                  <tr key={exp._id}>
-                    <td>{formatDate(exp.date)}</td>
-                    <td><strong>{exp.description || '-'}</strong></td>
-                    <td style={{ color: '#dc2626', fontWeight: 700 }}>{formatCurrency(exp.transactionValue)}</td>
-                    <td>
-                      <span
-                        className="cat-pill"
-                        style={{ backgroundColor: getCategoryColor(exp.categories?.[0] || 'Other') }}
-                      >
-                        {exp.categories?.[0] || 'Other'}
-                      </span>
-                    </td>
-                    <td>{exp.paymentMethod || 'Bank'}</td>
-                    <td>
-                      <span style={{ color: '#059669', fontWeight: 600 }}>🔁 Recurring</span>
+              </thead>
+              <tbody>
+                {recurringExpenditures.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="cell-empty">
+                      No expenditures are currently flagged as recurring.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  recurringExpenditures.map((exp) => (
+                    <tr key={exp._id}>
+                      <td className="fs-num">{formatDate(exp.date)}</td>
+                      <td><strong>{exp.description || '-'}</strong></td>
+                      <td className="cell-right fs-num">{formatCurrency(exp.transactionValue)}</td>
+                      <td>
+                        <Badge tone="neutral">
+                          {exp.categories?.[0] || 'Other'}
+                        </Badge>
+                      </td>
+                      <td>{exp.paymentMethod || 'Bank'}</td>
+                      <td className="cell-center">
+                        <Badge tone="positive">Recurring</Badge>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards View (D19) */}
+          <div className="recurring-history-mobile-cards">
+            {recurringExpenditures.length === 0 ? (
+              <div className="cell-empty">
+                No expenditures are currently flagged as recurring.
+              </div>
+            ) : (
+              recurringExpenditures.map((exp) => (
+                <div key={exp._id} className="recurring-mobile-card">
+                  <div className="recurring-mobile-header">
+                    <strong>{exp.description || '-'}</strong>
+                    <span className="fs-num">{formatCurrency(exp.transactionValue)}</span>
+                  </div>
+                  <div className="recurring-mobile-row">
+                    <span className="recurring-mobile-label">Date</span>
+                    <span className="fs-num">{formatDate(exp.date)}</span>
+                  </div>
+                  <div className="recurring-mobile-row">
+                    <span className="recurring-mobile-label">Category</span>
+                    <Badge tone="neutral">{exp.categories?.[0] || 'Other'}</Badge>
+                  </div>
+                  <div className="recurring-mobile-row">
+                    <span className="recurring-mobile-label">Payment</span>
+                    <span>{exp.paymentMethod || 'Bank'}</span>
+                  </div>
+                  <div className="recurring-mobile-row">
+                    <span className="recurring-mobile-label">Status</span>
+                    <Badge tone="positive">Recurring</Badge>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
 
       {/* Confirmation & Edit Modal when accepting */}
-            <ConfirmModal
+      <ConfirmModal
         isOpen={Boolean(suggestionToDismiss)}
         title="Dismiss Suggestion"
         message="Are you sure you want to dismiss this recurring pattern suggestion?"
@@ -354,12 +388,28 @@ const RecurringSuggestionsPage = () => {
       />
 
       {acceptingItem && (
-        <div className="modal-overlay" onClick={() => setAcceptingItem(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="modal-overlay"
+          role="presentation"
+          onClick={() => setAcceptingItem(null)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setAcceptingItem(null);
+          }}
+        >
+          <div
+            className="modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="recurring-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             <div className="modal-header">
-              <h2>Confirm Recurring Expense</h2>
+              <h2 id="recurring-modal-title">Confirm Recurring Expense</h2>
               <button
-                style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer' }}
+                type="button"
+                className="modal-close-btn"
+                aria-label="Close modal"
                 onClick={() => setAcceptingItem(null)}
               >
                 &times;
@@ -367,19 +417,20 @@ const RecurringSuggestionsPage = () => {
             </div>
             <form onSubmit={handleConfirmAccept}>
               <div className="modal-body">
-                <p style={{ color: '#4b5563', fontSize: '0.9rem', margin: 0 }}>
+                <p className="recur-modal-help-text">
                   Confirming this pattern will mark matching past expenditures as <strong>Recurring</strong> and
                   link future transactions for budgeting insights.
                 </p>
 
                 <div className="form-row">
-                  <label>Description Pattern</label>
-                  <input type="text" disabled value={acceptingItem.description} />
+                  <label htmlFor="recur-form-desc">Description Pattern</label>
+                  <input id="recur-form-desc" type="text" disabled value={acceptingItem.description} />
                 </div>
 
                 <div className="form-row">
-                  <label>Category</label>
+                  <label htmlFor="recur-form-category">Category</label>
                   <select
+                    id="recur-form-category"
                     value={acceptForm.category}
                     onChange={(e) => setAcceptForm({ ...acceptForm, category: e.target.value })}
                   >
@@ -392,9 +443,11 @@ const RecurringSuggestionsPage = () => {
                 </div>
 
                 <div className="form-row">
-                  <label>Typical Amount (EGP)</label>
+                  <label htmlFor="recur-form-amount">Typical Amount (EGP)</label>
                   <input
+                    id="recur-form-amount"
                     type="number"
+                    step="any"
                     required
                     value={acceptForm.amount}
                     onChange={(e) => setAcceptForm({ ...acceptForm, amount: e.target.value })}
@@ -402,8 +455,9 @@ const RecurringSuggestionsPage = () => {
                 </div>
 
                 <div className="form-row">
-                  <label>Frequency</label>
+                  <label htmlFor="recur-form-frequency">Frequency</label>
                   <select
+                    id="recur-form-frequency"
                     value={acceptForm.frequency}
                     onChange={(e) => setAcceptForm({ ...acceptForm, frequency: e.target.value })}
                   >
@@ -417,13 +471,21 @@ const RecurringSuggestionsPage = () => {
               </div>
 
               <div className="modal-footer">
-                <button type="button" className="btn-secondary" onClick={() => setAcceptingItem(null)}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setAcceptingItem(null)}
+                >
                   Cancel
-                </button>
+                </Button>
                 <ProtectedAction tooltip="View-only access">
-                  <button type="submit" className="btn-primary">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    data-testid="confirm-recurrence-submit-btn"
+                  >
                     Confirm Recurrence
-                  </button>
+                  </Button>
                 </ProtectedAction>
               </div>
             </form>
