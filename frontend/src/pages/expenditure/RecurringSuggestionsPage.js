@@ -224,7 +224,9 @@ const RecurringSuggestionsPage = () => {
                       >
                         <div
                           className="fs-progress-bar"
-                          style={{ width: `${sug.confidenceScore}%` }}
+                          ref={(el) => {
+                            if (el) el.style.width = `${sug.confidenceScore}%`;
+                          }}
                         />
                       </div>
                     </div>

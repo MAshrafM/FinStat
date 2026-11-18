@@ -31,6 +31,7 @@ describe('chartTheme engine [D22, §4.12, §4.3.2]', () => {
     const palette = getChartPalette();
     expect(palette.greys).toHaveLength(4);
     expect(palette.greys[0]).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(palette.greys[0].toLowerCase()).toBe(SAMPLE_GREY.toLowerCase());
     expect(palette.greys[1]).toMatch(/^#[0-9a-f]{6}$/i);
     expect(palette.greys[2]).toMatch(/^#[0-9a-f]{6}$/i);
     expect(palette.greys[3]).toMatch(/^#[0-9a-f]{6}$/i);

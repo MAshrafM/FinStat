@@ -388,7 +388,9 @@ const BudgetsPage = () => {
                     >
                       <div
                         className="fs-progress-bar"
-                        style={{ width: `${barWidth}%` }}
+                        ref={(el) => {
+                          if (el) el.style.width = `${barWidth}%`;
+                        }}
                       />
                     </div>
 
