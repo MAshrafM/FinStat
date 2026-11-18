@@ -352,7 +352,7 @@ All implementation items noted during reviews were addressed:
 The following entry has been appended to `docs/UI-UX_Plan/UI-UX-PLAN.md` §10:
 
 ```markdown
-| 4C | 2026-11-17 | Expenditure cluster completion: converted remaining 5 expenditure routes (/expenditures/rules, /expenditures/budgets, /expenditures/recurring, /expenditures/bills, /expenditure-analysis) to the dark graphite design system; eliminated all 117 legacy inline styles across the 5 page files (0 remaining); purged all 4 expenditure entries from frontend/.eslintignore (0 warnings); integrated Chart.js theme with accessible data tables for all 5 charts on /expenditure-analysis (§4.12, G2); strict budget threshold fidelity (§4.3.1: pct > 100 negative, pct >= 80 warning, neutral under 80%); added unit and jest-axe tests for all converted routes (8 suites, 54 tests passing); Invariant I3 calculation characterization passing (11/11); PR subset visual regression passing 71/71 tests with 0 diff on all 60 non-4C routes; manifest 334/334 verified; 25 baseline snapshots replaced in D:\Projects\FinStat-visual-baselines. | 5A (Trade log & trade entry conversion) | None | Pending Merge |
+| 4C | 2026-11-17 | Expenditure cluster completion: converted remaining 5 expenditure routes (/expenditures/rules, /expenditures/budgets, /expenditures/recurring, /expenditures/bills, /expenditure-analysis) to the dark graphite design system; eliminated all 117 legacy inline styles across the 5 page files (0 remaining); purged all 4 expenditure entries from frontend/.eslintignore (0 warnings); integrated Chart.js theme with accessible data tables for all 5 charts on /expenditure-analysis (§4.12, G2); strict budget threshold fidelity (§4.3.1: pct > 100 negative, pct >= 80 warning, neutral under 80%); added unit and jest-axe tests for all converted routes (8 suites, 54 tests passing); Invariant I3 calculation characterization passing (11/11); PR subset visual regression passing 71/71 tests with 0 diff on all 60 non-4C routes; manifest 334/334 verified; 25 baseline snapshots replaced in D:\Projects\FinStat-visual-baselines. | 5A (Trade log & trade entry conversion) | None | a87c9a2 (merged to main) |
 ```
 
 And the sub-phase summary block:
@@ -367,7 +367,7 @@ Visual diff: 0 regression diff across all 60 non-4C routes; 25 baseline snapshot
 Fixtures:    unchanged
 Screenshots: expenditures-rules-1440.png, expenditures-rules-390.png, expenditures-budgets-1440.png, expenditures-budgets-390.png, expenditures-recurring-1440.png, expenditures-recurring-390.png, expenditures-bills-1440.png, expenditures-bills-390.png, expenditure-analysis-1440.png, expenditure-analysis-390.png
 Branch:      phase-ui-4c-expenditure-cluster
-Merge SHA:   Pending Merge
+Merge SHA:   a87c9a2 (merged to main)
 ```
 
 ---
