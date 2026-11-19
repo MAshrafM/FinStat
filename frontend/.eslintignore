@@ -20,7 +20,6 @@ src/components/layout/AccountSwitcher.js
 src/components/portfolio/AllocationChart.js
 src/components/portfolio/HoldingsTable.js
 src/components/portfolio/SummaryCards.js
-src/components/salary/ComponentTable.js
 src/config/dashboardActions.js
 src/pages/LandingPage.js
 src/pages/admin/AdminDashboard.js
@@ -78,17 +77,12 @@ src/pages/reports/__tests__/ComprehensiveReportPage.test.js
 src/pages/salary/EditHistoryRecord.js
 src/pages/salary/EditProfilePage.js
 src/pages/salary/PaycheckFormPage.js
-src/pages/salary/PayrollRulesHub.js
-src/pages/salary/SalaryProfilePage.js
 src/pages/salary/UpdateSalary.js
 src/pages/salary/__tests__/PaycheckFormPage.test.js
 src/pages/salary/__tests__/PaycheckFormPageTax.test.js
 src/pages/salary/__tests__/PaycheckFormPageTimezone.test.js
-src/pages/salary/__tests__/PayrollRulesHub.test.js
-src/pages/salary/__tests__/SalaryProfileToggle.test.js
 src/pages/salary/__tests__/TaxSimulator.test.js
 src/pages/security/SecuritySettingsPage.js
-src/pages/taxes/YearlyTaxTable.js
 src/pages/trades/CorporateActionWizard.js
 src/pages/trades/CorporateActionsList.js
 src/pages/trades/TradeForm.js

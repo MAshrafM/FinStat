@@ -1,14 +1,25 @@
 // frontend/src/pages/salary/PayrollRulesHub.js
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { FaSlidersH } from 'react-icons/fa';
 import { formatCurrency } from '../../utils/formatters';
 import { getBrackets } from '../../services/taxService';
 import { getPaychecks } from '../../services/paycheckService';
 import { getRecords } from '../../services/socialInsuranceService';
 import YearlyTaxTable from '../taxes/YearlyTaxTable';
 import SummaryRow from '../../components/SummaryRow';
+import PageHeader from '../../components/ui/PageHeader';
+import Tabs from '../../components/ui/Tabs';
+import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
+import Loading from '../../components/ui/Loading';
 import '../taxes/TaxesPage.css';
 import './SalaryProfile.css';
+
+const RULES_TABS = [
+  { id: 'taxes', label: 'Income Tax Brackets' },
+  { id: 'insurance', label: 'Social Insurance Rules' },
+];
 
 const PayrollRulesHub = ({ initialTab }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -167,13 +178,6 @@ const PayrollRulesHub = ({ initialTab }) => {
     );
   }, [paychecks]);
 
-  const getColorForRate = (rate) => {
-    const num = Number(rate) || 0;
-    const normalized = num > 1 ? num / 100 : num;
-    const hue = Math.max(0, 120 - normalized * 3.5 * 120);
-    return `hsl(${hue}, 70%, 94%)`;
-  };
-
   const sortedTaxYears = Object.keys(processedTaxData).sort((a, b) => b - a);
 
   // Social insurance calculations
@@ -197,149 +201,82 @@ const PayrollRulesHub = ({ initialTab }) => {
   }, [insuranceRecords]);
 
   return (
-    <div className="page-container">
-      {/* Header with Tab Navigation */}
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
-          <h1>Payroll &amp; Statutory Rules</h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
-            Consolidated statutory rules, income tax bracket progressions, and social insurance obligations.
-          </p>
-        </div>
-
-        {/* Tab Buttons */}
-        <div
-          role="tablist"
-          aria-label="Payroll Rules Sections"
-          style={{
-            display: 'inline-flex',
-            background: 'rgba(255, 255, 255, 0.06)',
-            borderRadius: '10px',
-            padding: '4px',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            gap: '4px',
-          }}
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'taxes'}
-            onClick={() => handleTabChange('taxes')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: activeTab === 'taxes' ? '#6c5ce7' : 'transparent',
-              color: activeTab === 'taxes' ? '#fff' : '#94a3b8',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            📋 Income Tax Brackets
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'insurance'}
-            onClick={() => handleTabChange('insurance')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: activeTab === 'insurance' ? '#6c5ce7' : 'transparent',
-              color: activeTab === 'insurance' ? '#fff' : '#94a3b8',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            🛡️ Social Insurance Rules
-          </button>
-          <Link
+    <div className="fs-page payroll-rules-page">
+      <PageHeader
+        title="Payroll & Statutory Rules"
+        subtitle="Consolidated statutory rules, income tax bracket progressions, and social insurance obligations."
+        actions={
+          <Button
+            as={Link}
             to="/salary/simulator"
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: '#2563EB',
-              color: '#fff',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
+            variant="secondary"
+            icon={<FaSlidersH />}
           >
-            ⚡ Tax & Salary Simulator
-          </Link>
-        </div>
+            Tax &amp; Salary Simulator
+          </Button>
+        }
+      />
+
+      <div className="rules-tabs-container" role="region" aria-label="Payroll Rules Sections">
+        <Tabs
+          tabs={RULES_TABS}
+          activeTab={activeTab}
+          onChange={handleTabChange}
+          ariaLabel="Payroll Rules Sections"
+        />
       </div>
 
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
-          Loading payroll rules...
-        </div>
+        <Loading variant="card" text="Loading payroll rules..." />
       ) : activeTab === 'taxes' ? (
         /* TAXES TAB CONTENT */
-        <div data-testid="taxes-tab-panel">
+        <div data-testid="taxes-tab-panel" className="taxes-tab-content">
           <div className="top-summary-container">
             {/* Grand Summary Card */}
-            <div className="tax-card grand-summary-card">
-              <h3>Grand Totals (All Time)</h3>
+            <div className="tax-card grand-summary-card fs-card">
+              <h2 className="summary-card-title">Grand Totals (All Time)</h2>
               <div className="yearly-summary-grid">
                 <div className="summary-item">
                   <span>Sum of Tax Ded.</span>
-                  <strong>{formatCurrency(grandTaxTotals.sumOfTaxDeductions)}</strong>
+                  <strong className="fs-num">{formatCurrency(grandTaxTotals.sumOfTaxDeductions)}</strong>
                 </div>
                 <div className="summary-item highlight">
                   <span>Sum of All Ded.</span>
-                  <strong>{formatCurrency(grandTaxTotals.sumOfAllDeductions)}</strong>
+                  <strong className="fs-num">{formatCurrency(grandTaxTotals.sumOfAllDeductions)}</strong>
                 </div>
                 <div className="summary-item highlight">
                   <span>Sum of Gross (All)</span>
-                  <strong>{formatCurrency(grandTaxTotals.sumOfGrossAll)}</strong>
+                  <strong className="fs-num">{formatCurrency(grandTaxTotals.sumOfGrossAll)}</strong>
                 </div>
                 <div className="summary-item highlight">
                   <span>Sum of Net (All)</span>
-                  <strong>{formatCurrency(grandTaxTotals.sumOfNetAll)}</strong>
+                  <strong className="fs-num">{formatCurrency(grandTaxTotals.sumOfNetAll)}</strong>
                 </div>
               </div>
             </div>
 
             {/* Current Active Tax Brackets Card */}
-            <div className="tax-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <h3 style={{ margin: 0 }}>Current Tax Brackets ({taxInfo.year || currentYear})</h3>
-                <span
-                  style={{
-                    backgroundColor: taxInfo.isActive !== false ? '#ecfdf5' : '#fffbeb',
-                    color: taxInfo.isActive !== false ? '#047857' : '#b45309',
-                    border: `1px solid ${taxInfo.isActive !== false ? '#a7f3d0' : '#fde68a'}`,
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                  }}
+            <div className="tax-card active-brackets-card fs-card">
+              <div className="tax-card-header">
+                <h2 className="tax-card-title">Current Tax Brackets ({taxInfo.year || currentYear})</h2>
+                <Badge
+                  tone="neutral"
+                  label={taxInfo.isActive !== false ? 'Active' : 'Inactive'}
                 >
-                  {taxInfo.isActive !== false ? '🟢 Active' : '🟡 Inactive'}
-                </span>
+                  {taxInfo.isActive !== false ? 'Active' : 'Inactive'}
+                </Badge>
               </div>
 
-              <p style={{ margin: '0 0 12px 0', fontSize: '0.875rem', color: '#64748b' }}>
+              <p className="tax-exemption-note">
                 Personal Exemption:{' '}
-                <strong style={{ color: '#0284c7' }}>
+                <strong className="fs-num">
                   {Number(taxInfo.personalExemption || 0).toLocaleString()} EGP / yr
                 </strong>
                 {taxInfo.country && <span> • {taxInfo.country}</span>}
               </p>
 
-              <div className="table-container">
-                <table className="styled-table">
+              <div className="table-responsive-container">
+                <table className="styled-table custom-component-table">
                   <thead>
                     <tr>
                       <th>Level</th>
@@ -355,11 +292,11 @@ const PayrollRulesHub = ({ initialTab }) => {
                       const isInfinity = Number(bracket.to) >= 100000000;
 
                       return (
-                        <tr key={bracket.level || idx} style={{ backgroundColor: getColorForRate(rateVal) }}>
+                        <tr key={bracket.level || idx}>
                           <td data-label="Level">Level {bracket.level || idx + 1}</td>
-                          <td data-label="From">{formatCurrency(bracket.from)}</td>
-                          <td data-label="To">{isInfinity ? '∞' : formatCurrency(bracket.to)}</td>
-                          <td data-label="Rate" style={{ fontWeight: 600 }}>{ratePercent}%</td>
+                          <td data-label="From" className="fs-num">{formatCurrency(bracket.from)}</td>
+                          <td data-label="To" className="fs-num">{isInfinity ? '∞' : formatCurrency(bracket.to)}</td>
+                          <td data-label="Rate" className="fs-num">{ratePercent}%</td>
                         </tr>
                       );
                     })}
@@ -382,7 +319,7 @@ const PayrollRulesHub = ({ initialTab }) => {
         </div>
       ) : (
         /* SOCIAL INSURANCE TAB CONTENT */
-        <div data-testid="insurance-tab-panel">
+        <div data-testid="insurance-tab-panel" className="insurance-tab-content">
           {insuranceRecords.length > 0 && (
             <SummaryRow
               grandTotal={totalInsurancePaid}
@@ -393,37 +330,37 @@ const PayrollRulesHub = ({ initialTab }) => {
           )}
 
           {/* Display Cards */}
-          <div className="profile-grid" style={{ marginTop: '1.5rem' }}>
+          <div className="salary-profiles-grid profile-grid insurance-grid">
             {insuranceRecords.map((record) => (
-              <div key={record.year} className="profile-card">
+              <div key={record.year} className="salary-profile-card profile-card fs-card">
                 <div className="card-header">
-                  <h3>{record.year}</h3>
+                  <h2 className="profile-card-name">{record.year}</h2>
                 </div>
                 <div className="card-body">
-                  <ul>
+                  <ul className="salary-breakdown-list">
                     <li>
                       <span>Registered Income:</span>
-                      <strong>{formatCurrency(record.registeredIncome)}</strong>
+                      <strong className="fs-num">{formatCurrency(record.registeredIncome)}</strong>
                     </li>
                     <li>
                       <span>Yearly Income:</span>
-                      <strong>{formatCurrency(record.yearlyIncome)}</strong>
+                      <strong className="fs-num">{formatCurrency(record.yearlyIncome)}</strong>
                     </li>
                     <li>
                       <span>Individual Share:</span>
-                      <strong>{Number(record.individualShare * 100).toFixed(1)}%</strong>
+                      <strong className="fs-num">{Number(record.individualShare * 100).toFixed(1)}%</strong>
                     </li>
                     <li>
                       <span>Yearly Burden:</span>
-                      <strong>{formatCurrency(record.burden)}</strong>
+                      <strong className="fs-num">{formatCurrency(record.burden)}</strong>
                     </li>
-                    <li style={{ backgroundColor: 'rgba(241, 196, 15, 0.15)' }}>
+                    <li className="insurance-remaining-item">
                       <span>Remaining Burden:</span>
-                      <strong>{formatCurrency(calculateRemaining(record))}</strong>
+                      <strong className="fs-num">{formatCurrency(calculateRemaining(record))}</strong>
                     </li>
                   </ul>
-                  <h4 style={{ marginTop: '1.5rem' }}>Monthly Deductions:</h4>
-                  <ul>
+                  <h4 className="card-section-title">Monthly Deductions:</h4>
+                  <ul className="salary-breakdown-list">
                     {paychecks
                       .filter(
                         (p) =>
@@ -434,7 +371,7 @@ const PayrollRulesHub = ({ initialTab }) => {
                       .map((p) => (
                         <li key={p._id}>
                           <span>{p.month}:</span>
-                          <strong>{formatCurrency(p.insuranceDeduction)}</strong>
+                          <strong className="fs-num">{formatCurrency(p.insuranceDeduction)}</strong>
                         </li>
                       ))}
                   </ul>
@@ -449,4 +386,3 @@ const PayrollRulesHub = ({ initialTab }) => {
 };
 
 export default PayrollRulesHub;
-

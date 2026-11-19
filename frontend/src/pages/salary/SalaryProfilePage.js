@@ -7,6 +7,10 @@ import { getSalaryProfiles, deleteSalaryProfile, setDefaultSalaryProfile } from 
 import { formatCurrency } from '../../utils/formatters';
 import SalaryForm from '../../components/SalaryForm';
 import ComponentTable from '../../components/salary/ComponentTable';
+import PageHeader from '../../components/ui/PageHeader';
+import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
+import Loading from '../../components/ui/Loading';
 import { useToast } from '../../context/ToastContext';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { useCanModify } from '../../context/AuthContext';
@@ -14,7 +18,7 @@ import ConfirmModal from '../../components/common/ConfirmModal';
 import './SalaryProfile.css';
 
 const SalaryProfilePage = () => {
-  const canModify = useCanModify();
+  const { canModify } = useCanModify();
   const isMobile = window.innerWidth <= 768;
   const { addToast } = useToast();
 
@@ -74,7 +78,7 @@ const SalaryProfilePage = () => {
     }
   };
 
-    const handleDeleteProfile = (profileId) => {
+  const handleDeleteProfile = (profileId) => {
     if (!canModify) return;
     setProfileToDelete(profileId);
   };
@@ -93,8 +97,8 @@ const SalaryProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="page-container" style={{ padding: '2rem 1rem', textAlign: 'center' }}>
-        <p>Loading salary profile...</p>
+      <div className="fs-page salary-profile-page">
+        <Loading variant="card" text="Loading salary profile..." />
       </div>
     );
   }
@@ -125,20 +129,20 @@ const SalaryProfilePage = () => {
   // If creating initial profile
   if (isEditing) {
     return (
-      <div className="page-container">
-        <div className="page-header">
-          <h1>{profile ? 'Edit Salary Profile' : 'Create Initial Salary Profile'}</h1>
-        </div>
+      <div className="fs-page salary-profile-page">
+        <PageHeader
+          title={profile ? 'Edit Salary Profile' : 'Create Initial Salary Profile'}
+        />
         <SalaryForm
           onFormSubmit={handleFormSubmit}
           initialData={profile}
           mode={profile ? 'update' : 'create'}
         />
         {profile && (
-          <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-            <button className="cancel-button" onClick={() => setIsEditing(false)}>
+          <div className="salary-cancel-wrapper">
+            <Button variant="ghost" onClick={() => setIsEditing(false)}>
               Cancel
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -147,11 +151,11 @@ const SalaryProfilePage = () => {
 
   if (profile && (!profile.salaryHistory || profile.salaryHistory.length === 0) && !currentSalary && (!profile.components || profile.components.length === 0)) {
     return (
-      <div className="page-container">
-        <div className="profile-card empty-history-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <div className="fs-page salary-profile-page">
+        <div className="salary-profile-card profile-card empty-history-card">
           <div className="card-header">
             <div className="header-content">
-              <h3>{profile.name}</h3>
+              <h2 className="profile-card-name">{profile.name}</h2>
               <p>
                 {profile.title} - {profile.year}
               </p>
@@ -164,13 +168,13 @@ const SalaryProfilePage = () => {
               </ProtectedAction>
             )}
           </div>
-          <div className="card-body">
-            <h4>No Salary Details Found</h4>
+          <div className="card-body salary-empty-state">
+            <h3 className="empty-state-heading">No Salary Details Found</h3>
             <p>This profile doesn't have any salary history yet. Add the first set of salary details to get started.</p>
             <ProtectedAction tooltip="View-only access">
-              <Link to="/salary-profile/update" className="submit-button" style={{ marginTop: '1rem', textDecoration: 'none', display: 'inline-block' }}>
+              <Button as={Link} to="/salary-profile/update" variant="primary" icon={<FaPlus />}>
                 Add Initial Salary Details
-              </Link>
+              </Button>
             </ProtectedAction>
           </div>
         </div>
@@ -183,38 +187,36 @@ const SalaryProfilePage = () => {
     : (profile?.effectiveDate ? new Date(profile.effectiveDate).toLocaleDateString() : 'Active');
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <div>
-          <h1>Salary Profile</h1>
-          <p style={{ color: '#6c757d', margin: '0.25rem 0 0 0', fontSize: '0.95rem' }}>
-            Manage your salary components, compensation structure, and history
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link to="/salary/simulator" className="nav-button" style={{ backgroundColor: '#0d9488' }}>
-            <FaSlidersH /> Tax Simulator
-          </Link>
-          <Link to="/salary/paychecks/new" className="nav-button" style={{ backgroundColor: '#2c3e50' }}>
-            <FaCalculator /> Paycheck Calculator
-          </Link>
-          <ProtectedAction tooltip="View-only access">
-            <Link to="/salary-profile/update" className="nav-button">
-              <FaPlus /> Update Structure
-            </Link>
-          </ProtectedAction>
-        </div>
-      </div>
+    <div className="fs-page salary-profile-page">
+      <PageHeader
+        title="Salary Profile"
+        subtitle="Manage your salary components, compensation structure, and history"
+        actions={
+          <div className="salary-header-actions">
+            <Button as={Link} to="/salary/simulator" variant="secondary" icon={<FaSlidersH />}>
+              Tax Simulator
+            </Button>
+            <Button as={Link} to="/salary/paychecks/new" variant="secondary" icon={<FaCalculator />}>
+              Paycheck Calculator
+            </Button>
+            <ProtectedAction tooltip="View-only access">
+              <Button as={Link} to="/salary-profile/update" variant="primary" icon={<FaPlus />}>
+                Update Structure
+              </Button>
+            </ProtectedAction>
+          </div>
+        }
+      />
 
       {/* Main Profile Card */}
-      <div className="profile-card" style={{ maxWidth: '900px', margin: '0 auto 2.5rem auto' }}>
+      <div className="salary-profile-card profile-card">
         <div className="card-header">
           <div className="header-content">
-            <h3>
-              {profile.title ? `${profile.title} ` : ''}{profile.name}
-            </h3>
+            <h2 className="profile-card-name">
+              {profile?.title ? `${profile.title} ` : ''}{profile?.name}
+            </h2>
             <p>
-              {profile.position ? `${profile.position} • ` : ''}{profile.year || new Date().getFullYear()}
+              {profile?.position ? `${profile.position} • ` : ''}{profile?.year || new Date().getFullYear()}
             </p>
           </div>
           <ProtectedAction tooltip="View-only access">
@@ -225,11 +227,11 @@ const SalaryProfilePage = () => {
         </div>
 
         <div className="card-body">
-          <h4 style={{ marginBottom: '1rem' }}>Current Salary Details (as of {effectiveDateStr})</h4>
+          <h3 className="card-section-title">Current Salary Details (as of {effectiveDateStr})</h3>
           {profile?.components && profile.components.length > 0 ? (
             <ComponentTable components={profile.components} readOnly={true} />
           ) : currentSalary ? (
-            <ul>
+            <ul className="salary-breakdown-list">
               {Object.entries(currentSalary)
                 .filter(
                   ([key]) =>
@@ -246,85 +248,90 @@ const SalaryProfilePage = () => {
                         .trim()}
                       :
                     </span>
-                    <strong>{formatCurrency(value)}</strong>
+                    <strong className="fs-num">{formatCurrency(value)}</strong>
                   </li>
                 ))}
             </ul>
           ) : (
-            <p style={{ color: '#7f8c8d' }}>No salary details logged yet.</p>
+            <p className="no-salary-details-text">No salary details logged yet.</p>
           )}
         </div>
 
         <div className="card-footer">
           <div className="gross-estimate">
             <span>Estimated Monthly Gross:</span>
-            <strong>{formatCurrency(monthlyGrossEstimate)}</strong>
+            <strong className="fs-num">{formatCurrency(monthlyGrossEstimate)}</strong>
           </div>
           {currentSalary?.prepaid !== undefined && (
             <div className="gross-estimate prepaid">
               <span>Monthly Prepaid:</span>
-              <strong>{formatCurrency(currentSalary.prepaid || 0)}</strong>
+              <strong className="fs-num">{formatCurrency(currentSalary.prepaid || 0)}</strong>
             </div>
           )}
-          <div className="card-actions" style={{ marginLeft: 'auto', display: 'flex', gap: '0.75rem' }}>
+          <div className="salary-card-actions card-actions">
             <ProtectedAction tooltip="View-only access">
-              <Link to="/salary-profile/update" className="action-button" title="Update Salary">
-                <FaEdit /> Update
-              </Link>
+              <Button as={Link} to="/salary-profile/update" variant="primary" size="sm" icon={<FaEdit />} title="Update Salary">
+                Update
+              </Button>
             </ProtectedAction>
-            <Link to="/salary-profile/history" className="action-button" style={{ backgroundColor: '#2c3e50', color: '#fff' }} title="View History">
-              <FaHistory /> History
-            </Link>
+            <Button as={Link} to="/salary-profile/history" variant="secondary" size="sm" icon={<FaHistory />} title="View History">
+              History
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Multiple Profiles Section (if user has more than 1) */}
       {allProfiles.length > 1 && (
-        <div style={{ marginTop: '3rem' }}>
-          <h3 style={{ color: '#2c3e50', marginBottom: '1rem' }}>All Saved Salary Profiles</h3>
-          <div className="profile-grid">
+        <div className="all-profiles-section">
+          <h2 className="section-title">All Saved Salary Profiles</h2>
+          <div className="salary-profiles-grid profile-grid">
             {allProfiles.map((p) => {
               const isDefault = p.isDefault || p._id === profile?._id;
               const gross = p.monthlyGrossEstimate || 0;
               return (
-                <div key={p._id} className="profile-card">
-                  <div className="card-header" style={{ backgroundColor: isDefault ? '#2c3e50' : '#475569' }}>
+                <div key={p._id} className="salary-profile-card profile-card">
+                  <div className={`card-header ${isDefault ? 'default-profile-header' : ''}`}>
                     <div className="header-content">
-                      <h3 style={{ fontSize: '1.2rem' }}>{p.name}</h3>
-                      <p style={{ fontSize: '0.85rem' }}>{p.title || 'Profile'} {isDefault && '• (Default)'}</p>
+                      <div className="profile-card-title-row">
+                        <h3 className="profile-card-name">{p.name}</h3>
+                        {isDefault && <Badge tone="neutral" label="Default">Default</Badge>}
+                      </div>
+                      <p className="profile-card-subtitle">{p.title || 'Profile'}</p>
                     </div>
                   </div>
                   <div className="card-body">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ color: '#64748b' }}>Estimated Gross:</span>
-                      <strong style={{ color: '#009879' }}>{formatCurrency(gross)}</strong>
+                    <div className="profile-metric-row">
+                      <span className="metric-label">Estimated Gross:</span>
+                      <strong className="metric-value fs-num">{formatCurrency(gross)}</strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#64748b' }}>History / Components:</span>
-                      <strong>{(p.salaryHistory || []).length || (p.components || []).length} records</strong>
+                    <div className="profile-metric-row">
+                      <span className="metric-label">History / Components:</span>
+                      <strong className="metric-value fs-num">{(p.salaryHistory || []).length || (p.components || []).length} records</strong>
                     </div>
                   </div>
-                  <div className="card-footer" style={{ padding: '0.75rem 1rem' }}>
+                  <div className="card-footer profile-card-footer">
                     {!isDefault && (
                       <ProtectedAction tooltip="View-only access">
-                        <button
+                        <Button
                           onClick={() => handleSetDefault(p._id)}
-                          className="action-button"
-                          style={{ backgroundColor: '#009879', color: '#fff', fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
+                          variant="secondary"
+                          size="sm"
+                          icon={<FaCheck />}
                         >
-                          <FaCheck /> Set Default
-                        </button>
+                          Set Default
+                        </Button>
                       </ProtectedAction>
                     )}
                     <ProtectedAction tooltip="View-only access">
-                      <button
+                      <Button
                         onClick={() => handleDeleteProfile(p._id)}
-                        className="action-button"
-                        style={{ backgroundColor: '#e74c3c', color: '#fff', fontSize: '0.8rem', padding: '0.4rem 0.8rem', marginLeft: 'auto' }}
-                      >
-                        <FaTrash />
-                      </button>
+                        variant="danger"
+                        size="sm"
+                        className="delete-profile-btn"
+                        icon={<FaTrash />}
+                        aria-label={`Delete profile ${p.name}`}
+                      />
                     </ProtectedAction>
                   </div>
                 </div>
@@ -332,7 +339,7 @@ const SalaryProfilePage = () => {
             })}
           </div>
         </div>
-            )}
+      )}
       <ConfirmModal
         isOpen={Boolean(profileToDelete)}
         title="Delete Salary Profile"

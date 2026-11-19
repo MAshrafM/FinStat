@@ -1,14 +1,15 @@
 // frontend/src/components/salary/ComponentTable.js
 import React from 'react';
 import { Plus, Trash2, Shield, Receipt } from 'lucide-react';
+import Badge from '../ui/Badge';
 import './ComponentTable.css';
 
 const CATEGORIES = [
-  { value: 'basic', label: 'Basic Salary', color: '#6366f1' },
-  { value: 'allowance', label: 'Allowance', color: '#10b981' },
-  { value: 'bonus', label: 'Bonus / Incentive', color: '#f59e0b' },
-  { value: 'deduction', label: 'Deduction', color: '#ef4444' },
-  { value: 'other', label: 'Other', color: '#8b5cf6' },
+  { value: 'basic', label: 'Basic Salary' },
+  { value: 'allowance', label: 'Allowance' },
+  { value: 'bonus', label: 'Bonus / Incentive' },
+  { value: 'deduction', label: 'Deduction' },
+  { value: 'other', label: 'Other' },
 ];
 
 const ComponentTable = ({
@@ -88,18 +89,18 @@ const ComponentTable = ({
           <table className="custom-component-table">
             <thead>
               <tr>
-                <th style={{ width: '22%' }}>Component Name</th>
-                <th style={{ width: '16%' }}>Category</th>
-                <th style={{ width: '14%' }}>Type</th>
-                <th style={{ width: '16%' }}>Basis / Value</th>
-                <th style={{ width: '8%' }} title="Active status in profile">Active</th>
-                <th style={{ width: '8%' }} title="Subject to income tax">
+                <th className="col-component-name">Component Name</th>
+                <th className="col-category">Category</th>
+                <th className="col-type">Type</th>
+                <th className="col-basis">Basis / Value</th>
+                <th className="col-status" title="Active status in profile">Active</th>
+                <th className="col-taxable" title="Subject to income tax">
                   <span className="th-icon-label"><Receipt size={14} /> Taxable</span>
                 </th>
-                <th style={{ width: '8%' }} title="Subject to social insurance">
+                <th className="col-insurable" title="Subject to social insurance">
                   <span className="th-icon-label"><Shield size={14} /> Insurable</span>
                 </th>
-                {!readOnly && <th style={{ width: '8%' }}>Actions</th>}
+                {!readOnly && <th className="col-actions">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -113,32 +114,19 @@ const ComponentTable = ({
                       comp.category === 'deduction' ? 'row-deduction' : '',
                       isInactive ? 'row-inactive' : '',
                     ].filter(Boolean).join(' ')}
-                    style={isInactive ? { opacity: 0.6 } : undefined}
                   >
-                    <td>
+                    <td data-label="Component Name">
                       {readOnly ? (
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div className="component-name-cell">
                           <span className="component-name-readonly">{comp.name || 'Unnamed Component'}</span>
                           {isInactive && (
-                            <span
-                              className="badge-inactive"
-                              style={{
-                                marginLeft: '8px',
-                                fontSize: '0.7rem',
-                                padding: '2px 6px',
-                                borderRadius: '4px',
-                                backgroundColor: '#e5e7eb',
-                                color: '#4b5563',
-                                fontWeight: 500,
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
+                            <Badge tone="neutral" label="Inactive" className="badge-inactive">
                               Inactive
-                            </span>
+                            </Badge>
                           )}
                         </div>
                       ) : (
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <div className="component-name-cell">
                           <input
                             type="text"
                             className="component-input"
@@ -146,44 +134,27 @@ const ComponentTable = ({
                             value={comp.name || ''}
                             onChange={(e) => handleFieldChange(idx, 'name', e.target.value)}
                             required
+                            aria-label={`Component name for row ${idx + 1}`}
                           />
                           {isInactive && (
-                            <span
-                              className="badge-inactive"
-                              style={{
-                                marginLeft: '8px',
-                                fontSize: '0.7rem',
-                                padding: '2px 6px',
-                                borderRadius: '4px',
-                                backgroundColor: '#e5e7eb',
-                                color: '#4b5563',
-                                fontWeight: 500,
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
+                            <Badge tone="neutral" label="Inactive" className="badge-inactive">
                               Inactive
-                            </span>
+                            </Badge>
                           )}
                         </div>
                       )}
                     </td>
-                    <td>
+                    <td data-label="Category">
                       {readOnly ? (
-                        <span
-                          className="category-badge-pill"
-                          style={{
-                            backgroundColor: `${currentCategory.color}20`,
-                            color: currentCategory.color,
-                            borderColor: `${currentCategory.color}40`,
-                          }}
-                        >
+                        <Badge tone="neutral" label={currentCategory.label} className="category-badge-pill">
                           {currentCategory.label}
-                        </span>
+                        </Badge>
                       ) : (
                         <select
                           className="component-select"
                           value={comp.category || 'allowance'}
                           onChange={(e) => handleFieldChange(idx, 'category', e.target.value)}
+                          aria-label={`Category for ${comp.name || 'component'}`}
                         >
                           {CATEGORIES.map(cat => (
                             <option key={cat.value} value={cat.value}>
@@ -193,7 +164,7 @@ const ComponentTable = ({
                         </select>
                       )}
                     </td>
-                    <td>
+                    <td data-label="Type">
                       {readOnly ? (
                         <span className="type-badge-pill">
                           {comp.type === 'percentage' ? '% Percentage' : 'Fixed EGP'}
@@ -203,13 +174,14 @@ const ComponentTable = ({
                           className="component-select"
                           value={comp.type || 'fixed'}
                           onChange={(e) => handleFieldChange(idx, 'type', e.target.value)}
+                          aria-label={`Type for ${comp.name || 'component'}`}
                         >
                           <option value="fixed">Fixed (EGP)</option>
                           <option value="percentage">% Percentage</option>
                         </select>
                       )}
                     </td>
-                    <td>
+                    <td data-label="Basis / Value">
                       <div className="basis-value-cell">
                         {comp.type === 'percentage' && (
                           readOnly ? (
@@ -220,6 +192,7 @@ const ComponentTable = ({
                               value={comp.calculationBasis || 'basic'}
                               onChange={(e) => handleFieldChange(idx, 'calculationBasis', e.target.value)}
                               title="Calculation Basis"
+                              aria-label={`Calculation basis for ${comp.name || 'component'}`}
                             >
                               <option value="basic">of Basic</option>
                               <option value="gross">of Gross</option>
@@ -227,7 +200,7 @@ const ComponentTable = ({
                           )
                         )}
                         {readOnly ? (
-                          <span className="value-readonly font-semibold">
+                          <span className="value-readonly fs-num font-semibold">
                             {comp.type === 'percentage' ? `${comp.value}%` : `${Number(comp.value || 0).toLocaleString()} EGP`}
                           </span>
                         ) : (
@@ -239,13 +212,14 @@ const ComponentTable = ({
                               placeholder="0"
                               value={comp.value !== undefined ? comp.value : 0}
                               onChange={(e) => handleFieldChange(idx, 'value', parseFloat(e.target.value) || 0)}
+                              aria-label={`Value for ${comp.name || 'component'}`}
                             />
                             <span className="unit-suffix">{comp.type === 'percentage' ? '%' : 'EGP'}</span>
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="text-center">
+                    <td data-label="Active" className="text-center">
                       <label
                         className="checkbox-toggle-container"
                         title={comp.category === 'basic' ? 'Basic salary cannot be disabled' : (comp.isActive !== false ? 'Active' : 'Inactive')}
@@ -260,34 +234,37 @@ const ComponentTable = ({
                         <span className="checkmark"></span>
                       </label>
                     </td>
-                    <td className="text-center">
-                      <label className="checkbox-toggle-container">
+                    <td data-label="Taxable" className="text-center">
+                      <label className="checkbox-toggle-container" title="Taxable">
                         <input
                           type="checkbox"
                           checked={comp.isTaxable !== false}
                           disabled={readOnly}
                           onChange={(e) => handleFieldChange(idx, 'isTaxable', e.target.checked)}
+                          aria-label={`Toggle taxable for ${comp.name || 'component'}`}
                         />
                         <span className="checkmark"></span>
                       </label>
                     </td>
-                    <td className="text-center">
-                      <label className="checkbox-toggle-container">
+                    <td data-label="Insurable" className="text-center">
+                      <label className="checkbox-toggle-container" title="Insurable">
                         <input
                           type="checkbox"
                           checked={comp.isInsurable !== false}
                           disabled={readOnly}
                           onChange={(e) => handleFieldChange(idx, 'isInsurable', e.target.checked)}
+                          aria-label={`Toggle insurable for ${comp.name || 'component'}`}
                         />
                         <span className="checkmark"></span>
                       </label>
                     </td>
                     {!readOnly && (
-                      <td className="text-center">
+                      <td data-label="Actions" className="text-center">
                         <button
                           type="button"
-                          className="remove-row-btn"
+                          className="remove-component-btn remove-row-btn"
                           title="Remove Component"
+                          aria-label={`Remove component ${comp.name || idx + 1}`}
                           onClick={() => handleRemoveComponent(idx)}
                         >
                           <Trash2 size={16} />

@@ -1,8 +1,8 @@
 // frontend/src/pages/taxes/YearlyTaxTable.js
 import React from 'react';
 import { formatCurrency } from '../../utils/formatters';
-import '../../components/Table.css';
-import { FaArrowUp, FaArrowDown, FaMinus } from 'react-icons/fa';
+import Badge from '../../components/ui/Badge';
+import Delta from '../../components/ui/Delta';
 import './TaxesPage.css';
 
 const YearlyTaxTable = ({ year, processedPaychecks = [], yearlySummary = {}, taxBrackets = [] }) => {
@@ -11,20 +11,12 @@ const YearlyTaxTable = ({ year, processedPaychecks = [], yearlySummary = {}, tax
   const netAll = (yearlySummary.amount || 0) + (yearlySummary.prepaid || 0);
   const rateOfChange = yearlySummary.rateOfChange || 0;
 
-  // Helper to get a color based on the tax bracket level
-  const getColorForLevel = (level) => {
-    if (!level) return '';
-    const totalLevels = taxBrackets && taxBrackets.length > 0 ? taxBrackets.length : 7;
-    const hue = Math.max(0, 120 - ((level / totalLevels) * 120)); // Green to Red/Orange
-    return `hsl(${hue}, 70%, 95%)`;
-  };
-
   return (
-    <div className="tax-card" style={{ marginTop: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h3 style={{ margin: 0 }}>Tax Deductions for {year}</h3>
+    <div className="tax-card yearly-tax-card fs-card">
+      <div className="tax-card-header">
+        <h2 className="tax-card-title">Tax Deductions for {year}</h2>
         {taxBrackets && taxBrackets.length > 0 && (
-          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+          <span className="tax-bracket-count">
             {taxBrackets.length} Active Bracket Tiers Applied
           </span>
         )}
@@ -33,49 +25,51 @@ const YearlyTaxTable = ({ year, processedPaychecks = [], yearlySummary = {}, tax
       <div className="yearly-summary-grid">
         <div className="summary-item">
           <span>Sum of Gross</span>
-          <strong>{formatCurrency(yearlySummary.grossAmount || 0)}</strong>
+          <strong className="fs-num">{formatCurrency(yearlySummary.grossAmount || 0)}</strong>
         </div>
         <div className="summary-item">
           <span>Sum of Prepaid</span>
-          <strong>{formatCurrency(yearlySummary.prepaid || 0)}</strong>
+          <strong className="fs-num">{formatCurrency(yearlySummary.prepaid || 0)}</strong>
         </div>
         <div className="summary-item">
           <span>Sum of Net</span>
-          <strong>{formatCurrency(yearlySummary.amount || 0)}</strong>
+          <strong className="fs-num">{formatCurrency(yearlySummary.amount || 0)}</strong>
         </div>
         <div className="summary-item">
           <span>Sum of Tax Ded.</span>
-          <strong>{formatCurrency(yearlySummary.taxDeduction || 0)}</strong>
+          <strong className="fs-num">{formatCurrency(yearlySummary.taxDeduction || 0)}</strong>
         </div>
         <div className="summary-item highlight">
           <span>Total Deductions</span>
-          <strong>{formatCurrency(totalDeductions)}</strong>
+          <strong className="fs-num">{formatCurrency(totalDeductions)}</strong>
         </div>
         <div className="summary-item highlight">
           <span>Gross (All)</span>
-          <strong>{formatCurrency(grossAll)}</strong>
+          <strong className="fs-num">{formatCurrency(grossAll)}</strong>
         </div>
         <div className="summary-item highlight">
           <span>Net (All)</span>
-          <strong>{formatCurrency(netAll)}</strong>
+          <strong className="fs-num">{formatCurrency(netAll)}</strong>
         </div>
         <div className="summary-item rate-of-change">
           <span>vs. Previous Year</span>
           {rateOfChange === 0 ? (
-            <strong className="change-neutral">
-              <FaMinus /> N/A
+            <strong className="change-neutral fs-num">
+              N/A
             </strong>
           ) : (
-            <strong className={rateOfChange > 0 ? 'change-positive' : 'change-negative'}>
-              {rateOfChange > 0 ? <FaArrowUp /> : <FaArrowDown />}
-              {Math.floor(rateOfChange)}%
-            </strong>
+            <Delta
+              value={`${Math.floor(rateOfChange)}%`}
+              tone="neutral"
+              sign="auto"
+              label="vs. Previous Year"
+            />
           )}
         </div>
       </div>
 
-      <div className="table-container">
-        <table className="styled-table">
+      <div className="table-responsive-container">
+        <table className="styled-table custom-component-table">
           <thead>
             <tr>
               <th>Month</th>
@@ -89,7 +83,7 @@ const YearlyTaxTable = ({ year, processedPaychecks = [], yearlySummary = {}, tax
           <tbody>
             {processedPaychecks.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', color: '#94a3b8' }}>
+                <td colSpan="6" className="table-empty-cell">
                   No paycheck records found for {year}
                 </td>
               </tr>
@@ -97,21 +91,24 @@ const YearlyTaxTable = ({ year, processedPaychecks = [], yearlySummary = {}, tax
               processedPaychecks.map((p) => (
                 <tr key={p._id || p.month}>
                   <td data-label="Month">{p.month}</td>
-                  <td data-label="Gross Amount">{formatCurrency(p.grossAmount)}</td>
-                  <td data-label="Tax Deduction">{formatCurrency(p.taxDeduction)}</td>
-                  <td data-label="Rate">{p.effectiveRate.toFixed(2)}%</td>
-                  <td
-                    data-label="Bracket Lvl"
-                    style={{
-                      backgroundColor: getColorForLevel(p.bracketLevel),
-                      fontWeight: 600,
-                    }}
-                  >
-                    {p.bracketLevel
-                      ? `Level ${p.bracketLevel}${p.bracketRate !== undefined && p.bracketRate !== null ? ` (${p.bracketRate}%)` : ''}`
-                      : 'N/A'}
+                  <td data-label="Gross Amount" className="fs-num">{formatCurrency(p.grossAmount)}</td>
+                  <td data-label="Tax Deduction" className="fs-num">{formatCurrency(p.taxDeduction)}</td>
+                  <td data-label="Rate" className="fs-num">{p.effectiveRate.toFixed(2)}%</td>
+                  <td data-label="Bracket Lvl">
+                    {p.bracketLevel ? (
+                      <span className="bracket-level-cell">
+                        <Badge tone="neutral" label={`Level ${p.bracketLevel}`}>
+                          Level {p.bracketLevel}
+                        </Badge>
+                        {p.bracketRate !== undefined && p.bracketRate !== null && (
+                          <span className="bracket-rate-text fs-num"> ({p.bracketRate}%)</span>
+                        )}
+                      </span>
+                    ) : (
+                      'N/A'
+                    )}
                   </td>
-                  <td data-label="Amount">{formatCurrency(p.amount)}</td>
+                  <td data-label="Amount" className="fs-num">{formatCurrency(p.amount)}</td>
                 </tr>
               ))
             )}

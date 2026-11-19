@@ -1,6 +1,6 @@
 jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn(),
-  Link: ({ children, to }) => <a href={to}>{children}</a>,
+  Link: ({ children, to }) => require('react').createElement('a', { href: to }, children),
 }), { virtual: true });
 
 import React from 'react';

@@ -10,6 +10,7 @@ import PayrollRulesHub from '../PayrollRulesHub';
 import { getBrackets } from '../../../services/taxService';
 import { getRecords } from '../../../services/socialInsuranceService';
 import { getPaychecks } from '../../../services/paycheckService';
+import { expectNoA11yViolations } from '../../../../tests/a11y/expectNoA11yViolations';
 
 jest.mock('../../../services/taxService', () => ({
   getBrackets: jest.fn(),
@@ -142,5 +143,13 @@ describe('Step 6A.4: [SIMP-007] PayrollRulesHub Unit Tests', () => {
       expect(screen.getByText(/\$1,000\.00/i)).toBeInTheDocument();
       expect(screen.getAllByText(/Yearly Burden/i).length).toBeGreaterThan(0);
     });
+  });
+
+  test('7. passes WCAG 2.1 AA accessibility audit with expectNoA11yViolations', async () => {
+    const { container } = renderPage();
+    await waitFor(() => {
+      expect(screen.getByText(/Current Tax Brackets/i)).toBeInTheDocument();
+    });
+    await expectNoA11yViolations(container);
   });
 });

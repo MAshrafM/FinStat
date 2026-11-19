@@ -1,148 +1,145 @@
 /* frontend/src/pages/taxes/TaxesPage.css */
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.page-header h1 {
-  margin: 0;
-}
-
-/* Global Card layout styles moved to App.css */
-
-.nav-button {
-  background-color: #009879;
-  color: white;
-  padding: 0.7rem 1.2rem;
-  border-radius: 5px;
-  text-decoration: none;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background-color 0.2s;
-}
-
-.nav-button:hover {
-  background-color: #007a63;
-}
-
-.tax-card p {
-  color: #6c757d;
-  font-style: italic;
+.fs-page .rules-tabs-container {
   margin-bottom: 1.5rem;
 }
 
-.tax-bracket-edit-row {
+.fs-page .top-summary-container {
   display: grid;
-  grid-template-columns: 1fr 2fr 2fr 1.5fr;
-  /* Adjust column ratios as needed */
-  gap: 1rem;
-  align-items: flex-end;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.fs-page .tax-card,
+.fs-page .yearly-tax-card {
+  background-color: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 1.5rem;
+  box-shadow: none;
+  margin-bottom: 2rem;
+}
+
+.fs-page .tax-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
 }
 
-.tax-bracket-edit-row:last-of-type {
-  border-bottom: none;
+.fs-page .tax-card-title,
+.fs-page .summary-card-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--fs-text);
 }
 
-.level-indicator {
-  font-weight: bold;
-  font-size: 1.2rem;
-  color: #333;
-  padding-bottom: 12px;
-  /* Align with input padding */
+.fs-page .tax-bracket-count {
+  font-size: 0.8rem;
+  color: var(--fs-text-3);
 }
 
-.yearly-summary-grid {
+.fs-page .tax-exemption-note {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  color: var(--fs-text-3);
+}
+
+.fs-page .tax-exemption-note strong {
+  color: var(--fs-text);
+}
+
+.fs-page .yearly-summary-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  background-color: var(--fs-surface-sunken);
+  border-radius: var(--fs-radius-md);
+  border: 1px solid var(--fs-border);
 }
 
-.grand-summary-card {
-  background-color: #f0f4f8;
-  /* A slightly different background */
-  border: 1px solid #d6e0ea;
-  margin-bottom: 2rem;
+.fs-page .summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
-.grand-summary-card h3 {
-  text-align: center;
-  color: #34495e;
+.fs-page .summary-item span {
+  font-size: 0.8rem;
+  color: var(--fs-text-3);
 }
 
-/* .top-summary-container layout styles moved to App.css */
-
-.grand-summary-card .yearly-summary-grid {
-  /* Ensure the grid inside the summary card wraps properly */
-  grid-template-columns: repeat(2, minmax(130px, 1fr));
+.fs-page .summary-item strong {
+  font-size: 1.1rem;
+  color: var(--fs-text);
+  font-weight: 600;
 }
 
-.summary-item.rate-of-change {
-  background-color: #f8f9fa;
-  /* Make it stand out slightly */
+.fs-page .summary-item.highlight strong {
+  color: var(--fs-text);
 }
 
-.summary-item.rate-of-change strong {
+.fs-page .summary-item.rate-of-change strong {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
-/* We can reuse the change-positive/negative/neutral classes from SummaryRow.css if they are globally available.
-   If not, we define them here. */
-.summary-item.rate-of-change strong.change-positive {
-  color: #c0392b;
-  /* Red for increase in deductions */
+.fs-page .change-neutral {
+  color: var(--fs-text-3);
 }
 
-.summary-item.rate-of-change strong.change-negative {
-  color: #27ae60;
-  /* Green for decrease in deductions */
+.fs-page .table-empty-cell {
+  text-align: center;
+  color: var(--fs-text-3);
+  padding: 2rem 1rem;
 }
 
-.summary-item.rate-of-change strong.change-neutral {
-  color: #7f8c8d;
-  /* Gray for N/A */
+.fs-page .bracket-level-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.fs-page .bracket-rate-text {
+  font-size: 0.8rem;
+  color: var(--fs-text-3);
+}
+
+.fs-page .insurance-remaining-item {
+  background-color: var(--fs-surface-raised);
+  border-radius: var(--fs-radius-sm);
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.fs-page .insurance-grid {
+  margin-top: 1.5rem;
 }
 
 @media (max-width: 1024px) {
-  /* .top-summary-container media queries moved to App.css */
+  .fs-page .yearly-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
-
-  .yearly-summary-grid {
+  .fs-page .yearly-summary-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .grand-summary-card .yearly-summary-grid {
-    /* Ensure the grid inside the summary card wraps properly */
-    grid-template-columns: repeat(1, minmax(130px, 1fr));
-  }
-
-  .tax-bracket-edit-row {
-    grid-template-columns: 1fr 1fr;
-    /* Stack the last two columns on smaller screens */
+  .fs-page .tax-card,
+  .fs-page .yearly-tax-card {
+    padding: 1rem;
   }
 }
 
-@media (max-width: 576px) {
-  .yearly-summary-grid {
-    grid-template-columns: repeat(1, 1fr);
+@media (max-width: 480px) {
+  .fs-page .yearly-summary-grid {
+    grid-template-columns: 1fr;
   }
 }

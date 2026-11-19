@@ -318,3 +318,280 @@
         grid-template-columns: repeat(auto-fit, minmax(370px, 1fr)); /* Single column layout on small screens */
     }
 }
+
+/* ========================================================
+   Scoped dark graphite rules for allowlisted pages (.fs-page)
+   ======================================================== */
+
+.fs-page .salary-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.fs-page .salary-profile-card,
+.fs-page .profile-card {
+  background-color: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-width: 900px;
+  margin: 0 auto 2rem auto;
+}
+
+.fs-page .card-header {
+  background-color: var(--fs-surface-sunken);
+  color: var(--fs-text);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--fs-border);
+}
+
+.fs-page .default-profile-header {
+  background-color: var(--fs-surface-raised);
+}
+
+.fs-page .header-content {
+  flex-grow: 1;
+}
+
+.fs-page .profile-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fs-page .card-header h3,
+.fs-page .profile-card-name {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+.fs-page .card-header p,
+.fs-page .profile-card-subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--fs-text-3);
+  font-size: 0.875rem;
+}
+
+.fs-page .header-action-icon {
+  color: var(--fs-text-3);
+  font-size: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  transition: color 0.15s ease;
+}
+
+.fs-page .header-action-icon:hover {
+  color: var(--fs-text);
+}
+
+.fs-page .card-body {
+  padding: 1.5rem;
+  flex-grow: 1;
+  color: var(--fs-text);
+}
+
+.fs-page .card-section-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--fs-text);
+  font-size: 1rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--fs-border);
+  padding-bottom: 0.5rem;
+}
+
+.fs-page .salary-breakdown-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.fs-page .salary-breakdown-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--fs-border);
+}
+
+.fs-page .salary-breakdown-list li:last-child {
+  border-bottom: none;
+}
+
+.fs-page .salary-breakdown-list li span {
+  color: var(--fs-text-3);
+}
+
+.fs-page .salary-breakdown-list li strong {
+  color: var(--fs-text);
+}
+
+.fs-page .no-salary-details-text {
+  color: var(--fs-text-3);
+  margin: 0;
+}
+
+.fs-page .card-footer {
+  background-color: var(--fs-surface-sunken);
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--fs-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.fs-page .gross-estimate {
+  text-align: left;
+}
+
+.fs-page .gross-estimate span {
+  font-size: 0.85rem;
+  color: var(--fs-text-3);
+}
+
+.fs-page .gross-estimate strong {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--fs-text);
+}
+
+.fs-page .gross-estimate.prepaid strong {
+  color: var(--fs-text-3);
+}
+
+.fs-page .salary-card-actions,
+.fs-page .card-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-left: auto;
+}
+
+.fs-page .all-profiles-section {
+  margin-top: 2.5rem;
+}
+
+.fs-page .section-title {
+  color: var(--fs-text);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.fs-page .salary-profiles-grid,
+.fs-page .profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.fs-page .salary-profiles-grid .salary-profile-card,
+.fs-page .profile-grid .profile-card {
+  margin: 0;
+  max-width: none;
+}
+
+.fs-page .profile-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.fs-page .profile-metric-row:last-child {
+  margin-bottom: 0;
+}
+
+.fs-page .metric-label {
+  color: var(--fs-text-3);
+  font-size: 0.9rem;
+}
+
+.fs-page .metric-value {
+  color: var(--fs-text);
+  font-size: 0.95rem;
+}
+
+.fs-page .profile-card-footer {
+  padding: 0.75rem 1rem;
+}
+
+.fs-page .delete-profile-btn {
+  margin-left: auto;
+}
+
+.fs-page .salary-empty-state {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+}
+
+.fs-page .salary-empty-state h4,
+.fs-page .salary-empty-state .empty-state-heading {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: var(--fs-text);
+  font-size: 1.1rem;
+}
+
+.fs-page .salary-empty-state p {
+  color: var(--fs-text-3);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.fs-page .salary-cancel-wrapper {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .fs-page .salary-header-actions {
+    width: 100%;
+  }
+
+  .fs-page .salary-header-actions .fs-btn {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .fs-page .salary-profiles-grid,
+  .fs-page .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fs-page .card-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .fs-page .salary-card-actions,
+  .fs-page .card-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .fs-page .salary-card-actions .fs-btn,
+  .fs-page .card-actions .fs-btn {
+    flex: 1;
+    min-height: 44px;
+    justify-content: center;
+  }
+}

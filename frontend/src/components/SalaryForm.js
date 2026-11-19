@@ -1,5 +1,6 @@
 // frontend/src/components/SalaryForm.js
 import React, { useState, useEffect } from 'react';
+import Button from './ui/Button';
 import './Form.css'; // We can reuse the form styling we already have
 
 const SalaryForm = ({ onFormSubmit, initialData = {}, mode = 'create' }) => {
@@ -35,10 +36,10 @@ const SalaryForm = ({ onFormSubmit, initialData = {}, mode = 'create' }) => {
       });
       // Optionally pre-fill the form with the latest salary details to make small edits easier
       if (initialData.currentSalary) {
-        const { _id, ...restOfSalaryDetails } = initialData.currentSalary;
+        const { _id: _unusedId, ...restOfSalaryDetails } = initialData.currentSalary;
         setSalaryDetails({ 
-        ...restOfSalaryDetails, 
-        effectiveDate: new Date().toISOString().slice(0, 10) 
+          ...restOfSalaryDetails, 
+          effectiveDate: new Date().toISOString().slice(0, 10) 
         });
       }
     }
@@ -59,11 +60,11 @@ const SalaryForm = ({ onFormSubmit, initialData = {}, mode = 'create' }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (mode === 'create') {
-    // This is for creating the profile for the very first time
-        onFormSubmit({ ...profileData, salaryDetails });
+      // This is for creating the profile for the very first time
+      onFormSubmit({ ...profileData, salaryDetails });
     } else {
-        // This is for adding a new salary record to an existing profile
-        onFormSubmit(salaryDetails);
+      // This is for adding a new salary record to an existing profile
+      onFormSubmit(salaryDetails);
     }
   };
 
@@ -73,33 +74,90 @@ const SalaryForm = ({ onFormSubmit, initialData = {}, mode = 'create' }) => {
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="paycheck-form-container">
+    <form onSubmit={handleSubmit} className="paycheck-form-container fs-card">
       <h3>{mode === 'create' ? 'Create New Salary Profile' : `Update Salary for ${profileData.name}`}</h3>
 
       {mode === 'create' && (
         <>
-          <div className="form-group"><label>Name</label><input name="name" value={profileData.name} onChange={handleProfileChange} required /></div>
-          <div className="form-group"><label>Title</label><input name="title" value={profileData.title} onChange={handleProfileChange} required /></div>
-          <div className="form-group"><label>Position</label><input name="position" value={profileData.position} onChange={handleProfileChange} /></div>
-          <div className="form-group"><label>Year</label><input type="number" name="year" value={profileData.year} onChange={handleProfileChange} required /></div>
+          <div className="form-group">
+            <label htmlFor="salary-profile-name">Name</label>
+            <input
+              id="salary-profile-name"
+              className="fs-input"
+              name="name"
+              value={profileData.name}
+              onChange={handleProfileChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="salary-profile-title">Title</label>
+            <input
+              id="salary-profile-title"
+              className="fs-input"
+              name="title"
+              value={profileData.title}
+              onChange={handleProfileChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="salary-profile-position">Position</label>
+            <input
+              id="salary-profile-position"
+              className="fs-input"
+              name="position"
+              value={profileData.position}
+              onChange={handleProfileChange}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="salary-profile-year">Year</label>
+            <input
+              id="salary-profile-year"
+              className="fs-input"
+              type="number"
+              name="year"
+              value={profileData.year}
+              onChange={handleProfileChange}
+              required
+            />
+          </div>
         </>
       )}
 
       <div className="form-group">
-        <label>Effective Date for these values</label>
-        <input type="date" name="effectiveDate" value={salaryDetails.effectiveDate} onChange={handleDateChange} required />
+        <label htmlFor="salary-profile-effective-date">Effective Date for these values</label>
+        <input
+          id="salary-profile-effective-date"
+          className="fs-input"
+          type="date"
+          name="effectiveDate"
+          value={salaryDetails.effectiveDate}
+          onChange={handleDateChange}
+          required
+        />
       </div>
 
       {salaryFields.map(field => (
         <div className="form-group" key={field}>
-          <label>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
-          <input type="number" name={field} value={salaryDetails[field]} onChange={handleSalaryChange} />
+          <label htmlFor={`salary-field-${field}`}>
+            {field.charAt(0).toUpperCase() + field.slice(1)}
+          </label>
+          <input
+            id={`salary-field-${field}`}
+            className="fs-input"
+            type="number"
+            name={field}
+            value={salaryDetails[field]}
+            onChange={handleSalaryChange}
+          />
         </div>
       ))}
 
-      <button type="submit" className="submit-button">
+      <Button type="submit" variant="primary" className="submit-button">
         {mode === 'create' ? 'Create Profile' : 'Submit Update'}
-      </button>
+      </Button>
     </form>
   );
 };
