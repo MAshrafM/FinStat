@@ -57,7 +57,12 @@ function enrichCertificate(certDoc) {
 
   const periodicInterest = calculatePeriodicInterest(plain);
   const { nextDue } = calculateNextDuePayout(plain);
-  const isPayoutDue = plain.status === 'active' && !plain.autoReinvest && nextDue <= now;
+  const isPayoutDue = Boolean(
+    plain.status === 'active' &&
+    !plain.autoReinvest &&
+    nextDue &&
+    nextDue <= now
+  );
 
   return {
     ...plain,

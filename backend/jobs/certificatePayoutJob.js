@@ -36,14 +36,30 @@ function calculatePeriodicInterest(certificate) {
  * @returns {{ nextDue: Date, stepMonths: number, interval: string }}
  */
 function calculateNextDuePayout(cert) {
+  if (!cert) return { nextDue: null, stepMonths: 1, interval: 'monthly' };
+
   const intervalMonthsMap = {
     monthly: 1,
     quarterly: 3,
     annually: 12,
   };
-  const interval = (cert.payoutInterval || 'monthly').toLowerCase();
+  const interval = (cert.payoutInterval || cert.payoutFrequency || 'monthly').toLowerCase();
   const stepMonths = intervalMonthsMap[interval] || 1;
-  const referenceDate = cert.lastPayoutDate ? new Date(cert.lastPayoutDate) : new Date(cert.startDate);
+
+  if (cert.status === 'withdrawn' || cert.status === 'matured') {
+    return { nextDue: null, stepMonths, interval };
+  }
+
+  const rawRef = cert.lastPayoutDate || cert.startDate || cert.issueDate;
+  if (!rawRef) {
+    return { nextDue: null, stepMonths, interval };
+  }
+
+  const referenceDate = new Date(rawRef);
+  if (isNaN(referenceDate.getTime())) {
+    return { nextDue: null, stepMonths, interval };
+  }
+
   const nextDue = addMonthsClamped(referenceDate, stepMonths);
   return { nextDue, stepMonths, interval };
 }
@@ -156,8 +172,17 @@ async function runDailyCertificatePayouts(asOfDate = new Date()) {
         const interval = (cert.payoutInterval || 'monthly').toLowerCase();
         const stepMonths = intervalMonthsMap[interval] || 1;
 
-        // Determine reference date: lastPayoutDate if already paid, else startDate
-        const referenceDate = cert.lastPayoutDate ? new Date(cert.lastPayoutDate) : new Date(cert.startDate);
+        // Determine reference date: lastPayoutDate if already paid, else startDate / issueDate
+        const rawRef = cert.lastPayoutDate || cert.startDate || cert.issueDate;
+        if (!rawRef) {
+          console.warn(`[CertificatePayoutJob] Skipping cert "${cert.name}" (${cert._id}): missing reference date`);
+          continue;
+        }
+        const referenceDate = new Date(rawRef);
+        if (isNaN(referenceDate.getTime())) {
+          console.warn(`[CertificatePayoutJob] Skipping cert "${cert.name}" (${cert._id}): invalid reference date`);
+          continue;
+        }
 
         // Next due date is referenceDate + stepMonths
         let nextDue = addMonthsClamped(referenceDate, stepMonths);
