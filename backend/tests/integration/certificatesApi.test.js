@@ -451,6 +451,84 @@ describe('Step 5B.1b: [AUD-TEST-001] Certificates API Integration Tests', () => 
         expect(cert.autoReinvest).toBe(true);
       });
     });
+
+    describe('4. Manual Certificate Interest Payout Endpoints', () => {
+      let payoutCert;
+
+      beforeEach(async () => {
+        // Certificate started 1 month ago: payout is due
+        const createRes = await request(app)
+          .post('/api/certificates')
+          .set('Authorization', `Bearer ${managerToken}`)
+          .send({
+            name: 'Manual Payout Test CD',
+            period: 12,
+            amount: 12000,
+            interest: 10,
+            startDate: new Date(Date.now() - 32 * 24 * 60 * 60 * 1000).toISOString(),
+            payoutInterval: 'monthly',
+          });
+        payoutCert = createRes.body;
+      });
+
+      test('GET /api/certificates enriches certificate with isPayoutDue and periodicInterest', async () => {
+        const res = await request(app)
+          .get('/api/certificates')
+          .set('Authorization', `Bearer ${managerToken}`);
+
+        expect(res.status).toBe(200);
+        const matched = res.body.find((c) => c._id === payoutCert._id);
+        expect(matched).toBeDefined();
+        expect(matched.isPayoutDue).toBe(true);
+        expect(matched.periodicInterest).toBe(100); // 12000 * 0.10 / 12
+        expect(matched.nextDuePayoutDate).toBeDefined();
+      });
+
+      test('POST /api/certificates/:id/payout manually disburses interest into Bank account', async () => {
+        const res = await request(app)
+          .post(`/api/certificates/${payoutCert._id}/payout`)
+          .set('Authorization', `Bearer ${managerToken}`)
+          .send({ destinationAccount: 'Bank' });
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.payout.amount).toBe(100);
+        expect(res.body.payout.destinationAccount).toBe('Bank');
+
+        // Verify linked expenditure created in ledger
+        const exp = await Expenditure.findById(res.body.payout.expenditureId);
+        expect(exp).toBeDefined();
+        expect(exp.transactionType).toBe('T');
+        expect(exp.paymentMethod).toBe('Bank');
+        expect(exp.bridgeDirection).toBe('inflow');
+        expect(exp.transactionValue).toBe(100);
+
+        // Verify certificate updated
+        const updated = await Certificate.findById(payoutCert._id);
+        expect(updated.lastPayoutDate).toBeDefined();
+        expect(updated.totalInterestPaidInPiastres).toBe(10000);
+      });
+
+      test('POST /api/certificates/:id/payout rejects viewer role with 403 Forbidden', async () => {
+        const res = await request(app)
+          .post(`/api/certificates/${payoutCert._id}/payout`)
+          .set('Authorization', `Bearer ${viewerToken}`)
+          .send();
+
+        expect(res.status).toBe(403);
+      });
+
+      test('POST /api/certificates/payout-due processes all due payouts for user', async () => {
+        const res = await request(app)
+          .post('/api/certificates/payout-due')
+          .set('Authorization', `Bearer ${managerToken}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.processedCount).toBeGreaterThanOrEqual(1);
+        expect(res.body.totalDisbursedEgp).toBeGreaterThan(0);
+      });
+    });
     });
   });
 });

@@ -60,6 +60,15 @@ const withdrawSchema = z.object({
   destinationAccount: z.enum(['Bank', 'Cash', 'Prepaid']).optional(),
 }).strict();
 
+const payoutSchema = z.object({
+  payoutDate: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    dateStringSchema.optional()
+  ),
+  amount: z.coerce.number().positive('Payout amount must be positive').optional(),
+  destinationAccount: z.enum(['Bank', 'Cash', 'Prepaid']).optional(),
+}).strict().optional().default({});
+
 const listQuerySchema = z.object({
   status: z.enum(['active', 'matured', 'withdrawn', 'maturing_soon', 'future']).optional(),
 }).passthrough();
@@ -68,6 +77,7 @@ module.exports = {
   createSchema,
   updateSchema,
   withdrawSchema,
+  payoutSchema,
   listQuerySchema,
   paramsSchema: paramsIdSchema,
   querySchema: listQuerySchema,

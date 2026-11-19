@@ -20,6 +20,12 @@ export const getAccruedInterest = (id, options = {}) =>
 export const withdrawCertificate = (id, data = {}, options = {}) =>
   apiClient.post(`${API_URL}/${id}/withdraw`, data, options);
 
+export const processCertificatePayout = (id, data = {}, options = {}) =>
+  apiClient.post(`${API_URL}/${id}/payout`, data, options);
+
+export const processDuePayouts = (options = {}) =>
+  apiClient.post(`${API_URL}/payout-due`, {}, options);
+
 export const createCertificate = (data, options = {}) =>
   apiClient.post(API_URL, data, options);
 

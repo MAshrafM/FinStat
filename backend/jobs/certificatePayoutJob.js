@@ -30,6 +30,88 @@ function calculatePeriodicInterest(certificate) {
 }
 
 /**
+ * Computes next scheduled payout date and interval step for a certificate.
+ *
+ * @param {Object} cert
+ * @returns {{ nextDue: Date, stepMonths: number, interval: string }}
+ */
+function calculateNextDuePayout(cert) {
+  const intervalMonthsMap = {
+    monthly: 1,
+    quarterly: 3,
+    annually: 12,
+  };
+  const interval = (cert.payoutInterval || 'monthly').toLowerCase();
+  const stepMonths = intervalMonthsMap[interval] || 1;
+  const referenceDate = cert.lastPayoutDate ? new Date(cert.lastPayoutDate) : new Date(cert.startDate);
+  const nextDue = addMonthsClamped(referenceDate, stepMonths);
+  return { nextDue, stepMonths, interval };
+}
+
+/**
+ * Disburses a periodic interest payout for a single certificate:
+ * creates the inflow expenditure, advances lastPayoutDate,
+ * increments totalInterestPaidInPiastres, marks matured if past maturity,
+ * and invalidates portfolio cache.
+ *
+ * @param {Object} cert - Mongoose Certificate document
+ * @param {Object} [options={}]
+ * @param {Date|string} [options.payoutDate] - Explicit payout date (defaults to nextDue date or today)
+ * @param {number} [options.amount] - Explicit amount (defaults to calculatePeriodicInterest(cert))
+ * @param {string} [options.destinationAccount='Bank'] - Target account ('Bank' | 'Cash' | 'Prepaid')
+ * @returns {Promise<Object>}
+ */
+async function disburseCertificatePayout(cert, options = {}) {
+  const { nextDue } = calculateNextDuePayout(cert);
+  const payoutDate = options.payoutDate ? new Date(options.payoutDate) : nextDue;
+  const interestAmount = options.amount !== undefined ? Number(options.amount) : calculatePeriodicInterest(cert);
+
+  if (interestAmount <= 0) {
+    throw new Error('Periodic interest amount must be greater than zero');
+  }
+
+  const destinationAccount = options.destinationAccount || 'Bank';
+
+  console.log(
+    `[CertificatePayoutJob] Disbursing payout for cert "${cert.name}" (${cert._id}): ${interestAmount} EGP (payoutDate: ${payoutDate.toISOString()}, account: ${destinationAccount})`
+  );
+
+  const expenditure = await createExpenditureFromCertificateInterest({
+    certificate: cert,
+    interestAmount,
+    payoutDate,
+    destinationAccount,
+    user: cert.user,
+  });
+
+  if (!expenditure) {
+    throw new Error('Failed to create ledger entry for certificate interest payout');
+  }
+
+  cert.lastPayoutDate = payoutDate;
+  const piastres = Math.round(interestAmount * 100);
+  cert.totalInterestPaidInPiastres = (cert.totalInterestPaidInPiastres || 0) + piastres;
+
+  // Check if reached maturity
+  const maturityDate = cert.maturityDate ? new Date(cert.maturityDate) : null;
+  if (maturityDate && payoutDate >= maturityDate) {
+    cert.status = 'matured';
+  }
+
+  await cert.save();
+  invalidatePortfolioCache(cert.user);
+
+  return {
+    certificateId: cert._id,
+    certificateName: cert.name,
+    amount: interestAmount,
+    payoutDate,
+    destinationAccount,
+    expenditureId: expenditure._id,
+  };
+}
+
+/**
  * Runs the daily certificate interest payout scanner across all active certificates.
  * Identifies certificates whose payout date is due (nextPayoutDate <= asOfDate),
  * creates the inflow ledger deposit via createExpenditureFromCertificateInterest,
@@ -40,7 +122,11 @@ function calculatePeriodicInterest(certificate) {
  */
 async function runDailyCertificatePayouts(asOfDate = new Date()) {
   const currentDate = new Date(asOfDate);
-  console.log(`[CertificatePayoutJob] Running daily payout scan as of ${currentDate.toISOString()}...`);
+  // Normalize comparison to end of day in UTC to avoid midnight hour/timezone clipping
+  const endOfCurrentDate = new Date(currentDate);
+  endOfCurrentDate.setUTCHours(23, 59, 59, 999);
+
+  console.log(`[CertificatePayoutJob] Running daily payout scan as of ${currentDate.toISOString()} (boundary: ${endOfCurrentDate.toISOString()})...`);
 
   const results = {
     processedCount: 0,
@@ -79,13 +165,13 @@ async function runDailyCertificatePayouts(asOfDate = new Date()) {
         // For certificates with no prior lastPayoutDate that may have started multiple cycles ago,
         // fast-forward to find the latest cycle due up to currentDate to avoid flooding past transactions
         if (!cert.lastPayoutDate) {
-          while (addMonthsClamped(nextDue, stepMonths) <= currentDate) {
+          while (addMonthsClamped(nextDue, stepMonths) <= endOfCurrentDate) {
             nextDue = addMonthsClamped(nextDue, stepMonths);
           }
         }
 
-        // If next due payout date is on or before currentDate, process payout
-        if (nextDue <= currentDate) {
+        // If next due payout date is on or before end of currentDate, process payout
+        if (nextDue <= endOfCurrentDate) {
           // If past maturityDate, check if it reached maturity
           const maturityDate = cert.maturityDate ? new Date(cert.maturityDate) : null;
           if (maturityDate && nextDue > maturityDate) {
@@ -95,41 +181,10 @@ async function runDailyCertificatePayouts(asOfDate = new Date()) {
             continue;
           }
 
-          const interestAmount = calculatePeriodicInterest(cert);
-          if (interestAmount <= 0) {
-            continue;
-          }
-
-          console.log(
-            `[CertificatePayoutJob] Disbursing payout for cert "${cert.name}" (${cert._id}): ${interestAmount} EGP (due: ${nextDue.toISOString()})`
-          );
-
-          const expenditure = await createExpenditureFromCertificateInterest({
-            certificate: cert,
-            interestAmount,
-            payoutDate: nextDue,
-            destinationAccount: 'Bank',
-            user: cert.user,
-          });
-
-          if (expenditure) {
-            cert.lastPayoutDate = nextDue;
-            const piastres = Math.round(interestAmount * 100);
-            cert.totalInterestPaidInPiastres = (cert.totalInterestPaidInPiastres || 0) + piastres;
-            await cert.save();
-
-            invalidatePortfolioCache(cert.user);
-
-            results.processedCount += 1;
-            results.totalDisbursedEgp = Number((results.totalDisbursedEgp + interestAmount).toFixed(2));
-            results.payouts.push({
-              certificateId: cert._id,
-              certificateName: cert.name,
-              amount: interestAmount,
-              payoutDate: nextDue,
-              expenditureId: expenditure._id,
-            });
-          }
+          const payout = await disburseCertificatePayout(cert, { payoutDate: nextDue });
+          results.processedCount += 1;
+          results.totalDisbursedEgp = Number((results.totalDisbursedEgp + payout.amount).toFixed(2));
+          results.payouts.push(payout);
         }
       } catch (certErr) {
         console.error(`[CertificatePayoutJob] Error processing certificate ${cert._id}:`, certErr);
@@ -154,5 +209,6 @@ async function runDailyCertificatePayouts(asOfDate = new Date()) {
 module.exports = {
   runDailyCertificatePayouts,
   calculatePeriodicInterest,
+  calculateNextDuePayout,
+  disburseCertificatePayout,
 };
-

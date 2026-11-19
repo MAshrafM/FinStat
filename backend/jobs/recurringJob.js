@@ -42,6 +42,8 @@ async function runDailyRecurringScan() {
 /**
  * Initializes the daily cron job at 2:00 AM.
  * In production/server mode, this executes the combined daily maintenance tasks.
+ * Also schedules a non-blocking startup catch-up scan to process any payouts or recurring
+ * checks that were due while the server was asleep, offline, or stopped.
  */
 function initRecurringCron() {
   if (process.env.NODE_ENV === 'test') {
@@ -55,6 +57,17 @@ function initRecurringCron() {
   });
 
   console.log('[RecurringJob] Scheduled daily maintenance cron job (Daily at 2:00 AM)');
+
+  // Run startup catch-up scan after a short delay so any missed payouts while offline are caught immediately
+  setTimeout(async () => {
+    try {
+      console.log('[RecurringJob] Running startup maintenance catch-up scan...');
+      await runDailyMaintenance();
+    } catch (startupErr) {
+      console.error('[RecurringJob] Error during startup maintenance catch-up:', startupErr.message);
+    }
+  }, 3000);
+
   return recurringTask;
 }
 

@@ -1,7 +1,8 @@
 // frontend/src/pages/certificates/CertificateDetailPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getCertificateById, getAccruedInterest, withdrawCertificate, deleteCertificate } from '../../services/certificateService';
+import { getCertificateById, getAccruedInterest, withdrawCertificate, deleteCertificate, processCertificatePayout } from '../../services/certificateService';
+import ProtectedAction from '../../components/common/ProtectedAction';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
 import ConfirmModal from '../../components/common/ConfirmModal';
@@ -61,6 +62,10 @@ const CertificateDetailPage = () => {
   const [destinationAccount, setDestinationAccount] = useState('Bank');
   const [confirmedCheckbox, setConfirmedCheckbox] = useState(false);
   const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
+  const [payoutDate, setPayoutDate] = useState('');
+  const [payoutAccount, setPayoutAccount] = useState('Bank');
+  const [isSubmittingPayout, setIsSubmittingPayout] = useState(false);
 
   const fetchCertDetails = useCallback(async () => {
     try {
@@ -141,6 +146,33 @@ const CertificateDetailPage = () => {
       showToast(err.response?.data?.message || 'Failed to withdraw certificate', 'error');
     } finally {
       setIsSubmittingWithdraw(false);
+    }
+  };
+
+  const handleOpenPayoutModal = () => {
+    const defaultDate = cert?.nextDuePayoutDate
+      ? new Date(cert.nextDuePayoutDate).toISOString().split('T')[0]
+      : (cert?.nextPayoutDate ? new Date(cert.nextPayoutDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
+    setPayoutDate(defaultDate);
+    setPayoutAccount('Bank');
+    setShowPayoutModal(true);
+  };
+
+  const handleConfirmPayout = async () => {
+    try {
+      setIsSubmittingPayout(true);
+      const res = await processCertificatePayout(id, {
+        payoutDate: payoutDate || undefined,
+        destinationAccount: payoutAccount,
+      });
+      showToast(res.message || 'Interest payout processed successfully!', 'success');
+      setShowPayoutModal(false);
+      await fetchCertDetails();
+    } catch (err) {
+      console.error('Failed to process payout:', err);
+      showToast(err.response?.data?.message || err.message || 'Failed to process interest payout', 'error');
+    } finally {
+      setIsSubmittingPayout(false);
     }
   };
 
@@ -259,6 +291,17 @@ const CertificateDetailPage = () => {
           >
             <FaEdit /> Edit
           </Link>
+          {!isWithdrawn && !cert.autoReinvest && (
+            <ProtectedAction tooltip="View-only access">
+              <button
+                onClick={handleOpenPayoutModal}
+                data-testid="add-payout-btn"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#10b981', color: 'white', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: '600' }}
+              >
+                <FaCoins /> Add Interest Payout
+              </button>
+            </ProtectedAction>
+          )}
           {!isWithdrawn && (
             <button
               onClick={() => setShowWithdrawModal(true)}
@@ -302,6 +345,167 @@ const CertificateDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Payout Due Notice Banner */}
+      {!isWithdrawn && !cert.autoReinvest && cert.isPayoutDue && (
+        <div style={{
+          background: '#ecfdf5',
+          border: '1px solid #a7f3d0',
+          borderRadius: '12px',
+          padding: '16px 20px',
+          marginBottom: '20px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+              <FaCoins />
+            </div>
+            <div>
+              <div style={{ fontWeight: '700', color: '#065f46', fontSize: '15px' }}>
+                Interest Payout Due ({formatCurrency(cert.periodicInterest || 0)})
+              </div>
+              <div style={{ color: '#047857', fontSize: '13px' }}>
+                A scheduled periodic interest disbursement was due on {formatDate(cert.nextDuePayoutDate || cert.nextPayoutDate)}.
+              </div>
+            </div>
+          </div>
+          <ProtectedAction tooltip="View-only access">
+            <button
+              onClick={handleOpenPayoutModal}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#059669',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '700',
+                fontSize: '13px',
+              }}
+            >
+              <FaCoins /> Disburse Payout Now
+            </button>
+          </ProtectedAction>
+        </div>
+      )}
+
+      {/* Payout Modal */}
+      {showPayoutModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            maxWidth: '480px',
+            width: '100%',
+            padding: '24px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, color: '#111827', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaCoins style={{ color: '#10b981' }} /> Add Interest Payout
+              </h3>
+              <button
+                onClick={() => setShowPayoutModal(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0 }}
+              >
+                <FaTimes size={18} />
+              </button>
+            </div>
+
+            <p style={{ color: '#4b5563', fontSize: '14px', lineHeight: '1.5', marginBottom: '18px' }}>
+              Disburse the scheduled periodic interest for <strong>{cert.name}</strong>. A Top-up deposit will be recorded in your ledger.
+            </p>
+
+            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '12px', color: '#166534', fontWeight: '600' }}>Disbursement Amount</div>
+              <div style={{ fontSize: '22px', fontWeight: '800', color: '#15803d' }}>
+                {formatCurrency(cert.periodicInterest || 0)}
+              </div>
+              <div style={{ fontSize: '11px', color: '#16a34a', marginTop: '2px' }}>
+                Rate: {cert.interest}% • {cert.payoutInterval || 'monthly'} frequency
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
+                Payout Date
+              </label>
+              <input
+                type="date"
+                value={payoutDate}
+                onChange={(e) => setPayoutDate(e.target.value)}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '14px', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
+                Destination Account
+              </label>
+              <select
+                value={payoutAccount}
+                onChange={(e) => setPayoutAccount(e.target.value)}
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '14px', boxSizing: 'border-box' }}
+              >
+                <option value="Bank">Bank Account</option>
+                <option value="Cash">Cash Wallet</option>
+                <option value="Prepaid">Prepaid Card</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setShowPayoutModal(false)}
+                disabled={isSubmittingPayout}
+                style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #d1d5db', background: 'white', color: '#374151', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmPayout}
+                disabled={isSubmittingPayout}
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: '#10b981',
+                  color: 'white',
+                  cursor: isSubmittingPayout ? 'not-allowed' : 'pointer',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  opacity: isSubmittingPayout ? 0.7 : 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <FaCoins /> {isSubmittingPayout ? 'Processing...' : 'Confirm Payout'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Key Metric Cards */}
       <div style={{

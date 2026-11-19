@@ -5,11 +5,12 @@ const Certificate = require('../models/Certificate');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const asyncHandler = require('../utils/asyncHandler');
-const { NotFoundError, ForbiddenError } = require('../utils/errors');
+const { NotFoundError, ForbiddenError, BadRequestError } = require('../utils/errors');
 const {
   createSchema,
   updateSchema,
   withdrawSchema,
+  payoutSchema,
   paramsSchema,
   listQuerySchema,
 } = require('../validationSchemas/certificateSchemas');
@@ -30,6 +31,11 @@ const {
   generateAccrualTrajectory,
   deriveCertificateStatus,
 } = require('../utils/interestAccrual');
+const {
+  calculatePeriodicInterest,
+  calculateNextDuePayout,
+  disburseCertificatePayout,
+} = require('../jobs/certificatePayoutJob');
 
 /**
  * Helper to enrich a certificate document with live on-demand accrual metrics.
@@ -49,6 +55,10 @@ function enrichCertificate(certDoc) {
   const now = new Date();
   const daysRemaining = maturity ? Math.ceil((maturity.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
+  const periodicInterest = calculatePeriodicInterest(plain);
+  const { nextDue } = calculateNextDuePayout(plain);
+  const isPayoutDue = plain.status === 'active' && !plain.autoReinvest && nextDue <= now;
+
   return {
     ...plain,
     maturityDate: maturity,
@@ -59,6 +69,9 @@ function enrichCertificate(certDoc) {
     daysElapsed: accrual.daysElapsed,
     dailyRate: accrual.dailyRate,
     nextPayoutDate: nextPayout,
+    nextDuePayoutDate: nextDue,
+    periodicInterest,
+    isPayoutDue,
     totalInterestEarnedInPiastres: totalEarned.totalEarnedInPiastres,
     totalInterestEarned: totalEarned.totalEarned,
   };
@@ -123,6 +136,63 @@ router.post('/', auth, validate({ body: createSchema }), asyncHandler(async (req
   res.status(201).json(enrichCertificate(newCertificate));
 }));
 
+// @route   POST api/certificates/payout-due
+// @desc    Process all due interest payouts for the current user's active certificates
+router.post('/payout-due', auth, asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+
+  const now = new Date();
+  const endOfToday = new Date(now);
+  endOfToday.setUTCHours(23, 59, 59, 999);
+
+  const certificates = await Certificate.find({
+    user: req.effectiveUserId,
+    status: 'active',
+    deletedAt: null,
+    autoReinvest: { $ne: true },
+  });
+
+  const intervalMonthsMap = { monthly: 1, quarterly: 3, annually: 12 };
+  let processedCount = 0;
+  let totalDisbursedEgp = 0;
+  const payouts = [];
+
+  for (const cert of certificates) {
+    try {
+      const interval = (cert.payoutInterval || 'monthly').toLowerCase();
+      const stepMonths = intervalMonthsMap[interval] || 1;
+      const refDate = cert.lastPayoutDate ? new Date(cert.lastPayoutDate) : new Date(cert.startDate);
+      let nextDue = addMonthsClamped(refDate, stepMonths);
+
+      if (nextDue <= endOfToday) {
+        const maturityDate = cert.maturityDate ? new Date(cert.maturityDate) : null;
+        if (maturityDate && nextDue > maturityDate) {
+          cert.status = 'matured';
+          await cert.save();
+          continue;
+        }
+
+        const payout = await disburseCertificatePayout(cert, { payoutDate: nextDue });
+        processedCount += 1;
+        totalDisbursedEgp = Number((totalDisbursedEgp + payout.amount).toFixed(2));
+        payouts.push(payout);
+      }
+    } catch (err) {
+      console.error(`[ManualPayout] Error disbursing for cert ${cert._id}:`, err.message);
+    }
+  }
+
+  res.json({
+    success: true,
+    message: `Processed ${processedCount} due payout(s) totaling ${totalDisbursedEgp} EGP`,
+    processedCount,
+    totalDisbursedEgp,
+    payouts,
+  });
+}));
+
 // @route   GET api/certificates/:id
 // @desc    Get a single certificate by ID enriched with live accrual and trajectory
 router.get('/:id', auth, validate({ params: paramsSchema }), asyncHandler(async (req, res) => {
@@ -164,6 +234,42 @@ router.get('/:id/accrued-interest', auth, validate({ params: paramsSchema }), as
     ...accrual,
     nextPayoutDate: nextPayout,
     ...totalEarned,
+  });
+}));
+
+// @route   POST api/certificates/:id/payout
+// @desc    Manually process a periodic interest payout for a certificate
+router.post('/:id/payout', auth, validate({ params: paramsSchema, body: payoutSchema }), asyncHandler(async (req, res) => {
+  if (!req.canModify) {
+    throw new ForbiddenError('Viewers have read-only access');
+  }
+  const { id } = getValidated(req, 'params');
+  const validatedBody = getValidated(req, 'body') || {};
+
+  const certificate = await Certificate.findOne({ _id: id, user: req.effectiveUserId, deletedAt: null });
+  if (!certificate) {
+    throw new NotFoundError('Certificate not found');
+  }
+
+  if (certificate.status !== 'active') {
+    throw new BadRequestError(`Cannot process payout for certificate with status "${certificate.status}"`);
+  }
+
+  if (certificate.autoReinvest) {
+    throw new BadRequestError('Cannot process external payout for auto-reinvesting certificate');
+  }
+
+  const payout = await disburseCertificatePayout(certificate, {
+    payoutDate: validatedBody.payoutDate,
+    amount: validatedBody.amount,
+    destinationAccount: validatedBody.destinationAccount || 'Bank',
+  });
+
+  res.json({
+    success: true,
+    message: `Interest payout of ${payout.amount} EGP processed successfully into ${payout.destinationAccount}`,
+    payout,
+    certificate: enrichCertificate(certificate),
   });
 }));
 
