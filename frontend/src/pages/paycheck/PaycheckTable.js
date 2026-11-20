@@ -135,7 +135,7 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
 
                   <div className="paycheck-card-row">
                     <span>Deductions</span>
-                    <span className="fs-num">{deductionsVal > 0 ? `-${formatCurrency(deductionsVal)}` : '0.00 EGP'}</span>
+                    <span className="fs-num">{deductionsVal > 0 ? `-${formatCurrency(deductionsVal)}` : formatCurrency(0)}</span>
                   </div>
 
                   <button
@@ -261,7 +261,7 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
                       </td>
                       <td data-label="Gross" className="fs-num">{formatCurrency(grossVal)}</td>
                       <td data-label="Deductions" className="fs-num">
-                        {deductionsVal > 0 ? `-${formatCurrency(deductionsVal)}` : '0.00 EGP'}
+                        {deductionsVal > 0 ? `-${formatCurrency(deductionsVal)}` : formatCurrency(0)}
                       </td>
                       <td data-label="Net" className="fs-num">
                         {formatCurrency(amountVal)}

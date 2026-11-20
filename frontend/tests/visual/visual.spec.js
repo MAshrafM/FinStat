@@ -9,6 +9,7 @@
 const { test, expect } = require('@playwright/test');
 const { ROUTES } = require('./fixtures/routes');
 const { setFixedClock } = require('./fixtures/clock');
+const { setupPaycheckMocks } = require('./fixtures/paycheckMocks');
 
 const MANDATORY_QA_WIDTHS = [1440, 1024, 768, 480, 390];
 
@@ -46,6 +47,11 @@ test.describe('Visual Regression Suite', () => {
         await page.addInitScript(() => {
           window.__VISUAL_TEST__ = true;
         });
+
+        // Set up route-specific mocks if available
+        if (route.slug === 'salary-paychecks') {
+          await setupPaycheckMocks(page);
+        }
 
         // Navigate to route
         await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });

@@ -193,8 +193,8 @@ const PaycheckLog = () => {
 
             {/* Overall Summary Card */}
             <div className="summary-section">
-                <div className="tax-card fs-card">
-                    <h2 className="paycheck-filter-title">💰 Overall Summary</h2>
+                <div className="paycheck-panel fs-card">
+                    <h2 className="paycheck-panel-title">Overall Summary</h2>
                     <div className="paycheck-summary-grid">
                         <div className="paycheck-summary-card">
                             <div className="paycheck-summary-label">Total Cash</div>
@@ -220,58 +220,62 @@ const PaycheckLog = () => {
 
             {/* Yearly Breakdown */}
             <div className="yearly-breakdown-section">
-                <div className="tax-card fs-card">
-                    <h2 className="paycheck-filter-title">📊 Yearly Breakdown &amp; Growth</h2>
-                    <div className="paycheck-yearly-grid">
-                        {availableYears.map(year => {
-                            const yearData = summaryData.yearlyBreakdown[year];
-                            const changeData = summaryData.yearlyChanges[year];
+                <div className="paycheck-panel fs-card">
+                    <h2 className="paycheck-panel-title">Yearly Breakdown &amp; Growth</h2>
+                    {availableYears.length === 0 ? (
+                        <p className="paycheck-empty-notice">No yearly breakdown records available yet.</p>
+                    ) : (
+                        <div className="paycheck-yearly-grid">
+                            {availableYears.map(year => {
+                                const yearData = summaryData.yearlyBreakdown[year];
+                                const changeData = summaryData.yearlyChanges[year];
 
-                            return (
-                                <div key={year} className="paycheck-year-card">
-                                    <div className="paycheck-year-header">
-                                        <h3 className="paycheck-year-title">{year}</h3>
-                                        {changeData && (
-                                            <Delta
-                                                tone="neutral"
-                                                sign={changeData.direction === 'increase' ? 'positive' : 'negative'}
-                                                value={`${Math.abs(parseFloat(changeData.percentage))}%`}
-                                                label="vs previous year"
-                                            />
-                                        )}
-                                    </div>
-
-                                    <div className="paycheck-year-rows">
-                                        <div className="paycheck-year-row">
-                                            <span>Cash:</span>
-                                            <strong className="fs-num">{formatCurrency(yearData.cash)}</strong>
-                                        </div>
-                                        <div className="paycheck-year-row">
-                                            <span>Prepaid:</span>
-                                            <strong className="fs-num">{formatCurrency(yearData.prepaid)}</strong>
-                                        </div>
-                                        <div className="paycheck-year-total">
-                                            <span>Total:</span>
-                                            <strong className="fs-num">{formatCurrency(yearData.total)}</strong>
+                                return (
+                                    <div key={year} className="paycheck-year-card">
+                                        <div className="paycheck-year-header">
+                                            <h3 className="paycheck-year-title">{year}</h3>
+                                            {changeData && (
+                                                <Delta
+                                                    tone="neutral"
+                                                    sign={changeData.direction === 'increase' ? 'positive' : 'negative'}
+                                                    value={`${Math.abs(parseFloat(changeData.percentage))}%`}
+                                                    label="vs previous year"
+                                                />
+                                            )}
                                         </div>
 
-                                        {changeData && (
-                                            <div className="paycheck-year-diff">
-                                                <span className="fs-num">{changeData.direction === 'increase' ? '+' : ''}{formatCurrency(changeData.amount)}</span> vs prev year
+                                        <div className="paycheck-year-rows">
+                                            <div className="paycheck-year-row">
+                                                <span>Cash:</span>
+                                                <strong className="fs-num">{formatCurrency(yearData.cash)}</strong>
                                             </div>
-                                        )}
+                                            <div className="paycheck-year-row">
+                                                <span>Prepaid:</span>
+                                                <strong className="fs-num">{formatCurrency(yearData.prepaid)}</strong>
+                                            </div>
+                                            <div className="paycheck-year-total">
+                                                <span>Total:</span>
+                                                <strong className="fs-num">{formatCurrency(yearData.total)}</strong>
+                                            </div>
+
+                                            {changeData && (
+                                                <div className="paycheck-year-diff">
+                                                    <span className="fs-num">{changeData.direction === 'increase' ? '+' : ''}{formatCurrency(changeData.amount)}</span> vs prev year
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Filter Section */}
             <div className="filter-section">
-                <div className="paycheck-filter-card fs-card">
-                    <h2 className="paycheck-filter-title">🔍 Filter by Year</h2>
+                <div className="paycheck-panel paycheck-filter-panel fs-card">
+                    <h2 className="paycheck-panel-title">Filter by Year</h2>
                     <div className="paycheck-filter-chips">
                         <button
                             type="button"
@@ -293,7 +297,7 @@ const PaycheckLog = () => {
                     </div>
                     {selectedYear !== 'all' && (
                         <div className="paycheck-filter-notice">
-                            📅 Showing paychecks for {selectedYear} only
+                            Showing paychecks for {selectedYear} only
                         </div>
                     )}
                 </div>
