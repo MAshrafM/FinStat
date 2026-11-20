@@ -25,6 +25,7 @@ backend/read_sheets.js
 docs/*
 !docs/UI-UX_Plan/
 !docs/ui-plans/
+docs/ui-plans/*review*.md
 
 # visual regression baselines (A5-Local, D21)
 frontend/tests/visual/baseline/
