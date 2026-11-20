@@ -6,7 +6,6 @@ src/App.test.js
 src/components/AnalysisCard.js
 src/components/DataLoader.js
 src/components/Modal.js
-src/components/ProtectedRoute.js
 src/components/Sidebar.js
 src/components/__tests__/SidebarHubs.test.js
 src/components/common/ConfirmModal.js

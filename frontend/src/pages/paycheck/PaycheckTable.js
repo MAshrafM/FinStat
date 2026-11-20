@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { formatCurrency } from '../../utils/formatters';
 import ProtectedAction from '../../components/common/ProtectedAction';
-import { Badge } from '../../components/ui';
+import { Badge, EmptyState } from '../../components/ui';
 
 const parsePeriodSortKey = (str) => {
   if (!str) return '';
@@ -84,10 +84,17 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
     return (
       <div className="paycheck-mobile-cards" role="region" aria-label="Paycheck cards list">
         {groupedData.length === 0 ? (
-          <div className="paycheck-empty-cell">
-            <p>No paycheck entries found</p>
-            <p className="paycheck-empty-sub">Click &quot;+ Log Paycheck&quot; to record your first paycheck or disbursement</p>
-          </div>
+          <EmptyState
+            title="No paycheck entries found"
+            description="Record your first paycheck or disbursement to view payment history."
+            action={
+              <ProtectedAction tooltip="View-only access">
+                <Link to="/salary/paychecks/new" className="fs-btn fs-btn-primary">
+                  + Log Paycheck
+                </Link>
+              </ProtectedAction>
+            }
+          />
         ) : (
           groupedData.flatMap((monthGroup) =>
             monthGroup.entries.map((entry) => {
@@ -128,16 +135,6 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
                     <span className="fs-num">{formatCurrency(amountVal)}</span>
                   </div>
 
-                  <div className="paycheck-card-row">
-                    <span>Gross Payout</span>
-                    <span className="fs-num">{formatCurrency(grossVal)}</span>
-                  </div>
-
-                  <div className="paycheck-card-row">
-                    <span>Deductions</span>
-                    <span className="fs-num">{deductionsVal > 0 ? `-${formatCurrency(deductionsVal)}` : formatCurrency(0)}</span>
-                  </div>
-
                   <button
                     type="button"
                     className="paycheck-card-expander"
@@ -149,6 +146,14 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
 
                   {isExpanded && (
                     <div className="paycheck-card-details">
+                      <div className="paycheck-card-row">
+                        <span>Gross Payout</span>
+                        <span className="fs-num">{formatCurrency(grossVal)}</span>
+                      </div>
+                      <div className="paycheck-card-row">
+                        <span>Deductions</span>
+                        <span className="fs-num">{deductionsVal > 0 ? `-${formatCurrency(deductionsVal)}` : formatCurrency(0)}</span>
+                      </div>
                       <div className="paycheck-card-row">
                         <span>Tax Deduction</span>
                         <span className="fs-num">{formatCurrency(taxVal)}</span>
@@ -224,9 +229,18 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
         <tbody>
           {groupedData.length === 0 ? (
             <tr>
-              <td colSpan={7} className="paycheck-empty-cell">
-                <p>No paycheck entries found</p>
-                <p className="paycheck-empty-sub">Click &quot;+ Log Paycheck&quot; to record your first paycheck or disbursement</p>
+              <td colSpan={7}>
+                <EmptyState
+                  title="No paycheck entries found"
+                  description="Record your first paycheck or disbursement to view payment history."
+                  action={
+                    <ProtectedAction tooltip="View-only access">
+                      <Link to="/salary/paychecks/new" className="fs-btn fs-btn-primary">
+                        + Log Paycheck
+                      </Link>
+                    </ProtectedAction>
+                  }
+                />
               </td>
             </tr>
           ) : (

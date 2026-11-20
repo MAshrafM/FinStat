@@ -9,7 +9,7 @@ import ProtectedAction from '../../components/common/ProtectedAction';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/formatters';
-import { PageHeader, Button, Delta, Loading } from '../../components/ui';
+import { PageHeader, Button, Delta, Loading, EmptyState } from '../../components/ui';
 import './PaycheckLog.css';
 
 const PaycheckLog = () => {
@@ -223,7 +223,10 @@ const PaycheckLog = () => {
                 <div className="paycheck-panel fs-card">
                     <h2 className="paycheck-panel-title">Yearly Breakdown &amp; Growth</h2>
                     {availableYears.length === 0 ? (
-                        <p className="paycheck-empty-notice">No yearly breakdown records available yet.</p>
+                        <EmptyState
+                            title="No yearly records available"
+                            description="Yearly breakdown and growth trends will appear once paychecks are logged."
+                        />
                     ) : (
                         <div className="paycheck-yearly-grid">
                             {availableYears.map(year => {

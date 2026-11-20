@@ -1,3 +1,4 @@
+/* eslint-disable jest/valid-expect */
 /**
  * frontend/tests/visual/a11y.spec.js
  *

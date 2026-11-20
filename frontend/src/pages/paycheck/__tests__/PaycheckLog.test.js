@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import PaycheckLog from '../PaycheckLog';
 import { getPaychecks, getPaychecksLog, deletePaycheck } from '../../../services/paycheckService';
 import { useToast } from '../../../context/ToastContext';
@@ -158,7 +158,7 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
     await expectNoA11yViolations(container);
   });
 
-  test('7. collapses table into compact-expand cards at <= 768px viewport (Decision D19, Invariant I6)', async () => {
+  test('7. collapses table into compact-expand cards with 3 initial fields and reveals details on expand (Decision D19, Invariant I6)', async () => {
     window.innerWidth = 390;
     render(<PaycheckLog />);
 
@@ -175,23 +175,38 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
     const cards = screen.getAllByRole('article');
     expect(cards).toHaveLength(2);
 
-    // Initial state: details should not be shown before clicking expander
+    // Initial compact state: only 3 fields shown (period, badge/chip, net amount)
+    expect(within(cards[0]).getByText('2025-01')).toBeInTheDocument();
+    expect(within(cards[0]).getByText('Regular')).toBeInTheDocument();
+    expect(within(cards[0]).getByText('$12,000.00')).toBeInTheDocument();
+
+    // Secondary fields must not be visible before clicking expander
     expect(screen.queryByText(/January salary disbursement/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('Gross Payout')).not.toBeInTheDocument();
+    expect(screen.queryByText('Tax Deduction')).not.toBeInTheDocument();
+    expect(screen.queryByText('Insurance Deduction')).not.toBeInTheDocument();
 
     // Click expander on the first card
     const expandButtons = screen.getAllByRole('button', { name: 'Show details' });
     expect(expandButtons).toHaveLength(2);
     fireEvent.click(expandButtons[0]);
 
-    // Now note and tax/insurance details should be visible
+    // Now all secondary fields and exact values are revealed
     expect(screen.getByText(/January salary disbursement/i)).toBeInTheDocument();
-    expect(screen.getByText(/Tax Deduction/i)).toBeInTheDocument();
-    expect(screen.getByText(/Insurance Deduction/i)).toBeInTheDocument();
+    expect(screen.getByText('Gross Payout')).toBeInTheDocument();
+    expect(screen.getByText('Tax Deduction')).toBeInTheDocument();
+    expect(screen.getByText('Insurance Deduction')).toBeInTheDocument();
+
+    // Verify exact tax and insurance deduction values ($1,500.00 each)
+    const deductionAmounts = screen.getAllByText('$1,500.00');
+    expect(deductionAmounts).toHaveLength(2);
+
     expect(screen.getByRole('button', { name: 'Hide details' })).toBeInTheDocument();
 
-    // Toggle close
+    // Toggle close: secondary fields hidden again
     fireEvent.click(screen.getByRole('button', { name: 'Hide details' }));
     expect(screen.queryByText(/January salary disbursement/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('Tax Deduction')).not.toBeInTheDocument();
   });
 
   test('8. renders numeric amounts with neutral tone class fs-num without semantic color classes (Invariant I15)', async () => {
@@ -201,21 +216,35 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
       expect(screen.getByText('2025-01')).toBeInTheDocument();
     });
 
-    // Verify gross, deductions, and net amount cells are present with fs-num and neutral styling
-    const netCells = screen.getAllByRole('cell', { name: '$12,000.00' });
-    const netCell = netCells[0];
-    expect(netCell).toHaveClass('fs-num');
-    expect(netCell.className).not.toMatch(/fs-badge--positive|fs-badge--negative/);
-    expect(netCell.style.color).toBe('');
+    // Verify desktop table data cells for gross, deductions, and net follow neutral formatting
+    const rows = screen.getAllByRole('row');
+    // First row is the header; data rows follow
+    const dataRow = rows[1];
+    const cells = within(dataRow).getAllByRole('cell');
 
-    const grossCell = screen.getByRole('cell', { name: '$15,000.00' });
+    // Column 2: Gross Payout ($15,000.00)
+    const grossCell = cells[2];
+    expect(grossCell).toHaveTextContent('$15,000.00');
     expect(grossCell).toHaveClass('fs-num');
-    expect(grossCell.className).not.toMatch(/fs-badge--positive|fs-badge--negative/);
-    expect(grossCell.style.color).toBe('');
+    expect(grossCell.className).not.toMatch(/positive|negative|warning/);
 
-    const deductionCell = screen.getByRole('cell', { name: '-$3,000.00' });
-    expect(deductionCell).toHaveClass('fs-num');
-    expect(deductionCell.className).not.toMatch(/fs-badge--positive|fs-badge--negative/);
-    expect(deductionCell.style.color).toBe('');
+    // Column 3: Deductions (-$3,000.00)
+    const deductionsCell = cells[3];
+    expect(deductionsCell).toHaveTextContent('-$3,000.00');
+    expect(deductionsCell).toHaveClass('fs-num');
+    expect(deductionsCell.className).not.toMatch(/positive|negative|warning/);
+
+    // Column 4: Net Disbursed ($12,000.00)
+    const netCell = cells[4];
+    expect(netCell).toHaveTextContent('$12,000.00');
+    expect(netCell).toHaveClass('fs-num');
+    expect(netCell.className).not.toMatch(/positive|negative|warning/);
+
+    // Verify all numeric cells in dataRow carry neutral formatting
+    [grossCell, deductionsCell, netCell].forEach((cell) => {
+      expect(cell).toHaveClass('fs-num');
+      expect(cell.className).not.toMatch(/positive|negative|warning/);
+      expect(cell.style.color).toBe('');
+    });
   });
 });

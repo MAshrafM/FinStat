@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/await-async-utils */
 /**
  * frontend/tests/visual/visual.spec.js
  *

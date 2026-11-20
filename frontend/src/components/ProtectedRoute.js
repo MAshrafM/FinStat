@@ -61,6 +61,7 @@ const getRequiredProviders = (pathname) => {
   
   // Check if route needs all providers
   if (fullDataRoutes.some(route => pathname.startsWith(route))) {
+    // eslint-disable-next-line no-restricted-syntax -- 'gold' is a context provider key, not a CSS color
     return ['data', 'gold', 'mf', 'cert', 'curr', 'bank', 'credit'];
   }
   
