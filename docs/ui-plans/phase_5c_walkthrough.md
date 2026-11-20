@@ -1,7 +1,7 @@
 # UI Phase 5C Walkthrough — Paycheck Form, Part 1 (Styles Only)
 
 - **Sub-phase**: Phase 5C (`/salary/paychecks/new` and `/salary/paychecks/edit/:id` — Part 1: Styles Only)
-- **Working Branch**: `phase-ui-5c-paycheck-form-a` (Code commit: `42fc45b` / Walkthrough commit: `[pending sign-off]`)
+- **Working Branch**: `phase-ui-5c-paycheck-form-a` (Head commit: `ab4ce52`; code commit: `42fc45b`)
 - **Merge Base**: `f3232f6` (`main`)
 - **Date**: 2026-11-20
 - **Status**: Ready for Walkthrough Approval (Held Unmerged)
