@@ -1050,9 +1050,9 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **2F** | Universal loading pattern (D23, `<Loading>` primitive) | `phase-ui-2f-loading` | ☑ | ☑ |
 | **3A** | `chartTheme.js` + Dashboard conversion | `phase-ui-3a-dashboard` | ☑ | ☑ |
 | **4A** | Expenditure log + filters | `phase-ui-4a-expenditure-log` | ☑ | ☑ |
-| **4B** | Expenditure forms + sub-nav | `phase-ui-4b-expenditure-forms` | ☐ | ☐ |
-| **4C** | Rules, budgets, recurring, analysis | `phase-ui-4c-expenditure-more` | ☐ | ☐ |
-| **5A** | Payroll profiles, rules, taxes | `phase-ui-5a-payroll-core` | ☐ | ☐ |
+| **4B** | Expenditure forms + sub-nav | `phase-ui-4b-expenditure-forms` | ☑ | ☑ |
+| **4C** | Rules, budgets, recurring, analysis | `phase-ui-4c-expenditure-more` | ☑ | ☑ |
+| **5A** | Payroll profiles, rules, taxes | `phase-ui-5a-payroll-core` | ☑ | ☑ |
 | **5B** | Paycheck log | `phase-ui-5b-paycheck-log` | ☐ | ☐ |
 | **5C** | Paycheck form, part 1 (styles only) | `phase-ui-5c-paycheck-form-a` | ☐ | ☐ |
 | **5D** | Paycheck form, part 2 + allowlist | `phase-ui-5d-paycheck-form-b` | ☐ | ☐ |
@@ -1607,27 +1607,27 @@ Daily-use flow; 185 inline styles across six files.
 
 #### 4A — Log + filters
 
-- [ ] `pages/expenditure/Expenditure.css` — full light → graphite conversion.
-- [ ] `ExpenditureLogPage.js` — 47 inline styles → classes; filters, bulk-action bar, category chips, summary row.
-- [ ] `ExpenditureSubNav` — keep legacy classes, add `.fs-page .expenditure-subnav` rules only (§4.16).
-- [ ] Category chips are neutral and show the category label; no `tint` field exists (2E). Add the replacement cue chosen in 1B — a short text prefix or a group-by control — so a user can still scan by category without colour (G3).
-- [ ] At ≤ 768px, `/expenditures` renders as compact-expand cards, per §6.4 and D19. Category chips visible on each card. No page-level horizontal scroll.
-- [ ] Category chip styling: use `--fs-accent` left border? No — category is not accent. Chips are `--fs-surface-raised` + `--fs-border` + `--fs-text` per §4.3 rule 2. Only the sort header arrow, selected-row left rule, and checkbox fills use accent.
-- [ ] Add the AD13 line to `CHANGELOG.md`: ordinary expense amounts are neutral; colour now only means something needs attention (§3.2).
-- [ ] Verify split transactions and bulk actions still work on the card layout at 390px.
-- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
-- [ ] Remove converted Expenditure log components (`ExpenditureLogPage.js`, `ExpenditureSubNav.js`) from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add `/expenditures` to the allowlist** (one pattern).
-- [ ] Confirm zero diff on every non-allowlisted route.
+- [x] `pages/expenditure/Expenditure.css` — full light → graphite conversion.
+- [x] `ExpenditureLogPage.js` — 47 inline styles → classes; filters, bulk-action bar, category chips, summary row.
+- [x] `ExpenditureSubNav` — keep legacy classes, add `.fs-page .expenditure-subnav` rules only (§4.16).
+- [x] Category chips are neutral and show the category label; no `tint` field exists (2E). Add the replacement cue chosen in 1B — a short text prefix or a group-by control — so a user can still scan by category without colour (G3).
+- [x] At ≤ 768px, `/expenditures` renders as compact-expand cards, per §6.4 and D19. Category chips visible on each card. No page-level horizontal scroll.
+- [x] Category chip styling: use `--fs-accent` left border? No — category is not accent. Chips are `--fs-surface-raised` + `--fs-border` + `--fs-text` per §4.3 rule 2. Only the sort header arrow, selected-row left rule, and checkbox fills use accent.
+- [x] Add the AD13 line to `CHANGELOG.md`: ordinary expense amounts are neutral; colour now only means something needs attention (§3.2).
+- [x] Verify split transactions and bulk actions still work on the card layout at 390px.
+- [x] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
+- [x] Remove converted Expenditure log components (`ExpenditureLogPage.js`, `ExpenditureSubNav.js`) from `frontend/.eslintignore`; verify clean ESLint.
+- [x] **Add `/expenditures` to the allowlist** (one pattern).
+- [x] Confirm zero diff on every non-allowlisted route.
 
 #### 4B — Forms + sub-nav
 
-- [ ] `ExpenditureForm.js` — 22 inline styles → token form controls.
-- [ ] `AddExpenditurePage.js` / `EditExpenditurePage.js` — header + container alignment.
-- [ ] Apply the form pattern from §6.4 (labels, errors, validation timing, placeholder colour).
-- [ ] Verify create, edit, validation errors, and navigation.
-- [ ] Remove `ExpenditureForm.js`, `AddExpenditurePage.js`, and `EditExpenditurePage.js` from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add `/expenditures/new` and `/expenditures/edit/:id`** to the allowlist.
+- [x] `ExpenditureForm.js` — 22 inline styles → token form controls.
+- [x] `AddExpenditurePage.js` / `EditExpenditurePage.js` — header + container alignment.
+- [x] Apply the form pattern from §6.4 (labels, errors, validation timing, placeholder colour).
+- [x] Verify create, edit, validation errors, and navigation.
+- [x] Remove `ExpenditureForm.js`, `AddExpenditurePage.js`, and `EditExpenditurePage.js` from `frontend/.eslintignore`; verify clean ESLint.
+- [x] **Add `/expenditures/new` and `/expenditures/edit/:id`** to the allowlist.
 
 #### 4C — Rules, budgets, recurring, bills, analysis
 
@@ -1659,14 +1659,15 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 5A — Profiles, rules, taxes
 
-- [ ] `pages/salary/SalaryProfile.css` — light → graphite.
-- [ ] `SalaryProfilePage.js` (25), `SalaryForm.js`, `ComponentTable.js` (13) → classes.
-- [ ] Delete the orphan files `pages/salary/SalaryProfilePage.css` and `pages/salary/PaycheckListPage.css` (imports already verified in 1A).
-- [ ] `PayrollRulesHub.js` (16) → classes; tab bar stays dual-mode until 5E.
-- [ ] `TaxesPage.css` / `YearlyTaxTable` — dark table, bracket rows.
-- [ ] `pages/taxes/TaxesPage.css` `.nav-button` teal → token primary.
-- [ ] Verify bracket display, insurance rates, and tab deep-links (`?tab=taxes`, `?tab=insurance`).
-- [ ] **Add `/salary/profiles` and `/salary/rules`.**
+- [x] `pages/salary/SalaryProfile.css` — light → graphite.
+- [x] `SalaryProfilePage.js` (25), `SalaryForm.js`, `ComponentTable.js` (13) → classes.
+- [x] Delete the orphan files `pages/salary/SalaryProfilePage.css` and `pages/salary/PaycheckListPage.css` (imports already verified in 1A).
+- [x] `PayrollRulesHub.js` (16) → classes; tab bar stays dual-mode until 5E.
+- [x] `TaxesPage.css` / `YearlyTaxTable` — dark table, bracket rows.
+- [x] `pages/taxes/TaxesPage.css` `.nav-button` teal → token primary.
+- [x] Verify bracket display, insurance rates, and tab deep-links (`?tab=taxes`, `?tab=insurance`).
+- [x] **Add `/salary/profiles` and `/salary/rules`.**
+- [x] Developer signs Taste Checkpoint 3 (§6.1.1).
 
 #### 5B — Paycheck log
 

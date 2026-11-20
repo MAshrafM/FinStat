@@ -352,4 +352,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integrated Universal Loading pattern (`Loading variant="table"`) per D23.
 - Verified dual-mode ExpenditureSubNav with zero regression on unallowlisted routes.
 
+### Changed - UI Phase 4B: Expenditure Forms & Sub-Nav
+- Converted `/expenditures/new` and `/expenditures/edit/:id` to Canonical Reference Frame 02 (Form Variant B) with stacked field cards.
+- Eliminated all 22 legacy inline styles from `ExpenditureForm.js`.
+- Implemented W3C APG radiogroup category picker with roving tabindex and keyboard navigation.
+- Implemented mobile split-table collapse into vertical cards (D19) with touch targets >= 44px.
+- Enforced Invariant I4 viewer role mutation gating via `<ProtectedAction>`.
+- Verified dual-mode `ExpenditureSubNav` and allowlisted both routes.
+
+### Changed - UI Phase 4C: Expenditure Rules, Budgets, Recurring, Bills & Analytics
+- Converted remaining 5 expenditure cluster routes (`/expenditures/rules`, `/expenditures/budgets`, `/expenditures/recurring`, `/expenditures/bills`, `/expenditure-analysis`) to the dark graphite design system.
+- Eliminated all 117 legacy inline styles across the 5 page files (0 remaining).
+- Integrated `chartTheme` with accessible data tables for all 5 charts on `/expenditure-analysis` (§4.12, G2).
+- Enforced strict budget threshold fidelity (§4.3.1) and all 8 test suites passing with jest-axe compliance.
+- Allowlisted all 5 routes, completing the full 7-route Expenditure cluster.
+
+### Changed - UI Phase 5A: Payroll Profiles, Rules & Taxes
+- Converted `/salary/profiles` and `/salary/rules` to dark graphite design system conforming to Canonical Reference Frame 02 (Form Variant B).
+- Eliminated all 62 legacy inline styles across all 5 files (`SalaryProfilePage.js`, `PayrollRulesHub.js`, `ComponentTable.js`, `YearlyTaxTable.js`, `SalaryForm.js`).
+- Purged 7 Phase 5A entries from `frontend/.eslintignore` with zero warnings on clean build.
+- Standardized numeric rate cells to `.fs-num` (IBM Plex Mono) and `<Badge>` components to explicit `label` prop.
+- Integrated `<Delta tone="neutral">` for informational yearly tax differentials per §4.3.1.
+- Preserved Invariant I4 viewer mutation gating via `useCanModify()` and `<ProtectedAction>`.
+- Preserved Invariant I8 dashboard coordinator line cap (`DashboardSummary.js` at 96 lines <= 120 limit) with all 4 RTL test suites passing.
+- Developer formally signed off Taste Checkpoint 3 (§6.1.1).
+- Added `/salary/profiles` and `/salary/rules` to `THEMED_PATTERNS`.
+
+
 
