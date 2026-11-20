@@ -378,5 +378,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Developer formally signed off Taste Checkpoint 3 (§6.1.1).
 - Added `/salary/profiles` and `/salary/rules` to `THEMED_PATTERNS`.
 
+### Changed - UI Phase 5B: Paycheck Log & Disbursement History
+- Converted `/salary/paychecks` to dark graphite design system conforming to Canonical Reference Frame 01 (Dense Table Variant B).
+- Eliminated all 43 legacy inline styles across `PaycheckLog.js` (34) and `PaycheckTable.js` (9); 0 remaining.
+- Purged 4 files from `frontend/.eslintignore` (`PaycheckLog.js`, `PaycheckTable.js`, `PaycheckLog.test.js`, `ProtectedRoute.js`) with zero ESLint warnings (`--max-warnings=0`).
+- Replaced legacy `.tax-card` with page-scoped `.paycheck-panel.fs-card`, eliminating white panel cascade hazard (`App.css:82`).
+- Aligned mobile cards to Decision D19 and UI-UX-PLAN §6.4 line 1292 (3 visible fields in compact state: period, status badge, net amount; expander reveals gross, deductions, and breakdowns).
+- Adopted canonical `<EmptyState>` primitive component for empty states across desktop table, mobile cards, and yearly breakdown (§6.4 line 1291).
+- Formatted numeric amounts with `.fs-num` (proportional IBM Plex Sans with `tabular-nums`) per Decision D16/AD10 without semantic color classes (Invariant I15).
+- Integrated `<Delta tone="neutral">` for yearly growth metrics.
+- Preserved Invariant I4 viewer mutation gating via `<ProtectedAction>`.
+- Added `/salary/paychecks` to `THEMED_PATTERNS` allowlist in `ProtectedRoute.js` (cumulative: 12 routes).
+
+
 
 

@@ -870,7 +870,7 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | `/salary/rules` | `pages/salary/PayrollRulesHub` | 5A | ☐ | ☐ | 16 inline styles; tabs |
 | `/social-insurance` → above | redirect | 5A | n/a | n/a | `?tab=insurance` |
 | `/taxes` → above | redirect | 5A | n/a | n/a | `?tab=taxes` |
-| `/salary/paychecks` | `pages/paycheck/PaycheckLog` | 5B | ☐ | ☐ | 34 inline styles |
+| `/salary/paychecks` | `pages/paycheck/PaycheckLog` | 5B | ☑ | ☑ | Converted in 5B; 0 inline styles; D19 mobile cards |
 | `/paycheck-log` → above | redirect | 5B | n/a | n/a | Verify redirect intact |
 | `/salary/paychecks/new` | `pages/salary/PaycheckFormPage` | 5D | ☐ | ☐ | **77 inline styles — highest risk**; styled in 5C, allowlisted in 5D |
 | `/paycheck-log/new` → above | redirect | 5D | n/a | n/a | Verify redirect intact |
@@ -1053,7 +1053,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **4B** | Expenditure forms + sub-nav | `phase-ui-4b-expenditure-forms` | ☑ | ☑ |
 | **4C** | Rules, budgets, recurring, analysis | `phase-ui-4c-expenditure-more` | ☑ | ☑ |
 | **5A** | Payroll profiles, rules, taxes | `phase-ui-5a-payroll-core` | ☑ | ☑ |
-| **5B** | Paycheck log | `phase-ui-5b-paycheck-log` | ☐ | ☐ |
+| **5B** | Paycheck log | `phase-ui-5b-paycheck-log` | ☑ | ☑ |
 | **5C** | Paycheck form, part 1 (styles only) | `phase-ui-5c-paycheck-form-a` | ☐ | ☐ |
 | **5D** | Paycheck form, part 2 + allowlist | `phase-ui-5d-paycheck-form-b` | ☐ | ☐ |
 | **5E** | History, update, analytics | `phase-ui-5e-payroll-history` | ☐ | ☐ |
@@ -2502,6 +2502,7 @@ Append one row per sub-phase. Never edit past rows.
 | 4B | 2026-11-17 | Expenditure form conversion completed: converted /expenditures/new and /expenditures/edit/:id to Canonical Reference Frame 02 (Variant B stacked field cards); eliminated all 22 inline styles from ExpenditureForm.js; roving tabindex category selector with W3C APG radiogroup keyboard navigation; mobile split table collapse into vertical cards; dual-mode ExpenditureSubNav verified; Invariant I4 viewer mutation gating; removed ExpenditureForm.js and its test from .eslintignore (0 warnings); added expenditure-form-reference-match spec (13/13 reference tests passing); PR subset passing 71/71 tests with 0 diff on all 61 unallowlisted routes; manifest 334/334 verified; 10 baseline snapshots regenerated. | 4C (Expenditure rules, budgets & analytics) | None | 9e49604 (merged to main) |
 | 4C | 2026-11-17 | Expenditure cluster completion: converted remaining 5 expenditure routes (/expenditures/rules, /expenditures/budgets, /expenditures/recurring, /expenditures/bills, /expenditure-analysis) to the dark graphite design system; eliminated all 117 legacy inline styles across the 5 page files (0 remaining); purged all 4 expenditure entries from frontend/.eslintignore (0 warnings); integrated Chart.js theme with accessible data tables for all 5 charts on /expenditure-analysis (§4.12, G2); strict budget threshold fidelity (§4.3.1: pct > 100 negative, pct >= 80 warning, neutral under 80%); added unit and jest-axe tests for all converted routes (8 suites, 54 tests passing); Invariant I3 calculation characterization passing (11/11); PR subset visual regression passing 71/71 tests with 0 diff on all 60 non-4C routes; manifest 334/334 verified; 25 baseline snapshots replaced in D:\Projects\FinStat-visual-baselines. | 5A (Trade log & trade entry conversion) | None | a87c9a2 (merged to main) |
 | 5A | 2026-11-20 | Payroll profiles, rules & taxes: converted /salary/profiles and /salary/rules to dark graphite design system; eliminated all 62 legacy inline styles (0 remaining across all 5 files); purged 7 Phase 5A entries from frontend/.eslintignore (0 warnings); mapped numeric rate cells to .fs-num; integrated <Delta tone="neutral"> for informational tax differentials (§4.3.1); standardized Badge label props; unit tests with jest-axe (3 suites, 16 tests passing); calculations characterization passing (11/11); shared a11y runner passing (2/2); 4 dashboard RTL suites passing (31 tests, Invariant I8 <= 120 lines preserved); PR subset visual regression passing 71/71 tests with 0 diff on all 63 non-5A routes; manifest 334/334 verified; exactly 10 baseline snapshots replaced in D:\Projects\FinStat-visual-baselines (commit e3ff18d); certificates baseline accepted in commit 40fbdf6 per badc468 functional change. | 5B (Paycheck log, entry & edit) | None | 834ce55 (merged to main) |
+| 5B | 2026-11-20 | Paycheck log & disbursement history: converted /salary/paychecks to dark graphite design system; eliminated all 43 legacy inline styles across PaycheckLog.js (34) and PaycheckTable.js (9); purged 4 entries from frontend/.eslintignore (PaycheckLog.js, PaycheckTable.js, PaycheckLog.test.js, ProtectedRoute.js) with 0 warnings; replaced legacy .tax-card with page-scoped .paycheck-panel.fs-card eliminating white panel cascade hazard (App.css:82); mapped amount cells to .fs-num without semantic colors; aligned mobile cards to Decision D19 and §6.4 line 1292 (3 visible fields in compact state: period, status badge, net amount; expander reveals gross, deductions, and breakdowns); adopted canonical <EmptyState> component; unit tests with jest-axe (8/8 passing); calculations characterization passing (11/11); 4 dashboard suites passing (31/31); app route suite passing (9/9); real-browser axe audit passing with 0 critical/serious violations; PR subset visual regression passing 71/71 tests with 0 diff on all 64 non-5B routes; manifest 334/334 verified; 5 baseline snapshots updated in D:\Projects\FinStat-visual-baselines (commits 124314f and 2aa3dc6). | 5C (Paycheck form styles) | None | 6ecef71 (merged to main) |
 
 ```
 Sub-phase:   1A
@@ -2697,6 +2698,20 @@ Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests gree
 Screenshots: docs/ui-snapshots/phase-5a/reference-02-form-1440.png, docs/ui-snapshots/phase-5a/salary-profiles-1440.png, docs/ui-snapshots/phase-5a/salary-profiles-390.png, docs/ui-snapshots/phase-5a/salary-rules-1440.png, docs/ui-snapshots/phase-5a/salary-rules-390.png
 Branch:      phase-ui-5a-payroll-core
 Merge SHA:   834ce55 (merged to main; docs in 4bcf825)
+```
+
+```
+Sub-phase:   5B
+Status:      done
+Done:        Converted /salary/paychecks to dark graphite design system; eliminated all 43 legacy inline styles across PaycheckLog.js (34) and PaycheckTable.js (9); purged 4 entries from frontend/.eslintignore (PaycheckLog.js, PaycheckTable.js, PaycheckLog.test.js, ProtectedRoute.js) with 0 warnings; replaced legacy .tax-card with page-scoped .paycheck-panel.fs-card eliminating white panel cascade hazard (App.css:82); mapped amount cells to .fs-num without semantic colors; aligned mobile cards to Decision D19 and §6.4 line 1292 (3 visible fields in compact state: period, status badge, net amount; expander reveals gross, deductions, and breakdowns); adopted canonical <EmptyState> component; unit tests with jest-axe (8/8 passing); calculations characterization passing (11/11); 4 dashboard suites passing (31/31); app route suite passing (9/9); real-browser axe audit passing with 0 critical/serious violations; PR subset visual regression passing 71/71 tests with 0 diff on all 64 non-5B routes; manifest 334/334 verified; 5 baseline snapshots updated in D:\Projects\FinStat-visual-baselines (commits 124314f and 2aa3dc6).
+Next:        5C (Paycheck form, part 1: styles only)
+Blocked by:  None
+Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks'] (cumulative: 12 routes)
+Visual diff: 0 regression diff across all 64 non-5B routes (68 snapshots at 0 diff); 5 baseline snapshots updated for /salary/paychecks (commits 124314f and 2aa3dc6); 71/71 PR subset passing
+Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
+Screenshots: docs/ui-snapshots/phase-5b/salary-paychecks-1440.png, docs/ui-snapshots/phase-5b/salary-paychecks-390.png
+Branch:      phase-ui-5b-paycheck-log
+Merge SHA:   6ecef71 (merged to main)
 ```
 
 ### Sub-phase note template
