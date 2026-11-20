@@ -1,23 +1,10 @@
-// frontend/src/components/PaycheckTable.js
-import React from 'react';
+// frontend/src/pages/paycheck/PaycheckTable.js
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { formatCurrency } from '../../utils/formatters';
 import ProtectedAction from '../../components/common/ProtectedAction';
-import '../../components/Table.css';
-
-const TYPE_COLORS = {
-  'Regular': { bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' },
-  'Basic Months': { bg: '#e0e7ff', text: '#4338ca', border: '#c7d2fe' },
-  'Basic Production': { bg: '#ede9fe', text: '#6d28d9', border: '#ddd6fe' },
-  'Sector Bonus': { bg: '#e0f2fe', text: '#0284c7', border: '#bae6fd' },
-  'Individual Bonus': { bg: '#fce7f3', text: '#be185d', border: '#fbcfe8' },
-  'Surplus': { bg: '#dcfce7', text: '#15803d', border: '#bbf7d0' },
-  'Bond Distribution': { bg: '#fef3c7', text: '#b45309', border: '#fde68a' },
-  'End of Year Bonus': { bg: '#ffedd5', text: '#c2410c', border: '#fed7aa' },
-  'Prepaid': { bg: '#f1f5f9', text: '#475569', border: '#e2e8f0' },
-  'Cash': { bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' },
-};
+import { Badge } from '../../components/ui';
 
 const parsePeriodSortKey = (str) => {
   if (!str) return '';
@@ -33,6 +20,29 @@ const parsePeriodSortKey = (str) => {
 };
 
 const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768);
+  const [expandedCards, setExpandedCards] = useState(new Set());
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleToggleCardExpand = (id) => {
+    setExpandedCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   const groupPaychecksByMonth = () => {
     if (!paychecks || paychecks.length === 0) return [];
     const monthlyGroups = paychecks.reduce((acc, p) => {
@@ -70,9 +80,135 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
 
   const groupedData = groupPaychecksByMonth();
 
+  if (isMobile) {
+    return (
+      <div className="paycheck-mobile-cards" role="region" aria-label="Paycheck cards list">
+        {groupedData.length === 0 ? (
+          <div className="paycheck-empty-cell">
+            <p>No paycheck entries found</p>
+            <p className="paycheck-empty-sub">Click &quot;+ Log Paycheck&quot; to record your first paycheck or disbursement</p>
+          </div>
+        ) : (
+          groupedData.flatMap((monthGroup) =>
+            monthGroup.entries.map((entry) => {
+              const amountVal = Number(entry.netPay !== undefined && entry.netPay !== null && entry.netPay !== 0 ? entry.netPay : (entry.amount || 0)) || 0;
+              const taxVal = Number(entry.taxDetails?.actualTax ?? entry.taxDeduction ?? entry.taxDetails?.expectedTax ?? 0) || 0;
+              const insVal = Number(entry.insuranceDetails?.actualEmployeeShare ?? entry.insuranceDeduction ?? entry.insuranceDetails?.expectedEmployeeShare ?? 0) || 0;
+              const martyrsVal = Number(entry.martyrsFund || 0) || 0;
+
+              let deductionsVal = Number(entry.totalDeductions !== undefined && entry.totalDeductions !== null ? entry.totalDeductions : (taxVal + insVal + martyrsVal)) || 0;
+              let grossVal = Number(entry.grossSalary !== undefined && entry.grossSalary !== null && entry.grossSalary !== 0 ? entry.grossSalary : (entry.grossAmount || 0)) || 0;
+
+              if (grossVal === 0 && (amountVal > 0 || deductionsVal > 0)) {
+                grossVal = amountVal + deductionsVal;
+              }
+              if (deductionsVal === 0 && grossVal > amountVal) {
+                deductionsVal = grossVal - amountVal;
+              }
+
+              const noteVal = entry.note || entry.notes || '';
+              const typeLabel = entry.disbursementType || entry.type || 'Regular';
+              const isExpanded = expandedCards.has(entry._id);
+
+              return (
+                <article
+                  key={entry._id}
+                  className="paycheck-mobile-card"
+                  aria-label={`Paycheck ${entry.period || monthGroup.month} ${typeLabel}`}
+                >
+                  <div className="paycheck-card-header">
+                    <span className="paycheck-card-period">{entry.period || monthGroup.month}</span>
+                    <Badge tone="neutral" label={typeLabel}>
+                      {typeLabel}{entry.multiplier && entry.multiplier !== 1 ? ` (${entry.multiplier}x)` : ''}
+                    </Badge>
+                  </div>
+
+                  <div className="paycheck-card-net">
+                    <span className="paycheck-card-label">Net: </span>
+                    <span className="fs-num">{formatCurrency(amountVal)}</span>
+                  </div>
+
+                  <div className="paycheck-card-row">
+                    <span>Gross Payout</span>
+                    <span className="fs-num">{formatCurrency(grossVal)}</span>
+                  </div>
+
+                  <div className="paycheck-card-row">
+                    <span>Deductions</span>
+                    <span className="fs-num">{deductionsVal > 0 ? `-${formatCurrency(deductionsVal)}` : '0.00 EGP'}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="paycheck-card-expander"
+                    aria-expanded={isExpanded}
+                    onClick={() => handleToggleCardExpand(entry._id)}
+                  >
+                    {isExpanded ? 'Hide details' : 'Show details'}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="paycheck-card-details">
+                      <div className="paycheck-card-row">
+                        <span>Tax Deduction</span>
+                        <span className="fs-num">{formatCurrency(taxVal)}</span>
+                      </div>
+                      <div className="paycheck-card-row">
+                        <span>Insurance Deduction</span>
+                        <span className="fs-num">{formatCurrency(insVal)}</span>
+                      </div>
+                      {martyrsVal > 0 && (
+                        <div className="paycheck-card-row">
+                          <span>Martyrs&apos; Fund</span>
+                          <span className="fs-num">{formatCurrency(martyrsVal)}</span>
+                        </div>
+                      )}
+                      {monthGroup.rowCount > 1 && (
+                        <div className="paycheck-card-row paycheck-card-monthly-total">
+                          <span>Monthly Total ({monthGroup.month})</span>
+                          <strong className="fs-num">{formatCurrency(monthGroup.monthlyTotal)}</strong>
+                        </div>
+                      )}
+                      {noteVal ? (
+                        <div className="paycheck-card-note">
+                          <span>Note: </span>{noteVal}
+                        </div>
+                      ) : null}
+                      <div className="paycheck-card-actions">
+                        <ProtectedAction tooltip="View-only access">
+                          <Link
+                            to={`/salary/paychecks/edit/${entry._id}`}
+                            className="paycheck-card-action-btn"
+                            aria-label={`Edit paycheck ${entry.period || monthGroup.month}`}
+                          >
+                            <FaPencilAlt className="action-icon edit-icon" aria-hidden="true" />
+                          </Link>
+                        </ProtectedAction>
+                        <ProtectedAction tooltip="View-only access">
+                          <button
+                            type="button"
+                            onClick={() => onPaycheckDeleted(entry._id)}
+                            className="paycheck-delete-btn paycheck-card-action-btn"
+                            title="Delete paycheck entry"
+                            aria-label={`Delete paycheck entry for ${entry.period || monthGroup.month}`}
+                          >
+                            <FaTrash className="action-icon" aria-hidden="true" />
+                          </button>
+                        </ProtectedAction>
+                      </div>
+                    </div>
+                  )}
+                </article>
+              );
+            })
+          )
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="table-container">
-      <h3>Paycheck Log</h3>
+    <div className="fs-table-scroll">
       <table className="styled-table">
         <thead>
           <tr>
@@ -88,9 +224,9 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
         <tbody>
           {groupedData.length === 0 ? (
             <tr>
-              <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#64748b' }}>
-                <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#475569' }}>No paycheck entries found</p>
-                <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.85rem' }}>Click "+ Log Paycheck" to record your first paycheck or disbursement</p>
+              <td colSpan={7} className="paycheck-empty-cell">
+                <p>No paycheck entries found</p>
+                <p className="paycheck-empty-sub">Click &quot;+ Log Paycheck&quot; to record your first paycheck or disbursement</p>
               </td>
             </tr>
           ) : (
@@ -114,52 +250,42 @@ const PaycheckTable = ({ paychecks, onPaycheckDeleted }) => {
 
                   const noteVal = entry.note || entry.notes || '';
                   const typeLabel = entry.disbursementType || entry.type || 'Regular';
-                  const styleColors = TYPE_COLORS[typeLabel] || TYPE_COLORS['Regular'];
 
                   return (
                     <tr key={entry._id} className="tooltip-container" data-note={noteVal}>
                       {entryIndex === 0 && <td data-label="Month" rowSpan={monthGroup.rowCount}><strong>{monthGroup.month}</strong></td>}
                       <td data-label="Type">
-                        <span style={{
-                          display: 'inline-block',
-                          padding: '4px 10px',
-                          borderRadius: '6px',
-                          fontSize: '0.82rem',
-                          fontWeight: 700,
-                          backgroundColor: styleColors.bg,
-                          color: styleColors.text,
-                          border: `1px solid ${styleColors.border}`,
-                        }}>
-                          {typeLabel}
-                          {entry.multiplier && entry.multiplier !== 1 ? ` (${entry.multiplier}x)` : ''}
-                        </span>
+                        <Badge tone="neutral" label={typeLabel}>
+                          {typeLabel}{entry.multiplier && entry.multiplier !== 1 ? ` (${entry.multiplier}x)` : ''}
+                        </Badge>
                       </td>
-                      <td data-label="Gross" style={{ fontWeight: 600 }}>{formatCurrency(grossVal)}</td>
-                      <td data-label="Deductions" style={{ color: deductionsVal > 0 ? '#e11d48' : '#64748b' }}>
+                      <td data-label="Gross" className="fs-num">{formatCurrency(grossVal)}</td>
+                      <td data-label="Deductions" className="fs-num">
                         {deductionsVal > 0 ? `-${formatCurrency(deductionsVal)}` : '0.00 EGP'}
                       </td>
-                      <td data-label="Net" style={{ fontWeight: 700, color: '#009879' }}>
+                      <td data-label="Net" className="fs-num">
                         {formatCurrency(amountVal)}
                       </td>
                       {entryIndex === 0 && (
                         <td data-label="Monthly Total" rowSpan={monthGroup.rowCount}>
-                          <strong style={{ color: '#1e293b' }}>{formatCurrency(monthGroup.monthlyTotal)}</strong>
+                          <strong className="fs-num">{formatCurrency(monthGroup.monthlyTotal)}</strong>
                         </td>
                       )}
                       <td data-label="Action" className="action-cell">
                         <ProtectedAction tooltip="View-only access">
-                          <Link to={`/paycheck-log/edit/${entry._id}`}>
-                            <FaPencilAlt className="action-icon edit-icon" />
+                          <Link to={`/salary/paychecks/edit/${entry._id}`} aria-label={`Edit paycheck for ${monthGroup.month}`}>
+                            <FaPencilAlt className="action-icon edit-icon" aria-hidden="true" />
                           </Link>
                         </ProtectedAction>
                         <ProtectedAction tooltip="View-only access">
                           <button
                             type="button"
                             onClick={() => onPaycheckDeleted(entry._id)}
-                            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                            className="paycheck-delete-btn"
                             title="Delete paycheck entry"
+                            aria-label={`Delete paycheck entry for ${monthGroup.month}`}
                           >
-                            <FaTrash className="action-icon" />
+                            <FaTrash className="action-icon" aria-hidden="true" />
                           </button>
                         </ProtectedAction>
                       </td>

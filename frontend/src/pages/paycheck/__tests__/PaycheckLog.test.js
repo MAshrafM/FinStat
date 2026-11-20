@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import PaycheckLog from '../PaycheckLog';
 import { getPaychecks, getPaychecksLog, deletePaycheck } from '../../../services/paycheckService';
 import { useToast } from '../../../context/ToastContext';
+import { expectNoA11yViolations } from '../../../../tests/a11y/expectNoA11yViolations';
 
 // Mock dependencies
 jest.mock('../../../services/paycheckService', () => ({
@@ -37,6 +38,7 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
       insuranceDetails: { actualEmployeeShare: 1500 },
       taxDetails: { actualTax: 1500 },
       type: 'Cash',
+      note: 'January salary disbursement',
     },
     {
       // Historical paycheck with deprecated fields only
@@ -53,6 +55,7 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.innerWidth = 1440;
     useToast.mockReturnValue({ showToast: mockShowToast });
     getPaychecks.mockResolvedValue(mockPaychecksList);
     getPaychecksLog.mockResolvedValue({
@@ -154,6 +157,67 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
     await waitFor(() => {
       expect(screen.queryByRole('heading', { name: 'Delete Paycheck' })).not.toBeInTheDocument();
       expect(deletePaycheck).not.toHaveBeenCalled();
+    });
+  });
+
+  test('6. passes WCAG 2.1 AA accessibility checks via jest-axe', async () => {
+    const { container } = render(<PaycheckLog />);
+
+    await waitFor(() => {
+      expect(screen.getByText('2025-01')).toBeInTheDocument();
+    });
+
+    await expectNoA11yViolations(container);
+  });
+
+  test('7. collapses table into compact-expand cards at <= 768px viewport (Decision D19, Invariant I6)', async () => {
+    window.innerWidth = 390;
+    const { container } = render(<PaycheckLog />);
+
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole('region', { name: 'Paycheck cards list' })).toBeInTheDocument();
+    });
+
+    // Check that cards are rendered instead of styled-table
+    expect(container.querySelector('.styled-table')).not.toBeInTheDocument();
+    const cards = container.querySelectorAll('.paycheck-mobile-card');
+    expect(cards.length).toBe(2);
+
+    // Initial state: details should not be shown before clicking expander
+    expect(screen.queryByText(/January salary disbursement/i)).not.toBeInTheDocument();
+
+    // Click expander on the first card
+    const expandButtons = screen.getAllByRole('button', { name: 'Show details' });
+    expect(expandButtons.length).toBe(2);
+    fireEvent.click(expandButtons[0]);
+
+    // Now note and tax/insurance details should be visible
+    expect(screen.getByText(/January salary disbursement/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Hide details' })).toBeInTheDocument();
+
+    // Toggle close
+    fireEvent.click(screen.getByRole('button', { name: 'Hide details' }));
+    expect(screen.queryByText(/January salary disbursement/i)).not.toBeInTheDocument();
+  });
+
+  test('8. renders numeric amounts with neutral tone class fs-num without semantic color classes (Invariant I15)', async () => {
+    const { container } = render(<PaycheckLog />);
+
+    await waitFor(() => {
+      expect(screen.getByText('2025-01')).toBeInTheDocument();
+    });
+
+    const numElements = container.querySelectorAll('.fs-num');
+    expect(numElements.length).toBeGreaterThan(0);
+
+    // Verify none of the amount cells have positive/negative semantic tone classes or inline styles
+    numElements.forEach((el) => {
+      expect(el.className).not.toMatch(/fs-badge--positive|fs-badge--negative/);
+      expect(el.style.color).toBe('');
     });
   });
 });

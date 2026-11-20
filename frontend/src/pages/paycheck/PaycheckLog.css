@@ -1,0 +1,342 @@
+/* frontend/src/pages/paycheck/PaycheckLog.css */
+/* Spacing note: raw rem values chosen to match Reference Frame 01 as no spacing tokens exist in tokens.json */
+
+.fs-page .paycheck-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.fs-page .summary-section,
+.fs-page .yearly-breakdown-section,
+.fs-page .filter-section,
+.fs-page .table-section {
+  margin-bottom: 1.5rem;
+}
+
+.fs-page .paycheck-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.fs-page .paycheck-summary-card {
+  background-color: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 1rem;
+}
+
+.fs-page .paycheck-summary-label {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+  margin-bottom: 0.25rem;
+}
+
+.fs-page .paycheck-summary-value {
+  color: var(--fs-text);
+  font-size: var(--fs-text-2xl);
+  font-weight: var(--fs-weight-semibold);
+  font-family: var(--fs-font-mono);
+}
+
+.fs-page .paycheck-yearly-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.fs-page .paycheck-year-card {
+  background-color: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 1rem;
+}
+
+.fs-page .paycheck-year-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.fs-page .paycheck-year-title {
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  margin: 0;
+}
+
+.fs-page .paycheck-year-rows {
+  font-size: var(--fs-text-sm);
+}
+
+.fs-page .paycheck-year-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  color: var(--fs-text-2);
+}
+
+.fs-page .paycheck-year-total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--fs-border);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  margin-top: 0.25rem;
+}
+
+.fs-page .paycheck-year-diff {
+  margin-top: 0.5rem;
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+}
+
+.fs-page .paycheck-filter-card {
+  background-color: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 1rem;
+}
+
+.fs-page .paycheck-filter-title {
+  color: var(--fs-text);
+  font-size: var(--fs-text-base);
+  font-weight: var(--fs-weight-medium);
+  margin: 0 0 0.75rem 0;
+}
+
+.fs-page .paycheck-filter-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.fs-page .paycheck-filter-chip {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  background-color: var(--fs-surface-sunken);
+  color: var(--fs-text-2);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fs-text-sm);
+  transition: background-color var(--fs-duration-fast) var(--fs-ease-standard),
+              border-color var(--fs-duration-fast) var(--fs-ease-standard),
+              color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .paycheck-filter-chip:hover {
+  background-color: var(--fs-surface-raised);
+  color: var(--fs-text);
+  border-color: var(--fs-border-strong);
+}
+
+.fs-page .paycheck-filter-chip.active {
+  border-color: var(--fs-border-control);
+  background-color: var(--fs-surface-raised);
+  color: var(--fs-text);
+  font-weight: var(--fs-weight-semibold);
+}
+
+.fs-page .paycheck-filter-notice {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--fs-surface-sunken);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+}
+
+.fs-page .paycheck-table-title {
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  margin: 0 0 1rem 0;
+}
+
+.fs-page .paycheck-empty-cell {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--fs-text-3);
+}
+
+.fs-page .paycheck-empty-cell p {
+  margin: 0;
+  font-size: var(--fs-text-base);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+}
+
+.fs-page .paycheck-empty-cell p.paycheck-empty-sub {
+  margin-top: 0.4rem;
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-regular);
+  color: var(--fs-text-3);
+}
+
+.fs-page .paycheck-delete-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+}
+
+/* Mobile cards */
+.fs-page .paycheck-mobile-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 5px;
+}
+
+.fs-page .paycheck-mobile-card {
+  background-color: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 1rem;
+}
+
+.fs-page .paycheck-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.fs-page .paycheck-card-period {
+  font-size: var(--fs-text-base);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+}
+
+.fs-page .paycheck-card-net {
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  margin-bottom: 0.5rem;
+}
+
+.fs-page .paycheck-card-label {
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-regular);
+  color: var(--fs-text-3);
+  margin-right: 0.25rem;
+}
+
+.fs-page .paycheck-card-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-2);
+  margin-bottom: 0.25rem;
+}
+
+.fs-page .paycheck-card-monthly-total {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--fs-border);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  margin-top: 0.5rem;
+}
+
+.fs-page .paycheck-card-details {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--fs-border);
+}
+
+.fs-page .paycheck-card-note {
+  margin-top: 0.5rem;
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+  font-style: italic;
+}
+
+.fs-page .paycheck-card-expander {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color var(--fs-duration-fast) var(--fs-ease-standard),
+              color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .paycheck-card-expander:hover {
+  background-color: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+.fs-page .paycheck-card-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--fs-border);
+  justify-content: flex-end;
+}
+
+.fs-page .paycheck-card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-2);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--fs-duration-fast) var(--fs-ease-standard),
+              color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+.fs-page .paycheck-card-action-btn:hover {
+  background-color: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+.fs-page .paycheck-card-actions .action-icon {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .fs-page .paycheck-header-actions {
+    width: 100%;
+  }
+
+  .fs-page .paycheck-header-actions .fs-btn {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .fs-page .paycheck-filter-chip {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .fs-page .paycheck-summary-grid,
+  .fs-page .paycheck-yearly-grid {
+    grid-template-columns: 1fr;
+  }
+}

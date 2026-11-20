@@ -27,6 +27,7 @@ export const THEMED_PATTERNS = [
   '/expenditure-analysis',
   '/salary/profiles',
   '/salary/rules',
+  '/salary/paychecks',
 ];
 
 export const isThemedRoute = (pathname) => {
