@@ -1054,7 +1054,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **4C** | Rules, budgets, recurring, analysis | `phase-ui-4c-expenditure-more` | ☑ | ☑ |
 | **5A** | Payroll profiles, rules, taxes | `phase-ui-5a-payroll-core` | ☑ | ☑ |
 | **5B** | Paycheck log | `phase-ui-5b-paycheck-log` | ☑ | ☑ |
-| **5C** | Paycheck form, part 1 (styles only) | `phase-ui-5c-paycheck-form-a` | ☐ | ☐ |
+| **5C** | Paycheck form, part 1 (styles only) | `phase-ui-5c-paycheck-form-a` | ☑ | ☑ |
 | **5D** | Paycheck form, part 2 + allowlist | `phase-ui-5d-paycheck-form-b` | ☐ | ☐ |
 | **5E** | History, update, analytics | `phase-ui-5e-payroll-history` | ☐ | ☐ |
 | **6A** | Portfolio dashboard | `phase-ui-6a-portfolio` | ☐ | ☐ |
@@ -1679,11 +1679,11 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 5C — Paycheck form, part 1 (styles only, no allowlist change)
 
-- [ ] `pages/salary/PaycheckFormPage.css` — dual-block stylesheet: active unscoped legacy compatibility block (retains unthemed 0-diff; temporary stylelint-disable for legacy colors/gradients/radii with Phase 5D sunset) + dormant scoped `.fs-page` block (Reference Frame 02 flat dark graphite).
-- [ ] `PaycheckFormPage.js` (77) — eliminate all 77 inline style declarations and replace with page-local semantic classes (`.paycheck-*`); pair 20 form labels with input IDs via `htmlFor`. No global `.fs-*` primitive classes in JSX during 5C.
-- [ ] **Do not touch** `normalizePayDateInput`, calculation hooks, handlers, or validation logic. In `DISBURSEMENT_TYPES`, remove presentation-only `color` hex properties (Recorded Amendment 6); do not alter IDs, labels, icons, or descriptions. This preserves the strict mixed-file rule in the plan (§6.4).
-- [ ] Remove `PaycheckFormPage.js` from `frontend/.eslintignore`; verify clean ESLint (0 errors, 0 warnings). (Recorded Amendment 1, moved from 5D to 5C).
-- [ ] Do **not** add `/salary/paychecks/new` yet. The page is styled but not walked.
+- [x] `pages/salary/PaycheckFormPage.css` — dual-block stylesheet: active unscoped legacy compatibility block (retains unthemed 0-diff; temporary stylelint-disable for legacy colors/gradients/radii with Phase 5D sunset) + dormant scoped `.fs-page` block (Reference Frame 02 flat dark graphite).
+- [x] `PaycheckFormPage.js` (77) — eliminate all 77 inline style declarations and replace with page-local semantic classes (`.paycheck-*`); pair 20 form labels with input IDs via `htmlFor`. No global `.fs-*` primitive classes in JSX during 5C.
+- [x] **Do not touch** `normalizePayDateInput`, calculation hooks, handlers, or validation logic. In `DISBURSEMENT_TYPES`, remove presentation-only `color` hex properties (Recorded Amendment 6); do not alter IDs, labels, icons, or descriptions. This preserves the strict mixed-file rule in the plan (§6.4).
+- [x] Remove `PaycheckFormPage.js` from `frontend/.eslintignore`; verify clean ESLint (0 errors, 0 warnings). (Recorded Amendment 1, moved from 5D to 5C).
+- [x] Do **not** add `/salary/paychecks/new` yet. The page is styled but not walked.
 - [ ] **Recorded Plan Amendments (2026-11-20, Owner: Antigravity / Developer approved):**
   1. *Eslintignore*: Move `PaycheckFormPage.js` de-ignoring from 5D to 5C due to CI changed-files gate requirements.
   2. *Tooling*: Extend `playwright.config.js` reference project `testMatch` to discover `paycheck-form-reference-match.spec.js`.
@@ -2514,6 +2514,7 @@ Append one row per sub-phase. Never edit past rows.
 | 5A | 2026-11-20 | Payroll profiles, rules & taxes: converted /salary/profiles and /salary/rules to dark graphite design system; eliminated all 62 legacy inline styles (0 remaining across all 5 files); purged 7 Phase 5A entries from frontend/.eslintignore (0 warnings); mapped numeric rate cells to .fs-num; integrated <Delta tone="neutral"> for informational tax differentials (§4.3.1); standardized Badge label props; unit tests with jest-axe (3 suites, 16 tests passing); calculations characterization passing (11/11); shared a11y runner passing (2/2); 4 dashboard RTL suites passing (31 tests, Invariant I8 <= 120 lines preserved); PR subset visual regression passing 71/71 tests with 0 diff on all 63 non-5A routes; manifest 334/334 verified; exactly 10 baseline snapshots replaced in D:\Projects\FinStat-visual-baselines (commit e3ff18d); certificates baseline accepted in commit 40fbdf6 per badc468 functional change. | 5B (Paycheck log, entry & edit) | None | 834ce55 (merged to main) |
 | 5B | 2026-11-20 | Paycheck log & disbursement history: converted /salary/paychecks to dark graphite design system; eliminated all 43 legacy inline styles across PaycheckLog.js (34) and PaycheckTable.js (9); purged 4 entries from frontend/.eslintignore (PaycheckLog.js, PaycheckTable.js, PaycheckLog.test.js, ProtectedRoute.js) with 0 warnings; replaced legacy .tax-card with page-scoped .paycheck-panel.fs-card eliminating white panel cascade hazard (App.css:82); mapped amount cells to .fs-num without semantic colors; aligned mobile cards to Decision D19 and §6.4 line 1292 (3 visible fields in compact state: period, status badge, net amount; expander reveals gross, deductions, and breakdowns); adopted canonical <EmptyState> component; unit tests with jest-axe (8/8 passing); calculations characterization passing (11/11); 4 dashboard suites passing (31/31); app route suite passing (9/9); real-browser axe audit passing with 0 critical/serious violations; PR subset visual regression passing 71/71 tests with 0 diff on all 64 non-5B routes; manifest 334/334 verified; 5 baseline snapshots updated in D:\Projects\FinStat-visual-baselines (commits 124314f and 2aa3dc6). | 5C (Paycheck form styles) | None | 6ecef71 (merged to main) |
 | — | 2026-11-20 | Phase 5C implementation plan approved (v8): Recorded Plan Amendments 1–6 in §6.9 and §6.16 (temporary legacy compatibility block with Phase 5D sunset and scoped I14/I16 waiver; .eslintignore de-ignoring moved to 5C; complete 77 inline styles extraction in 5C; D23 loading primitive deferred to 5D; playwright reference matcher extended; DISBURSEMENT_TYPES color property extraction). Page-local semantic classes only; Frame 02 input assertions aligned with theme-components.css; production build scheduled before PR-subset gate. | 5C | None | f3232f6 (recorded on main) |
+| 5C | 2026-11-20 | Paycheck form, part 1 (styles only): styles-only refactor of PaycheckFormPage.js and PaycheckFormPage.css (/salary/paychecks/new and /salary/paychecks/edit/:id); zero allowlist change (exactly 12 allowlisted routes maintained); eliminated all 77 inline styles; removed presentation color from DISBURSEMENT_TYPES (Amendment 6); paired 20 form inputs with explicit labels; removed PaycheckFormPage.js from frontend/.eslintignore (0 errors, 0 warnings); authored dual-block CSS with legacy block under sunset waiver and dormant .fs-page block aligned to Reference Frame 02; component axe test passing (1/1); Playwright axe passing (3/3); Frame 02 Playwright reference spec passing (3/3); production build compiled successfully; PR-subset visual regression passing 71/71 with 0 diff on all unthemed routes; 334/334 baselines verified; anti-slop audits clean. | 5D (Paycheck form part 2 & allowlist) | None | held on phase-ui-5c-paycheck-form-a |
 
 ```
 Sub-phase:   1A
@@ -2723,6 +2724,20 @@ Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests gree
 Screenshots: docs/ui-snapshots/phase-5b/salary-paychecks-1440.png, docs/ui-snapshots/phase-5b/salary-paychecks-390.png
 Branch:      phase-ui-5b-paycheck-log
 Merge SHA:   6ecef71 (merged to main)
+```
+
+```
+Sub-phase:   5C
+Status:      done
+Done:        Styles-only refactor of PaycheckFormPage.js and PaycheckFormPage.css (/salary/paychecks/new and /salary/paychecks/edit/:id); zero allowlist change (exactly 12 allowlisted routes maintained); eliminated all 77 inline styles; removed presentation color from DISBURSEMENT_TYPES (Amendment 6); paired 20 form inputs with explicit labels; converted step card titles to semantic h2; removed PaycheckFormPage.js from frontend/.eslintignore (0 errors, 0 warnings); authored dual-block CSS with legacy block under sunset waiver (Amendment 4) and dormant .fs-page block implementing Reference Frame 02 (Variant B stacked field cards, single accent CTA, 4px input radii, 2px selection cues, tabular numerals, mobile wrap <= 768px); calculations characterization passing (11/11); unit tests passing (16/16 across 3 suites); component axe test passing (1/1); Playwright axe passing (3/3); Frame 02 Playwright reference spec passing (3/3); dashboard RTL regression passing (40/40); DashboardSummary line cap preserved (97 lines <= 120); production build compiled successfully; PR-subset visual regression passing 71/71 with 0 diff on all unthemed routes; 334/334 baselines verified; anti-slop audits clean.
+Next:        5D (Paycheck form, part 2 + validation + allowlist)
+Blocked by:  None
+Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks'] (cumulative: 12 routes, unchanged)
+Visual diff: 0 diff across all 71 PR subset routes (0 diff on salary-paychecks-new and salary-paychecks-edit); 71/71 passing
+Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
+Screenshots: docs/ui-snapshots/phase-5c/salary-paychecks-new-unthemed-1440.png, docs/ui-snapshots/phase-5c/salary-paychecks-new-unthemed-390.png, docs/ui-snapshots/phase-5c/salary-paychecks-new-themed-1440.png, docs/ui-snapshots/phase-5c/salary-paychecks-new-themed-390.png, docs/ui-snapshots/phase-5c/salary-paychecks-edit-themed-1440.png
+Branch:      phase-ui-5c-paycheck-form-a
+Merge SHA:   held on phase-ui-5c-paycheck-form-a (unmerged pending walkthrough approval)
 ```
 
 ### Sub-phase note template

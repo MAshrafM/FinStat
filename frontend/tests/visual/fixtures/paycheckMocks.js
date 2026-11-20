@@ -89,6 +89,61 @@ async function setupPaycheckMocks(page) {
       }),
     });
   });
+
+  await page.route('**/api/salary-profiles**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([]),
+    });
+  });
+
+  await page.route('**/api/salary/profile**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(null),
+    });
+  });
+
+  await page.route('**/api/users/profile**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ salaryDeductionConfig: {} }),
+    });
+  });
+
+  await page.route('**/api/paychecks/preview**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        netPay: 12000,
+        grossSalary: 15000,
+        expectedTax: 1500,
+        expectedInsurance: 1500,
+        martyrsFund: 0,
+        customDeductions: 0,
+      }),
+    });
+  });
+
+  await page.route('**/api/paychecks/1**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        _id: '1',
+        period: '2025-01',
+        disbursementType: 'Regular',
+        grossSalary: 15000,
+        netPay: 12000,
+        payDate: '2025-01-25T12:00:00.000Z',
+        type: 'Cash',
+      }),
+    });
+  });
 }
 
 module.exports = { MOCK_PAYCHECKS, setupPaycheckMocks };

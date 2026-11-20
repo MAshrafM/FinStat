@@ -164,15 +164,15 @@ const extractProfileSalaryValues = (profileObj) => {
 };
 
 const DISBURSEMENT_TYPES = [
-  { id: 'Regular', label: 'Regular Paycheck', icon: Briefcase, desc: 'Full monthly salary components (Tax, SI, and Martyrs Fund)', color: '#009879' },
-  { id: 'Basic Months', label: 'Basic Months', icon: Calendar, desc: 'Basic salary multiplied by N months with tax deduction', color: '#6366f1' },
-  { id: 'Basic Production', label: 'Basic Production', icon: Layers, desc: 'Basic production component multiplied by N months', color: '#8b5cf6' },
-  { id: 'Sector Bonus', label: 'Sector Bonus', icon: Building, desc: 'Sector performance bonus with tax deduction', color: '#0284c7' },
-  { id: 'Individual Bonus', label: 'Individual Bonus', icon: Award, desc: 'Individual achievement bonus with tax deduction', color: '#ec4899' },
-  { id: 'Surplus', label: 'Surplus', icon: TrendingUp, desc: 'Company surplus distribution with tax deduction', color: '#10b981' },
-  { id: 'Bond Distribution', label: 'Bond Distribution', icon: Sparkles, desc: 'Bond dividends (Tax-Free & No Insurance)', color: '#d97706' },
-  { id: 'End of Year Bonus', label: 'End of Year Bonus', icon: Gift, desc: 'Year-end bonus (Tax-Free, custom deductions allowed)', color: '#f59e0b' },
-  { id: 'Prepaid', label: 'Prepaid Advance', icon: CreditCard, desc: 'Mid-month advance (Zero deductions)', color: '#64748b' },
+  { id: 'Regular', label: 'Regular Paycheck', icon: Briefcase, desc: 'Full monthly salary components (Tax, SI, and Martyrs Fund)' },
+  { id: 'Basic Months', label: 'Basic Months', icon: Calendar, desc: 'Basic salary multiplied by N months with tax deduction' },
+  { id: 'Basic Production', label: 'Basic Production', icon: Layers, desc: 'Basic production component multiplied by N months' },
+  { id: 'Sector Bonus', label: 'Sector Bonus', icon: Building, desc: 'Sector performance bonus with tax deduction' },
+  { id: 'Individual Bonus', label: 'Individual Bonus', icon: Award, desc: 'Individual achievement bonus with tax deduction' },
+  { id: 'Surplus', label: 'Surplus', icon: TrendingUp, desc: 'Company surplus distribution with tax deduction' },
+  { id: 'Bond Distribution', label: 'Bond Distribution', icon: Sparkles, desc: 'Bond dividends (Tax-Free & No Insurance)' },
+  { id: 'End of Year Bonus', label: 'End of Year Bonus', icon: Gift, desc: 'Year-end bonus (Tax-Free, custom deductions allowed)' },
+  { id: 'Prepaid', label: 'Prepaid Advance', icon: CreditCard, desc: 'Mid-month advance (Zero deductions)' },
 ];
 
 // Baseline Component Sums & Fallback Estimator
@@ -653,9 +653,9 @@ const PaycheckFormPage = () => {
 
   if (loadingInitial) {
     return (
-      <div className="page-container" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-        <RefreshCw className="spinning-icon" size={32} style={{ color: '#009879', marginBottom: '1rem' }} />
-        <p style={{ color: '#6c757d' }}>Loading profile & paycheck details...</p>
+      <div className="page-container paycheck-loading-container">
+        <RefreshCw className="spinning-icon paycheck-loading-icon" size={32} />
+        <p className="paycheck-loading-text">Loading profile & paycheck details...</p>
       </div>
     );
   }
@@ -689,53 +689,35 @@ const PaycheckFormPage = () => {
       </div>
 
       {/* DISBURSEMENT TYPE SELECTOR GRID */}
-      <div style={{ marginBottom: '1.75rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <label style={{ fontSize: '0.9rem', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0 }}>
+      <div className="paycheck-type-section">
+        <div className="paycheck-type-header-row">
+          <span className="paycheck-type-label">
             Select Disbursement Type:
-          </label>
-          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+          </span>
+          <span className="paycheck-profile-ref-summary">
             Profile Basic: <strong>{formatCurrency(profileBasicSalary)}</strong> | Production: <strong>{formatCurrency(profileProductionValue)}</strong> | Bonds: <strong>{profileBondsCount}</strong>
           </span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+        <div className="paycheck-type-grid">
           {DISBURSEMENT_TYPES.map((dt) => {
             const IconComp = dt.icon;
             const isSelected = formData.disbursementType === dt.id;
+            const typeClass = `type-${dt.id.toLowerCase().replace(/\s+/g, '-')}`;
             return (
               <button
                 key={dt.id}
                 type="button"
                 onClick={() => handleDisbursementTypeChange(dt.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.75rem',
-                  padding: '0.85rem 1rem',
-                  borderRadius: '10px',
-                  border: isSelected ? `2px solid ${dt.color}` : '1px solid #e2e8f0',
-                  backgroundColor: isSelected ? '#f8fafc' : '#ffffff',
-                  boxShadow: isSelected ? `0 0 0 1px ${dt.color}20, 0 4px 6px -1px rgba(0,0,0,0.05)` : 'none',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.15s ease',
-                }}
+                className={`paycheck-type-btn ${typeClass} ${isSelected ? 'selected' : ''}`}
               >
-                <div style={{
-                  backgroundColor: `${dt.color}15`,
-                  color: dt.color,
-                  padding: '6px',
-                  borderRadius: '8px',
-                  flexShrink: 0,
-                  marginTop: '2px',
-                }}>
+                <div className="paycheck-type-icon-wrapper">
                   <IconComp size={18} />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.92rem', color: isSelected ? dt.color : '#1e293b' }}>
+                  <div className="paycheck-type-title">
                     {dt.label}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px', lineHeight: '1.25' }}>
+                  <div className="paycheck-type-desc">
                     {dt.desc}
                   </div>
                 </div>
@@ -751,15 +733,16 @@ const PaycheckFormPage = () => {
           <div className="step-card-header">
             <span className="step-number-badge">1</span>
             <div>
-              <h3 className="step-card-title">Disbursement Period & Date</h3>
+              <h2 className="step-card-title">Disbursement Period & Date</h2>
               <p className="step-card-desc">Assign the pay period and disbursement date for accurate YTD tax bracket progression</p>
             </div>
           </div>
 
           <div className="step-fields-grid">
             <div className="form-group">
-              <label className="form-label">Pay Period (YYYY-MM) *</label>
+              <label htmlFor="pay-period" className="form-label">Pay Period (YYYY-MM) *</label>
               <input
+                id="pay-period"
                 type="text"
                 className="form-control"
                 placeholder="e.g. 2026-08 or August 2026"
@@ -773,9 +756,10 @@ const PaycheckFormPage = () => {
               />
             </div>
 
-                        <div className="form-group">
-              <label className="form-label">Disbursement Date *</label>
+            <div className="form-group">
+              <label htmlFor="pay-date" className="form-label">Disbursement Date *</label>
               <input
+                id="pay-date"
                 type="date"
                 className="form-control"
                 value={formData.payDate}
@@ -792,8 +776,9 @@ const PaycheckFormPage = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Deposit To Account</label>
+              <label htmlFor="destination-account" className="form-label">Deposit To Account</label>
               <select
+                id="destination-account"
                 className="form-control"
                 value={formData.destinationAccount || 'Bank'}
                 onChange={(e) => setFormData({ ...formData, destinationAccount: e.target.value })}
@@ -806,8 +791,9 @@ const PaycheckFormPage = () => {
 
             {formData.disbursementType === 'Regular' && profiles.length > 0 && (
               <div className="form-group full-span">
-                <label className="form-label">Load Template from Salary Profile</label>
+                <label htmlFor="salary-profile" className="form-label">Load Template from Salary Profile</label>
                 <select
+                  id="salary-profile"
                   className="form-control"
                   value={selectedProfileId}
                   onChange={(e) => {
@@ -838,7 +824,7 @@ const PaycheckFormPage = () => {
           <div className="step-card-header">
             <span className="step-number-badge">2</span>
             <div>
-              <h3 className="step-card-title">{formData.disbursementType} Inputs & Calculation Basis</h3>
+              <h2 className="step-card-title">{formData.disbursementType} Inputs & Calculation Basis</h2>
               <p className="step-card-desc">
                 {formData.disbursementType === 'Regular' || formData.disbursementType === 'Basic Months' || formData.disbursementType === 'Basic Production' || formData.disbursementType === 'Bond Distribution'
                   ? 'Auto-populated directly from your active user profile'
@@ -849,10 +835,11 @@ const PaycheckFormPage = () => {
 
           {/* Dedicated Input Flow per Disbursement Type */}
           {formData.disbursementType === 'Basic Months' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div className="paycheck-input-grid">
               <div className="form-group">
-                <label className="form-label">Basic Salary per Month (EGP) *</label>
+                <label htmlFor="basic-salary" className="form-label">Basic Salary per Month (EGP) *</label>
                 <input
+                  id="basic-salary"
                   type="number"
                   step="any"
                   className="form-control"
@@ -864,12 +851,13 @@ const PaycheckFormPage = () => {
                   }}
                   required
                 />
-                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{getDisbursementProfileRefText()}</span>
+                <span className="paycheck-profile-ref-text">{getDisbursementProfileRefText()}</span>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Number of Months (Multiplier) *</label>
+                <label htmlFor="basic-months-multiplier" className="form-label">Number of Months (Multiplier) *</label>
                 <input
+                  id="basic-months-multiplier"
                   type="number"
                   step="any"
                   className="form-control"
@@ -885,11 +873,11 @@ const PaycheckFormPage = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Calculated Base Gross (EGP)</label>
+                <label htmlFor="basic-months-calc-gross" className="form-label">Calculated Base Gross (EGP)</label>
                 <input
+                  id="basic-months-calc-gross"
                   type="text"
-                  className="form-control"
-                  style={{ fontWeight: 700, color: '#6366f1', backgroundColor: '#f1f5f9' }}
+                  className="form-control paycheck-calc-readonly calc-basic-months"
                   value={formatCurrency(activeResult.grossSalary)}
                   readOnly
                 />
@@ -898,10 +886,11 @@ const PaycheckFormPage = () => {
           )}
 
           {formData.disbursementType === 'Basic Production' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div className="paycheck-input-grid">
               <div className="form-group">
-                <label className="form-label">Basic Production Component Base (EGP) *</label>
+                <label htmlFor="production-base" className="form-label">Basic Production Component Base (EGP) *</label>
                 <input
+                  id="production-base"
                   type="number"
                   step="any"
                   className="form-control"
@@ -913,12 +902,13 @@ const PaycheckFormPage = () => {
                   }}
                   required
                 />
-                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{getDisbursementProfileRefText()}</span>
+                <span className="paycheck-profile-ref-text">{getDisbursementProfileRefText()}</span>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Production Multiplier (Months) *</label>
+                <label htmlFor="production-multiplier" className="form-label">Production Multiplier (Months) *</label>
                 <input
+                  id="production-multiplier"
                   type="number"
                   step="any"
                   className="form-control"
@@ -934,11 +924,11 @@ const PaycheckFormPage = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Calculated Base Gross (EGP)</label>
+                <label htmlFor="production-calc-gross" className="form-label">Calculated Base Gross (EGP)</label>
                 <input
+                  id="production-calc-gross"
                   type="text"
-                  className="form-control"
-                  style={{ fontWeight: 700, color: '#8b5cf6', backgroundColor: '#f1f5f9' }}
+                  className="form-control paycheck-calc-readonly calc-production"
                   value={formatCurrency(activeResult.grossSalary)}
                   readOnly
                 />
@@ -947,10 +937,11 @@ const PaycheckFormPage = () => {
           )}
 
           {formData.disbursementType === 'Bond Distribution' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div className="paycheck-input-grid">
               <div className="form-group">
-                <label className="form-label">Number of Bonds Held *</label>
+                <label htmlFor="bonds-count" className="form-label">Number of Bonds Held *</label>
                 <input
+                  id="bonds-count"
                   type="number"
                   step="any"
                   className="form-control"
@@ -963,12 +954,13 @@ const PaycheckFormPage = () => {
                   placeholder="e.g. 500"
                   required
                 />
-                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{getDisbursementProfileRefText()}</span>
+                <span className="paycheck-profile-ref-text">{getDisbursementProfileRefText()}</span>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Distribution Rate per Bond (EGP) *</label>
+                <label htmlFor="bond-rate" className="form-label">Distribution Rate per Bond (EGP) *</label>
                 <input
+                  id="bond-rate"
                   type="number"
                   step="any"
                   className="form-control"
@@ -984,11 +976,11 @@ const PaycheckFormPage = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Total Distribution Payout (EGP)</label>
+                <label htmlFor="bonds-calc-payout" className="form-label">Total Distribution Payout (EGP)</label>
                 <input
+                  id="bonds-calc-payout"
                   type="text"
-                  className="form-control"
-                  style={{ fontWeight: 700, color: '#10b981', backgroundColor: '#f1f5f9' }}
+                  className="form-control paycheck-calc-readonly calc-bonds"
                   value={formatCurrency(activeResult.grossSalary)}
                   readOnly
                 />
@@ -1001,14 +993,14 @@ const PaycheckFormPage = () => {
             formData.disbursementType === 'Surplus' ||
             formData.disbursementType === 'End of Year Bonus' ||
             formData.disbursementType === 'Prepaid') && (
-            <div style={{ marginBottom: '1.25rem' }}>
+            <div className="paycheck-adhoc-group">
               <div className="form-group">
-                <label className="form-label">{formData.disbursementType} Amount (EGP) *</label>
+                <label htmlFor="disbursement-amount" className="form-label">{formData.disbursementType} Amount (EGP) *</label>
                 <input
+                  id="disbursement-amount"
                   type="number"
                   step="any"
-                  className="form-control"
-                  style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0284c7' }}
+                  className="form-control paycheck-adhoc-input"
                   value={formData.unitRate}
                   onChange={(e) => {
                     const val = Number(e.target.value) || 0;
@@ -1018,7 +1010,7 @@ const PaycheckFormPage = () => {
                   placeholder="e.g. 25000"
                   required
                 />
-                <span style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                <span className="paycheck-input-helper-text">
                   Enter ad-hoc {formData.disbursementType} amount for this period
                 </span>
               </div>
@@ -1037,9 +1029,9 @@ const PaycheckFormPage = () => {
           )}
 
           {/* DEDUCTION TOGGLES */}
-          <div className="calculate-action-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginTop: '1.25rem', padding: '1rem', backgroundColor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#334155' }}>
+          <div className="calculate-action-row paycheck-deductions-row">
+            <div className="paycheck-deductions-group">
+              <label className="paycheck-deduction-label">
                 <input
                   type="checkbox"
                   checked={formData.includeTax !== false}
@@ -1048,12 +1040,12 @@ const PaycheckFormPage = () => {
                     setFormData({ ...formData, includeTax: val });
                     triggerCalculation(formData.period, formData.components, false, { includeTax: val });
                   }}
-                  style={{ width: '16px', height: '16px', accentColor: '#009879', cursor: 'pointer' }}
+                  className="paycheck-calc-check"
                 />
                 Apply Income Tax Bracket
               </label>
 
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#334155' }}>
+              <label className="paycheck-deduction-label">
                 <input
                   type="checkbox"
                   checked={formData.includeInsurance !== false}
@@ -1062,12 +1054,12 @@ const PaycheckFormPage = () => {
                     setFormData({ ...formData, includeInsurance: val });
                     triggerCalculation(formData.period, formData.components, false, { includeInsurance: val });
                   }}
-                  style={{ width: '16px', height: '16px', accentColor: '#009879', cursor: 'pointer' }}
+                  className="paycheck-calc-check"
                 />
                 Social Insurance (11%)
               </label>
 
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#334155' }}>
+              <label className="paycheck-deduction-label">
                 <input
                   type="checkbox"
                   checked={formData.includeMartyrsFund !== false}
@@ -1076,7 +1068,7 @@ const PaycheckFormPage = () => {
                     setFormData({ ...formData, includeMartyrsFund: val });
                     triggerCalculation(formData.period, formData.components, false, { includeMartyrsFund: val });
                   }}
-                  style={{ width: '16px', height: '16px', accentColor: '#009879', cursor: 'pointer' }}
+                  className="paycheck-calc-check"
                 />
                 Martyrs Fund (0.05%)
               </label>
@@ -1084,7 +1076,7 @@ const PaycheckFormPage = () => {
 
             <button
               type="button"
-              className="btn-calculate-preview"
+              className="btn-calculate-preview paycheck-recalc-btn"
               onClick={() => triggerCalculation(formData.period, formData.components, false)}
               disabled={calculating}
             >
@@ -1107,12 +1099,12 @@ const PaycheckFormPage = () => {
         <div className="form-step-card smart-preview-card" id="step-3-preview-section">
           <div className="step-card-header">
             <span className="step-number-badge preview-badge">3</span>
-            <div style={{ flex: 1 }}>
-              <h3 className="step-card-title">Live Cumulative YTD Tracker & Statutory Rates</h3>
+            <div className="step-card-header-content">
+              <h2 className="step-card-title">Live Cumulative YTD Tracker & Statutory Rates</h2>
               <p className="step-card-desc">Tracks year-to-date gross progression and suggests calculated statutory brackets</p>
             </div>
             {calculating && (
-              <span style={{ fontSize: '0.85rem', color: '#009879', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="paycheck-calculating-badge">
                 <RefreshCw size={14} className="spinning-icon" /> Calculating...
               </span>
             )}
@@ -1123,20 +1115,9 @@ const PaycheckFormPage = () => {
             <div
               id="preview-error-banner"
               role="alert"
-              style={{
-                backgroundColor: '#fffbeb',
-                border: '1px solid #fcd34d',
-                borderRadius: '8px',
-                padding: '0.75rem 1rem',
-                marginBottom: '1.25rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                color: '#92400e',
-                fontSize: '0.875rem',
-              }}
+              className="paycheck-warning-banner"
             >
-              <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>⚠</span>
+              <span className="paycheck-warning-icon">⚠</span>
               <div>
                 <strong>Statutory Preview Calculation Warning:</strong> {previewError}. Please review salary components or input exact payslip amounts in Step 4.
               </div>
@@ -1144,31 +1125,31 @@ const PaycheckFormPage = () => {
           )}
 
           {/* YTD PROGRESS BANNER */}
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div className="paycheck-ytd-banner">
             <div>
-              <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Prior YTD Gross in Year</span>
-              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#475569' }}>
+              <span className="paycheck-ytd-label">Prior YTD Gross in Year</span>
+              <div className="paycheck-ytd-val-prior">
                 {formatCurrency(activeResult.priorYtdGross || 0)}
               </div>
             </div>
 
-            <div style={{ fontSize: '1.5rem', color: '#cbd5e1', fontWeight: 300 }}>+</div>
+            <div className="paycheck-ytd-operator">+</div>
 
             <div>
-              <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Current Payout Gross</span>
-              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#009879' }}>
+              <span className="paycheck-ytd-label">Current Payout Gross</span>
+              <div className="paycheck-ytd-val-current">
                 {formatCurrency(effectiveGross)}
               </div>
             </div>
 
-            <div style={{ fontSize: '1.5rem', color: '#cbd5e1', fontWeight: 300 }}>=</div>
+            <div className="paycheck-ytd-operator">=</div>
 
-            <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '0.5rem 1rem', borderRadius: '8px' }}>
-              <span style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: 700, textTransform: 'uppercase' }}>New Cumulative YTD Gross</span>
-              <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#166534' }}>
+            <div className="paycheck-ytd-result-box">
+              <span className="paycheck-ytd-result-label">New Cumulative YTD Gross</span>
+              <div className="paycheck-ytd-result-val">
                 {formatCurrency((activeResult.priorYtdGross || 0) + effectiveGross)}
               </div>
-              <span style={{ fontSize: '0.8rem', color: '#16a34a', fontWeight: 600 }}>
+              <span className="paycheck-ytd-result-note">
                 {formData.includeTax !== false
                   ? (activeResult.appliedTaxRate ? `Matched Bracket: ${activeResult.appliedTaxRate}% Tax Rate` : 'Statutory Progressive Tax (Law 175/2023)')
                   : 'Tax Exempt for this Payout'}
@@ -1213,28 +1194,16 @@ const PaycheckFormPage = () => {
         </div>
 
         {/* STEP 4: MANUAL DIRECT ENTRY & DISCREPANCY OVERRIDE */}
-        <div className="form-step-card" style={{ border: '2px solid #e0e7ff', backgroundColor: '#fdfefe' }}>
+        <div className="form-step-card paycheck-manual-step-card">
           <div className="step-card-header">
-            <span className="step-number-badge" style={{ backgroundColor: '#4f46e5' }}>4</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <h3 className="step-card-title">Manual Entries & Exact Payslip Numbers</h3>
+            <span className="step-number-badge step-manual-badge">4</span>
+            <div className="step-card-header-content">
+              <div className="paycheck-step4-header-top">
+                <h2 className="step-card-title">Manual Entries & Exact Payslip Numbers</h2>
                 <button
                   type="button"
                   onClick={handleSyncFromCalculator}
-                  style={{
-                    backgroundColor: '#e0e7ff',
-                    color: '#4338ca',
-                    border: '1px solid #c7d2fe',
-                    borderRadius: '6px',
-                    padding: '6px 12px',
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
+                  className="paycheck-sync-btn"
                 >
                   <RefreshCw size={13} /> Sync from Calculator
                 </button>
@@ -1245,91 +1214,92 @@ const PaycheckFormPage = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+          <div className="paycheck-manual-grid">
             <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 700, color: '#1e293b' }}>
+              <label htmlFor="manual-gross" className="form-label paycheck-manual-label">
                 Gross Payout (EGP) *
               </label>
               <input
+                id="manual-gross"
                 type="number"
                 step="any"
-                className="form-control"
-                style={{ fontSize: '1.05rem', fontWeight: 700, color: '#009879' }}
+                className="form-control paycheck-manual-input input-gross"
                 placeholder={String(activeResult.grossSalary)}
                 value={formData.manualGross}
                 onChange={(e) => setFormData({ ...formData, manualGross: e.target.value })}
               />
-              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Suggested: {formatCurrency(activeResult.grossSalary)}</span>
+              <span className="paycheck-manual-subtext">Suggested: {formatCurrency(activeResult.grossSalary)}</span>
             </div>
 
             <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 700, color: '#1e293b' }}>
+              <label htmlFor="manual-tax" className="form-label paycheck-manual-label">
                 Tax Deducted (EGP)
               </label>
               <input
+                id="manual-tax"
                 type="number"
                 step="any"
-                className="form-control"
-                style={{ fontSize: '1.05rem', fontWeight: 600, color: '#e11d48' }}
+                className="form-control paycheck-manual-input input-deduction"
                 placeholder={String(activeResult.expectedTax)}
                 value={formData.manualTax}
                 onChange={(e) => setFormData({ ...formData, manualTax: e.target.value })}
               />
-              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Suggested: {formatCurrency(activeResult.expectedTax)}</span>
+              <span className="paycheck-manual-subtext">Suggested: {formatCurrency(activeResult.expectedTax)}</span>
             </div>
 
             <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 700, color: '#1e293b' }}>
+              <label htmlFor="manual-insurance" className="form-label paycheck-manual-label">
                 Social Insurance Deducted (EGP)
               </label>
               <input
+                id="manual-insurance"
                 type="number"
                 step="any"
-                className="form-control"
-                style={{ fontSize: '1.05rem', fontWeight: 600, color: '#e11d48' }}
+                className="form-control paycheck-manual-input input-deduction"
                 placeholder={String(activeResult.expectedInsurance)}
                 value={formData.manualInsurance}
                 onChange={(e) => setFormData({ ...formData, manualInsurance: e.target.value })}
               />
-              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Suggested: {formatCurrency(activeResult.expectedInsurance)}</span>
+              <span className="paycheck-manual-subtext">Suggested: {formatCurrency(activeResult.expectedInsurance)}</span>
             </div>
 
             <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 700, color: '#1e293b' }}>
+              <label htmlFor="manual-other-deductions" className="form-label paycheck-manual-label">
                 Other Deductions / Fund (EGP)
               </label>
               <input
+                id="manual-other-deductions"
                 type="number"
                 step="any"
-                className="form-control"
-                style={{ fontSize: '1.05rem', fontWeight: 600, color: '#e11d48' }}
+                className="form-control paycheck-manual-input input-deduction"
                 placeholder={String(activeResult.martyrsFund + activeResult.customDeductions)}
                 value={formData.manualOtherDeductions}
                 onChange={(e) => setFormData({ ...formData, manualOtherDeductions: e.target.value })}
               />
-              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Fund/Misc: {formatCurrency(activeResult.martyrsFund + activeResult.customDeductions)}</span>
+              <span className="paycheck-manual-subtext">Fund/Misc: {formatCurrency(activeResult.martyrsFund + activeResult.customDeductions)}</span>
             </div>
 
             <div className="form-group">
-              <label className="form-label" style={{ fontWeight: 800, color: '#0f766e' }}>
+              <label htmlFor="manual-net-pay" className="form-label paycheck-manual-label-strong">
                 Final Net Disbursed (EGP) *
               </label>
               <input
+                id="manual-net-pay"
                 type="number"
                 step="any"
-                className="form-control"
-                style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f766e', backgroundColor: '#f0fdfa', borderColor: '#5eead4' }}
+                className="form-control paycheck-manual-input input-net"
                 placeholder={String(effectiveNet)}
                 value={formData.manualNetPay}
                 onChange={(e) => setFormData({ ...formData, manualNetPay: e.target.value })}
               />
-              <span style={{ fontSize: '0.75rem', color: '#0f766e' }}>Calculated Net: {formatCurrency(calculatedNet)}</span>
+              <span className="paycheck-manual-subtext-net">Calculated Net: {formatCurrency(calculatedNet)}</span>
             </div>
           </div>
 
-          <div className="form-group" style={{ marginTop: '1.25rem' }}>
-            <label className="form-label">Disbursement Notes / Audit Memo</label>
+          <div className="form-group paycheck-memo-group">
+            <label htmlFor="disbursement-notes" className="form-label">Disbursement Notes / Audit Memo</label>
             <textarea
+              id="disbursement-notes"
               className="form-control"
               rows={2}
               placeholder={`e.g. ${formData.disbursementType} payout for ${formData.period}`}
@@ -1339,47 +1309,25 @@ const PaycheckFormPage = () => {
           </div>
 
           {/* HIGH-VISIBILITY LOG SUBMIT CTA BUTTON */}
-          <div style={{
-            marginTop: '2rem',
-            padding: '1.5rem',
-            backgroundColor: '#ffffff',
-            borderRadius: '12px',
-            border: '1px solid #cbd5e1',
-            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '1.25rem',
-          }}>
-            <div>
-              <div style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
+          <div className="paycheck-submit-bar">
+            <div className="paycheck-submit-summary">
+              <div className="paycheck-submit-ready-label">
                 Ready to record in ledger:
               </div>
-              <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1e293b' }}>
-                {formData.disbursementType} {formData.multiplier > 1 ? `(${formData.multiplier}x)` : ''} — <span style={{ color: '#009879' }}>{formatCurrency(effectiveNet)} Net</span>
+              <div className="paycheck-preview-val highlight-color">
+                {formData.disbursementType} {formData.multiplier > 1 ? `(${formData.multiplier}x)` : ''} — <span className="paycheck-preview-net-highlight">{formatCurrency(effectiveNet)} Net</span>
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
+              <div className="paycheck-submit-meta">
                 Gross: {formatCurrency(effectiveGross)} | Total Deductions: {formatCurrency(effectiveTotalDeductions)}
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <div className="paycheck-submit-actions">
               <button
                 type="button"
-                className="btn-cancel"
+                className="paycheck-cancel-btn"
                 onClick={() => navigate('/paycheck-log')}
                 disabled={saving}
-                style={{
-                  padding: '0.85rem 1.5rem',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  backgroundColor: '#ffffff',
-                  color: '#475569',
-                  cursor: 'pointer',
-                }}
               >
                 Cancel
               </button>
@@ -1387,21 +1335,7 @@ const PaycheckFormPage = () => {
               <button
                 type="submit"
                 disabled={saving}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.6rem',
-                  padding: '0.9rem 2rem',
-                  fontSize: '1.05rem',
-                  fontWeight: 700,
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #009879 0%, #059669 100%)',
-                  color: '#ffffff',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(0, 152, 121, 0.35)',
-                  transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-                }}
+                className="paycheck-submit-btn"
               >
                 {saving ? (
                   <>
