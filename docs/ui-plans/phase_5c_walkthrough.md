@@ -1,10 +1,10 @@
 # UI Phase 5C Walkthrough — Paycheck Form, Part 1 (Styles Only)
 
 - **Sub-phase**: Phase 5C (`/salary/paychecks/new` and `/salary/paychecks/edit/:id` — Part 1: Styles Only)
-- **Working Branch**: `phase-ui-5c-paycheck-form-a` (Head commit: `ab4ce52`; code commit: `42fc45b`)
+- **Working Branch**: `phase-ui-5c-paycheck-form-a` (Code commit: `42fc45b` / Walkthrough commit: `94ad9cd`)
 - **Merge Base**: `f3232f6` (`main`)
 - **Date**: 2026-11-20
-- **Status**: Ready for Walkthrough Approval (Held Unmerged)
+- **Status**: Approved and Signed Off
 
 > [!IMPORTANT]
 > **Branch & Merge Gate**: All Phase 5C work is authored on branch `phase-ui-5c-paycheck-form-a`. As commanded by governance and user instructions, **this branch will not be merged into `main` until the walkthrough is approved.**
@@ -18,8 +18,8 @@ During plan formulation and review, 14 blocking items (B1–B14) were systematic
 
 | Blocker / Issue | Summary & Root Cause | Resolution Applied | Verification Evidence |
 | :--- | :--- | :--- | :--- |
-| **B1 / B2** | **Direct stylelint exit-0 vs byte-identical legacy retention contradiction** | Direct `stylelint` execution fails on legacy hex/gradients. Retaining unscoped legacy CSS byte-identically while demanding exit-0 without suppression is mathematically impossible. | Wrapped unscoped legacy CSS block in explicit `/* stylelint-disable */` comments scoped to the legacy section with Phase 5D sunset notice. Recorded Amendment 1. | `node scripts/lint-ratchet.js` verified 0 regressions; ratchet preserved at $\le 86$. |
-| **B3** | **Global primitive classes in unthemed JSX causing unthemed visual regressions** | Using `.fs-btn-primary`, `.fs-card`, `.fs-num` in JSX changes unthemed visual layout (accent colors, paddings), causing baseline diffs. | Strict separation: JSX uses page-local semantic classes (`.paycheck-submit-btn`, `.paycheck-cancel-btn`, `.paycheck-preview-val`, `.paycheck-calc-readonly`). Global `.fs-*` utility classes are prohibited in unthemed JSX. Recorded Amendment 2. | PR-Subset visual regression (71/71) passed with 0 diff on `salary-paychecks-new` and `salary-paychecks-edit`. |
+| **B1 / B2** | **Direct stylelint exit-0 vs byte-identical legacy retention contradiction** | Direct `stylelint` execution fails on legacy hex/gradients. Retaining unscoped legacy CSS byte-identically while demanding exit-0 without suppression is mathematically impossible. | Wrapped unscoped legacy CSS block in explicit `/* stylelint-disable */` comments scoped to the legacy section with Phase 5D sunset notice. Recorded Amendment 4. | `node scripts/lint-ratchet.js` verified 0 regressions; ratchet preserved at $\le 86$. |
+| **B3** | **Global primitive classes in unthemed JSX causing unthemed visual regressions** | Using `.fs-btn-primary`, `.fs-card`, `.fs-num` in JSX changes unthemed visual layout (accent colors, paddings), causing baseline diffs. | Strict separation: JSX uses page-local semantic classes (`.paycheck-submit-btn`, `.paycheck-cancel-btn`, `.paycheck-preview-val`, `.paycheck-calc-readonly`). Global `.fs-*` utility classes are prohibited in unthemed JSX. Design System Separation (Amendment 2 tooling / page-local classes). | PR-Subset visual regression (71/71) passed with 0 diff on `salary-paychecks-new` and `salary-paychecks-edit`. |
 | **B4** | **`ComponentTable.js` coupling & scope boundary** | `ComponentTable` is shared across profile update and paycheck forms; styling its internals in 5C risked breaking other routes. | `ComponentTable` JSX untouched. Dual-block rules in `PaycheckFormPage.css` scoped under `.fs-page .component-table-container` style it only when dormant theme is active. | Clean component isolation; 0 regressions on salary profile tests. |
 | **B5 / B6** | **Undefined CSS tokens in draft specifications** | Draft referenced non-existent tokens: `--fs-space-*`, `--fs-card-bg`, `--fs-text-muted`, `--fs-weight-bold`. | Replaced with valid tokens from `tokens.json`: `--fs-surface`, `--fs-text-2`, `--fs-weight-semibold`, and raw rem values for spacing per Phase 5B precedent. | `node scripts/lint-tones.js` Check 2 scanned 59 CSS files: 0 undefined tokens. |
 | **B7 / B8** | **I14/I16 invariant waiver & sunset timeline** | Retaining legacy gradients/glows without a documented sunset violates anti-slop invariants I14 and I16. | Recorded Amendment 4 in `UI-UX-PLAN.md §6.9` and §10: sunsetting the unscoped block permanently in Phase 5D. | Documented in `PaycheckFormPage.css` line 34. |
@@ -335,12 +335,13 @@ node scripts/verify-baseline-manifest.js
 git grep -n '#14b8a6' -- 'src/**/*.css'
 git grep -rn '#14b8a6' src/pages/salary/ src/components/salary/
 git grep -n "overflow-x" src/pages/salary/
+git grep -nE "<div>Loading|className=\"loading-spinner\"|custom spinner SVG" frontend/src --include="*.js"
 ```
 *Result*: **PASS**:
 - `#14b8a6` in CSS matches strictly `src/styles/tokens.css:36` (0 in page CSS).
 - 0 matches of `#14b8a6` across all salary JS files.
 - `overflow-x` in salary CSS matches only pre-existing `TaxSimulator.css:277` (0 in `PaycheckFormPage.css`).
-- Loading icon exception documented per Amendment 5 (legacy `RefreshCw` structure with extracted classes).
+- Loading check: `PaycheckFormPage.js` uses `RefreshCw` with `.paycheck-loading-icon` (Amendment 5 exception to preserve 0-diff on unthemed routes; `<Loading variant="route" />` deferred to Phase 5D upon allowlisting). All other matches are standard primitive usages or tests.
 
 ---
 
@@ -386,7 +387,9 @@ In accordance with Phase 5B walkthrough precedent (§7), three minor execution a
    - *Plan Specification*: Run `npx playwright test --project=a11y -g "salary-paychecks-new|salary-paychecks-edit"` expecting 0 serious/critical violations.
    - *Executed Adaptation*: In `a11y.spec.js`, injected `data-fs-theme="dark"` and added `.fs-page` to `<main>` for `salary-paychecks-new` and `salary-paychecks-edit`.
    - *Rationale*: Because Phase 5C is strictly a styles-only phase with zero allowlist changes, `/salary/paychecks/new` and `/salary/paychecks/edit/:id` remain unthemed in production (`ProtectedRoute.js`). In unthemed mode, the browser renders legacy un-tokenized CSS (`#009879`, `#6c757d` on light backgrounds) which carries pre-existing contrast deficiencies. Injecting the dormant theme harness in the a11y test verified that the newly authored design tokens achieve 100% WCAG 2.1 AA compliance (0 serious/critical violations) in Chromium prior to Phase 5D allowlisting.
+   > [!NOTE]
+   > **Phase 5D Exit Gate Binding**: Re-running `a11y.spec.js` un-injected on `/salary/paychecks/new` and `/salary/paychecks/edit/:id` immediately upon allowlisting has been explicitly recorded in `UI-UX-PLAN.md §6.9` as a named Phase 5D task and exit-gate requirement (Owner: Phase 5D implementing agent; verification: developer).
 
 3. **Gate 8 Dashboard Suites Scope Clarification**:
-   - *Plan Specification*: Cited `src/App.test.js src/pages/dashboard/__tests__/DashboardSummary*.test.js` claiming 40 tests.
-   - *Executed Adaptation*: Expanded glob to explicitly run all four decoupled dashboard suites (`DashboardSummary.test.js`, `DashboardPanels.test.js`, `DashboardKpiStrip.test.js`, `useDashboardData.test.js` = 31 tests) plus `App.test.js` (9 tests) = exactly 40 tests.
+   - *Plan Specification*: The v8 implementation plan Gate 8 (line 501) explicitly specified running all four decoupled dashboard suites (`DashboardSummary.test.js`, `DashboardPanels.test.js`, `DashboardKpiStrip.test.js`, `useDashboardData.test.js`) and `App.test.js`, whereas the initial draft walkthrough used a glob (`DashboardSummary*.test.js`).
+   - *Executed Verification*: All four decoupled dashboard suites (31 tests) plus `App.test.js` (9 tests) were executed together, confirming exactly 40/40 tests green.

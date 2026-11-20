@@ -83,7 +83,7 @@ The following amendments have been formally recorded in `docs/UI-UX_Plan/UI-UX-P
 
 ## 4. Preconditions
 
-Before modifying code or creating branch `phase-ui-5c-paycheck-form-a`, verify:
+Before modifying code or creating branch `phase-ui-5c-paycheck-form-a`, verify (working directory: repository root `D:\Projects\FinStat`, paths targeting `frontend/` as specified):
 
 1. **PC-1: `.eslintignore` Pre-State**:
    ```powershell
@@ -537,7 +537,7 @@ All commands executed from `frontend/` unless otherwise indicated:
     git grep -n '#14b8a6' -- 'src/**/*.css'
     git grep -rn '#14b8a6' src/pages/salary/ src/components/salary/
     git grep -n "overflow-x" src/pages/salary/
-    git grep -n "Loading" src/pages/salary/PaycheckFormPage.js
+    git grep -nE "<div>Loading|className=\"loading-spinner\"|custom spinner SVG" frontend/src --include="*.js"
     ```
     *Expected*:
     - `#14b8a6` in CSS returns strictly `src/styles/tokens.css:36` (`--fs-accent: #14b8a6;`); zero occurrences across all 56 page CSS files.
