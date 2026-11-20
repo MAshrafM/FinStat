@@ -14,7 +14,7 @@ import { BankProvider } from '../context/BankContext';
 import { CreditProvider } from '../context/CreditContext';
 import { Loading } from './ui';
 
-// Themed routes allowlist (Phase 3A: '/dashboard', Phase 4A: '/expenditures', Phase 4B: forms, Phase 4C: cluster, Phase 5A: payroll profiles and rules)
+// Themed routes allowlist (Phase 3A: '/dashboard', Phase 4A: '/expenditures', Phase 4B: forms, Phase 4C: cluster, Phase 5A: payroll profiles and rules, Phase 5B: paycheck log)
 export const THEMED_PATTERNS = [
   '/dashboard',
   '/expenditures',
@@ -27,6 +27,7 @@ export const THEMED_PATTERNS = [
   '/expenditure-analysis',
   '/salary/profiles',
   '/salary/rules',
+  '/salary/paychecks',
 ];
 
 export const isThemedRoute = (pathname) => {
@@ -60,6 +61,7 @@ const getRequiredProviders = (pathname) => {
   
   // Check if route needs all providers
   if (fullDataRoutes.some(route => pathname.startsWith(route))) {
+    // eslint-disable-next-line no-restricted-syntax -- 'gold' is a context provider key, not a CSS color
     return ['data', 'gold', 'mf', 'cert', 'curr', 'bank', 'credit'];
   }
   

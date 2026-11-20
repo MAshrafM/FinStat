@@ -6,7 +6,6 @@ src/App.test.js
 src/components/AnalysisCard.js
 src/components/DataLoader.js
 src/components/Modal.js
-src/components/ProtectedRoute.js
 src/components/Sidebar.js
 src/components/__tests__/SidebarHubs.test.js
 src/components/common/ConfirmModal.js
@@ -58,9 +57,6 @@ src/pages/mutual-funds/MutualFundForm.js
 src/pages/mutual-funds/MutualFundLogPage.js
 src/pages/mutual-funds/MutualFundSummaryPage.js
 src/pages/mutual-funds/__tests__/MutualFundForm.test.js
-src/pages/paycheck/PaycheckLog.js
-src/pages/paycheck/PaycheckTable.js
-src/pages/paycheck/__tests__/PaycheckLog.test.js
 src/pages/portfolio/PortfolioDashboard.js
 src/pages/portfolio/RebalancingPage.js
 src/pages/portfolio/__tests__/RebalancingPage.test.js

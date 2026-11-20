@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
 import PaycheckLog from '../PaycheckLog';
 import { getPaychecks, getPaychecksLog, deletePaycheck } from '../../../services/paycheckService';
 import { useToast } from '../../../context/ToastContext';
+import { expectNoA11yViolations } from '../../../../tests/a11y/expectNoA11yViolations';
 
 // Mock dependencies
 jest.mock('../../../services/paycheckService', () => ({
@@ -37,6 +38,7 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
       insuranceDetails: { actualEmployeeShare: 1500 },
       taxDetails: { actualTax: 1500 },
       type: 'Cash',
+      note: 'January salary disbursement',
     },
     {
       // Historical paycheck with deprecated fields only
@@ -53,6 +55,7 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
 
   beforeEach(() => {
     jest.clearAllMocks();
+    window.innerWidth = 1440;
     useToast.mockReturnValue({ showToast: mockShowToast });
     getPaychecks.mockResolvedValue(mockPaychecksList);
     getPaychecksLog.mockResolvedValue({
@@ -69,13 +72,9 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
     expect(screen.getByRole('heading', { level: 1, name: 'Paycheck Log' })).toBeInTheDocument();
 
     await waitFor(() => {
-      // Canonical record
       expect(screen.getByText('2025-01')).toBeInTheDocument();
-      // Legacy record with deprecated month
-      expect(screen.getByText('2024-11')).toBeInTheDocument();
     });
-
-    // Check that amounts are calculated and formatted properly (not 0.00 EGP or Unknown)
+    expect(screen.getByText('2024-11')).toBeInTheDocument();
     expect(screen.queryByText('Unknown')).not.toBeInTheDocument();
   });
 
@@ -83,12 +82,9 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
     render(<PaycheckLog />);
 
     await waitFor(() => {
-      // 12,000 + 10,000 = 22,000
-      expect(getPaychecks).toHaveBeenCalled();
-      // Verify filter buttons for both years exist
       expect(screen.getByRole('button', { name: '2025' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: '2024' })).toBeInTheDocument();
     });
+    expect(screen.getByRole('button', { name: '2024' })).toBeInTheDocument();
   });
 
   test('3. opens accessible ConfirmModal instead of window.confirm when delete button clicked', async () => {
@@ -99,16 +95,12 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
       expect(screen.getByText('2025-01')).toBeInTheDocument();
     });
 
-    // Click delete on the first paycheck
     const deleteButtons = screen.getAllByTitle('Delete paycheck entry');
-    expect(deleteButtons.length).toBe(2);
+    expect(deleteButtons).toHaveLength(2);
 
     fireEvent.click(deleteButtons[0]);
 
-    // window.confirm MUST NOT be called
     expect(confirmSpy).not.toHaveBeenCalled();
-
-    // ConfirmModal must be rendered
     expect(screen.getByRole('heading', { name: 'Delete Paycheck' })).toBeInTheDocument();
     expect(screen.getByText(/Are you sure you want to delete this paycheck entry/i)).toBeInTheDocument();
 
@@ -126,14 +118,13 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
     const deleteButtons = screen.getAllByTitle('Delete paycheck entry');
     fireEvent.click(deleteButtons[0]);
 
-    // Click Confirm in modal
     const confirmBtn = screen.getByRole('button', { name: 'Delete Paycheck' });
     fireEvent.click(confirmBtn);
 
     await waitFor(() => {
       expect(deletePaycheck).toHaveBeenCalledWith('pc-canonical-1');
-      expect(mockShowToast).toHaveBeenCalledWith('Paycheck entry deleted successfully', 'success');
     });
+    expect(mockShowToast).toHaveBeenCalledWith('Paycheck entry deleted successfully', 'success');
   });
 
   test('5. closes ConfirmModal without deleting when Cancel is clicked', async () => {
@@ -153,7 +144,107 @@ describe('PaycheckLog Component with Canonical & Deprecated Dual Fields', () => 
 
     await waitFor(() => {
       expect(screen.queryByRole('heading', { name: 'Delete Paycheck' })).not.toBeInTheDocument();
-      expect(deletePaycheck).not.toHaveBeenCalled();
+    });
+    expect(deletePaycheck).not.toHaveBeenCalled();
+  });
+
+  test('6. passes WCAG 2.1 AA accessibility checks via jest-axe', async () => {
+    const { container } = render(<PaycheckLog />);
+
+    await waitFor(() => {
+      expect(screen.getByText('2025-01')).toBeInTheDocument();
+    });
+
+    await expectNoA11yViolations(container);
+  });
+
+  test('7. collapses table into compact-expand cards with 3 initial fields and reveals details on expand (Decision D19, Invariant I6)', async () => {
+    window.innerWidth = 390;
+    render(<PaycheckLog />);
+
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole('region', { name: 'Paycheck cards list' })).toBeInTheDocument();
+    });
+
+    // Check that cards are rendered instead of table
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    const cards = screen.getAllByRole('article');
+    expect(cards).toHaveLength(2);
+
+    // Initial compact state: only 3 fields shown (period, badge/chip, net amount)
+    expect(within(cards[0]).getByText('2025-01')).toBeInTheDocument();
+    expect(within(cards[0]).getByText('Regular')).toBeInTheDocument();
+    expect(within(cards[0]).getByText('$12,000.00')).toBeInTheDocument();
+
+    // Secondary fields must not be visible before clicking expander
+    expect(screen.queryByText(/January salary disbursement/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('Gross Payout')).not.toBeInTheDocument();
+    expect(screen.queryByText('Tax Deduction')).not.toBeInTheDocument();
+    expect(screen.queryByText('Insurance Deduction')).not.toBeInTheDocument();
+
+    // Click expander on the first card
+    const expandButtons = screen.getAllByRole('button', { name: 'Show details' });
+    expect(expandButtons).toHaveLength(2);
+    fireEvent.click(expandButtons[0]);
+
+    // Now all secondary fields and exact values are revealed
+    expect(screen.getByText(/January salary disbursement/i)).toBeInTheDocument();
+    expect(screen.getByText('Gross Payout')).toBeInTheDocument();
+    expect(screen.getByText('Tax Deduction')).toBeInTheDocument();
+    expect(screen.getByText('Insurance Deduction')).toBeInTheDocument();
+
+    // Verify exact tax and insurance deduction values ($1,500.00 each)
+    const deductionAmounts = screen.getAllByText('$1,500.00');
+    expect(deductionAmounts).toHaveLength(2);
+
+    expect(screen.getByRole('button', { name: 'Hide details' })).toBeInTheDocument();
+
+    // Toggle close: secondary fields hidden again
+    fireEvent.click(screen.getByRole('button', { name: 'Hide details' }));
+    expect(screen.queryByText(/January salary disbursement/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('Tax Deduction')).not.toBeInTheDocument();
+  });
+
+  test('8. renders numeric amounts with neutral tone class fs-num without semantic color classes (Invariant I15)', async () => {
+    render(<PaycheckLog />);
+
+    await waitFor(() => {
+      expect(screen.getByText('2025-01')).toBeInTheDocument();
+    });
+
+    // Verify desktop table data cells for gross, deductions, and net follow neutral formatting
+    const rows = screen.getAllByRole('row');
+    // First row is the header; data rows follow
+    const dataRow = rows[1];
+    const cells = within(dataRow).getAllByRole('cell');
+
+    // Column 2: Gross Payout ($15,000.00)
+    const grossCell = cells[2];
+    expect(grossCell).toHaveTextContent('$15,000.00');
+    expect(grossCell).toHaveClass('fs-num');
+    expect(grossCell.className).not.toMatch(/positive|negative|warning/);
+
+    // Column 3: Deductions (-$3,000.00)
+    const deductionsCell = cells[3];
+    expect(deductionsCell).toHaveTextContent('-$3,000.00');
+    expect(deductionsCell).toHaveClass('fs-num');
+    expect(deductionsCell.className).not.toMatch(/positive|negative|warning/);
+
+    // Column 4: Net Disbursed ($12,000.00)
+    const netCell = cells[4];
+    expect(netCell).toHaveTextContent('$12,000.00');
+    expect(netCell).toHaveClass('fs-num');
+    expect(netCell.className).not.toMatch(/positive|negative|warning/);
+
+    // Verify all numeric cells in dataRow carry neutral formatting
+    [grossCell, deductionsCell, netCell].forEach((cell) => {
+      expect(cell).toHaveClass('fs-num');
+      expect(cell.className).not.toMatch(/positive|negative|warning/);
+      expect(cell.style.color).toBe('');
     });
   });
 });

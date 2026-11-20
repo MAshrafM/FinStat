@@ -173,7 +173,7 @@ jobs:
       - name: Run Changed-Files ESLint Gate (§7.1 & §9.2)
         working-directory: frontend
         run: |
-          CHANGED_FILES=$(git diff --name-only origin/main HEAD -- 'src/**/*.js' 'src/**/*.jsx' || true)
+          CHANGED_FILES=$(git diff --relative --name-only origin/main HEAD -- 'src/**/*.js' 'src/**/*.jsx' || true)
           if [ -n "$CHANGED_FILES" ]; then
             echo "Linting changed JS files with --max-warnings=0:"
             echo "$CHANGED_FILES"

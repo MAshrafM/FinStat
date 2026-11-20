@@ -9,6 +9,8 @@ import ProtectedAction from '../../components/common/ProtectedAction';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/formatters';
+import { PageHeader, Button, Delta, Loading, EmptyState } from '../../components/ui';
+import './PaycheckLog.css';
 
 const PaycheckLog = () => {
     const { showToast } = useToast();
@@ -19,6 +21,7 @@ const PaycheckLog = () => {
     const [selectedYear, setSelectedYear] = useState('all');
     const [deletingPaycheckId, setDeletingPaycheckId] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [summaryData, setSummaryData] = useState({
         totalCash: 0,
         totalPrepaid: 0,
@@ -27,19 +30,7 @@ const PaycheckLog = () => {
         yearlyChanges: {}
     });
 
-    useEffect(() => {
-        // Load all paychecks for summary calculations
-        getPaychecks().then(response => {
-            if (response) {
-                const list = Array.isArray(response) ? response : (response.data || []);
-                calculateSummaryData(list);
-            }
-        }).catch(err => {
-            console.error('Failed to load all paychecks:', err);
-        });
-    }, []);
-
-    const calculateSummaryData = (paychecksData) => {
+    const calculateSummaryData = useCallback((paychecksData) => {
         if (!Array.isArray(paychecksData)) return;
         let totalCash = 0;
         let totalPrepaid = 0;
@@ -102,9 +93,22 @@ const PaycheckLog = () => {
             yearlyBreakdown,
             yearlyChanges
         });
-    };
+    }, []);
+
+    useEffect(() => {
+        // Load all paychecks for summary calculations
+        getPaychecks().then(response => {
+            if (response) {
+                const list = Array.isArray(response) ? response : (response.data || []);
+                calculateSummaryData(list);
+            }
+        }).catch(err => {
+            console.error('Failed to load all paychecks:', err);
+        });
+    }, [calculateSummaryData]);
 
     const loadPaychecks = useCallback((page, year = selectedYear) => {
+        setIsLoading(true);
         getPaychecksLog(page, 25, year).then(response => {
             if (response) {
                 const list = Array.isArray(response?.data)
@@ -116,6 +120,8 @@ const PaycheckLog = () => {
             }
         }).catch(err => {
             console.error('Failed to load paychecks:', err);
+        }).finally(() => {
+            setIsLoading(false);
         });
     }, [selectedYear]);
 
@@ -157,230 +163,144 @@ const PaycheckLog = () => {
     const availableYears = Object.keys(summaryData.yearlyBreakdown).sort((a, b) => b - a);
 
     return (
-        <div className="page-container">
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
-                <div>
-                    <h1 style={{ margin: 0 }}>Paycheck Log</h1>
-                    <p style={{ color: '#6c757d', margin: '0.25rem 0 0 0', fontSize: '0.95rem' }}>
-                        Track monthly net salaries, prepaid distributions, and audit history
-                    </p>
-                </div>
-                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <Link to="/salary-profile" style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        padding: '0.65rem 1.1rem',
-                        backgroundColor: '#ffffff',
-                        color: '#334155',
-                        border: '1px solid #cbd5e1',
-                        borderRadius: '8px',
-                        fontWeight: 600,
-                        fontSize: '0.9rem',
-                        textDecoration: 'none',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                        transition: 'all 0.15s ease',
-                    }}>
-                        <FaCalculator style={{ color: '#009879' }} /> Salary Profile & Components
-                    </Link>
-                    <ProtectedAction tooltip="View-only access">
-                        <Link to="/paycheck-log/new" style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            padding: '0.65rem 1.35rem',
-                            background: 'linear-gradient(135deg, #009879 0%, #059669 100%)',
-                            color: '#ffffff',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontWeight: 700,
-                            fontSize: '0.92rem',
-                            textDecoration: 'none',
-                            boxShadow: '0 4px 10px rgba(0, 152, 121, 0.3)',
-                            transition: 'all 0.15s ease',
-                        }}>
-                            <FaPlus /> Log Paycheck
-                        </Link>
-                    </ProtectedAction>
-                </div>
-            </div>
+        <div className="fs-page">
+            <PageHeader
+                title="Paycheck Log"
+                subtitle="Track monthly net salaries, prepaid distributions, and audit history"
+                actions={
+                    <div className="paycheck-header-actions">
+                        <Button
+                            as={Link}
+                            to="/salary/profiles"
+                            variant="secondary"
+                            icon={<FaCalculator aria-hidden="true" />}
+                        >
+                            Salary Profile &amp; Components
+                        </Button>
+                        <ProtectedAction tooltip="View-only access">
+                            <Button
+                                as={Link}
+                                to="/salary/paychecks/new"
+                                variant="primary"
+                                icon={<FaPlus aria-hidden="true" />}
+                            >
+                                Log Paycheck
+                            </Button>
+                        </ProtectedAction>
+                    </div>
+                }
+            />
 
             {/* Overall Summary Card */}
-            <div className="summary-section" style={{ marginBottom: '2rem' }}>
-                <div className="tax-card">
-                    <h3>💰 Overall Summary</h3>
-                    <div className="summary-grid" style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '1rem',
-                        marginBottom: '1.5rem'
-                    }}>
-                        <div className="summary-item highlight" style={{
-                            backgroundColor: '#f0f9ff',
-                            border: '2px solid #0ea5e9',
-                            borderRadius: '8px',
-                            padding: '1rem'
-                        }}>
-                            <span style={{ color: '#0369a1', fontWeight: '500' }}>Total Cash</span>
-                            <strong style={{ color: '#0369a1', fontSize: '1.4rem' }}>
+            <div className="summary-section">
+                <div className="paycheck-panel fs-card">
+                    <h2 className="paycheck-panel-title">Overall Summary</h2>
+                    <div className="paycheck-summary-grid">
+                        <div className="paycheck-summary-card">
+                            <div className="paycheck-summary-label">Total Cash</div>
+                            <div className="paycheck-summary-value fs-num">
                                 {formatCurrency(summaryData.totalCash)}
-                            </strong>
+                            </div>
                         </div>
-                        <div className="summary-item highlight" style={{
-                            backgroundColor: '#fef3c7',
-                            border: '2px solid #f59e0b',
-                            borderRadius: '8px',
-                            padding: '1rem'
-                        }}>
-                            <span style={{ color: '#d97706', fontWeight: '500' }}>Total Prepaid</span>
-                            <strong style={{ color: '#d97706', fontSize: '1.4rem' }}>
+                        <div className="paycheck-summary-card">
+                            <div className="paycheck-summary-label">Total Prepaid</div>
+                            <div className="paycheck-summary-value fs-num">
                                 {formatCurrency(summaryData.totalPrepaid)}
-                            </strong>
+                            </div>
                         </div>
-                        <div className="summary-item highlight" style={{
-                            backgroundColor: '#ecfdf5',
-                            border: '2px solid #10b981',
-                            borderRadius: '8px',
-                            padding: '1rem'
-                        }}>
-                            <span style={{ color: '#047857', fontWeight: '500' }}>Overall Total</span>
-                            <strong style={{ color: '#047857', fontSize: '1.4rem' }}>
+                        <div className="paycheck-summary-card">
+                            <div className="paycheck-summary-label">Overall Total</div>
+                            <div className="paycheck-summary-value fs-num">
                                 {formatCurrency(summaryData.overallTotal)}
-                            </strong>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Yearly Breakdown */}
-            <div className="yearly-breakdown-section" style={{ marginBottom: '2rem' }}>
-                <div className="tax-card">
-                    <h3>📊 Yearly Breakdown & Growth</h3>
-                    <div className="yearly-cards" style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '1rem'
-                    }}>
-                        {availableYears.map(year => {
-                            const yearData = summaryData.yearlyBreakdown[year];
-                            const changeData = summaryData.yearlyChanges[year];
+            <div className="yearly-breakdown-section">
+                <div className="paycheck-panel fs-card">
+                    <h2 className="paycheck-panel-title">Yearly Breakdown &amp; Growth</h2>
+                    {availableYears.length === 0 ? (
+                        <EmptyState
+                            title="No yearly records available"
+                            description="Yearly breakdown and growth trends will appear once paychecks are logged."
+                        />
+                    ) : (
+                        <div className="paycheck-yearly-grid">
+                            {availableYears.map(year => {
+                                const yearData = summaryData.yearlyBreakdown[year];
+                                const changeData = summaryData.yearlyChanges[year];
 
-                            return (
-                                <div key={year} className="year-card" style={{
-                                    border: '1px solid #e5e7eb',
-                                    borderRadius: '8px',
-                                    padding: '1rem',
-                                    backgroundColor: '#fafafa'
-                                }}>
-                                    <div style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        marginBottom: '0.75rem'
-                                    }}>
-                                        <h4 style={{ margin: 0, color: '#374151', fontSize: '1.2rem' }}>{year}</h4>
-                                        {changeData && (
-                                            <div style={{
-                                                padding: '0.25rem 0.5rem',
-                                                borderRadius: '4px',
-                                                fontSize: '0.85rem',
-                                                fontWeight: '500',
-                                                backgroundColor: changeData.direction === 'increase' ? '#dcfce7' : '#fef2f2',
-                                                color: changeData.direction === 'increase' ? '#166534' : '#dc2626'
-                                            }}>
-                                                {changeData.direction === 'increase' ? '↗️' : '↘️'} {changeData.percentage}%
+                                return (
+                                    <div key={year} className="paycheck-year-card">
+                                        <div className="paycheck-year-header">
+                                            <h3 className="paycheck-year-title">{year}</h3>
+                                            {changeData && (
+                                                <Delta
+                                                    tone="neutral"
+                                                    sign={changeData.direction === 'increase' ? 'positive' : 'negative'}
+                                                    value={`${Math.abs(parseFloat(changeData.percentage))}%`}
+                                                    label="vs previous year"
+                                                />
+                                            )}
+                                        </div>
+
+                                        <div className="paycheck-year-rows">
+                                            <div className="paycheck-year-row">
+                                                <span>Cash:</span>
+                                                <strong className="fs-num">{formatCurrency(yearData.cash)}</strong>
                                             </div>
-                                        )}
-                                    </div>
-
-                                    <div className="year-details" style={{ fontSize: '0.9rem' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                                            <span>Cash:</span>
-                                            <strong>{formatCurrency(yearData.cash)}</strong>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                                            <span>Prepaid:</span>
-                                            <strong>{formatCurrency(yearData.prepaid)}</strong>
-                                        </div>
-                                        <div style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            paddingTop: '0.5rem',
-                                            borderTop: '1px solid #d1d5db',
-                                            fontWeight: '600'
-                                        }}>
-                                            <span>Total:</span>
-                                            <strong>{formatCurrency(yearData.total)}</strong>
-                                        </div>
-
-                                        {changeData && (
-                                            <div style={{
-                                                marginTop: '0.5rem',
-                                                fontSize: '0.8rem',
-                                                color: '#6b7280'
-                                            }}>
-                                                {changeData.direction === 'increase' ? '+' : ''}{formatCurrency(changeData.amount)} vs prev year
+                                            <div className="paycheck-year-row">
+                                                <span>Prepaid:</span>
+                                                <strong className="fs-num">{formatCurrency(yearData.prepaid)}</strong>
                                             </div>
-                                        )}
+                                            <div className="paycheck-year-total">
+                                                <span>Total:</span>
+                                                <strong className="fs-num">{formatCurrency(yearData.total)}</strong>
+                                            </div>
+
+                                            {changeData && (
+                                                <div className="paycheck-year-diff">
+                                                    <span className="fs-num">{changeData.direction === 'increase' ? '+' : ''}{formatCurrency(changeData.amount)}</span> vs prev year
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Filter Section */}
-            <div className="filter-section" style={{ marginBottom: '2rem' }}>
-                <div className="tax-card">
-                    <h3>🔍 Filter by Year</h3>
-                    <div className="filter-buttons" style={{
-                        display: 'flex',
-                        gap: '0.5rem',
-                        flexWrap: 'wrap'
-                    }}>
+            <div className="filter-section">
+                <div className="paycheck-panel paycheck-filter-panel fs-card">
+                    <h2 className="paycheck-panel-title">Filter by Year</h2>
+                    <div className="paycheck-filter-chips">
                         <button
+                            type="button"
                             onClick={() => handleYearFilter('all')}
-                            style={{
-                                padding: '0.5rem 1rem',
-                                border: selectedYear === 'all' ? '2px solid #3b82f6' : '1px solid #d1d5db',
-                                borderRadius: '6px',
-                                backgroundColor: selectedYear === 'all' ? '#eff6ff' : 'white',
-                                color: selectedYear === 'all' ? '#1e40af' : '#374151',
-                                cursor: 'pointer',
-                                fontWeight: selectedYear === 'all' ? '600' : '400'
-                            }}
+                            className={`paycheck-filter-chip ${selectedYear === 'all' ? 'active' : ''}`}
                         >
                             All Years
                         </button>
                         {availableYears.map(year => (
                             <button
                                 key={year}
+                                type="button"
                                 onClick={() => handleYearFilter(year)}
-                                style={{
-                                    padding: '0.5rem 1rem',
-                                    border: selectedYear === year ? '2px solid #3b82f6' : '1px solid #d1d5db',
-                                    borderRadius: '6px',
-                                    backgroundColor: selectedYear === year ? '#eff6ff' : 'white',
-                                    color: selectedYear === year ? '#1e40af' : '#374151',
-                                    cursor: 'pointer',
-                                    fontWeight: selectedYear === year ? '600' : '400'
-                                }}
+                                className={`paycheck-filter-chip ${selectedYear === year ? 'active' : ''}`}
                             >
                                 {year}
                             </button>
                         ))}
                     </div>
                     {selectedYear !== 'all' && (
-                        <div style={{
-                            marginTop: '1rem',
-                            padding: '0.75rem',
-                            backgroundColor: '#f3f4f6',
-                            borderRadius: '6px',
-                            fontSize: '0.9rem',
-                            color: '#4b5563'
-                        }}>
-                            📅 Showing paychecks for {selectedYear} only
+                        <div className="paycheck-filter-notice">
+                            Showing paychecks for {selectedYear} only
                         </div>
                     )}
                 </div>
@@ -388,7 +308,11 @@ const PaycheckLog = () => {
 
             {/* Paycheck Table */}
             <div className="table-section">
-                <PaycheckTable paychecks={paychecks} onPaycheckDeleted={handleDeleteClick} />
+                {isLoading ? (
+                    <Loading variant="table" rows={5} text="Loading paychecks..." />
+                ) : (
+                    <PaycheckTable paychecks={paychecks} onPaycheckDeleted={handleDeleteClick} />
+                )}
                 <PaginationControls
                     page={currentPage}
                     totalPages={totalPages}

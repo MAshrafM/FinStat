@@ -1,3 +1,4 @@
+/* eslint-disable jest/valid-expect */
 /**
  * frontend/tests/visual/a11y.spec.js
  *
@@ -8,6 +9,7 @@
 const { test, expect } = require('@playwright/test');
 const { ROUTES } = require('./fixtures/routes');
 const { setFixedClock } = require('./fixtures/clock');
+const { setupPaycheckMocks } = require('./fixtures/paycheckMocks');
 
 const AXE_SOURCE_PATH = require.resolve('axe-core/axe.min.js');
 
@@ -16,6 +18,10 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
     test(`a11y check: ${route.slug}`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await setFixedClock(page);
+
+      if (route.slug === 'salary-paychecks') {
+        await setupPaycheckMocks(page);
+      }
 
       await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(500);
