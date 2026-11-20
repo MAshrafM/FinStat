@@ -390,6 +390,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Preserved Invariant I4 viewer mutation gating via `<ProtectedAction>`.
 - Added `/salary/paychecks` to `THEMED_PATTERNS` allowlist in `ProtectedRoute.js` (cumulative: 12 routes).
 
+### Changed - UI Phase 5C: Paycheck Form, Part 1 (Styles Only)
+- Performed styles-only refactor of `PaycheckFormPage.js` and `PaycheckFormPage.css` (`/salary/paychecks/new` and `/salary/paychecks/edit/:id`) with zero allowlist changes (routes remain unthemed until Phase 5D).
+- Eliminated all 77 legacy inline `style={{ ... }}` declarations from `PaycheckFormPage.js`, mapping them to page-local semantic classes.
+- Removed presentation-only `color: '#...'` hex properties from `DISBURSEMENT_TYPES` data constant (Recorded Amendment 6) to satisfy ESLint hex literal ban while keeping calculation and temporal logic byte-identical.
+- Paired all 20 form inputs with explicit `<label htmlFor="id">` and `<input id="id">` pairings for full WCAG 2.1 accessibility.
+- Converted form step card headings from `h3` to `h2.step-card-title` to enforce strict sequential heading hierarchy (`h1` -> `h2`).
+- Purged `src/pages/salary/PaycheckFormPage.js` from `frontend/.eslintignore` (Recorded Amendment 1); verified clean ESLint with zero errors and zero warnings (`--max-warnings=0`).
+- Authored dual-block stylesheet in `PaycheckFormPage.css`:
+  - Active unscoped legacy compatibility block wrapped in scoped `stylelint-disable` with documented Phase 5D sunset notice (Recorded Amendment 4) to retain 0-diff on unthemed snapshots.
+  - Dormant scoped `.fs-page` block strictly implementing Canonical Reference Frame 02 (Variant B stacked field cards, flat dark graphite tokens, 4px input radii, single primary accent Save CTA, 2px selection cues, right-aligned tabular numerals, and mobile responsive wrapping at $\le 768\text{px}$).
+- Authored unit component axe test `PaycheckFormPageAxe.test.js` passing with 0 serious or critical violations.
+- Authored Playwright reference spec `paycheck-form-reference-match.spec.js` asserting Reference Frame 02 design tokens, touch targets $\ge 44$px, and zero page-level horizontal overflow at 390px.
+- Verified deterministic visual regression suite (`pr-subset`) passing 71/71 tests with 0 diff on all unthemed routes.
+- Verified all 334 baseline snapshots match manifest SHA-256 hashes.
+
 
 
 
