@@ -501,7 +501,7 @@ All commands executed from `frontend/` unless otherwise indicated:
    npm test -- --runInBand --watchAll=false src/App.test.js src/pages/dashboard/__tests__/DashboardSummary.test.js src/pages/dashboard/__tests__/DashboardKpiStrip.test.js src/pages/dashboard/__tests__/DashboardPanels.test.js src/pages/dashboard/__tests__/useDashboardData.test.js
    node -e "const lines = fs.readFileSync('src/pages/DashboardSummary.js', 'utf8').split('\n').length; console.log('DashboardSummary.js line count:', lines); if (lines > 120) process.exit(1);"
    ```
-   *Expected*: 5 test suites pass (App.test.js 9/9, and 31 tests across the 4 Dashboard suites). Direct assertion verifies `DashboardSummary.js` $\le 120$ lines (currently 96 lines).
+   *Expected*: 5 test suites pass (App.test.js 9/9, and 31 tests across the 4 Dashboard suites). Direct assertion verifies `DashboardSummary.js` $\le 120$ lines (currently 97 lines).
 
 9. **Canonical Reference Frame 02 Match Spec with Harness Injection (B13)**:
    ```powershell
