@@ -38,30 +38,30 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
         await page.waitForTimeout(100);
       }
 
-        // Inject axe-core into the real browser DOM
-        await page.addScriptTag({ path: AXE_SOURCE_PATH });
+      // Inject axe-core into the real browser DOM
+      await page.addScriptTag({ path: AXE_SOURCE_PATH });
 
-        // Run axe against the full rendered document
-        const axeResults = await page.evaluate(async () => {
-          return await window.axe.run(document, {
-            runOnly: {
-              type: 'tag',
-              values: ['wcag2a', 'wcag2aa'],
-            },
-          });
+      // Run axe against the full rendered document
+      const axeResults = await page.evaluate(async () => {
+        return await window.axe.run(document, {
+          runOnly: {
+            type: 'tag',
+            values: ['wcag2a', 'wcag2aa'],
+          },
         });
-
-        // Filter critical violations
-        const seriousViolations = axeResults.violations.filter(
-          (v) => v.impact === 'critical' || v.impact === 'serious'
-        );
-
-        expect(
-          seriousViolations,
-          `Accessibility violations found on ${route.resolvedPath}:\n` +
-          seriousViolations.map((v) => `[${v.impact}] ${v.id}: ${v.help} (${v.nodes.length} nodes)`).join('\n')
-        ).toEqual([]);
       });
+
+      // Filter critical violations
+      const seriousViolations = axeResults.violations.filter(
+        (v) => v.impact === 'critical' || v.impact === 'serious'
+      );
+
+      expect(
+        seriousViolations,
+        `Accessibility violations found on ${route.resolvedPath}:\n` +
+        seriousViolations.map((v) => `[${v.impact}] ${v.id}: ${v.help} (${v.nodes.length} nodes)`).join('\n')
+      ).toEqual([]);
+    });
   }
 });
 
