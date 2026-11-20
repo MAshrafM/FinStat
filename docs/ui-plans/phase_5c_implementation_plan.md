@@ -1,4 +1,4 @@
-# Implementation Plan — UI Phase 5C: Paycheck Form, Part 1 (Styles Only) (v5)
+# Implementation Plan — UI Phase 5C: Paycheck Form, Part 1 (Styles Only) (v6)
 
 ## 1. Executive Summary & Goal Description
 
@@ -6,13 +6,14 @@ Phase 5C initiates the design system migration of FinStat's central compensation
 
 In strict adherence to `UI-UX-PLAN.md §6.9` (lines 1680–1687), **Phase 5C is a styles-only phase**:
 1. **Zero Route Allowlisting (`§6.9`)**: `/salary/paychecks/new` and `/salary/paychecks/edit/:id` **must not** be added to `THEMED_PATTERNS` in `ProtectedRoute.js`. The routes remain unthemed until Phase 5D. The root container in `PaycheckFormPage.js` remains `<div className="page-container">` (no `fs-page` class added in 5C).
-2. **Strict Mixed-File Diff Rule (`§6.4` line 1302 & `§6.9`)**: `PaycheckFormPage.js` holds core statutory payroll calculations and temporal logic. The diff may modify **only** `className`, `style`, and JSX presentation structure. **Do not touch** `normalizePayDateInput`, calculation hooks, handlers, state machines, or validation logic.
-3. **Complete Inline Styles Elimination**: Completely eliminate all **77 legacy inline style declarations** in `PaycheckFormPage.js` and tokenize all hardcoded hex values (`#009879`, `#6366f1`, `#8b5cf6`, `#0284c7`, `#ec4899`, `#10b981`, `#d97706`, `#f59e0b`, `#e11d48`, `#64748b`).
+2. **Strict Mixed-File Diff Rule (`§6.4` line 1302 & `§6.9`)**: `PaycheckFormPage.js` holds core statutory payroll calculations and temporal logic. The diff may modify **only** `className`, `style`, and JSX presentation structure. **Do not touch** `normalizePayDateInput`, calculation hooks, handlers, state machines, validation logic, or the `DISBURSEMENT_TYPES` data constant.
+3. **Complete Inline Styles Elimination**: Completely eliminate all **77 legacy inline style declarations** in `PaycheckFormPage.js` and replace them with page-local semantic CSS classes.
 4. **Compatibility Contract for Unthemed 0-Diff vs Dormant Graphite Theme**: To preserve 0 visual diff on unthemed snapshots while eliminating all 77 inline styles, `PaycheckFormPage.css` maintains a dual-block architecture:
-   - *Active Unscoped Legacy Block*: Retains legacy rules and maps extracted inline style classes to unscoped rules matching the unthemed look. Protected by scoped `/* stylelint-disable */` comments so the stylelint ratchet count remains $\le 86$ (ratchet preserved). This block is strictly temporary with a recorded Phase 5D sunset when the route is allowlisted.
-   - *Dormant Scoped `.fs-page` Block*: Implements the tokenized graphite theme adhering to Reference Frame 02 (`docs/UI-UX_Plan/reference/02-form.html`). Contains zero raw hex and zero direct tone tokens. Activates in Phase 5D when allowlisted.
-5. **No Global Primitive Classes in Unthemed Mode (B3 Resolution)**: Global primitive classes from `theme.css` (`.fs-btn`, `.fs-btn-primary`, `.fs-btn-secondary`, `.fs-num`) are unscoped and would bleed accent colors or tabular alignments onto the unthemed route. JSX in 5C uses page-local semantic classes (`.paycheck-submit-btn`, `.paycheck-cancel-btn`, `.paycheck-recalc-btn`, `.paycheck-preview-value`). In `PaycheckFormPage.css`, these are styled in the unscoped block with legacy properties, and in the scoped `.fs-page` block with dark graphite tokens.
-6. **Recorded Plan Amendment (`.eslintignore`)**: CI's changed-files ESLint gate (`ci.yml:173-185`) lints modified JS files with `--max-warnings=0`. Files listed in `.eslintignore` trigger a warning that causes exit code 1. We eliminate all 173 ESLint errors and 20 a11y label warnings (`label-has-associated-control`) in `PaycheckFormPage.js`, allowing it to be safely removed from `frontend/.eslintignore` in 5C with clean ESLint (0 errors, 0 warnings).
+   - *Active Unscoped Legacy Block*: Retains legacy rules and maps extracted inline style classes to unscoped rules matching the unthemed look. Governed by Recorded Plan Amendment 4 in `UI-UX-PLAN.md §6.9` with scoped `/* stylelint-disable */` comments and a mandatory Phase 5D sunset upon route allowlisting.
+   - *Dormant Scoped `.fs-page` Block*: Implements the tokenized graphite theme adhering to Reference Frame 02 (`docs/UI-UX_Plan/reference/02-form.html`). Contains zero raw hex, zero direct tone tokens, zero gradients, zero blurs, and strict 8px radius ceilings. Activates in Phase 5D when allowlisted.
+5. **No Global Primitive Classes in Unthemed Mode (B3 Resolution)**: Global primitive classes from `theme.css` (`.fs-btn`, `.fs-btn-primary`, `.fs-btn-secondary`, `.fs-num`) are unscoped and would bleed accent colors or tabular alignments onto the unthemed route. JSX in 5C uses page-local semantic classes (`.paycheck-submit-btn`, `.paycheck-cancel-btn`, `.paycheck-recalc-btn`, `.paycheck-calc-readonly`, `.paycheck-preview-val`).
+6. **Numeric Typography Alignment (B9 Resolution)**: In accordance with `UI-UX-PLAN.md §6.4` line 1297 and Decision D16, numeric inputs and calculations use proportional typography with tabular figures (`font-family: var(--fs-font-sans); font-variant-numeric: tabular-nums; text-align: right;`). Monospace is reserved exclusively for identifiers.
+7. **Recorded Master Plan Amendments Formally Committed**: All five plan amendments are recorded directly in `UI-UX-PLAN.md §6.9`, `§6.16`, and `§10 Progress Log`.
 
 ---
 
@@ -24,29 +25,24 @@ In strict adherence to `UI-UX-PLAN.md §6.9` (lines 1680–1687), **Phase 5C is 
 
 > [!CAUTION]
 > **Zero Payroll Calculation Logic Modification (`§6.4` line 1302)**:  
-> `normalizePayDateInput`, `triggerCalculation`, `handleSavePaycheck`, `extractProfileSalaryValues`, `computeLiveEstimate`, and all calculation dependencies must remain byte-for-byte identical in behavior. The 11/11 statutory calculation fixtures in `frontend/tests/calculations.spec.js` serve as the cryptographic characterization baseline.
+> `normalizePayDateInput`, `triggerCalculation`, `handleSavePaycheck`, `extractProfileSalaryValues`, `computeLiveEstimate`, all calculation dependencies, and the `DISBURSEMENT_TYPES` data constant must remain 100% byte-for-byte identical. The 11/11 statutory calculation fixtures in `frontend/tests/calculations.spec.js` serve as the cryptographic characterization baseline.
 
 > [!NOTE]
 > **Compatibility Contract & Stylelint Ratchet**:  
-> Extracted inline style colors are mapped to an unscoped legacy CSS block in `PaycheckFormPage.css` to guarantee 0 diff on `salary-paychecks-new @ 1440px`. To prevent ratchet regression above the merge-base baseline of 86 violations, the temporary unscoped compatibility block is wrapped in scoped `/* stylelint-disable */` comments. Direct `stylelint --max-warnings=0` on this file is deferred to Phase 5D when the legacy block is purged.
+> Extracted inline style colors are mapped to an unscoped legacy CSS block in `PaycheckFormPage.css` to guarantee 0 diff on `salary-paychecks-new @ 1440px`. Governed by Recorded Plan Amendment 4, this temporary block is wrapped in scoped `/* stylelint-disable */` comments. Direct `stylelint --max-warnings=0` on this file is deferred to Phase 5D when the legacy block is purged.
 
 ---
 
-## 3. Plan & Tooling Amendments
+## 3. Formally Recorded Master Plan Amendments
 
-### 1. Recorded Plan Amendment: Move `.eslintignore` Removal to Phase 5C
+The following amendments have been formally recorded in `docs/UI-UX_Plan/UI-UX-PLAN.md §6.9`, `§6.16 (Phase 12)`, and `§10 Progress Log` (Owner: Antigravity / Developer approved, Date: 2026-11-20):
+
+### 1. Recorded Plan Amendment 1: Move `.eslintignore` Removal to Phase 5C
 - **Amendment**: Move "Remove `PaycheckFormPage.js` from `frontend/.eslintignore`; verify clean ESLint" from Phase 5D (`UI-UX-PLAN.md §6.9` line 1695) to Phase 5C (`§6.9` line 1683).
-- **Owner & Date**: Antigravity, 2026-11-20.
-- **Reason**: CI's changed-files ESLint gate (`.github/workflows/ci.yml:173-185`) executes `npx eslint $CHANGED_FILES --max-warnings=0`. When an edited file is listed in `.eslintignore`, ESLint emits a warning:
-  ```text
-  warning File ignored because of a matching ignore pattern. Use "--no-ignore" to override
-  ESLint found too many warnings (maximum: 0).
-  ```
-  This causes exit code 1. De-ignoring `PaycheckFormPage.js` in 5C after resolving all 173 errors and 20 warnings prevents this failure.
+- **Reason**: CI's changed-files ESLint gate (`.github/workflows/ci.yml:173-185`) executes `npx eslint $CHANGED_FILES --max-warnings=0`. When an edited file is listed in `.eslintignore`, ESLint emits a warning causing exit code 1. De-ignoring `PaycheckFormPage.js` in 5C after resolving all 173 errors and 20 warnings prevents this failure.
 - **Scope Limit**: The three test files (`src/pages/salary/__tests__/PaycheckFormPage*.test.js`) remain in `.eslintignore`. Only `PaycheckFormPage.js` is de-ignored.
-- **Tracking**: Recorded in `UI-UX-PLAN.md §6.9` and `§10 Progress Log`.
 
-### 2. Tooling Amendment: Extend `playwright.config.js` Reference Project `testMatch`
+### 2. Tooling Amendment 2: Extend `playwright.config.js` Reference Project `testMatch`
 - **Amendment**: In `frontend/playwright.config.js` line 37, update the `reference` project regex:
   ```javascript
   // Before:
@@ -54,23 +50,19 @@ In strict adherence to `UI-UX-PLAN.md §6.9` (lines 1680–1687), **Phase 5C is 
   // After:
   testMatch: /(reference-frames|dashboard-reference-match|expenditure-reference-match|expenditure-form-reference-match|paycheck-form-reference-match)\.spec\.js/,
   ```
-- **Owner & Date**: Antigravity, 2026-11-20.
 - **Reason**: Permits discovery and execution of `frontend/tests/visual/paycheck-form-reference-match.spec.js` by Playwright's `reference` project.
 
-### 3. Recorded Plan Amendment: Inline Styles Extraction Scope Alignment
+### 3. Recorded Plan Amendment 3: Inline Styles Extraction Scope Alignment
 - **Amendment**: Pull the complete extraction of all 77 inline style declarations from Phase 5D into Phase 5C.
-- **Owner & Date**: Antigravity, 2026-11-20.
 - **Reason**: `frontend/.eslintrc.json` enforces `no-restricted-syntax` which bans all `style={{ ... }}` declarations. Once `PaycheckFormPage.js` is removed from `.eslintignore` (Amendment 1) and touched in 5C, any surviving inline styles will fail the CI changed-files gate. Complete extraction in 5C ensures 0 errors.
 
-### 4. Recorded Plan Amendment: Temporary Dual-Mode Legacy CSS Compatibility Block with Phase 5D Sunset
+### 4. Recorded Plan Amendment 4: Temporary Dual-Mode Legacy CSS Compatibility Block with Phase 5D Sunset
 - **Amendment**: Author a temporary unscoped legacy compatibility block in `PaycheckFormPage.css` protected by scoped `/* stylelint-disable color-no-hex, color-named, function-disallowed-list, declaration-property-value-allowed-list, declaration-property-value-disallowed-list */` comments.
-- **Owner & Date**: Antigravity, 2026-11-20.
-- **Precedent**: Follows the Phase 2F precedent (`UI-UX-PLAN.md §12` line 1968) where temporary unscoped compatibility rules were bounded and given an explicit sunset.
-- **Sunset**: The unscoped compatibility block and its `stylelint-disable` comments will be completely purged in Phase 5D when `/salary/paychecks/new` and `/salary/paychecks/edit/:id` are allowlisted. In Phase 5D, `PaycheckFormPage.css` will be required to pass direct `stylelint --max-warnings=0` cleanly.
+- **Precedent & Invariant Reconciliation**: Follows the Phase 2F precedent (`UI-UX-PLAN.md §12` line 1968) and recorded in `UI-UX-PLAN.md §6.9`. A temporary I14/I16 waiver applies strictly to this unscoped legacy compatibility block to preserve 0-diff on unthemed routes. The new scoped `.fs-page` block strictly obeys I14 and I16.
+- **Sunset**: The unscoped compatibility block and its `stylelint-disable` comments will be completely purged in Phase 5D when `/salary/paychecks/new` and `/salary/paychecks/edit/:id` are allowlisted. In Phase 5D, `PaycheckFormPage.css` will pass direct `stylelint --max-warnings=0` cleanly without disables. Added to Phase 12 verification checklist (`UI-UX-PLAN.md §6.16`).
 
-### 5. Recorded Plan Amendment: Deferral of Loading Primitive (`<Loading variant="route" />`) to Phase 5D
+### 5. Recorded Plan Amendment 5: Deferral of Loading Primitive (`<Loading variant="route" />`) to Phase 5D
 - **Amendment**: Retain the markup structure and tag hierarchy of the legacy loading state in `PaycheckFormPage.js:654-661` (`RefreshCw` spinner + status text) while extracting inline styles to `.paycheck-loading-*` classes. Adoption of `<Loading variant="route" />` per D23 and §6.4 line 1290 is deferred to Phase 5D.
-- **Owner & Date**: Antigravity, 2026-11-20.
 - **Reason**: Preserves 0-diff on unthemed loading state snapshots during the styles-only Phase 5C. When the route is allowlisted in Phase 5D, the loading state will be switched to the shared `<Loading variant="route" />` component.
 
 ### 6. Deferred Form Accessibility Scope (Phase 5D)
@@ -116,10 +108,10 @@ Before modifying code or creating branch `phase-ui-5c-paycheck-form-a`, verify:
    *Expect*: `334/334 baselines verified successfully.`
 6. **PC-6: Characterization Engine Pre-Check**:
    ```powershell
-   cd frontend; npx jest tests/calculations.spec.js
+   cd frontend; npx jest --runInBand tests/calculations.spec.js
    ```
    *Expect*: 11/11 tests pass.
-7. **PC-7: Hex Code & Style Isolation Pre-Check (B1 Fixed)**:
+7. **PC-7: Hex Code & Style Isolation Pre-Check**:
    ```powershell
    git grep -n "style={{" frontend/src/pages/salary/PaycheckFormPage.js | Measure-Object -Line
    git grep -n -A 12 "const DISBURSEMENT_TYPES = \[" frontend/src/pages/salary/PaycheckFormPage.js | Select-String "color: '#" | Measure-Object -Line
@@ -129,7 +121,7 @@ Before modifying code or creating branch `phase-ui-5c-paycheck-form-a`, verify:
    ```powershell
    git status
    ```
-   *Expect*: Working tree clean on `main` (with plan/review docs committed or tracked).
+   *Expect*: Working tree clean on `main` (`463f485` or later).
 9. **PC-9: Allowlist Pre-State**:
    ```powershell
    git grep -n "'/salary/paychecks" frontend/src/components/ProtectedRoute.js
@@ -146,8 +138,8 @@ Before modifying code or creating branch `phase-ui-5c-paycheck-form-a`, verify:
 graph TD
     subgraph Phase 5C Scope: Styles & Presentation Only
         A["PaycheckFormPage.js (Unthemed Route)"] --> B["Dual-Block Stylesheet (PaycheckFormPage.css)"]
-        B --> C["Active Unscoped Legacy Block<br/>(Preserves unthemed 0-diff, stylelint-disabled)"]
-        B --> D["Dormant Scoped .fs-page Block<br/>(Adheres to Frame 02 flat dark graphite)"]
+        B --> C["Active Unscoped Legacy Block<br/>(Preserves unthemed 0-diff, stylelint-disabled via Amendment 4)"]
+        B --> D["Dormant Scoped .fs-page Block<br/>(Adheres strictly to Frame 02 flat dark graphite)"]
     end
 
     subgraph Verification Modes
@@ -162,29 +154,51 @@ graph TD
     end
 ```
 
-### Disbursement Types 9-Type Explicit Mapping Table (B5 Resolution)
+### Complete 9-Disbursement-Type CSS Mapping Specification (B5 Fully Resolved)
 
-In `PaycheckFormPage.js`, each item in `DISBURSEMENT_TYPES` is assigned a semantic identifier `typeClass`:
+In `PaycheckFormPage.js`, `DISBURSEMENT_TYPES` is **NOT mutated**. Instead, the class is derived dynamically in JSX:
+```javascript
+const typeClass = `type-${dt.id.toLowerCase().replace(/\s+/g, '-')}`;
+```
 
-| # | Type `id` | Legacy Color | `typeClass` | Unscoped Selected Style | Scoped `.fs-page` Style (Frame 02) |
-|---|---|---|---|---|---|
-| 1 | `Regular` | `#009879` | `type-regular` | `border: 2px solid #009879; bg: #f8fafc; shadow: 0 0 0 1px #00987920` | `bg: var(--fs-surface-raised); border-left: 2px solid var(--fs-text-2)` |
-| 2 | `Basic Months` | `#6366f1` | `type-basic-months` | `border: 2px solid #6366f1; bg: #f8fafc; shadow: 0 0 0 1px #6366f120` | `bg: var(--fs-surface-raised); border-left: 2px solid var(--fs-text-2)` |
-| 3 | `Basic Production` | `#8b5cf6` | `type-basic-production` | `border: 2px solid #8b5cf6; bg: #f8fafc; shadow: 0 0 0 1px #8b5cf620` | `bg: var(--fs-surface-raised); border-left: 2px solid var(--fs-text-2)` |
-| 4 | `Sector Bonus` | `#0284c7` | `type-sector-bonus` | `border: 2px solid #0284c7; bg: #f8fafc; shadow: 0 0 0 1px #0284c720` | `bg: var(--fs-surface-raised); border-left: 2px solid var(--fs-text-2)` |
-| 5 | `Individual Bonus` | `#ec4899` | `type-individual-bonus` | `border: 2px solid #ec4899; bg: #f8fafc; shadow: 0 0 0 1px #ec489920` | `bg: var(--fs-surface-raised); border-left: 2px solid var(--fs-text-2)` |
-| 6 | `Surplus` | `#10b981` | `type-surplus` | `border: 2px solid #10b981; bg: #f8fafc; shadow: 0 0 0 1px #10b98120` | `bg: var(--fs-surface-raised); border-left: 2px solid var(--fs-text-2)` |
-| 7 | `Bond Distribution` | `#d97706` | `type-bond-distribution` | `border: 2px solid #d97706; bg: #f8fafc; shadow: 0 0 0 1px #d9770620` | `bg: var(--fs-surface-raised); border-left: 2px solid var(--fs-text-2)` |
-| 8 | `End of Year Bonus` | `#f59e0b` | `type-end-of-year-bonus` | `border: 2px solid #f59e0b; bg: #f8fafc; shadow: 0 0 0 1px #f59e0b20` | `bg: var(--fs-surface-raised); border-left: 2px solid var(--fs-text-2)` |
-| 9 | `Prepaid` | `#64748b` | `type-prepaid` | `border: 2px solid #64748b; bg: #f8fafc; shadow: 0 0 0 1px #64748b20` | `bg: var(--fs-surface-raised); border-left: 2px solid var(--fs-text-2)` |
+#### Complete Unscoped Legacy Properties (Active in Unthemed Mode):
 
-#### Unselected State for All 9 Types:
-- **Unscoped Legacy**: `background: #ffffff; border: 1px solid #e2e8f0; color: #1e293b; icon-bg: ${color}15; icon-color: ${color}; desc: #64748b`.
-- **Scoped `.fs-page`**: `background: var(--fs-surface); border: 1px solid var(--fs-border); border-left: 1px solid var(--fs-border); color: var(--fs-text); icon-bg: var(--fs-surface-raised); icon-color: var(--fs-text-2); desc: var(--fs-text-muted)`.
+| `typeClass` | Hex Color | Unselected State (Button / Icon / Title / Desc) | Selected State (Button / Icon / Title / Desc) |
+|---|---|---|---|
+| `type-regular` | `#009879` | `border: 1px solid #e2e8f0; bg: #ffffff;`<br/>`icon-bg: #00987915; icon-color: #009879;`<br/>`title: #1e293b; desc: #64748b` | `border: 2px solid #009879; bg: #f8fafc; shadow: 0 0 0 1px #00987920, 0 4px 6px -1px rgba(0,0,0,0.05);`<br/>`icon-bg: #00987915; icon-color: #009879;`<br/>`title: #009879; desc: #64748b` |
+| `type-basic-months` | `#6366f1` | `border: 1px solid #e2e8f0; bg: #ffffff;`<br/>`icon-bg: #6366f115; icon-color: #6366f1;`<br/>`title: #1e293b; desc: #64748b` | `border: 2px solid #6366f1; bg: #f8fafc; shadow: 0 0 0 1px #6366f120, 0 4px 6px -1px rgba(0,0,0,0.05);`<br/>`icon-bg: #6366f115; icon-color: #6366f1;`<br/>`title: #6366f1; desc: #64748b` |
+| `type-basic-production` | `#8b5cf6` | `border: 1px solid #e2e8f0; bg: #ffffff;`<br/>`icon-bg: #8b5cf615; icon-color: #8b5cf6;`<br/>`title: #1e293b; desc: #64748b` | `border: 2px solid #8b5cf6; bg: #f8fafc; shadow: 0 0 0 1px #8b5cf620, 0 4px 6px -1px rgba(0,0,0,0.05);`<br/>`icon-bg: #8b5cf615; icon-color: #8b5cf6;`<br/>`title: #8b5cf6; desc: #64748b` |
+| `type-sector-bonus` | `#0284c7` | `border: 1px solid #e2e8f0; bg: #ffffff;`<br/>`icon-bg: #0284c715; icon-color: #0284c7;`<br/>`title: #1e293b; desc: #64748b` | `border: 2px solid #0284c7; bg: #f8fafc; shadow: 0 0 0 1px #0284c720, 0 4px 6px -1px rgba(0,0,0,0.05);`<br/>`icon-bg: #0284c715; icon-color: #0284c7;`<br/>`title: #0284c7; desc: #64748b` |
+| `type-individual-bonus` | `#ec4899` | `border: 1px solid #e2e8f0; bg: #ffffff;`<br/>`icon-bg: #ec489915; icon-color: #ec4899;`<br/>`title: #1e293b; desc: #64748b` | `border: 2px solid #ec4899; bg: #f8fafc; shadow: 0 0 0 1px #ec489920, 0 4px 6px -1px rgba(0,0,0,0.05);`<br/>`icon-bg: #ec489915; icon-color: #ec4899;`<br/>`title: #ec4899; desc: #64748b` |
+| `type-surplus` | `#10b981` | `border: 1px solid #e2e8f0; bg: #ffffff;`<br/>`icon-bg: #10b98115; icon-color: #10b981;`<br/>`title: #1e293b; desc: #64748b` | `border: 2px solid #10b981; bg: #f8fafc; shadow: 0 0 0 1px #10b98120, 0 4px 6px -1px rgba(0,0,0,0.05);`<br/>`icon-bg: #10b98115; icon-color: #10b981;`<br/>`title: #10b981; desc: #64748b` |
+| `type-bond-distribution` | `#d97706` | `border: 1px solid #e2e8f0; bg: #ffffff;`<br/>`icon-bg: #d9770615; icon-color: #d97706;`<br/>`title: #1e293b; desc: #64748b` | `border: 2px solid #d97706; bg: #f8fafc; shadow: 0 0 0 1px #d9770620, 0 4px 6px -1px rgba(0,0,0,0.05);`<br/>`icon-bg: #d9770615; icon-color: #d97706;`<br/>`title: #d97706; desc: #64748b` |
+| `type-end-of-year-bonus` | `#f59e0b` | `border: 1px solid #e2e8f0; bg: #ffffff;`<br/>`icon-bg: #f59e0b15; icon-color: #f59e0b;`<br/>`title: #1e293b; desc: #64748b` | `border: 2px solid #f59e0b; bg: #f8fafc; shadow: 0 0 0 1px #f59e0b20, 0 4px 6px -1px rgba(0,0,0,0.05);`<br/>`icon-bg: #f59e0b15; icon-color: #f59e0b;`<br/>`title: #f59e0b; desc: #64748b` |
+| `type-prepaid` | `#64748b` | `border: 1px solid #e2e8f0; bg: #ffffff;`<br/>`icon-bg: #64748b15; icon-color: #64748b;`<br/>`title: #1e293b; desc: #64748b` | `border: 2px solid #64748b; bg: #f8fafc; shadow: 0 0 0 1px #64748b20, 0 4px 6px -1px rgba(0,0,0,0.05);`<br/>`icon-bg: #64748b15; icon-color: #64748b;`<br/>`title: #64748b; desc: #64748b` |
 
-#### Selected State for All 9 Types:
-- **Unscoped Legacy**: Styled via `.paycheck-type-btn.type-*.selected` per the table above.
-- **Scoped `.fs-page`**: Unified flat dark graphite treatment (G5):
+#### Scoped `.fs-page` Properties (Frame 02 Flat Dark Graphite):
+All nine types follow the unified flat graphite design system tokens (G5):
+- **Base (Unselected)**:
+  ```css
+  .fs-page .paycheck-type-btn {
+    background: var(--fs-surface);
+    border: 1px solid var(--fs-border);
+    border-radius: var(--fs-radius-lg);
+    box-shadow: none;
+  }
+  .fs-page .paycheck-type-btn .paycheck-type-icon-wrapper {
+    background: var(--fs-surface-raised);
+    color: var(--fs-text-2);
+    border-radius: var(--fs-radius-md);
+  }
+  .fs-page .paycheck-type-btn .paycheck-type-title {
+    color: var(--fs-text);
+    font-weight: var(--fs-weight-semibold);
+  }
+  .fs-page .paycheck-type-btn .paycheck-type-desc {
+    color: var(--fs-text-2);
+  }
+  ```
+- **Selected**:
   ```css
   .fs-page .paycheck-type-btn.selected {
     background: var(--fs-surface-raised);
@@ -192,12 +206,15 @@ In `PaycheckFormPage.js`, each item in `DISBURSEMENT_TYPES` is assigned a semant
     border-left: 2px solid var(--fs-text-2);
     box-shadow: none;
   }
-  .fs-page .paycheck-type-btn.selected .paycheck-type-title {
-    color: var(--fs-text);
-  }
   .fs-page .paycheck-type-btn.selected .paycheck-type-icon-wrapper {
     background: var(--fs-surface);
     color: var(--fs-text);
+  }
+  .fs-page .paycheck-type-btn.selected .paycheck-type-title {
+    color: var(--fs-text);
+  }
+  .fs-page .paycheck-type-btn.selected .paycheck-type-desc {
+    color: var(--fs-text-2);
   }
   ```
 
@@ -219,7 +236,7 @@ Author `PaycheckFormPage.css` containing:
    /* ==========================================================================
       TEMPORARY LEGACY COMPATIBILITY BLOCK (Phase 5C only, Sunset: Phase 5D)
       Preserves byte-for-byte unthemed appearance during styles-only phase.
-      Governed by Recorded Plan Amendment 4.
+      Governed by Recorded Plan Amendment 4 in UI-UX-PLAN.md §6.9.
       ========================================================================== */
    /* stylelint-disable color-no-hex, color-named, function-disallowed-list, declaration-property-value-allowed-list, declaration-property-value-disallowed-list */
    ...
@@ -282,12 +299,14 @@ Author `PaycheckFormPage.css` containing:
        padding: 0.625rem 1.25rem;
        cursor: pointer;
      }
-     /* Read-only calculated inputs */
+     /* Calculated read-only inputs (D16, B9: proportional font with tabular figures) */
      .fs-page .paycheck-calc-readonly {
        background: var(--fs-surface-raised);
        color: var(--fs-text-2);
        border-color: var(--fs-border);
-       font-family: var(--fs-font-mono);
+       font-family: var(--fs-font-sans);
+       font-variant-numeric: tabular-nums;
+       text-align: right;
      }
      ```
    - Zero raw hex, zero banned effects, zero unlisted radii, zero direct tone tokens (`var(--fs-accent)` is never used; semantic action token `var(--fs-action-bg)` is used).
@@ -295,10 +314,13 @@ Author `PaycheckFormPage.css` containing:
 ### Step 3: `frontend/src/pages/salary/PaycheckFormPage.js` Presentation Refactor
 1. **Preserve Root Container**: Keep `<div className="page-container">` (no `fs-page` in 5C).
 2. **Remove All 77 Inline `style={{ ... }}` Declarations**: Replace each with a semantic class name.
-3. **Disbursement Types Array**:
-   - Remove presentation-only `color` property from `DISBURSEMENT_TYPES` items.
-   - Add semantic `typeClass: 'type-regular'`, etc.
-   - Button renders `className={`paycheck-type-btn ${dt.typeClass} ${isSelected ? 'selected' : ''}`}`.
+3. **Disbursement Types Array Preservation**:
+   - Do **NOT** modify `DISBURSEMENT_TYPES` data constant (mixed-file diff rule preserved).
+   - In JSX button render loop, derive class dynamically:
+     ```javascript
+     const typeClass = `type-${dt.id.toLowerCase().replace(/\s+/g, '-')}`;
+     ```
+   - Button renders `className={`paycheck-type-btn ${typeClass} ${isSelected ? 'selected' : ''}`}`.
 4. **Form Labels Association**:
    - Pair all 20 `<label>` elements with input `id` attributes via `htmlFor="field-id"`.
 5. **No Global Primitive Classes**:
@@ -345,29 +367,29 @@ All commands executed from `frontend/` unless otherwise indicated:
 
 1. **Characterization Engine (I3)**:
    ```powershell
-   npx jest tests/calculations.spec.js
+   npx jest --runInBand tests/calculations.spec.js
    ```
    *Expected*: 11/11 tests pass. Snapshot byte-identical to Phase 1C baseline.
 
 2. **PaycheckFormPage Unit Test Suites (I10)**:
    ```powershell
-   npm test -- --watchAll=false src/pages/salary/__tests__/PaycheckFormPage.test.js src/pages/salary/__tests__/PaycheckFormPageTax.test.js src/pages/salary/__tests__/PaycheckFormPageTimezone.test.js
+   npm test -- --runInBand --watchAll=false src/pages/salary/__tests__/PaycheckFormPage.test.js src/pages/salary/__tests__/PaycheckFormPageTax.test.js src/pages/salary/__tests__/PaycheckFormPageTimezone.test.js
    ```
    *Expected*: All 16 unit tests across the 3 test suites pass.
 
-3. **CI Changed-Files ESLint Gate Simulation (Gate Coverage Fixed)**:
+3. **CI Changed-Files ESLint Gate Simulation**:
    ```powershell
    npx eslint src/pages/salary/PaycheckFormPage.js src/pages/salary/__tests__/PaycheckFormPageAxe.test.js --max-warnings=0
    ```
    *Expected*: 0 errors, 0 warnings, exit code 0.
 
-4. **Stylelint Ratchet & Tone Linters (I11, I14, I15, B2)**:
+4. **Stylelint Ratchet & Tone Linters (I11, I14, I15, B6)**:
    ```powershell
-   node scripts/tokens.js --check
+   node scripts/tokens.js --check --fonts
    node scripts/lint-tones.js
    node scripts/lint-ratchet.js
    ```
-   *Expected*: All exit 0. `lint-ratchet.js` verifies `PaycheckFormPage.css` violations $\le 86$ (ratchet preserved). `lint-tones.js` verifies zero direct tone/accent tokens in page CSS and zero undefined tokens.
+   *Expected*: All exit 0. `tokens.js --check --fonts` passes font budget check. `lint-ratchet.js` verifies `PaycheckFormPage.css` violations $\le 86$ (ratchet preserved). `lint-tones.js` verifies zero direct tone/accent tokens in page CSS and zero undefined tokens (no phantom tokens like `--fs-text-muted`).
 
 5. **Route Allowlist Assertion (I1, I7)**:
    ```powershell
@@ -384,7 +406,7 @@ All commands executed from `frontend/` unless otherwise indicated:
 7. **Jest-Axe Component Test & Real-Browser Playwright Axe (I10)**:
    - Run Jest-Axe component test:
      ```powershell
-     npm test -- --watchAll=false src/pages/salary/__tests__/PaycheckFormPageAxe.test.js
+     npm test -- --runInBand --watchAll=false src/pages/salary/__tests__/PaycheckFormPageAxe.test.js
      ```
      *Expected*: 0 axe violations on the rendered form component in jsdom.
    - Run Playwright real-browser axe test:
@@ -395,17 +417,23 @@ All commands executed from `frontend/` unless otherwise indicated:
 
 8. **Application Route Suite & Dashboard RTL Regression Suites (I8, I10)**:
    ```powershell
-   npm test -- --watchAll=false src/App.test.js src/pages/dashboard/__tests__/DashboardSummary.test.js src/pages/dashboard/__tests__/DashboardKpiStrip.test.js src/pages/dashboard/__tests__/DashboardPanels.test.js src/pages/dashboard/__tests__/useDashboardData.test.js
+   npm test -- --runInBand --watchAll=false src/App.test.js src/pages/dashboard/__tests__/DashboardSummary.test.js src/pages/dashboard/__tests__/DashboardKpiStrip.test.js src/pages/dashboard/__tests__/DashboardPanels.test.js src/pages/dashboard/__tests__/useDashboardData.test.js
    ```
    *Expected*: 5 test suites pass (App.test.js 9/9, and 31 tests across the 4 Dashboard suites).
 
-9. **Canonical Reference Frame 02 Match Spec with Harness Injection (B4 Fixed)**:
+9. **Canonical Reference Frame 02 Match Spec with Harness Injection**:
    ```powershell
    npx playwright test --project=reference tests/visual/paycheck-form-reference-match.spec.js
    ```
    *Expected*: All assertions pass against computed design tokens (Save CTA has computed `var(--fs-action-bg)` and `var(--fs-action-text)`, exactly one accent CTA, inputs compute to `var(--fs-surface)` and `var(--fs-radius-sm)` per Frame 02 and `theme-components.css`, selected disbursement button exhibits 2px left indicator cue).
 
-10. **Visual Regression PR-Subset Gate (71/71) & Four-Part Diff Report**:
+10. **Production Build Compilation (I9, B8 Pre-Requisite for CI Playwright)**:
+    ```powershell
+    cmd /c "set NODE_OPTIONS=--max-old-space-size=8192 && npm run build"
+    ```
+    *Expected*: Clean production build with zero compilation errors. Generates a fresh `build/` artifact required by `serve -s build -l 3000` under `CI=true`.
+
+11. **Visual Regression PR-Subset Gate (71/71) & Four-Part Diff Report (B8)**:
     ```powershell
     $env:CI="true"; $env:PR_SUBSET="true"; npx playwright test --project=pr-subset
     ```
@@ -416,23 +444,18 @@ All commands executed from `frontend/` unless otherwise indicated:
     - (c) Accepted diffs: 0.
     - (d) Unexplained diffs: 0.
 
-11. **Baseline Manifest Integrity**:
+12. **Baseline Manifest Integrity**:
     ```powershell
     node scripts/verify-baseline-manifest.js
     ```
     *Expected*: All 334 baseline snapshots in `D:\Projects\FinStat-visual-baselines` match manifest SHA-256 hashes.
 
-12. **Banned Pattern & Anti-Slop Audit (§7.1)**:
+13. **Banned Pattern & Anti-Slop Audit (§7.1)**:
     ```powershell
     git grep -rn '#14b8a6' src/pages/salary/ src/components/salary/
+    git grep -n "overflow-x: scroll" src/pages/salary/
     ```
-    *Expected*: Zero occurrences of `#14b8a6` across all salary page and component files. Verify no page-level horizontal overflow at 390px.
-
-13. **Production Build Compilation (I9)**:
-    ```powershell
-    cmd /c "set NODE_OPTIONS=--max-old-space-size=8192 && npm run build"
-    ```
-    *Expected*: Clean production build with zero compilation errors using the proven 8192 MB heap allocation.
+    *Expected*: Zero occurrences of `#14b8a6` across all salary page and component files. Zero unapproved `overflow-x: scroll` declarations. Scoped `.fs-page` CSS contains zero gradients, zero blurs, zero glow shadows. Loading consistency check note recorded per Amendment 5 (deferred to 5D).
 
 ---
 
@@ -450,14 +473,14 @@ These 16 invariants are verified at every sub-phase:
 | **I6** | Tables render as compact-expand cards at ≤ 768px (D19). Horizontal scroll preserved only for tables with ≥ 12 columns (audit logs) where the card pattern is impractical. No page-level horizontal scroll at 390px. | 390 px visual check: card layout renders, no page-level horizontal scroll, all fields reachable via expander. | Form grids collapse to single-column at $\le 768\text{px}$; touch targets $\ge 44\text{px}$; zero page-level horizontal overflow (`scrollWidth <= clientWidth`). |
 | **I7** | No page loses functionality mid-migration. | Pattern added only in the converting PR (§6.3) | `/salary/paychecks/new` remains unthemed in 5C. Zero functional disruption. |
 | **I8** | Dashboard coordinator line cap preserved — `DashboardSummary.js` must remain $\le 120$ lines (post-audit architecture decomposition invariant). All 10 RTL dashboard tests must remain green. | Line count assertion + `npm test` in 3A | Verified in gate 8 (`DashboardSummary.js` line cap and 31 dashboard RTL tests pass). |
-| **I9** | Production build passes with zero errors and no new warnings. | CI (authoritative); local proxy via `npm start` + ESLint/stylelint (§15) | Verified in gate 13 (`NODE_OPTIONS=--max-old-space-size=8192 npm run build`). |
+| **I9** | Production build passes with zero errors and no new warnings. | CI (authoritative); local proxy via `npm start` + ESLint/stylelint (§15) | Verified in gate 10 (`NODE_OPTIONS=--max-old-space-size=8192 npm run build`). |
 | **I10**| `npm test -- --watchAll=false` passes for touched modules **and** the app route suite. | CI (frontend test job added in 1C); local proxy: touched suites via `npx jest --runInBand` (§15) | Verified in gates 2, 7, and 8 (`PaycheckFormPage` suites, Axe suite, and `App.test.js`). |
 | **I11**| No new `!important`; a file's count in the 1C lint ratchet may only fall. | stylelint + `lint-ratchet.js` (§9.2) | Verified in gate 4 (`node scripts/lint-ratchet.js`). Zero new `!important`. |
 | **I12**| No new dependency except the Phase 1C tooling list (§9.2). | `package.json` review | `package.json` diff is empty. Zero new dependencies introduced. |
-| **I13**| Every non-allowlisted route is pixel-identical to its 1B baseline. | Walkthrough-evidenced per §7.1: developer-run Playwright diff report attached to each phase walkthrough, with zero unexplained diffs. | Verified in gate 10 (`$env:CI="true"; $env:PR_SUBSET="true"; npx playwright test --project=pr-subset`: 71/71 passing with 0 diff on unthemed routes). |
-| **I14**| No `backdrop-filter`, gradient, gradient text, glow, `filter: blur()` / `drop-shadow()`, `text-shadow`, `mask`, `-webkit-mask`, `-webkit-mask-image`, `mask-image`, `border-image`, or `border-image-source` anywhere in app CSS or JS; only the reference frames illustrate them. | stylelint (§9.2) | Verified in gate 4. The scoped `.fs-page` rules contain zero banned effects. Unscoped legacy compatibility block is governed by Recorded Amendment 4 with scheduled Phase 5D sunset. |
-| **I15**| Neutral by default: a tone encodes **deviation from expectation or attention**, never the sign of an ordinary amount. Expense amounts, income, and balances are neutral (§4.3). A page never references a tone token directly; it uses `Delta`, `Badge`, or a `.fs-progress--*` modifier. | stylelint + `lint-tones.js` + §4.3 domain table + §7.2 | Verified in gate 4 (`node scripts/lint-tones.js`). Preview amounts use neutral `.fs-num`. No direct tone tokens in page CSS. |
-| **I16**| No radius above 8 px except `var(--fs-radius-pill)` on status chips and avatars. | stylelint (§9.2) | Verified in gate 4 (`node scripts/lint-ratchet.js`). The scoped `.fs-page` card radii use `var(--fs-radius-lg)` (8px), inputs/badges use `var(--fs-radius-sm)` (4px) or `var(--fs-radius-md)` (6px). Legacy block governed by Recorded Amendment 4. |
+| **I13**| Every non-allowlisted route is pixel-identical to its 1B baseline. | Walkthrough-evidenced per §7.1: developer-run Playwright diff report attached to each phase walkthrough, with zero unexplained diffs. | Verified in gate 11 (`$env:CI="true"; $env:PR_SUBSET="true"; npx playwright test --project=pr-subset`: 71/71 passing with 0 diff on unthemed routes). |
+| **I14**| No `backdrop-filter`, gradient, gradient text, glow, `filter: blur()` / `drop-shadow()`, `text-shadow`, `mask`, `-webkit-mask`, `-webkit-mask-image`, `mask-image`, `border-image`, or `border-image-source` anywhere in app CSS or JS; only the reference frames illustrate them. | stylelint (§9.2) | Verified in gate 4 and 13. The scoped `.fs-page` rules contain zero banned effects. Unscoped legacy compatibility block is governed by Recorded Amendment 4 in `UI-UX-PLAN.md §6.9` with scheduled Phase 5D sunset. |
+| **I15**| Neutral by default: a tone encodes **deviation from expectation or attention**, never the sign of an ordinary amount. Expense amounts, income, and balances are neutral (§4.3). A page never references a tone token directly; it uses `Delta`, `Badge`, or a `.fs-progress--*` modifier. | stylelint + `lint-tones.js` + §4.3 domain table + §7.2 | Verified in gate 4 (`node scripts/lint-tones.js`). Preview and calculated amounts use neutral styling (`color: var(--fs-text)` or `var(--fs-text-2)`, `font-family: var(--fs-font-sans)`, `font-variant-numeric: tabular-nums`, `text-align: right`) via page-local classes (`.paycheck-calc-readonly`, `.paycheck-preview-val`). Direct tone tokens are zero in page CSS. |
+| **I16**| No radius above 8 px except `var(--fs-radius-pill)` on status chips and avatars. | stylelint (§9.2) | Verified in gate 4 (`node scripts/lint-ratchet.js`). The scoped `.fs-page` card radii use `var(--fs-radius-lg)` (8px), inputs/badges use `var(--fs-radius-sm)` (4px) or `var(--fs-radius-md)` (6px). Legacy block governed by Recorded Amendment 4 in `UI-UX-PLAN.md §6.9`. |
 
 ---
 
