@@ -140,6 +140,33 @@ async function getFundPrice(fundName, { forceRefresh = false } = {}) {
 }
 
 /**
+ * Parse local Egyptian market gold prices from iSagha HTML
+ */
+function parseIsaghaPrices(html) {
+  if (typeof html !== 'string') return null;
+  const result = {};
+  const karats = ['24', '21', '18'];
+  for (const k of karats) {
+    const regex = new RegExp(`(?:عيار\\s*${k}|ذهب عيار ${k})[\\s\\S]{1,300}?(?:data-testid="price-figure"[^>]*>|class="[^"]*price[^"]*"[^>]*>)([0-9.,]+)`, 'i');
+    const m = html.match(regex);
+    if (m && m[1]) {
+      const val = parseFloat(m[1].replace(/,/g, ''));
+      if (!isNaN(val) && val > 0) {
+        result[k] = val;
+      }
+    }
+  }
+  if (result['24'] || result['21'] || result['18']) {
+    const base24 = result['24'] || (result['21'] ? result['21'] / (21 / 24) : result['18'] / (18 / 24));
+    if (!result['24']) result['24'] = Math.round(base24 * 100) / 100;
+    if (!result['21']) result['21'] = Math.round(base24 * (21 / 24) * 100) / 100;
+    if (!result['18']) result['18'] = Math.round(base24 * (18 / 24) * 100) / 100;
+    return result;
+  }
+  return null;
+}
+
+/**
  * Get Gold Prices per gram for 24, 21, and 18 Karat
  */
 async function getGoldPrices({ forceRefresh = false } = {}) {
@@ -149,14 +176,65 @@ async function getGoldPrices({ forceRefresh = false } = {}) {
     if (mem) return mem;
   }
 
-  // Tier 1: DahabZaman Live API
+  // Tier 1: iSagha Egyptian Gold Market Live Prices
+  try {
+    const isaghaRes = await axios.get('https://market.isagha.com/prices', {
+      headers: {
+        ...HTTP_HEADERS,
+        Referer: 'https://market.isagha.com/',
+      },
+      timeout: 8000,
+    });
+    const parsedPrices = parseIsaghaPrices(isaghaRes.data);
+    if (parsedPrices && (parsedPrices['24'] > 0 || parsedPrices['21'] > 0)) {
+      await saveToCache(cacheKey, parsedPrices, 'isagha-live');
+      return { data: parsedPrices, isLive: true, isStale: false, source: 'isagha-live', timestamp: Date.now() };
+    }
+  } catch (err) {
+    // Try Tier 2: Global Spot (USD) + Live Currency Exchange Rate
+  }
+
+  // Tier 2: Global Gold Spot (XAU/USD) + Live Currency Exchange Rate
+  try {
+    const spotRes = await axios.get('https://api.gold-api.com/price/XAU', {
+      headers: HTTP_HEADERS,
+      timeout: 5000,
+    });
+    const spotUsd = spotRes.data && Number(spotRes.data.price);
+    if (spotUsd && spotUsd > 0) {
+      let usdRate = 53.8;
+      try {
+        const cibRes = await getCurrencyRates({ forceRefresh: false });
+        const rates = cibRes.data && (cibRes.data.rates || cibRes.data);
+        if (Array.isArray(rates)) {
+          const usdObj = rates.find((r) => (r.currencyID || r.currencyCode) === 'USD');
+          if (usdObj && (usdObj.sellRate || usdObj.buyRate)) {
+            usdRate = Number(usdObj.sellRate || usdObj.buyRate);
+          }
+        }
+      } catch (rateErr) {
+        // use default fallback usdRate
+      }
+      // 1 troy ounce = 31.1034768 grams
+      const price24 = Math.round((spotUsd / 31.1034768) * usdRate * 100) / 100;
+      const price21 = Math.round(price24 * (21 / 24) * 100) / 100;
+      const price18 = Math.round(price24 * (18 / 24) * 100) / 100;
+      const calculatedPrices = { '24': price24, '21': price21, '18': price18 };
+      await saveToCache(cacheKey, calculatedPrices, 'spot-calculated-live');
+      return { data: calculatedPrices, isLive: true, isStale: false, source: 'spot-calculated-live', timestamp: Date.now() };
+    }
+  } catch (err) {
+    // Try Tier 3: Legacy DahabZaman / DahabMasr formats
+  }
+
+  // Tier 3: DahabZaman Live API (Legacy)
   try {
     const fallResponse = await axios.get('https://dahabzaman.eg/en/GoldPrice/GetcurrentPriceList', {
       headers: {
         ...HTTP_HEADERS,
         Referer: 'https://dahabzaman.eg',
       },
-      timeout: 8000,
+      timeout: 3000,
     });
     if (fallResponse.data) {
       const d = fallResponse.data;
@@ -176,17 +254,17 @@ async function getGoldPrices({ forceRefresh = false } = {}) {
       }
     }
   } catch (err) {
-    // Try Tier 2: DahabMasr
+    // DahabZaman failed
   }
 
-  // Tier 2: DahabMasr
+  // Tier 3b: DahabMasr (Legacy)
   try {
     const response = await axios.get('https://dahabmasr.com/api/price/fetch', {
       headers: {
         ...HTTP_HEADERS,
         Referer: 'https://dahabmasr.com/',
       },
-      timeout: 8000,
+      timeout: 3000,
     });
 
     if (Array.isArray(response.data) && response.data.length > 0) {
@@ -202,7 +280,7 @@ async function getGoldPrices({ forceRefresh = false } = {}) {
       }
     }
   } catch (err) {
-    // Both live APIs failed -> retrieve durable fallback
+    // All live APIs failed -> retrieve durable fallback
   }
 
   const fallback = await getDurableFallback(cacheKey);

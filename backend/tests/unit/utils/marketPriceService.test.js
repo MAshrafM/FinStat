@@ -73,23 +73,60 @@ describe('MarketPriceService (Resilient Pricing & Multi-Tier Caching)', () => {
   });
 
   describe('getGoldPrices', () => {
-    it('should fetch from DahabZaman and parse 24, 21, 18 karat prices', async () => {
-      axios.get.mockResolvedValueOnce({
-        data: {
-          '1': { SellPrice: 4100 },
-          '2': { SellPrice: 3600 },
-          '3': { SellPrice: 3085 },
-        },
-      });
+    it('should fetch from iSagha and parse 24, 21, 18 karat prices', async () => {
+      const mockHtml = `
+        <div>
+          <span>ذهب عيار 24</span>
+          <span data-testid="price-figure">6291.5</span>
+          <span>عيار 21</span>
+          <span data-testid="price-figure">5505</span>
+          <span>عيار 18</span>
+          <span data-testid="price-figure">4718.5</span>
+        </div>
+      `;
+      axios.get.mockResolvedValueOnce({ data: mockHtml });
+
+      const result = await marketPriceService.getGoldPrices();
+      expect(result.data).toEqual({ '24': 6291.5, '21': 5505, '18': 4718.5 });
+      expect(result.isLive).toBe(true);
+      expect(result.source).toBe('isagha-live');
+    });
+
+    it('should fallback to spot gold + currency exchange rate calculation if iSagha fails', async () => {
+      axios.get
+        .mockRejectedValueOnce(new Error('iSagha down'))
+        .mockResolvedValueOnce({ data: { price: 3500 } }) // gold-api XAU spot
+        .mockResolvedValueOnce({ data: { rates: [{ currencyID: 'USD', sellRate: 50 }] } }); // CIB rate
+
+      const result = await marketPriceService.getGoldPrices();
+      expect(result.data['24']).toBeCloseTo(5626.37, 1);
+      expect(result.data['21']).toBeCloseTo(4923.07, 1);
+      expect(result.data['18']).toBeCloseTo(4219.78, 1);
+      expect(result.isLive).toBe(true);
+      expect(result.source).toBe('spot-calculated-live');
+    });
+
+    it('should fallback to DahabZaman legacy if prior tiers fail', async () => {
+      axios.get
+        .mockRejectedValueOnce(new Error('iSagha down'))
+        .mockRejectedValueOnce(new Error('Spot down'))
+        .mockResolvedValueOnce({
+          data: {
+            '1': { SellPrice: 4100 },
+            '2': { SellPrice: 3600 },
+            '3': { SellPrice: 3085 },
+          },
+        });
 
       const result = await marketPriceService.getGoldPrices();
       expect(result.data).toEqual({ '24': 4100, '21': 3600, '18': 3085 });
-      expect(result.isLive).toBe(true);
       expect(result.source).toBe('dahabzaman-live');
     });
 
     it('should fallback to DahabMasr if DahabZaman fails', async () => {
       axios.get
+        .mockRejectedValueOnce(new Error('iSagha down'))
+        .mockRejectedValueOnce(new Error('Spot down'))
         .mockRejectedValueOnce(new Error('DahabZaman 503'))
         .mockResolvedValueOnce({
           data: [{ LocalSellPrice24: 4090, Sell: 3590, LocalSellPrice18: 3075 }],
@@ -98,6 +135,24 @@ describe('MarketPriceService (Resilient Pricing & Multi-Tier Caching)', () => {
       const result = await marketPriceService.getGoldPrices();
       expect(result.data).toEqual({ '24': 4090, '21': 3590, '18': 3075 });
       expect(result.source).toBe('dahabmasr-live');
+    });
+
+    it('should fallback to MongoDB cache if all live sources fail', async () => {
+      axios.get
+        .mockRejectedValueOnce(new Error('iSagha down'))
+        .mockRejectedValueOnce(new Error('Spot down'))
+        .mockRejectedValueOnce(new Error('DahabZaman down'))
+        .mockRejectedValueOnce(new Error('DahabMasr down'));
+      MarketPriceCache.findOne.mockResolvedValueOnce({
+        key: 'gold',
+        data: { '24': 4000, '21': 3500, '18': 3000 },
+        updatedAt: new Date(Date.now() - 3600000),
+      });
+
+      const result = await marketPriceService.getGoldPrices();
+      expect(result.data).toEqual({ '24': 4000, '21': 3500, '18': 3000 });
+      expect(result.isStale).toBe(true);
+      expect(result.source).toBe('mongodb-cache');
     });
   });
 
