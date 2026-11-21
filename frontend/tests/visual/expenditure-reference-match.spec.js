@@ -389,4 +389,34 @@ test.describe('Expenditure Reference Match (Live /expenditures vs Frame 01)', ()
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     await page.screenshot({ path: `${screenshotDir}/reference-01-dense-table-390.png`, fullPage: true });
   });
+
+  test('expenditure-analysis: verifies zero horizontal scroll, card widths <= 390px, and D19 mobile cards at 390px', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await setFixedClock(page);
+    await page.goto('/expenditure-analysis', { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+    await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+
+    // Assert zero page-level horizontal scroll (D19)
+    const isOverflowing = await page.evaluate(() => {
+      return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+    });
+    expect(isOverflowing).toBe(false);
+
+    // Verify Volume by Type card width <= 390px (Issue 1)
+    const card1 = page.locator('[data-testid="card-chart-1"]');
+    await expect(card1).toBeVisible();
+    const card1Box = await card1.boundingBox();
+    expect(card1Box.width).toBeLessThanOrEqual(390);
+
+    // Verify Category Breakdown card width <= 390px (Issue 2)
+    const card3 = page.locator('[data-testid="card-chart-3"]');
+    await expect(card3).toBeVisible();
+    const card3Box = await card3.boundingBox();
+    expect(card3Box.width).toBeLessThanOrEqual(390);
+
+    // Verify Monthly Breakdown D19 mobile cards visible, desktop table hidden (Issue 3)
+    await expect(page.locator('.monthly-breakdown-mobile-cards')).toBeVisible();
+    await expect(page.locator('.monthly-breakdown-desktop-table')).toBeHidden();
+  });
 });

@@ -268,41 +268,67 @@ const ExpenditureAnalysisPage = () => {
     }],
   };
 
-  // Chart 3: Overall category pie chart data
+  // Helper to cap category breakdown to top 5 + "Other" per §4.12 and G2 using standard theme palette
+  const getCappedCategoryChartData = (categoryVolumes) => {
+    const list = EXPENDITURE_CATEGORIES.map((c) => ({
+      name: c.name,
+      value: Math.round(categoryVolumes ? (categoryVolumes[c.name] || 0) : 0),
+    })).filter((c) => c.value > 0);
+
+    // Sort descending by spend value
+    list.sort((a, b) => b.value - a.value);
+
+    let labels = [];
+    let values = [];
+
+    if (list.length === 0) {
+      labels = ['No Data'];
+      values = [0];
+    } else if (list.length <= 6) {
+      labels = list.map((c) => c.name);
+      values = list.map((c) => c.value);
+    } else {
+      const top5 = list.slice(0, 5);
+      const otherTotal = list.slice(5).reduce((sum, c) => sum + c.value, 0);
+      labels = [...top5.map((c) => c.name), 'Other'];
+      values = [...top5.map((c) => c.value), otherTotal];
+    }
+
+    const standardCategoryPalette = [
+      palette.grey1,
+      palette.grey2,
+      palette.grey3,
+      palette.grey4,
+      palette.warning,
+      palette.positive,
+    ];
+
+    return {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: labels.map((_, i) => standardCategoryPalette[i % standardCategoryPalette.length]),
+        borderWidth: 1,
+        borderColor: palette.surface,
+      }],
+    };
+  };
+
+  // Chart 3: Overall category pie chart data (capped at 6 series using theme tokens per §4.12)
   const overallCategoryLabels = EXPENDITURE_CATEGORIES.map((c) => c.name);
   const overallCategoryValues = EXPENDITURE_CATEGORIES.map((c) => {
     const val = overallSummary.categoryVolumes ? (overallSummary.categoryVolumes[c.name] || 0) : 0;
     return Math.round(val);
   });
-  const overallCategoryColors = EXPENDITURE_CATEGORIES.map((c) => c.color);
+  const overallCategoryPieChartData = getCappedCategoryChartData(overallSummary.categoryVolumes);
 
-  const overallCategoryPieChartData = {
-    labels: overallCategoryLabels,
-    datasets: [{
-      data: overallCategoryValues,
-      backgroundColor: overallCategoryColors,
-      borderWidth: 1,
-      borderColor: palette.surface,
-    }],
-  };
-
-  // Chart 4: Yearly category pie chart data
+  // Chart 4: Yearly category pie chart data (capped at 6 series using theme tokens per §4.12)
   const yearlyCategoryLabels = EXPENDITURE_CATEGORIES.map((c) => c.name);
   const yearlyCategoryValues = EXPENDITURE_CATEGORIES.map((c) => {
     const val = dataForYear.categoryVolumes ? (dataForYear.categoryVolumes[c.name] || 0) : 0;
     return Math.round(val);
   });
-  const yearlyCategoryColors = EXPENDITURE_CATEGORIES.map((c) => c.color);
-
-  const yearlyCategoryPieChartData = {
-    labels: yearlyCategoryLabels,
-    datasets: [{
-      data: yearlyCategoryValues,
-      backgroundColor: yearlyCategoryColors,
-      borderWidth: 1,
-      borderColor: palette.surface,
-    }],
-  };
+  const yearlyCategoryPieChartData = getCappedCategoryChartData(dataForYear.categoryVolumes);
 
   // Chart 5: Bar chart data
   const barChartData = {
@@ -668,37 +694,69 @@ const ExpenditureAnalysisPage = () => {
 
         {/* Accessible Table Alternative 5 */}
         <div className="table-container chart-data-table-wrapper fs-table-container">
-          <table className="styled-table chart-data-table" data-testid="table-chart-5">
-            <caption className="table-caption">Monthly Breakdown for {selectedYear} Alternative Data Table</caption>
-            <thead>
-              <tr>
-                <th scope="col">Month</th>
-                <th scope="col" className="cell-right">Withdrawals</th>
-                <th scope="col" className="cell-right">Top-ups</th>
-                <th scope="col" className="cell-right">Savings</th>
-                <th scope="col" className="cell-right">Net Flow</th>
-              </tr>
-            </thead>
-            <tbody>
-              {MONTH_NAMES.map((monthName, idx) => {
-                const m = dataForYear.byMonth[idx] || { withdrawals: 0, topups: 0, savings: 0 };
-                const net = m.topups - m.withdrawals;
-                return (
-                  <tr key={monthName}>
-                    <td><strong>{monthName}</strong></td>
-                    <td className="cell-right fs-num">{formatCurrency(m.withdrawals)}</td>
-                    <td className="cell-right fs-num">{formatCurrency(m.topups)}</td>
-                    <td className="cell-right fs-num">{formatCurrency(m.savings)}</td>
-                    <td className="cell-right fs-num">
-                      <span className={net >= 0 ? 'fs-delta--positive' : 'fs-delta--negative'}>
-                        {net >= 0 ? `+${formatCurrency(net)}` : `-${formatCurrency(Math.abs(net))}`}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="monthly-breakdown-desktop-table">
+            <table className="styled-table chart-data-table" data-testid="table-chart-5">
+              <caption className="table-caption">Monthly Breakdown for {selectedYear} Alternative Data Table</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Month</th>
+                  <th scope="col" className="cell-right">Withdrawals</th>
+                  <th scope="col" className="cell-right">Top-ups</th>
+                  <th scope="col" className="cell-right">Savings</th>
+                  <th scope="col" className="cell-right">Net Flow</th>
+                </tr>
+              </thead>
+              <tbody>
+                {MONTH_NAMES.map((monthName, idx) => {
+                  const m = dataForYear.byMonth[idx] || { withdrawals: 0, topups: 0, savings: 0 };
+                  const net = m.topups - m.withdrawals;
+                  return (
+                    <tr key={monthName}>
+                      <td><strong>{monthName}</strong></td>
+                      <td className="cell-right fs-num">{formatCurrency(m.withdrawals)}</td>
+                      <td className="cell-right fs-num">{formatCurrency(m.topups)}</td>
+                      <td className="cell-right fs-num">{formatCurrency(m.savings)}</td>
+                      <td className="cell-right fs-num">
+                        <span className={net >= 0 ? 'fs-delta--positive' : 'fs-delta--negative'}>
+                          {net >= 0 ? `+${formatCurrency(net)}` : `-${formatCurrency(Math.abs(net))}`}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* D19 Mobile Compact Cards (<= 768px) */}
+          <div className="monthly-breakdown-mobile-cards" data-testid="table-chart-5-mobile">
+            {MONTH_NAMES.map((monthName, idx) => {
+              const m = dataForYear.byMonth[idx] || { withdrawals: 0, topups: 0, savings: 0 };
+              const net = m.topups - m.withdrawals;
+              return (
+                <div key={monthName} className="monthly-breakdown-mobile-card">
+                  <div className="monthly-breakdown-mobile-header">
+                    <span className="monthly-breakdown-mobile-month">{monthName}</span>
+                    <span className={`monthly-breakdown-mobile-net fs-num ${net >= 0 ? 'fs-delta--positive' : 'fs-delta--negative'}`}>
+                      {net >= 0 ? `+${formatCurrency(net)}` : `-${formatCurrency(Math.abs(net))}`}
+                    </span>
+                  </div>
+                  <div className="monthly-breakdown-mobile-row">
+                    <span className="monthly-breakdown-mobile-label">Withdrawals</span>
+                    <span className="fs-num">{formatCurrency(m.withdrawals)}</span>
+                  </div>
+                  <div className="monthly-breakdown-mobile-row">
+                    <span className="monthly-breakdown-mobile-label">Top-ups</span>
+                    <span className="fs-num">{formatCurrency(m.topups)}</span>
+                  </div>
+                  <div className="monthly-breakdown-mobile-row">
+                    <span className="monthly-breakdown-mobile-label">Savings</span>
+                    <span className="fs-num">{formatCurrency(m.savings)}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 

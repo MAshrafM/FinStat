@@ -1557,6 +1557,9 @@
   border-radius: var(--fs-radius-lg);
   padding: 1.25rem;
   margin-bottom: 1.5rem;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .fs-page .analysis-card-title {
@@ -1639,9 +1642,10 @@
 
 .fs-page .analysis-grid-2col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1.25rem;
   margin-bottom: 1.5rem;
+  min-width: 0;
 }
 
 .fs-page .chart-canvas-container {
@@ -1650,6 +1654,10 @@
   justify-content: center;
   align-items: center;
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .fs-page .chart-canvas-container.tall {
@@ -1660,11 +1668,18 @@
   margin-top: 1rem;
   border-top: var(--fs-border-width, 1px) solid var(--fs-border);
   padding-top: 0.75rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: auto;
 }
 
 .fs-page .chart-data-table {
   width: 100%;
+  min-width: 0;
   border-collapse: collapse;
+  table-layout: auto;
 }
 
 .fs-page .chart-data-table th,
@@ -1694,6 +1709,57 @@
   caption-side: top;
 }
 
+.fs-page .monthly-breakdown-desktop-table {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.fs-page .monthly-breakdown-mobile-cards {
+  display: none;
+}
+
+.fs-page .monthly-breakdown-mobile-card {
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width, 1px) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fs-page .monthly-breakdown-mobile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+  padding-bottom: 0.35rem;
+  border-bottom: var(--fs-border-width, 1px) solid var(--fs-border);
+}
+
+.fs-page .monthly-breakdown-mobile-month {
+  font-weight: 600;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text);
+}
+
+.fs-page .monthly-breakdown-mobile-net {
+  font-weight: 600;
+  font-size: var(--fs-text-sm);
+}
+
+.fs-page .monthly-breakdown-mobile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--fs-text-xs);
+}
+
+.fs-page .monthly-breakdown-mobile-label {
+  color: var(--fs-text-3);
+}
+
 .fs-page .ex-chart-wrapper {
   position: relative;
   width: 100%;
@@ -1712,6 +1778,9 @@
 @media (max-width: 768px) {
   .fs-page .expenditure-analysis-container {
     padding: 0.75rem;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 
   .fs-page .analysis-summary-grid {
@@ -1720,7 +1789,7 @@
   }
 
   .fs-page .analysis-grid-2col {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
   }
 
@@ -1732,6 +1801,16 @@
   .fs-page .filter-group-search,
   .fs-page .filter-group-year {
     width: 100%;
+  }
+
+  .fs-page .monthly-breakdown-desktop-table {
+    display: none;
+  }
+
+  .fs-page .monthly-breakdown-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
   }
 
   .fs-page .chart-canvas-container {
