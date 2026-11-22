@@ -109,8 +109,10 @@
 .fs-page .salary-breakdown-list li {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 0.6rem 0;
   border-bottom: var(--fs-border-width) solid var(--fs-border);
+  gap: 0.5rem;
 }
 
 .fs-page .salary-breakdown-list li:last-child {
@@ -121,12 +123,19 @@
   color: var(--fs-text-3);
   font-family: var(--fs-font-sans);
   font-size: var(--fs-text-sm);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .fs-page .salary-breakdown-list li strong {
   color: var(--fs-text);
   font-family: var(--fs-font-sans);
   font-size: var(--fs-text-sm);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+  text-align: right;
 }
 
 .fs-page .no-salary-details-text {
@@ -662,6 +671,14 @@
   .edit-profile-page-container,
   .edit-history-page-container,
   .update-salary-container {
+    padding: 1rem;
+  }
+
+  .fs-page .card-body {
+    padding: 1rem;
+  }
+
+  .fs-form-card.update-components-card {
     padding: 1rem;
   }
 
