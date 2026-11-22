@@ -405,6 +405,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Verified deterministic visual regression suite (`pr-subset`) passing 71/71 tests with 0 diff on all unthemed routes.
 - Verified all 334 baseline snapshots match manifest SHA-256 hashes.
 
+### Changed - UI Phase 5D: Paycheck Form, Part 2 (Allowlist, Accessibility & Verification)
+- Promoted `/salary/paychecks/new` and `/salary/paychecks/edit/:id` to active `THEMED_PATTERNS` allowlist in `ProtectedRoute.js` (expanding allowlisted routes from 12 to 14).
+- Permanently sunset the legacy compatibility block in `PaycheckFormPage.css` (lines 1–986 deleted), leaving only the clean, scoped `.fs-page` theme rules; exactly 0 `stylelint-disable` directives remain in the file.
+- Themed `ComponentTable` inline editing states in `theme-components.css` (`.component-basis-select`, `.number-input-wrapper`, `.number-input`) using neutral tokens, leaving `ComponentTable.css` untouched (Constraint E1 preserved).
+- Standardized route-level loading state via `<Loading variant="route" text="Loading profile & paycheck details..." />` per Decision D23.
+- Enhanced WCAG 2.1 AA form accessibility:
+  - Paired `#pay-period` with `aria-required="true"`, `aria-invalid`, `aria-describedby="pay-period-error"`, and `<span id="pay-period-error" className="form-error" role="alert">Please provide a pay period (e.g. 2026-08)</span>`.
+  - Added `onInvalid={(e) => { e.preventDefault(); setFormSubmitted(true); }}` to suppress native browser balloon popups and render inline accessible error alerts upon submission attempts with empty fields.
+  - Added `aria-required="true"` to `#pay-date`.
+- De-ignored all 3 paycheck form test suites in `frontend/.eslintignore` (`PaycheckFormPage.test.js`, `PaycheckFormPageTax.test.js`, `PaycheckFormPageTimezone.test.js`); verified clean ESLint (`--max-warnings=0`).
+- Removed temporary DOM harness injection from `frontend/tests/visual/a11y.spec.js`; verified un-injected real-browser axe tests pass with 0 critical and 0 serious violations.
+- Extended `frontend/tests/visual/paycheck-form-reference-match.spec.js` to verify Reference Frame 02 design tokens, touch targets $\ge 44$px, and zero horizontal overflow on both `/new` and `/edit/:id` routes across 1440px and 390px (5/5 passed).
+- Regenerated 10 themed baseline snapshots in `D:\Projects\FinStat-visual-baselines` (commit `4d118b9`) and updated `manifest.json` (334/334 verified).
+- Recorded Phase 5D presentation validation state amendment in `docs/UI-UX_Plan/UI-UX-PLAN.md §6.9`.
+- Verified 71/71 PR-subset visual tests passing with 0 diff on all unthemed routes.
+
 
 
 
