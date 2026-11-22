@@ -439,6 +439,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Captured 30 updated baselines in `D:\Projects\FinStat-visual-baselines` (commits `a15949a`, `3993e11`, and `ea11e6a`), verified PR-subset 71/71 passing with 0 diff on non-allowlisted routes (Invariant I13), reconciled full-suite 326-test run with 10 accepted AD14 diffs, and verified manifest integrity (334/334 baselines verified).
 - Completed Phase 5E migration, verified all 18 gates, awaiting user sign-off.
 
+### Changed - UI Phase 6A: Portfolio Dashboard (AD15 Horizontal Bar & D19 Mobile Compact Cards)
+- Promoted `/portfolio` to active `THEMED_PATTERNS` allowlist in `ProtectedRoute.js` (expanding active allowlist from 20 to 21 patterns).
+- Migrated Portfolio Dashboard (`PortfolioDashboard.js` + `Portfolio.css`) adhering to Canonical Reference Frame 03 (Dashboard Variant B: recessed `#0c0d0f` chrome, dark graphite KPI tiles `#1a1c20`, single interactive accent CTA `#14b8a6` with `#0d0e10` text, and tokenized cost-basis switcher).
+- Re-architected asset allocation visualization in `AllocationChart.js` per Recorded Amendment AD15: replaced legacy doughnut chart with a ranked horizontal bar chart (`indexAxis: 'y'`) capped at top 6 categories plus neutral "Other" rollup, using Chart.js accessible series grey palette (`getChartPalette()`) and `createPattern()` differentiation, accompanied by an accessible data table alternative with `Delta` gain/loss formatting.
+- Implemented Decision D19 mobile compact-expand cards in `HoldingsTable.js`: dense 10-column table on desktop collapses into vertical stacked cards at $\le 768$px with $\ge 44$px touch targets and zero page-level horizontal overflow at 390px.
+- Formatted 5 summary KPI tiles in `SummaryCards.js`: neutral valuation, currency-formatted balances, and `Delta` Gain/Loss indicators.
+- Added additive `barDefaults` configuration in `chartTheme.js` with 4px border radius ceiling and `indexAxis: 'y'`.
+- Purged all 4 Phase 6A portfolio files from `frontend/.eslintignore` with 0 errors and 0 warnings.
+- Created unit and component accessibility test suite `PortfolioDashboard.test.js` (14/14 tests green, including `jest-axe`).
+- Created Playwright reference match suite `portfolio-reference-match.spec.js` asserting Reference Frames 03/01 design tokens and D19 mobile compact-expand card behavior (3/3 tests green).
+- Verified Playwright real-browser axe audit (`a11y.spec.js`) with 0 critical and 0 serious violations.
+- Re-captured 5 visual baseline snapshots in `D:\Projects\FinStat-visual-baselines` (commit `e742200`), verified manifest integrity (334/334 baselines verified).
+- Completed Phase 6A migration, verified all gates, ready for taste checkpoint #4 walkthrough.
+
 
 
 

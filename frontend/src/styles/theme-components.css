@@ -1106,7 +1106,20 @@ html[data-fs-theme] .view-only-banner .view-only-icon {
 .fs-page .view-only-banner strong,
 html[data-fs-theme] .view-only-banner strong {
   color: var(--fs-warning);
-  font-weight: var(--fs-weight-semibold);
+  font-weight: 600;
+}
+
+/* Portfolio shared semantic indicators */
+html[data-fs-theme] .portfolio-status-dot.live {
+  background: var(--fs-positive);
+}
+
+html[data-fs-theme] .portfolio-status-dot.stale {
+  background: var(--fs-warning);
+}
+
+html[data-fs-theme] .portfolio-error-title {
+  color: var(--fs-negative);
 }
 
 .fs-page .protected-action-wrapper {

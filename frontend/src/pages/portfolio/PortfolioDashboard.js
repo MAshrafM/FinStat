@@ -105,7 +105,7 @@ const PortfolioDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="portfolio-page-wrapper">
+      <div className="fs-page portfolio-page-wrapper">
         <div className="portfolio-container">
           <Loading variant="route" text="Loading Unified Investment Portfolio..." />
         </div>
@@ -115,12 +115,16 @@ const PortfolioDashboard = () => {
 
   if (error) {
     return (
-      <div className="portfolio-page-wrapper">
+      <div className="fs-page portfolio-page-wrapper">
         <div className="portfolio-container">
-          <div className="empty-holdings-box" style={{ paddingTop: '80px' }}>
-            <h2 style={{ color: '#f87171' }}>Failed to Load Portfolio</h2>
+          <div className="empty-holdings-box portfolio-error-box">
+            <h2 className="portfolio-error-title">Failed to Load Portfolio</h2>
             <p>{error}</p>
-            <button className="refresh-btn" onClick={() => loadData(false)} style={{ marginTop: '16px' }}>
+            <button
+              type="button"
+              className="fs-btn fs-btn-secondary portfolio-retry-btn"
+              onClick={() => loadData(false)}
+            >
               Try Again
             </button>
           </div>
@@ -130,27 +134,15 @@ const PortfolioDashboard = () => {
   }
 
   return (
-    <div className="portfolio-page-wrapper">
+    <div className="fs-page portfolio-page-wrapper" data-testid="portfolio-dashboard-page">
       <div className="portfolio-container">
         {/* Viewer Mode Banner */}
         {userRole === 'viewer' && (
-          <div
-            style={{
-              background: 'rgba(56, 189, 248, 0.1)',
-              border: '1px solid rgba(56, 189, 248, 0.3)',
-              borderRadius: '12px',
-              padding: '12px 20px',
-              marginBottom: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              color: '#bae6fd',
-            }}
-          >
-            <span style={{ fontSize: '1.3rem' }}>👁️</span>
+          <div className="view-only-banner portfolio-view-banner" role="status" aria-live="polite">
+            <span className="view-only-icon" aria-hidden="true">👁️</span>
             <div>
               <strong>View-Only Mode:</strong> You are currently viewing portfolio data belonging to{' '}
-              <strong style={{ color: '#38bdf8' }}>
+              <strong className="viewer-parent-user">
                 {parentUsername ? `@${parentUsername}` : 'your workspace administrator'}
               </strong>
               .
@@ -169,7 +161,7 @@ const PortfolioDashboard = () => {
             {/* Cost-Basis Check Switcher */}
             <div className="cost-basis-switcher" title="Select stock cost-basis accounting method">
               <span className="cost-basis-label">Cost Basis:</span>
-              <div className="method-toggle-group">
+              <div className="method-toggle-group" role="group" aria-label="Cost basis accounting method">
                 {[
                   { key: 'average', label: 'Average' },
                   { key: 'fifo', label: 'FIFO' },
@@ -183,8 +175,9 @@ const PortfolioDashboard = () => {
                       className={`method-check-btn ${active ? 'active' : ''}`}
                       onClick={() => handleMethodChange(opt.key)}
                       title={`Calculate stock holdings using ${opt.label}`}
+                      aria-pressed={active}
                     >
-                      {active && <FaCheck className="method-check-icon" />}
+                      {active && <FaCheck className="method-check-icon" aria-hidden="true" />}
                       <span>{opt.label}</span>
                     </button>
                   );
@@ -195,16 +188,21 @@ const PortfolioDashboard = () => {
             {/* Rebalancing Navigation Button */}
             <Link
               to="/portfolio/rebalancing"
-              className="rebalance-nav-btn"
+              className="fs-btn fs-btn-secondary rebalance-nav-btn"
               title="View Portfolio Rebalancing & Allocation Advisory"
             >
-              <FaBalanceScale />
+              <FaBalanceScale aria-hidden="true" />
               <span>Rebalancing</span>
             </Link>
 
             {/* Refresh Prices */}
-            <button className="refresh-btn" onClick={handleRefresh} disabled={isRefreshing}>
-              <FaSyncAlt className={isRefreshing ? 'fa-spin' : ''} />
+            <button
+              type="button"
+              className="fs-btn fs-btn-primary refresh-btn"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <FaSyncAlt className={isRefreshing ? 'fa-spin' : ''} aria-hidden="true" />
               <span>{isRefreshing ? 'Refreshing...' : 'Refresh Prices'}</span>
             </button>
           </div>
@@ -213,7 +211,7 @@ const PortfolioDashboard = () => {
         {/* 1. Summary KPI Cards */}
         <SummaryCards summary={summary || {}} />
 
-        {/* 2. Asset Allocation Breakdown */}
+        {/* 2. Asset Allocation Breakdown (AD15 Ranked Horizontal Bars + Data Table) */}
         <AllocationChart
           allocations={allocations}
           totalInvested={summary?.totalInvested || 0}
