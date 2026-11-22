@@ -1434,6 +1434,54 @@ html[data-fs-theme] .view-only-banner strong {
   color: var(--fs-danger-hover);
 }
 
+/* Salary Component Table Inline Editing Controls (Phase 5D - E1/K1) */
+html[data-fs-theme] .fs-page .component-basis-select {
+  padding: 0.45rem 0.65rem;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+html[data-fs-theme] .fs-page .component-basis-select:focus-visible,
+html[data-fs-theme] .fs-page .component-basis-select:focus {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+  border-color: var(--fs-border-strong);
+}
+
+html[data-fs-theme] .fs-page .number-input-wrapper {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+html[data-fs-theme] .fs-page .number-input-wrapper .number-input {
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  text-align: right;
+  box-sizing: border-box;
+}
+
+html[data-fs-theme] .fs-page .number-input-wrapper .number-input:focus-visible,
+html[data-fs-theme] .fs-page .number-input-wrapper .number-input:focus {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+  border-color: var(--fs-border-strong);
+}
+
 /* ==========================================================================
    FinStat Design System — Scoped Overrides: App Launcher
    Governed by UI-UX-PLAN.md §4.16, §6.6 (Phase 2D)

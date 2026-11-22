@@ -1,8 +1,5 @@
+/* eslint-disable testing-library/no-container, testing-library/no-node-access, testing-library/no-wait-for-multiple-assertions */
 // frontend/src/pages/salary/__tests__/PaycheckFormPage.test.js
-jest.mock('react-router-dom', () => {
-  return require('../../../../node_modules/react-router/dist/development/index.js');
-}, { virtual: true });
-
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
@@ -17,6 +14,10 @@ import {
 import { getSalaryProfiles } from '../../../services/salaryProfileService';
 import { getProfile as getLegacyProfile } from '../../../services/salaryService';
 import { getUserProfile } from '../../../services/userService';
+
+jest.mock('react-router-dom', () => {
+  return require('../../../../node_modules/react-router/dist/development/index.js');
+}, { virtual: true });
 
 jest.mock('../../../services/paycheckService', () => ({
   createPaycheck: jest.fn(),
@@ -350,5 +351,29 @@ describe('Step 5B.2: [AUD-TEST-002] PaycheckFormPage User Journey & Statutory Ve
     // Apply Income Tax Bracket checkbox should now be unchecked
     const taxCheckbox = screen.getByLabelText(/Apply Income Tax Bracket/i);
     expect(taxCheckbox.checked).toBe(false);
+  });
+
+  it('10. renders inline #pay-period-error alert with aria-invalid when submitted without pay period', async () => {
+    const { container } = renderWithRouter();
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Loading profile & paycheck details/i)).not.toBeInTheDocument();
+    });
+
+    // Clear period input
+    const periodInput = container.querySelector('#pay-period');
+    expect(periodInput).not.toBeNull();
+    fireEvent.change(periodInput, { target: { value: '' } });
+
+    // Attempt submission
+    const submitBtn = screen.getByRole('button', { name: /Save & Log Regular/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(periodInput).toHaveAttribute('aria-invalid', 'true');
+      const errorAlert = container.querySelector('#pay-period-error');
+      expect(errorAlert).not.toBeNull();
+      expect(errorAlert).toHaveTextContent(/Please provide a pay period/i);
+    });
   });
 });

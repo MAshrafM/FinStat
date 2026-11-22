@@ -28,6 +28,8 @@ export const THEMED_PATTERNS = [
   '/salary/profiles',
   '/salary/rules',
   '/salary/paychecks',
+  '/salary/paychecks/new',
+  '/salary/paychecks/edit/:id',
 ];
 
 export const isThemedRoute = (pathname) => {

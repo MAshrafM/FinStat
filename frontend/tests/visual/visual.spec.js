@@ -50,7 +50,7 @@ test.describe('Visual Regression Suite', () => {
         });
 
         // Set up route-specific mocks if available
-        if (route.slug === 'salary-paychecks') {
+        if (route.slug.startsWith('salary-paycheck')) {
           await setupPaycheckMocks(page);
         }
 
