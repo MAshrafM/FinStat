@@ -273,19 +273,8 @@ frontend/src/styles/theme.css:470:.fs-badge {
 > **Taste Checkpoint 3 Approval Statement**:  
 > Rendered screenshots of `/salary/profiles` and `/salary/rules` at 1440px and 390px were reviewed against canonical Reference Frame 02 (Variant B — Form, `docs/UI-UX_Plan/reference/02-form.html`) on November 19, 2026. The stacked card layout, recessed graphite canvas (`#101114`), surface elevation (`#1a1c20`), border boundaries (`#34383f`), touch target padding ($\ge 44$px), and single interactive accent CTA (`#14b8a6` with `#0d0e10` ink) were approved by the developer. The 10 visual regression baseline updates committed in `D:\Projects\FinStat-visual-baselines` commit `e3ff18d` reflect these approved renders.
 
-````carousel
-![Reference Frame 02 Form](docs/ui-snapshots/phase-5a/reference-02-form-1440.png)
-<!-- slide -->
-![Salary Profiles 1440px](docs/ui-snapshots/phase-5a/salary-profiles-1440.png)
-<!-- slide -->
-![Salary Profiles Mobile 390px](docs/ui-snapshots/phase-5a/salary-profiles-390.png)
-<!-- slide -->
-![Salary Rules 1440px](docs/ui-snapshots/phase-5a/salary-rules-1440.png)
-<!-- slide -->
-![Salary Rules Mobile 390px](docs/ui-snapshots/phase-5a/salary-rules-390.png)
-````
-
-*Note*: Screenshots are tracked in the repository under `docs/ui-snapshots/phase-5a/` (committed in commit `4bcf825`).
+> **Visual Snapshots Storage Note (Architecture Decisions D5 / D21 & Phase 5E Governance)**:  
+> In accordance with the repository storage policy and user instruction to eliminate repository/production bloat, visual snapshot PNGs are preserved exclusively in the dedicated local repository `D:\Projects\FinStat-visual-baselines` (linked via Windows directory junction) rather than tracked in git `main`. The approved renders for Phase 5A (`/salary/profiles` and `/salary/rules` at 1440px and 390px) are archived in `FinStat-visual-baselines` commit `e3ff18d`.
 
 ---
 
@@ -548,7 +537,7 @@ Blocked by:  None
 Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules'] (cumulative: 11 routes)
 Visual diff: 0 regression diff across all 63 non-5A routes (68 snapshots at 0 diff); 10 baseline snapshots updated for Phase 5A routes (commit e3ff18d); certificate baseline updated in commit 40fbdf6 (commit badc468); 71/71 PR subset passing
 Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
-Screenshots: docs/ui-snapshots/phase-5a/reference-02-form-1440.png, docs/ui-snapshots/phase-5a/salary-profiles-1440.png, docs/ui-snapshots/phase-5a/salary-profiles-390.png, docs/ui-snapshots/phase-5a/salary-rules-1440.png, docs/ui-snapshots/phase-5a/salary-rules-390.png
+Screenshots: Preserved in FinStat-visual-baselines (commit e3ff18d) per Architecture Decision D5/D21
 Branch:      phase-ui-5a-payroll-core
 Merge SHA:   834ce55 (merged to main; docs in 4bcf825)
 ```

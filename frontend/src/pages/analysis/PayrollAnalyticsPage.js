@@ -4,6 +4,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { getPaychecks } from '../../services/paycheckService';
 import SummaryRow from '../../components/SummaryRow';
 import AnalysisCard from '../../components/AnalysisCard';
+import { Loading } from '../../components/ui';
+import './PayrollAnalyticsPage.css';
 
 const PayrollAnalyticsPage = () => {
   const location = useLocation();
@@ -127,13 +129,17 @@ const PayrollAnalyticsPage = () => {
   const isFiscal = cycleMode === 'fiscal';
   const hasData = paychecks.length > 0;
 
+  if (isLoading) {
+    return <Loading variant="route" text="Loading payroll analytics..." />;
+  }
+
   return (
-    <div className="page-container">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+    <div className="fs-page payroll-analytics-container">
+      <div className="page-header payroll-analytics-header">
         <div>
           <h1>Payroll Analytics</h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
-            Consolidated income and payroll analysis across Calendar and Fiscal cycles.
+          <p className="payroll-analytics-subtitle">
+            Consolidated income and payroll analysis across Calendar and Fiscal cycles
           </p>
         </div>
 
@@ -141,48 +147,23 @@ const PayrollAnalyticsPage = () => {
         <div
           role="group"
           aria-label="Payroll Cycle Mode"
-          style={{
-            display: 'inline-flex',
-            background: 'rgba(255, 255, 255, 0.06)',
-            borderRadius: '10px',
-            padding: '4px',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            gap: '4px',
-          }}
+          className="payroll-cycle-toggle-group"
         >
           <button
             type="button"
             onClick={() => handleCycleChange('calendar')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: !isFiscal ? '#6c7ce7' : 'transparent',
-              color: !isFiscal ? '#ffffff' : '#94a3b8',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
+            className={`cycle-toggle-btn ${!isFiscal ? 'active' : ''}`}
+            aria-pressed={!isFiscal}
           >
-            📅 Calendar Year
+            Calendar Year
           </button>
           <button
             type="button"
             onClick={() => handleCycleChange('fiscal')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: isFiscal ? '#6c7ce7' : 'transparent',
-              color: isFiscal ? '#ffffff' : '#94a3b8',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
+            className={`cycle-toggle-btn ${isFiscal ? 'active' : ''}`}
+            aria-pressed={isFiscal}
           >
-            🏛️ Fiscal Year
+            Fiscal Year
           </button>
         </div>
       </div>
@@ -217,11 +198,10 @@ const PayrollAnalyticsPage = () => {
           )}
         </>
       ) : (
-        !isLoading && <p>No paycheck data available to analyze.</p>
+        <p className="no-data-msg">No paycheck data available to analyze.</p>
       )}
     </div>
   );
 };
 
 export default PayrollAnalyticsPage;
-

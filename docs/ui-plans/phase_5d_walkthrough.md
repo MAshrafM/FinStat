@@ -25,7 +25,7 @@ Blocked by:  None
 Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks', '/salary/paychecks/new', '/salary/paychecks/edit/:id'] (cumulative: 14 routes)
 Visual diff: 0 diff across all 71 PR subset routes (0 diff on non-allowlisted routes; exactly 10 accepted diffs matching Frame 02 across 5 viewports); 334/334 baselines verified
 Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
-Screenshots: docs/ui-snapshots/phase-5d/salary-paychecks-new-1440.png, docs/ui-snapshots/phase-5d/salary-paychecks-new-390.png, docs/ui-snapshots/phase-5d/salary-paychecks-edit-1440.png, docs/ui-snapshots/phase-5d/salary-paychecks-edit-390.png
+Screenshots: Preserved in FinStat-visual-baselines (commit 4d118b9) per Architecture Decision D5/D21
 Branch:      phase-ui-5d-paycheck-form-b
 Merge SHA:   merged to main
 ```
@@ -87,24 +87,19 @@ Per UI-UX-PLAN §7.1, visual regression testing is walkthrough-evidenced. The lo
 
 ## 4. Visual Comparison & Rendered Snapshots
 
-Snapshots captured in Playwright Chromium with deterministic time and mock fixtures. Images are permanently archived in `docs/ui-snapshots/phase-5d/`:
+> **Visual Snapshots Storage Note (Architecture Decisions D5 / D21 & Phase 5E Governance)**:  
+> In accordance with the repository storage policy and user instruction to eliminate repository/production bloat, visual snapshot PNGs are preserved exclusively in the dedicated local repository `D:\Projects\FinStat-visual-baselines` (linked via Windows directory junction) rather than tracked in git `main`. The approved renders for Phase 5D (`/salary/paychecks/new` and `/salary/paychecks/edit/:id` at 1440px and 390px) are archived in `FinStat-visual-baselines` commit `4d118b9`.
 
 ### 4.1 New Paycheck Route (`/salary/paychecks/new`)
-
-![New Paycheck Desktop (1440px)](../ui-snapshots/phase-5d/salary-paychecks-new-1440.png)
 *Desktop (1440px): Canonical Reference Frame 02 match. Dark graphite canvas (`#101114`), stacked field cards (`var(--fs-surface)` = `#1a1c20`, border `#34383f`), single primary accent Save CTA (`#14b8a6` with `#0d0e10` ink text), 2px left indicator cue on selected disbursement button, tabular figures on numeric preview values, and 4px input radii.*
 
-![New Paycheck Mobile (390px)](../ui-snapshots/phase-5d/salary-paychecks-new-390.png)
 *Mobile (390px): Fully responsive mobile presentation. Zero page-level horizontal overflow (`scrollWidth <= clientWidth`), wrapped action rows, 100% width mobile input fields, touch targets $\ge 44$px.*
 
 ---
 
 ### 4.2 Edit Paycheck Route (`/salary/paychecks/edit/:id`)
-
-![Edit Paycheck Desktop (1440px)](../ui-snapshots/phase-5d/salary-paychecks-edit-1440.png)
 *Desktop (1440px): Edit paycheck route populated with existing record data, live recalculations, and themed component table.*
 
-![Edit Paycheck Mobile (390px)](../ui-snapshots/phase-5d/salary-paychecks-edit-390.png)
 *Mobile (390px): Edit paycheck form collapsed into mobile layout with compact tabular sections and full-width action buttons.*
 
 ---

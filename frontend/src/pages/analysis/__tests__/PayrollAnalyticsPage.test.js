@@ -1,4 +1,11 @@
+/* eslint-disable testing-library/no-wait-for-multiple-assertions */
 // frontend/src/pages/analysis/__tests__/PayrollAnalyticsPage.test.js
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import PayrollAnalyticsPage from '../PayrollAnalyticsPage';
+import { getPaychecks } from '../../../services/paycheckService';
+
 jest.mock('react-router-dom', () => {
   return require('../../../../node_modules/react-router/dist/development/index.js');
 }, { virtual: true });
@@ -8,12 +15,6 @@ jest.mock('react-chartjs-2', () => ({
   Bar: () => <div data-testid="bar-chart">Bar Chart</div>,
   Pie: () => <div data-testid="pie-chart">Pie Chart</div>,
 }));
-
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import PayrollAnalyticsPage from '../PayrollAnalyticsPage';
-import { getPaychecks } from '../../../services/paycheckService';
 
 jest.mock('../../../services/paycheckService', () => ({
   getPaychecks: jest.fn(),
@@ -83,6 +84,7 @@ describe('Step 6A.3: [SIMP-002] PayrollAnalyticsPage Unit Tests', () => {
 
     await waitFor(() => {
       expect(getPaychecks).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole('button', { name: /Fiscal Year/i })).toBeInTheDocument();
     });
 
     const fiscalToggle = screen.getByRole('button', { name: /Fiscal Year/i });

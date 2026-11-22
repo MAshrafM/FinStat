@@ -1,3 +1,4 @@
+/* eslint-disable import/first, testing-library/no-wait-for-multiple-assertions */
 // frontend/src/pages/salary/__tests__/SalaryProfilePage.test.js
 jest.mock('react-router-dom', () => {
   return require('../../../../node_modules/react-router/dist/development/index.js');

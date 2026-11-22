@@ -1,326 +1,10 @@
-/* frontend/src/pages/salary/SalaryProfile.css */
-
-/* --- Page Header --- */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap; /* Allow wrapping on small screens */
-  gap: 1rem;
-}
-
-.page-header h1 {
-  margin: 0;
-}
-
-/* Re-using the .nav-button style from Navbar.css for consistency */
-.nav-button {
-  background-color: #009879;
-  color: white;
-  padding: 0.7rem 1.2rem;
-  border-radius: 5px;
-  text-decoration: none;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background-color 0.2s;
-}
-.nav-button:hover {
-  background-color: #007a63;
-}
-
-
-/* --- Profile Grid Layout --- */
-.profile-grid {
-  display: grid;
-  /* Create responsive columns that are at least 400px wide */
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2rem;
-}
-
-
-/* --- Profile Card Styling --- */
-.profile-card {
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column; /* Stack card sections vertically */
-  overflow: hidden; /* Ensures border-radius is respected by children */
-}
-
-/* --- Card Header --- */
-.card-header {
-  background-color: #2c3e50;
-  color: white;
-  padding: 1rem 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.header-content {
-  flex-grow: 1;
-}
-
-.header-action-icon {
-  color: #bdc3c7;
-  font-size: 1.5rem;
-  transition: color 0.2s, transform 0.2s;
-}
-
-.header-action-icon:hover {
-  color: #ffffff;
-  transform: scale(1.1);
-}
-
-.card-header h3 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
-.card-header p {
-  margin: 0.25rem 0 0;
-  color: #bdc3c7; /* A light gray for the subtitle */
-  font-style: italic;
-}
-
-/* --- Card Body --- */
-.card-body {
-  padding: 1.5rem;
-  flex-grow: 1; /* Allows the body to take up available space */
-}
-
-.card-body h4 {
-  margin-top: 0;
-  margin-bottom: 1rem;
-  color: #34495e;
-  border-bottom: 1px solid #ecf0f1;
-  padding-bottom: 0.5rem;
-}
-
-.card-body ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.card-body li {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #f4f6f6;
-}
-
-.card-body li:last-child {
-  border-bottom: none;
-}
-
-.card-body li span {
-  color: #7f8c8d; /* Muted color for the label */
-}
-
-.card-body li strong {
-  color: #2c3e50;
-}
-
-/* --- Card Footer --- */
-.card-footer {
-  background-color: #f8f9fa;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #e9ecef;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.gross-estimate {
-  text-align: left;
-}
-
-.gross-estimate span {
-  font-size: 0.9rem;
-  color: #6c757d;
-}
-
-.gross-estimate strong {
-  display: block;
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #009879; /* Theme color */
-}
-
-.prepaid strong{
-    color: #007798;
-}
-
-.card-actions {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.card-actions a {
-  color: #34495e;
-  font-size: 1.5rem;
-  transition: color 0.2s, transform 0.2s;
-}
-
-.card-actions a:hover {
-  color: #009879;
-  transform: scale(1.1);
-}
-
-/* Add this at the end of frontend/src/pages/salary/SalaryProfile.css */
-
-/* --- Action Buttons in Card Footer --- */
-.action-button {
-  /* Base styling for both buttons and links to look the same */
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  font-size: 0.9rem;
-  font-weight: bold;
-  text-decoration: none;
-  border: 1px solid transparent;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-/* Specific style for the primary "Update" button */
-.action-button:first-of-type {
-  background-color: #3498db; /* A nice blue for editing */
-  color: white;
-}
-
-.action-button:first-of-type:hover {
-  background-color: #2980b9;
-  transform: translateY(-2px);
-}
-
-/* Specific style for the secondary "History" link button */
-.action-button:last-of-type {
-  background-color: transparent;
-  color: #34495e;
-  border-color: #bdc3c7;
-}
-
-.action-button:last-of-type:hover {
-  background-color: #ecf0f1;
-  border-color: #95a5a6;
-}
-
-
-/* --- Cancel Button (for use below the form) --- */
-.cancel-button {
-  display: block;
-  width: 90%;
-  margin: 1rem auto 0; /* Center it below the form */
-  padding: 12px 15px;
-  background-color: #e74c3c; /* A distinct red for a 'cancel' or 'back' action */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  text-align: center;
-  transition: background-color 0.2s;
-}
-
-.cancel-button:hover {
-  background-color: #c0392b;
-}
-
-.empty-history-card .card-body {
-  text-align: center;
-  padding: 2rem;
-}
-
-.empty-history-card p {
-  color: #6c757d;
-  font-size: 1.1rem;
-  line-height: 1.6;
-}
-
-
-.button-group {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1.5rem;
-}
-
-.submit-button,
-.cancel-button {
-    flex: 1;
-    padding: 15px;
-    border-radius: 5px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.submit-button {
-    background-color: #009879;
-    color: white;
-    border: none;
-}
-
-.cancel-button {
-    background-color: #fff;
-    color: #dc3545;
-    border: 2px solid #dc3545;
-}
-
-.submit-button:hover {
-    background-color: #007a63;
-}
-
-.cancel-button:hover {
-    background-color: #dc3545;
-    color: #fff;
-}
-
-@media (max-width: 768px) {
-    .button-group {
-        gap: 0.8rem;
-        margin-top: 1rem;
-    }
-
-    .submit-button,
-    .cancel-button {
-        padding: 12px;
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .button-group {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .submit-button,
-    .cancel-button {
-        padding: 10px;
-        font-size: 0.95rem;
-    }
-    a.cancel-button{
-      width: 90%;
-    }
-
-    .profile-grid {
-        grid-template-columns: repeat(auto-fit, minmax(370px, 1fr)); /* Single column layout on small screens */
-    }
-}
+/* frontend/src/pages/salary/SalaryProfile.css
+ * FinStat — Scoped dark graphite rules for allowlisted salary routes (.fs-page)
+ * Legacy block sunset in Phase 5E per UI-UX-PLAN.md §6.9
+ */
 
 /* ========================================================
-   Scoped dark graphite rules for allowlisted pages (.fs-page)
+   1. Salary Profiles Hub (.fs-page)
    ======================================================== */
 
 .fs-page .salary-header-actions {
@@ -333,7 +17,7 @@
 .fs-page .salary-profile-card,
 .fs-page .profile-card {
   background-color: var(--fs-surface);
-  border: 1px solid var(--fs-border);
+  border: var(--fs-border-width) solid var(--fs-border);
   border-radius: var(--fs-radius-lg);
   box-shadow: none;
   display: flex;
@@ -350,7 +34,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--fs-border);
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
 }
 
 .fs-page .default-profile-header {
@@ -370,8 +54,9 @@
 .fs-page .card-header h3,
 .fs-page .profile-card-name {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
   color: var(--fs-text);
 }
 
@@ -379,7 +64,8 @@
 .fs-page .profile-card-subtitle {
   margin: 0.25rem 0 0;
   color: var(--fs-text-3);
-  font-size: 0.875rem;
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-xs);
 }
 
 .fs-page .header-action-icon {
@@ -407,9 +93,10 @@
   margin-top: 0;
   margin-bottom: 1rem;
   color: var(--fs-text);
-  font-size: 1rem;
-  font-weight: 600;
-  border-bottom: 1px solid var(--fs-border);
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-semibold);
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
   padding-bottom: 0.5rem;
 }
 
@@ -423,7 +110,7 @@
   display: flex;
   justify-content: space-between;
   padding: 0.6rem 0;
-  border-bottom: 1px solid var(--fs-border);
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
 }
 
 .fs-page .salary-breakdown-list li:last-child {
@@ -432,10 +119,14 @@
 
 .fs-page .salary-breakdown-list li span {
   color: var(--fs-text-3);
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
 }
 
 .fs-page .salary-breakdown-list li strong {
   color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
 }
 
 .fs-page .no-salary-details-text {
@@ -446,7 +137,7 @@
 .fs-page .card-footer {
   background-color: var(--fs-surface-sunken);
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--fs-border);
+  border-top: var(--fs-border-width) solid var(--fs-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -459,15 +150,17 @@
 }
 
 .fs-page .gross-estimate span {
-  font-size: 0.85rem;
+  font-size: var(--fs-text-xs);
   color: var(--fs-text-3);
+  font-family: var(--fs-font-sans);
 }
 
 .fs-page .gross-estimate strong {
   display: block;
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-size: var(--fs-text-xl);
+  font-weight: var(--fs-weight-semibold);
   color: var(--fs-text);
+  font-family: var(--fs-font-sans);
 }
 
 .fs-page .gross-estimate.prepaid strong {
@@ -488,8 +181,9 @@
 
 .fs-page .section-title {
   color: var(--fs-text);
-  font-size: 1.15rem;
-  font-weight: 600;
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-base);
+  font-weight: var(--fs-weight-semibold);
   margin-bottom: 1rem;
 }
 
@@ -519,12 +213,14 @@
 
 .fs-page .metric-label {
   color: var(--fs-text-3);
-  font-size: 0.9rem;
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-xs);
 }
 
 .fs-page .metric-value {
   color: var(--fs-text);
-  font-size: 0.95rem;
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
 }
 
 .fs-page .profile-card-footer {
@@ -545,12 +241,12 @@
   margin-top: 0;
   margin-bottom: 0.75rem;
   color: var(--fs-text);
-  font-size: 1.1rem;
+  font-size: var(--fs-text-base);
 }
 
 .fs-page .salary-empty-state p {
   color: var(--fs-text-3);
-  font-size: 0.95rem;
+  font-size: var(--fs-text-sm);
   line-height: 1.5;
   margin-bottom: 1.5rem;
 }
@@ -559,6 +255,373 @@
   margin-top: 1rem;
   text-align: center;
 }
+
+/* ========================================================
+   2. Salary History (.fs-page .salary-history-container)
+   ======================================================== */
+
+.salary-history-container {
+  padding: 1.5rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.salary-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.salary-history-header h1 {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-2xl);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  margin: 0 0 0.25rem 0;
+}
+
+.salary-history-subtitle {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-3);
+  margin: 0;
+}
+
+.salary-history-table-wrapper {
+  background-color: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  overflow-x: auto;
+}
+
+.salary-history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.salary-history-table th.action-header {
+  text-align: right;
+  padding-right: 1.5rem;
+}
+
+.salary-history-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.salary-history-actions .fs-btn {
+  min-height: 28px;
+  min-width: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile Cards (D19 Pattern) */
+.salary-history-cards {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.salary-history-card {
+  background-color: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.salary-history-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  padding-bottom: 0.5rem;
+}
+
+.salary-history-card-date {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text-2);
+}
+
+.salary-history-card-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.salary-history-card-primary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.salary-history-label {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.salary-history-value {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+}
+
+.salary-history-expander {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--fs-text-xs);
+  padding: 0.5rem 0;
+  border-top: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-2);
+}
+
+.expander-chevron {
+  transition: transform 0.2s ease;
+}
+
+.expander-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.salary-history-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.5rem 1rem;
+  background-color: var(--fs-surface-raised);
+  border-radius: var(--fs-radius-sm);
+  padding: 0.75rem 1rem;
+  border: var(--fs-border-width) solid var(--fs-border);
+}
+
+.breakdown-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.breakdown-label {
+  font-family: var(--fs-font-sans);
+  font-size: 0.7rem;
+  color: var(--fs-text-3);
+  text-transform: uppercase;
+}
+
+.breakdown-value {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+  color: var(--fs-text);
+}
+
+/* ========================================================
+   3. Forms (Reference Frame 02: EditProfile & EditHistory)
+   ======================================================== */
+
+.edit-profile-page-container,
+.edit-history-page-container {
+  padding: 1.5rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.edit-profile-header,
+.edit-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.edit-profile-header h1,
+.edit-history-header h1 {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-2xl);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  margin: 0 0 0.25rem 0;
+}
+
+.edit-profile-subtitle,
+.edit-history-subtitle {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-3);
+  margin: 0;
+}
+
+.fs-form-card {
+  background-color: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.fs-form-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+.fs-form-card-header h3 {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-base);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  margin: 0;
+}
+
+.fs-form-icon {
+  color: var(--fs-text-3);
+}
+
+.fs-stacked-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fs-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.fs-label {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text-2);
+}
+
+.required-mark {
+  color: var(--fs-text-3);
+}
+
+.history-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.fs-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: var(--fs-border-width) solid var(--fs-border);
+}
+
+/* ========================================================
+   4. Update Salary (.fs-page .update-salary-container)
+   ======================================================== */
+
+.update-salary-container {
+  padding: 1.5rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.update-salary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.update-salary-header h1 {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-2xl);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+  margin: 0 0 0.25rem 0;
+}
+
+.update-salary-subtitle {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-3);
+  margin: 0;
+}
+
+.update-salary-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.update-salary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.update-salary-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.update-kpi-card {
+  background-color: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.update-kpi-label {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.update-kpi-value {
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-xl);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+}
+
+.update-salary-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* ========================================================
+   5. Responsive Viewports (<=768px)
+   ======================================================== */
 
 @media (max-width: 768px) {
   .fs-page .salary-header-actions {
@@ -591,6 +654,42 @@
   .fs-page .salary-card-actions .fs-btn,
   .fs-page .card-actions .fs-btn {
     flex: 1;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .salary-history-container,
+  .edit-profile-page-container,
+  .edit-history-page-container,
+  .update-salary-container {
+    padding: 1rem;
+  }
+
+  .salary-history-table-wrapper {
+    display: none;
+  }
+
+  .salary-history-cards {
+    display: flex;
+  }
+
+  .salary-history-header,
+  .edit-profile-header,
+  .edit-history-header,
+  .update-salary-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fs-form-actions,
+  .update-salary-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .fs-form-actions .fs-btn,
+  .update-salary-actions .fs-btn {
+    width: 100%;
     min-height: 44px;
     justify-content: center;
   }

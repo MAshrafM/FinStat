@@ -30,6 +30,12 @@ export const THEMED_PATTERNS = [
   '/salary/paychecks',
   '/salary/paychecks/new',
   '/salary/paychecks/edit/:id',
+  '/salary-profile/history',
+  '/salary-profile/edit',
+  '/salary-profile/history/edit/:historyId',
+  '/salary-profile/update',
+  '/analysis/payroll',
+  '/salary/simulator',
 ];
 
 export const isThemedRoute = (pathname) => {

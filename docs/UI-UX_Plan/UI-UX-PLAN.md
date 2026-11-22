@@ -876,14 +876,14 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | `/paycheck-log/new` → above | redirect | 5D | n/a | n/a | Verify redirect intact |
 | `/salary/paychecks/edit/:id` | `pages/salary/PaycheckFormPage` | 5D | ☑ | ☑ | Same component |
 | `/paycheck-log/edit/:id` → list | redirect | 5B | n/a | n/a | Verify redirect intact |
-| `/salary-profile/history` | `pages/salary/SalaryHistory` | 5E | ☐ | ☐ | |
-| `/salary-profile/edit` | `pages/salary/EditProfilePage` | 5E | ☐ | ☐ | |
-| `/salary-profile/history/edit/:historyId` | `pages/salary/EditHistoryRecord` | 5E | ☐ | ☐ | |
-| `/salary-profile/update` | `pages/salary/UpdateSalary` | 5E | ☐ | ☐ | 38 inline styles |
-| `/analysis/payroll` | `pages/analysis/PayrollAnalyticsPage` | 5E | ☐ | ☐ | Metric cards; no chart today |
+| `/salary-profile/history` | `pages/salary/SalaryHistory` | 5E | ☑ | ☑ | |
+| `/salary-profile/edit` | `pages/salary/EditProfilePage` | 5E | ☑ | ☑ | |
+| `/salary-profile/history/edit/:historyId` | `pages/salary/EditHistoryRecord` | 5E | ☑ | ☑ | |
+| `/salary-profile/update` | `pages/salary/UpdateSalary` | 5E | ☑ | ☑ | 38 inline styles |
+| `/analysis/payroll` | `pages/analysis/PayrollAnalyticsPage` | 5E | ☑ | ☑ | Metric cards; no chart today |
 | `/analysis/calendar` → above | redirect | 5E | n/a | n/a | `?cycle=calendar` |
 | `/analysis/fiscal` → above | redirect | 5E | n/a | n/a | `?cycle=fiscal` |
-| `/salary/simulator` | `pages/salary/TaxSimulator` | 5E | ☐ | ☐ | Egyptian statutory tax simulation |
+| `/salary/simulator` | `pages/salary/TaxSimulator` | 5E | ☑ | ☑ | Egyptian statutory tax simulation |
 
 **Phase 5 count: 19 (11 rendering + 8 redirects).**
 
@@ -1056,7 +1056,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **5B** | Paycheck log | `phase-ui-5b-paycheck-log` | ☑ | ☑ |
 | **5C** | Paycheck form, part 1 (styles only) | `phase-ui-5c-paycheck-form-a` | ☑ | ☑ |
 | **5D** | Paycheck form, part 2 + allowlist | `phase-ui-5d-paycheck-form-b` | ☑ | ☑ |
-| **5E** | History, update, analytics | `phase-ui-5e-payroll-history` | ☐ | ☐ |
+| **5E** | History, update, analytics | `phase-ui-5e-payroll-history` | ☑ | ☑ |
 | **6A** | Portfolio dashboard | `phase-ui-6a-portfolio` | ☐ | ☐ |
 | **6B** | Rebalancing | `phase-ui-6b-rebalancing` | ☐ | ☐ |
 | **7A** | Trades + trade summary | `phase-ui-7a-trades` | ☐ | ☐ |
@@ -1715,22 +1715,22 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 5E — History, update, analytics, tax simulator
 
-- [ ] `SalaryHistory.js`, `EditProfilePage.js`, `EditHistoryRecord.js` → dark tables/forms.
-- [ ] `UpdateSalary.js` (38) → classes.
-- [ ] `PayrollAnalyticsPage.js` (5 inline styles) + `CalendarAnalysis.js` / `FiscalAnalysis.js` — token colours, calendar/fiscal cycle chips; no chart exists today.
-- [ ] `TaxSimulator.js` + `TaxSimulator.css` — statutory Egyptian tax bracket simulation cards, progressive slabs visualizer.
-- [ ] Verify cycle query params (`?cycle=calendar|fiscal`) and redirects.
-- [ ] Remove converted salary/history/analytics components from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add the six remaining patterns** (history, edit, history-edit, update, analytics, simulator).
+- [x] `SalaryHistory.js`, `EditProfilePage.js`, `EditHistoryRecord.js` → dark tables/forms.
+- [x] `UpdateSalary.js` (38) → classes.
+- [x] `PayrollAnalyticsPage.js` (5 inline styles) + `CalendarAnalysis.js` / `FiscalAnalysis.js` — token colours, calendar/fiscal cycle chips; no chart exists today.
+- [x] `TaxSimulator.js` + `TaxSimulator.css` — statutory Egyptian tax bracket simulation cards, progressive slabs visualizer.
+- [x] Verify cycle query params (`?cycle=calendar|fiscal`) and redirects.
+- [x] Remove converted salary/history/analytics components from `frontend/.eslintignore`; verify clean ESLint.
+- [x] **Add the six remaining patterns** (history, edit, history-edit, update, analytics, simulator).
 
 **Exit gate Phase 5:**
-- [ ] 19 route entries themed or redirect-verified (11 rendering + 8 redirects).
-- [ ] Zero teal in the payroll domain.
-- [ ] Orphan CSS deleted.
-- [ ] **Payroll calculation fixtures byte-identical** to the 1C snapshot.
-- [ ] `PaycheckFormPage.js` diff contains no hook, handler, or calculation change.
-- [ ] Build, tests, lint, axe (real-browser Playwright axe test passes un-injected on all allowlisted payroll routes), screenshots.
-- [ ] Zero diff on non-allowlisted routes.
+- [x] 19 route entries themed or redirect-verified (11 rendering + 8 redirects).
+- [x] Zero teal in the payroll domain.
+- [x] Orphan CSS deleted.
+- [x] **Payroll calculation fixtures byte-identical** to the 1C snapshot.
+- [x] `PaycheckFormPage.js` diff contains no hook, handler, or calculation change.
+- [x] Build, tests, lint, axe (real-browser Playwright axe test passes un-injected on all allowlisted payroll routes), screenshots (visual baselines preserved in FinStat-visual-baselines per D5/D21).
+- [x] Zero diff on non-allowlisted routes.
 
 **User-facing acceptance criterion:** "A user can create and edit a paycheck on a 390 px phone, and the computed net/tax/insurance values are identical to before the migration."
 
@@ -2524,6 +2524,7 @@ Append one row per sub-phase. Never edit past rows.
 | — | 2026-11-20 | Phase 5C implementation plan approved (v8): Recorded Plan Amendments 1–6 in §6.9 and §6.16 (temporary legacy compatibility block with Phase 5D sunset and scoped I14/I16 waiver; .eslintignore de-ignoring moved to 5C; complete 77 inline styles extraction in 5C; D23 loading primitive deferred to 5D; playwright reference matcher extended; DISBURSEMENT_TYPES color property extraction). Page-local semantic classes only; Frame 02 input assertions aligned with theme-components.css; production build scheduled before PR-subset gate. | 5C | None | 6ae6136 (v8 plan commit; amendments in f3232f6) |
 | 5C | 2026-11-20 | Paycheck form, part 1 (styles only): styles-only refactor of PaycheckFormPage.js and PaycheckFormPage.css (/salary/paychecks/new and /salary/paychecks/edit/:id); zero allowlist change (exactly 12 allowlisted routes maintained); eliminated all 77 inline styles; removed presentation color from DISBURSEMENT_TYPES (Amendment 6); paired 20 form inputs with explicit labels; removed PaycheckFormPage.js from frontend/.eslintignore (0 errors, 0 warnings); authored dual-block CSS with legacy block under sunset waiver (Amendment 4) and dormant .fs-page block aligned to Reference Frame 02; component axe test passing (1/1); Playwright axe passing (3/3); Frame 02 Playwright reference spec passing (3/3); production build compiled successfully; PR-subset visual regression passing 71/71 with 0 diff on all unthemed routes; 334/334 baselines verified; anti-slop audits clean. | 5D (Paycheck form part 2 & allowlist) | None | merged to main |
 | 5D | 2026-11-22 | Paycheck form, part 2 (allowlist, accessibility & verification): promoted /salary/paychecks/new and /salary/paychecks/edit/:id to active allowlist (12 -> 14 routes); permanently deleted legacy CSS block in PaycheckFormPage.css (986 lines, 0 stylelint-disable remaining); themed component-table inline editing controls in theme-components.css; adopted <Loading variant="route" /> per D23; enhanced WCAG 2.1 AA form accessibility (aria-required, aria-invalid, aria-describedby, inline role="alert" .form-error); added unit test 10 for inline error alert; removed temporary harness injection in a11y.spec.js; un-injected real-browser axe test passing 0 critical/serious violations; reference match spec passing 5/5; regenerated 10 baselines in D:\Projects\FinStat-visual-baselines (commit 4d118b9); manifest 334/334 verified; PR-subset 71/71 passing; 14 verification gates passed. | 5E (Tax simulator conversion) | None | 190523a, aea1cf1, b4b94be (working on branch phase-ui-5d-paycheck-form-b) |
+| 5E | 2026-11-22 | History, update, analytics, tax simulator: converted all remaining 6 payroll routes (/salary-profile/history, /salary-profile/edit, /salary-profile/history/edit/:historyId, /salary-profile/update, /analysis/payroll, /salary/simulator) and canonical redirects; active allowlist expanded from 14 to 20 patterns; Reference Frame 01 dense tables with D19 mobile cards; Reference Frame 02 stacked field cards; Reference Frame 03 dashboard with Chart.js accessible series palette; scoped SummaryRow and AnalysisCard preventing leakage to unthemed pages; purged 7 Phase 5 entries from .eslintignore (0 warnings); un-injected real-browser axe test passing 0 critical/serious violations (8/8 tests green: 1 setup + 7 routes); calculations characterization passing (11/11); reference match passing 7/7 (1 setup + 6 reference tests); 30 baselines captured in FinStat-visual-baselines (commits a15949a, 3993e11, and ea11e6a); manifest 334/334 verified; PR subset 71/71 passing; full 326-test run reconciled (316 passing + 10 AD14 accepted diffs, 0 unexplained diffs); 18 verification gates passed. Phase 5 complete. | 6A (Portfolio dashboard) | None | c11f023 (branch phase-ui-5e-payroll-history) |
 
 ```
 Sub-phase:   1A
@@ -2761,6 +2762,20 @@ Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests gree
 Screenshots: docs/ui-snapshots/phase-5d/salary-paychecks-new-1440.png, docs/ui-snapshots/phase-5d/salary-paychecks-new-390.png, docs/ui-snapshots/phase-5d/salary-paychecks-edit-1440.png, docs/ui-snapshots/phase-5d/salary-paychecks-edit-390.png
 Branch:      phase-ui-5d-paycheck-form-b
 Merge SHA:   merged to main
+```
+
+```
+Sub-phase:   5E
+Status:      done
+Done:        Promoted all remaining payroll routes to active allowlist (14 -> 20 patterns); themed Salary History (Frame 01 dense table, compact-expand mobile cards <= 768px), Edit Profile (Frame 02 stacked field cards), Edit History Item (Frame 02), Update Salary (Frame 02 + ComponentTable inline editing), Payroll Analytics (Frame 03 dashboard KPIs, dark surface cards, Chart.js accessible palette), and Statutory Tax Simulator (Frame 02 interactive stacked cards, bracket slices, simulation debouncing); scoped SummaryRow and AnalysisCard styles under .payroll-analytics-container to prevent leakage to unthemed pages; purged 7 Phase 5 files from .eslintignore (0 warnings); verified un-injected real-browser axe test passing 0 critical/serious violations (8/8 tests green: 1 setup + 7 routes); reference match spec passing 7/7 (1 setup + 6 reference tests); calculations characterization passing 11/11; captured 30 updated baselines in D:\Projects\FinStat-visual-baselines (commits a15949a, 3993e11, and ea11e6a); manifest 334/334 verified; PR-subset 71/71 passing (0 diff on all non-allowlisted routes; Invariant I13 preserved); full 326-test run reconciled (316 passing + 10 AD14 accepted diffs, 0 unexplained diffs); 18 verification gates passed. Phase 5 complete.
+Next:        Phase 6A (Portfolio dashboard)
+Blocked by:  None
+Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks', '/salary/paychecks/new', '/salary/paychecks/edit/:id', '/salary-profile/history', '/salary-profile/edit', '/salary-profile/history/edit/:historyId', '/salary-profile/update', '/analysis/payroll', '/salary/simulator'] (cumulative: 20 routes)
+Visual diff: 0 diff across all 71 PR subset routes (0 diff on non-allowlisted routes; Invariant I13 preserved); 30 newly captured Phase 5E baselines matching Frames 01, 02, and 03 across 5 viewports; full 326-test run reconciled (316 passing, 10 pre-existing baseline debt failures accepted under AD14); 334/334 baselines verified
+Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
+Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
+Branch:      phase-ui-5e-payroll-history
+Implementation SHA: c11f023 (branch phase-ui-5e-payroll-history)
 ```
 
 ### Sub-phase note template

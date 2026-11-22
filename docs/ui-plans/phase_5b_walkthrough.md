@@ -71,16 +71,13 @@ All 10 required preconditions from Implementation Plan §2.5 were verified on `p
 
 ## 3. Visual Comparison & Rendered Evidence
 
-The screenshots below are tracked in the repository under `docs/ui-snapshots/phase-5b/` and showcase the data-backed dark graphite layout across viewports:
+> **Visual Snapshots Storage Note (Architecture Decisions D5 / D21 & Phase 5E Governance)**:  
+> In accordance with the repository storage policy and user instruction to eliminate repository/production bloat, visual snapshot PNGs are preserved exclusively in the dedicated local repository `D:\Projects\FinStat-visual-baselines` (linked via Windows directory junction) rather than tracked in git `main`. The approved renders for Phase 5B (`/salary/paychecks` at 1440px and 390px) are archived in `FinStat-visual-baselines` commits `124314f` and `2aa3dc6`.
 
 ### 3.1 Desktop Viewport (1440px)
-![Paycheck Log Desktop 1440px](docs/ui-snapshots/phase-5b/salary-paychecks-1440.png)
-
 *Desktop Viewport (1440px): Standard `PageHeader` with secondary "Salary Profile & Components" and primary "Log Paycheck" buttons; 3 neutral KPI summary cards (`Total Cash`, `Total Prepaid`, `Overall Total`); yearly growth cards with `<Delta tone="neutral" ... />`; pill-shaped year filter chips (`.paycheck-filter-chip`); and dense tabular disbursement log with month grouping (`rowSpan`), neutral disbursement badges, and tabular numerals (`.fs-num`).*
 
 ### 3.2 Mobile Viewport (390px)
-![Paycheck Log Mobile 390px](docs/ui-snapshots/phase-5b/salary-paychecks-390.png)
-
 *Mobile Viewport (390px): Decision D19 compliant compact-expand cards (`.paycheck-mobile-card`). Zero page-level horizontal table scroll. Compact card strictly displays 3 visible fields per UI-UX-PLAN §6.4 line 1292: Period, Neutral Status Badge, and Net Amount (`.paycheck-card-net .fs-num`). Accessible expander button (`min-height: 44px`) reveals detailed Gross Payout, Deductions, Tax/Insurance breakdown, notes, monthly total, and action buttons with $\ge 44\times 44$px touch targets.*
 
 ---
