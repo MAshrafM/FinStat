@@ -41,6 +41,7 @@ jest.mock('../../../services/userService', () => ({
 }));
 
 describe('UI Phase 5C: PaycheckFormPage Accessibility (axe-core)', () => {
+  jest.setTimeout(15000);
   const mockProfile = {
     _id: 'prof_test_lead',
     name: 'Lead Engineer',

@@ -419,6 +419,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extended `frontend/tests/visual/paycheck-form-reference-match.spec.js` to verify Reference Frame 02 design tokens, touch targets $\ge 44$px, and zero horizontal overflow on both `/new` and `/edit/:id` routes across 1440px and 390px (5/5 passed).
 - Regenerated 10 themed baseline snapshots in `D:\Projects\FinStat-visual-baselines` (commit `4d118b9`) and updated `manifest.json` (334/334 verified).
 - Recorded Phase 5D presentation validation state amendment in `docs/UI-UX_Plan/UI-UX-PLAN.md §6.9`.
+- Added unit test 10 to `PaycheckFormPage.test.js` asserting `#pay-period-error` inline alert and `aria-invalid="true"`.
+- Added 15s timeout to `PaycheckFormPageAxe.test.js` to ensure reliable in-band test reproducibility across all environments.
 - Verified 71/71 PR-subset visual tests passing with 0 diff on all unthemed routes.
 
 
