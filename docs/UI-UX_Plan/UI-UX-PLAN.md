@@ -1709,7 +1709,9 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [x] **Recorded Plan Amendment (2026-11-22, Owner: Antigravity / Developer approved):** Presentation validation state (`formSubmitted` state, `onInvalid={(e) => { e.preventDefault(); setFormSubmitted(true); }}` / `aria-invalid`, `aria-describedby="pay-period-error"`, and `<span id="pay-period-error" className="form-error" role="alert">`) added for Reference Frame 02 inline error placement; calculation math, payload structure, and service call logic remain strictly untouched.
 - [x] **Recorded Plan Amendment (2026-11-22, Owner: Antigravity / Developer approved):** Pre-existing Baseline Debt Acceptance (AD14): Formally accepts the 10 visual differences in the full 326-test visual run as pre-existing baseline debt outside Phase 5D scope: (1) 3 stale baselines on `/expenditure-analysis` (1024px, 768px, 480px) from Phase 4 post-bugfix commit `720b7bf7` where only 390px was regenerated in commit `02d0c29`; (2) 7 sub-desktop viewports on `not-found` (768, 480, 390px), `dashboard` (768, 480px), and `expenditures` (768, 480px) displaying a 20px headless Chromium fullPage height rendering variance (5781px expected vs 5801px received). All 10 newly regenerated paycheck form baselines passed with 0-pixel diff. Authoritative CI PR-subset suite passed 71/71 tests (100%) with 0 diff on all non-allowlisted routes. Baseline regeneration for expenditure-analysis and sub-desktop viewports is scheduled for baseline maintenance.
 
-**Exit gate 5D:** form renders in dark graphite per Reference Frame 02; calculation fixtures byte-identical; real-browser Playwright axe test passes un-injected with 0 critical or serious violations on both allowlisted routes.
+**Exit gate 5D (Signed off & Merged):**
+- [x] Form renders in dark graphite per Reference Frame 02; calculation fixtures byte-identical; real-browser Playwright axe test passes un-injected with 0 critical or serious violations on both allowlisted routes.
+- [x] Developer and user sign-off complete; merged to main.
 
 #### 5E — History, update, analytics, tax simulator
 
@@ -2758,7 +2760,7 @@ Visual diff: 0 diff across all 71 PR subset routes (0 diff on non-allowlisted ro
 Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
 Screenshots: docs/ui-snapshots/phase-5d/salary-paychecks-new-1440.png, docs/ui-snapshots/phase-5d/salary-paychecks-new-390.png, docs/ui-snapshots/phase-5d/salary-paychecks-edit-1440.png, docs/ui-snapshots/phase-5d/salary-paychecks-edit-390.png
 Branch:      phase-ui-5d-paycheck-form-b
-Merge SHA:   none (local commits on main)
+Merge SHA:   merged to main
 ```
 
 ### Sub-phase note template

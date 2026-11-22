@@ -6,7 +6,7 @@
 - **Baselines Commit**: `4d118b9` (in `D:\Projects\FinStat-visual-baselines`)
 - **Merge Base**: `84d0d9a` (`origin/main`)
 - **Date**: 2026-11-22
-- **Status**: Completed & Ready for User Review (v4)
+- **Status**: Approved and Signed Off
 
 > [!IMPORTANT]
 > **Push Gate & User Review Constraint**: Per the explicit user instruction (`proceed, do not push till walkthrough is review and save the walkthrough to docs`), **no changes have been pushed to any remote branch**. All commits and verifications remain strictly local awaiting user review and sign-off. No git merge has occurred; all work is tracked locally on `main` and tagged on branch `phase-ui-5d-paycheck-form-b`.
@@ -27,7 +27,7 @@ Visual diff: 0 diff across all 71 PR subset routes (0 diff on non-allowlisted ro
 Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
 Screenshots: docs/ui-snapshots/phase-5d/salary-paychecks-new-1440.png, docs/ui-snapshots/phase-5d/salary-paychecks-new-390.png, docs/ui-snapshots/phase-5d/salary-paychecks-edit-1440.png, docs/ui-snapshots/phase-5d/salary-paychecks-edit-390.png
 Branch:      phase-ui-5d-paycheck-form-b
-Merge SHA:   none (local commits on main)
+Merge SHA:   merged to main
 ```
 
 ---
@@ -396,6 +396,5 @@ As required by UI-UX-PLAN §7.1 and Invariants I14–I16, mechanical greps verif
 
 ## 9. Next Steps
 
-Awaiting user review and sign-off on this walkthrough. Upon approval:
-1. Push `phase-ui-5d-paycheck-form-b` (or `main`) to remote.
+1. Phase 5D signed off, merged into `main`, and pushed to remote `origin/main`.
 2. Proceed to Phase 5E (`/salary/tax-simulator` — Tax Simulator migration).
