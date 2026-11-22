@@ -36,6 +36,7 @@ Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests gree
 Screenshots: Preserved in FinStat-visual-baselines repo per Architecture Decision D5/D21 (untracked in main)
 Branch:      phase-ui-5e-payroll-history
 Implementation SHA: c11f023 (branch phase-ui-5e-payroll-history)
+Merge SHA:          f471911 (merged to main)
 ```
 
 ---
