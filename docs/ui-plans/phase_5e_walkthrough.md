@@ -35,7 +35,7 @@ Visual diff: 0 diff across all 71 PR subset routes (0 diff on non-allowlisted ro
 Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
 Screenshots: Preserved in FinStat-visual-baselines repo per Architecture Decision D5/D21 (untracked in main)
 Branch:      phase-ui-5e-payroll-history
-Local Commit SHA: d633771 (on working branch phase-ui-5e-payroll-history, awaiting user review and sign-off)
+Implementation SHA: c11f023 (branch phase-ui-5e-payroll-history)
 ```
 
 ---
@@ -484,6 +484,7 @@ Per `UI-UX-PLAN.md §6.10`, the next milestone following Phase 5 completion is:
    - Per user instruction and Architecture Decision D5/D21, all snapshot PNGs in `docs/ui-snapshots/` were deleted from git tracking (`git rm -r docs/ui-snapshots`) and added to `.gitignore` to prevent repository and production bundle bloat.
    - All visual regression baselines are stored exclusively in the separate dedicated local git repository `D:\Projects\FinStat-visual-baselines` linked via Windows directory junction (`cmd /c mklink /J frontend\tests\visual\baseline D:\Projects\FinStat-visual-baselines`).
    - Prior walkthroughs (5A–5D) that referenced snapshot paths in `docs/ui-snapshots/` have been amended to replace broken markdown image embeds with explanatory storage note blocks pointing to `FinStat-visual-baselines`. UI-UX-PLAN §6.9 exit gate criterion for screenshots has been reconciled to reflect this policy.
+   - *Formal Waiver*: Per Architecture Decisions D5 and D21, the Plan Gate 18 sub-criterion for walkthrough screenshot SHAs is formally waived as visual snapshots are untracked in main to prevent repository/production bloat, with visual baselines stored and manifest-verified in `D:\Projects\FinStat-visual-baselines`.
 3. **Baseline Commit Sequence**:
    - The 30 Phase 5E visual baselines were captured in `D:\Projects\FinStat-visual-baselines` across three sequential commits:
      - `a15949a`: Initial 30 Phase 5E baseline captures.
@@ -491,7 +492,7 @@ Per `UI-UX-PLAN.md §6.10`, the next milestone following Phase 5 completion is:
      - `ea11e6a`: Final update of `analysis-payroll` baselines following component style scoping.
    - Manifest verified at 334/334 entries.
 4. **Reference Frame 01 Action Button Ceilings**:
-   - In `payroll-history-reference-match.spec.js`, desktop action buttons assert $\ge 28$px height and mobile expander chips assert $\ge 36$px height conforming to Canonical Reference Frame 01 (Variant B dense table, `docs/UI-UX_Plan/reference/01-dense-table.html`), while primary CTAs across forms assert $\ge 44$px touch targets.
+   - In `payroll-history-reference-match.spec.js`, desktop action buttons assert $\ge 28$px height and mobile expander chips assert $\ge 36$px height as compact touch targets tailored for dense tabular data rows to prevent row blowout (conforming to the dense table layout pattern), while primary CTAs across forms assert $\ge 44$px touch targets.
 5. **`AnalysisCard.js` Defensive Display Aggregation**:
    - Minor presentation adjustments in `frontend/src/components/AnalysisCard.js` (`(p.amount || 0)` fallback guards, `Array(monthLabels.length)` sizing) prevent NaN/undefined rendering in chart bars and summary tiles. These do not alter any domain calculation engine or characterization fixture (Invariant I3 verified green 11/11).
 6. **`AGENTS.md` Core Token Alignment**:
