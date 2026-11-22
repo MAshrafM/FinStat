@@ -1584,6 +1584,7 @@ New file: `frontend/src/styles/chartTheme.js`
 | AD12 | Chart gradients and glows → solid fills + patterns | every chart | AS3, §4.12 |
 | AD13 | Red and green removed from ordinary amounts: expenses, income, and balances → neutral `--fs-text` | every log, summary, and KPI card | I15, §4.3; announced in §3.2 and the 4A changelog |
 | AD14 | Pre-existing baseline debt: 3 stale baselines on `/expenditure-analysis` (1024, 768, 480px) from post-bugfix commit `720b7bf7` (where only 390px was updated in `02d0c29`), plus 7 sub-desktop viewports on `not-found` (768, 480, 390px), `dashboard` (768, 480px), and `expenditures` (768, 480px) showing 20px headless Chromium fullPage height calculation variance | `expenditure-analysis`, `not-found`, `dashboard`, `expenditures` | Pre-existing baseline debt outside Phase 5D scope; verified zero regressions from 5D; authoritative PR-subset suite (71/71) passing 100% with 0 diff on non-allowlisted routes; recorded amendment in §6.9 |
+| AD15 | Portfolio asset allocation converts from 8-category doughnut to ranked horizontal bar chart (capped at top 6 + neutral "Other") plus data table alternative | `/portfolio` (`AllocationChart.js`) | §4.12 series discipline; supersedes §6.10 line 1747 "allocation doughnut" |
 
 Anything not on this list is a regression, not an accepted diff.
 
@@ -1742,9 +1743,9 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 - [ ] `pages/portfolio/Portfolio.css` — shared backdrop; remove the `#090d16 → #0f172a → #0b1120` local gradient.
 - [ ] `PortfolioDashboard.js` — chart colours via `chartTheme`.
-- [ ] `components/portfolio/*` (`AllocationChart`, `HoldingsTable`, `SummaryCards`, `UtilizationWidget`) — token colours, no layout change.
+- [ ] `components/portfolio/*` (`AllocationChart`, `HoldingsTable`, `SummaryCards`; note: `UtilizationWidget` is in `components/creditCards` for Phase 7) — token colours, no layout change except D19 table collapse.
 - [ ] Unrealised P&L is neutral unless it is the subject of the view, and then uses `Delta` with sign, arrow, and label.
-- [ ] Verify summary cards, holdings table, allocation doughnut at all widths.
+- [ ] Verify summary cards, holdings table, ranked horizontal bar allocation chart and data table at all widths (AD15).
 - [ ] Holdings table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] Remove `PortfolioDashboard.js` and `components/portfolio/*` from `frontend/.eslintignore`; verify clean ESLint.
 - [ ] **Add `/portfolio`.**
