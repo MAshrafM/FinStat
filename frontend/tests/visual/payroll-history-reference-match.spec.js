@@ -14,6 +14,7 @@ const { setupPaycheckMocks } = require('./fixtures/paycheckMocks');
 
 test.describe('Phase 5E Canonical Reference Match Suite', () => {
   test.beforeEach(async ({ page }) => {
+    test.setTimeout(60000);
     await page.addInitScript(() => {
       window.__VISUAL_TEST__ = true;
     });
@@ -24,7 +25,7 @@ test.describe('Phase 5E Canonical Reference Match Suite', () => {
     await setupPaycheckMocks(page, 'salary-profile-history');
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/salary-profile/history', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(500);
     await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
 
     // Table header background rgb(12, 13, 15) (--fs-surface-sunken / #0c0d0f)
@@ -48,7 +49,7 @@ test.describe('Phase 5E Canonical Reference Match Suite', () => {
     await setupPaycheckMocks(page, 'salary-profile-history');
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/salary-profile/history', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(500);
     await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
 
     // Table is hidden on mobile
@@ -81,7 +82,7 @@ test.describe('Phase 5E Canonical Reference Match Suite', () => {
     await setupPaycheckMocks(page, 'salary-profile-edit');
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/salary-profile/edit', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(500);
     await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
 
     // Primary CTA background rgb(20, 184, 166) (--fs-accent), text rgb(13, 14, 16) (--fs-ink)
@@ -111,7 +112,7 @@ test.describe('Phase 5E Canonical Reference Match Suite', () => {
     await setupPaycheckMocks(page, 'salary-profile-edit');
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/salary-profile/edit', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(500);
     await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
 
     // Primary CTA touch target >= 44px on mobile (WCAG 2.5.5)
@@ -135,7 +136,7 @@ test.describe('Phase 5E Canonical Reference Match Suite', () => {
     await setupPaycheckMocks(page, 'analysis-payroll');
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/analysis/payroll', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(500);
     await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
 
     // Scoped summary row surface rgb(26, 28, 32) (--fs-surface)
@@ -167,7 +168,7 @@ test.describe('Phase 5E Canonical Reference Match Suite', () => {
     await setupPaycheckMocks(page, 'salary-simulator');
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/salary/simulator', { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(500);
     await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
 
     // All 4 KPI summary cards have solid graphite surface

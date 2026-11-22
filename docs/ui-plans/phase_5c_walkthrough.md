@@ -107,25 +107,21 @@ All 10 preconditions from Implementation Plan §4 were verified on `phase-ui-5c-
 
 ## 3. Visual Comparison & Rendered Evidence
 
-Screenshots captured using Playwright Chromium with deterministic clock and API mock fixtures. Images are stored in `docs/ui-snapshots/phase-5c/`:
+> **Visual Snapshots Storage Note (Architecture Decisions D5 / D21 & Phase 5E Governance)**:  
+> In accordance with the repository storage policy and user instruction to eliminate repository/production bloat, visual snapshot PNGs are preserved exclusively in the dedicated local repository `D:\Projects\FinStat-visual-baselines` (linked via Windows directory junction) rather than tracked in git `main`. The approved renders for Phase 5C (`/salary/paychecks/new` and `/salary/paychecks/edit/:id` at 1440px and 390px) are archived in `FinStat-visual-baselines`.
 
 ### 3.1 Unthemed Live Route (Zero-Diff Production Baseline Retention)
-![Unthemed Desktop 1440px](docs/ui-snapshots/phase-5c/salary-paychecks-new-unthemed-1440.png)
 *Unthemed Live Route Desktop (1440px): 100% byte-identical visual presentation to pre-5C production. All 77 inline styles safely mapped to legacy unscoped classes. Visual regression confirms 0-diff.*
 
-![Unthemed Mobile 390px](docs/ui-snapshots/phase-5c/salary-paychecks-new-unthemed-390.png)
 *Unthemed Live Route Mobile (390px): Legacy mobile layout retained without alteration.*
 
 ---
 
 ### 3.2 Themed Preview (Reference Frame 02 Match under `.fs-page` Harness)
-![Themed Desktop 1440px](docs/ui-snapshots/phase-5c/salary-paychecks-new-themed-1440.png)
 *Themed Preview Desktop (1440px): Canonical Reference Frame 02 implementation. Dark graphite canvas (`#101114`), stacked field cards (`var(--fs-surface)` = `#1a1c20`, border `#34383f`), single primary accent Save CTA (`#14b8a6` with `#0d0e10` text), 2px left indicator cue on selected disbursement button, tabular figures on numeric preview values, and 4px input radii.*
 
-![Themed Mobile 390px](docs/ui-snapshots/phase-5c/salary-paychecks-new-themed-390.png)
 *Themed Preview Mobile (390px): Fully responsive at 390px viewport. Zero page-level horizontal overflow (`scrollWidth <= clientWidth`), wrapped action rows, full-width touch targets $\ge 44$px.*
 
-![Themed Edit Desktop 1440px](docs/ui-snapshots/phase-5c/salary-paychecks-edit-themed-1440.png)
 *Themed Edit Paycheck Preview Desktop (1440px): Edit route (`/salary/paychecks/edit/1`) under dormant `.fs-page` harness with pre-populated values and live calculation preview.*
 
 ---

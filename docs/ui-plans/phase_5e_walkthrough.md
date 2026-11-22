@@ -33,9 +33,9 @@ Blocked by:  None
 Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks', '/salary/paychecks/new', '/salary/paychecks/edit/:id', '/salary-profile/history', '/salary-profile/edit', '/salary-profile/history/edit/:historyId', '/salary-profile/update', '/analysis/payroll', '/salary/simulator'] (cumulative: 20 routes)
 Visual diff: 0 diff across all 71 PR subset routes (0 diff on non-allowlisted routes; Invariant I13 preserved); 30 newly captured Phase 5E baselines matching Frames 01, 02, and 03 across 5 viewports; full 326-test run reconciled (316 passing, 10 pre-existing baseline debt failures accepted under AD14); 334/334 baselines verified
 Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
-Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
+Screenshots: Preserved in FinStat-visual-baselines repo per Architecture Decision D5/D21 (untracked in main)
 Branch:      phase-ui-5e-payroll-history
-Merge SHA:   10c786e (local working branch awaiting sign-off)
+Local Commit SHA: d633771 (on working branch phase-ui-5e-payroll-history, awaiting user review and sign-off)
 ```
 
 ---
@@ -46,7 +46,7 @@ Merge SHA:   10c786e (local working branch awaiting sign-off)
 | :--- | :--- | :--- | :---: | :--- |
 | **I1** | Production routes and URLs unchanged — 75 entries (74 protected + `*`), 10 redirects. | `App.test.js` route-resolution test; `ui-coverage.js` diff | **PASS** | `App.test.js` passed 9/9 tests green. All 6 Phase 5E routes + 2 redirects (`/analysis/calendar`, `/analysis/fiscal`) resolve accurately. |
 | **I2** | No API call, payload shape, or service file changed. | PR diff review; blocked path list in CI | **PASS** | `salaryService.js`, `salaryProfileService.js`, `taxBracketsService.js` and all backend API controllers completely untouched. |
-| **I3** | No calculation changed on **any** page: payroll, installment schedules, debt payoff, trade P&L, certificate maturity/interest, FX conversion, budget thresholds, real-estate yield. | Characterization fixtures (§9.6) | **PASS** | `npx jest --runInBand tests/calculations.spec.js` passed 11/11 tests byte-identical. Simulator mathematical logic untouched. |
+| **I3** | No calculation changed on **any** page: payroll, installment schedules, debt payoff, trade P&L, certificate maturity/interest, FX conversion, budget thresholds, real-estate yield. | Characterization fixtures (§9.6) | **PASS** | `npx jest --runInBand tests/calculations.spec.js` passed 11/11 tests byte-identical. Mathematical calculation logic untouched. Defensive presentation adjustments in `AnalysisCard.js` (empty amount guards, month array sizing) documented in §8.5. |
 | **I4** | Auth, roles, `ProtectedAction`, and `useCanModify` gating unchanged. | Viewer-role checklist per phase | **PASS** | Action buttons wrapped in `<ProtectedAction>`; view-only mode prevents state-modifying mutations while preserving analytics and simulations. |
 | **I5** | Test IDs, `data-*` attributes, and accessible labels preserved — 37 `data-testid`, 39 `aria-label`. | test-ID guard script (§9.2) | **PASS** | `node scripts/testid-guard.js` reported 0 regressions against merge base `cddebc7`. All existing test IDs and aria labels strictly preserved. |
 | **I6** | Tables render as compact-expand cards at ≤ 768px (D19). Horizontal scroll preserved only for tables with ≥ 12 columns (audit logs) where the card pattern is impractical. No page-level horizontal scroll at 390px. | 390 px visual check: card layout renders, no page-level horizontal scroll, all fields reachable via expander. | **PASS** | Verified on `SalaryHistory`: desktop table collapses into `.salary-history-cards` with `.salary-history-card` at $\le 768$px. `scrollWidth <= clientWidth` at 390px. |
@@ -96,7 +96,7 @@ Per UI-UX-PLAN §7.1, visual regression testing is walkthrough-evidenced. The lo
 
 ## 4. Visual Comparison & Reference Frame Conformance
 
-Snapshots captured in Playwright Chromium with deterministic time and mock fixtures. In accordance with user instruction and Architecture Decision D5/D21, **all visual snapshot PNGs are untracked in git to prevent repository and production bundle bloat**. Baselines are preserved exclusively in the dedicated local repository `D:\Projects\FinStat-visual-baselines` (commits `a15949a`, `3993e11`, and `ea11e6a`).
+In accordance with user instruction and Architecture Decision D5/D21, **all visual snapshot PNGs are untracked in git to prevent repository and production bundle bloat**. Baselines are preserved exclusively in the dedicated local repository `D:\Projects\FinStat-visual-baselines` (commits `a15949a`, `3993e11`, and `ea11e6a`).
 
 All color tokens adhere strictly to `frontend/src/styles/tokens.json` and UI-UX-PLAN §4.9:
 - **Canvas (`--fs-page-bg`)**: `#101114`
@@ -118,8 +118,8 @@ All color tokens adhere strictly to `frontend/src/styles/tokens.json` and UI-UX-
 ---
 
 ### 4.1 Salary Profile History (`/salary-profile/history`)
-*Desktop (1440px)*: Canonical Reference Frame 01 match. Dark graphite canvas (`#101114`), dense table with proportional tabular numbers (`font-variant-numeric: tabular-nums` per AD10/D16), neutral action buttons with $\ge 28$px height, and clear header breadcrumb navigation.
-*Mobile (390px)*: Responsive D19 card layout. Desktop table collapses into `.salary-history-cards` with `.salary-history-card` at $\le 768$px. Touch targets $\ge 44$px, mobile action chips $\ge 36$px, zero page-level horizontal overflow.
+*Desktop (1440px)*: Canonical Reference Frame 01 match. Dark graphite canvas (`#101114`), dense table with proportional tabular numbers (`font-variant-numeric: tabular-nums` per AD10/D16), neutral action buttons with $\ge 28$px height per dense table pattern (§8.4), and clear header breadcrumb navigation.
+*Mobile (390px)*: Responsive D19 card layout. Desktop table collapses into `.salary-history-cards` with `.salary-history-card` at $\le 768$px. Touch targets $\ge 44$px on primary buttons, mobile action expander chips $\ge 36$px per Reference Frame 01 (§8.4), zero page-level horizontal overflow.
 
 ---
 
@@ -155,32 +155,32 @@ All color tokens adhere strictly to `frontend/src/styles/tokens.json` and UI-UX-
 
 ## 5. Verification Gate Sign-Off Matrix (§15)
 
-The 18 gates defined in `phase_5e_implementation_plan.md` have been executed and verified green:
+### 5.0 Plan-Gate to Walkthrough-Gate 1:1 Mapping Matrix
 
-| Gate | Description | Command / Check | Result | Evidence |
-| :--- | :--- | :--- | :---: | :--- |
-| **Gate 1** | Worktree Hygiene | `git status -s` | **PASS** | Clean working branch `phase-ui-5e-payroll-history`; zero remote pushes. |
-| **Gate 2** | Stylelint AST & Sunset Verification | `git grep -n "stylelint-disable" ...` | **PASS** | Exactly 0 `stylelint-disable` comments in `SalaryProfile.css`, `TaxSimulator.css`, and `PayrollAnalyticsPage.css`. |
-| **Gate 3** | ESLint Hygiene on Touched Files | `npx eslint ... --max-warnings=0` | **PASS** | 0 errors, 0 warnings across all 8 touched JS files. |
-| **Gate 4** | `.eslintignore` Audit | `git grep -in -E "(SalaryHistory\|...)" .eslintignore` | **PASS** | All 7 Phase 5 files permanently purged from `.eslintignore` (0 matches). |
-| **Gate 5** | Design Tokens & Palette Audit | `node scripts/tokens.js --check`<br>`node scripts/lint-tones.js` | **PASS** | 0 token drift; 0 tone violations across 57 files; 0 undefined tokens across 60 files. |
-| **Gate 6** | Stylelint Ratchet & TestID Guard | `node scripts/lint-ratchet.js`<br>`node scripts/testid-guard.js` | **PASS** | 0 stylelint regressions across 59 CSS files; 0 test-ID or aria-label deletions. |
-| **Gate 7** | Route Coverage & Allowlist Assertion | `node scripts/ui-coverage.js --assert-allowlist` | **PASS** | 20 active patterns in `ProtectedRoute.js`; 10 redirects verified. |
-| **Gate 8** | Route Allowlist Integrity | Verify `THEMED_PATTERNS` in `ProtectedRoute.js` | **PASS** | Exactly 20 active patterns confirmed correctly ordered. |
-| **Gate 9** | Calculation Characterization | `npx jest --runInBand tests/calculations.spec.js` | **PASS** | 11/11 tests green (byte-identical, Invariant I3). |
-| **Gate 10** | Unit & Integration Tests | `npm test -- --watchAll=false <paths>` | **PASS** | 14 suites passed (78/78 tests green). |
-| **Gate 11** | Real-Browser Axe Accessibility | `npx playwright test tests/visual/a11y.spec.js` | **PASS** | 8/8 tests green (1 setup + 7 routes); 0 critical, 0 serious violations. |
-| **Gate 12** | Production Build Compilation | `$env:NODE_OPTIONS="--max-old-space-size=4096"; npm run build` | **PASS** | Compiled successfully with exit code 0. |
-| **Gate 13** | Functional End-to-End Checklist | 7 Core Payroll User Flows | **PASS** | All 7 functional flows verified green with specific test file citations. |
-| **Gate 14** | PR-Subset Visual Regression | `npx playwright test tests/visual/visual.spec.js` (PR_SUBSET) | **PASS** | 71/71 passed (0 diff on non-allowlisted routes; Invariant I13 verified). |
-| **Gate 15** | Full Visual Regression Suite | `npx playwright test tests/visual/visual.spec.js` | **PASS** | 326 tests: 316 passing (0 diff) + 10 pre-existing AD14 diffs, 0 unexplained diffs. |
-| **Gate 16** | Baseline Manifest Verification | `node scripts/verify-baseline-manifest.js` | **PASS** | 334/334 baselines verified green in `FinStat-visual-baselines`. |
-| **Gate 17** | Canonical Reference Frame Conformance Audit | `payroll-history-reference-match.spec.js` + Zero-Teal | **PASS** | 7/7 tests green (1 setup + 6 reference tests); 0 `#14b8a6` in page CSS/JS; orphan CSS absent. |
-| **Gate 18** | Horizontal Scroll & Exit Gate Sign-Off | 390px scroll verification + UI-UX-PLAN updates | **PASS** | `scrollWidth <= clientWidth` on all routes at 390px; §5.4, §6.1, §6.9, §10 checked off. |
+| Plan Gate # (from `phase_5e_implementation_plan.md`) | Plan Gate Name | Walkthrough Gate # | Verification Command / Artifact | Status |
+| :---: | :--- | :---: | :--- | :---: |
+| **Plan Gate 1** | Clean Working Tree | **Gate 1** | `git status -s` | **PASS** |
+| **Plan Gate 2** | Stylelint AST & Sunset | **Gate 2** | `git grep -n "stylelint-disable"` & `npx stylelint ...` | **PASS** |
+| **Plan Gate 3** | ESLint Hygiene | **Gate 3** | `npx eslint ... --max-warnings=0` | **PASS** |
+| **Plan Gate 4** | `.eslintignore` Audit | **Gate 4** | `git grep -in ... frontend/.eslintignore` | **PASS** |
+| **Plan Gate 5** | Design Tokens & Tones | **Gate 5** | `node scripts/tokens.js --check` & `node scripts/lint-tones.js` | **PASS** |
+| **Plan Gate 6** | Stylelint Ratchet & TestID Guard | **Gate 6** | `node scripts/lint-ratchet.js` & `node scripts/testid-guard.js` | **PASS** |
+| **Plan Gate 7** | Route Allowlist Assertion | **Gate 7** | `node scripts/ui-coverage.js --assert-allowlist` | **PASS** |
+| **Plan Gate 8** | Touched Unit Test Suites | **Gate 8** | `npm test -- --watchAll=false <paths>` | **PASS** |
+| **Plan Gate 9** | Calculation Parity Invariant I3 | **Gate 9** | `npx jest --runInBand tests/calculations.spec.js` | **PASS** |
+| **Plan Gate 10** | Real-Browser Axe Accessibility | **Gate 10** | `npx playwright test tests/visual/a11y.spec.js --project=a11y` | **PASS** |
+| **Plan Gate 11** | Reference Match Spec | **Gate 11** | `npx playwright test tests/visual/payroll-history-reference-match.spec.js --project=reference` | **PASS** |
+| **Plan Gate 12** | Production Build Compilation | **Gate 12** | `$env:NODE_OPTIONS="--max-old-space-size=4096"; npm run build` | **PASS** |
+| **Plan Gate 13** | Functional End-to-End Checklist | **Gate 13** | 7 Core Payroll User Flows with specific test assertions | **PASS** |
+| **Plan Gate 14** | Visual Regression PR-Subset Run | **Gate 14** | `$env:PR_SUBSET="true"; npx playwright test tests/visual/visual.spec.js --project=visual` | **PASS** |
+| **Plan Gate 15** | Full Visual Regression Suite & AD14 Reconciliation | **Gate 15** | `Remove-Item env:PR_SUBSET; npx playwright test tests/visual/visual.spec.js --project=visual` | **PASS** |
+| **Plan Gate 16** | Baseline Manifest Verification | **Gate 16** | `node scripts/verify-baseline-manifest.js` | **PASS** |
+| **Plan Gate 17** | Zero-Teal & Orphan-CSS Audit | **Gate 17** | `git grep -in "#14b8a6"` & PowerShell `Test-Path` checks | **PASS** |
+| **Plan Gate 18** | Documentation & Phase 5 Exit Gate Sign-Off | **Gate 18** | 390px scroll verification + UI-UX-PLAN §5.4, §6.1, §6.9, §10, CHANGELOG | **PASS** |
 
 ---
 
-### 5.1 Pre-flight Hygiene & Working Tree Check (Gate 1)
+### 5.1 Clean Working Tree (Gate 1)
 ```powershell
 git status -s
 ```
@@ -239,7 +239,7 @@ node frontend/scripts/testid-guard.js
 ✓ [testid-guard] Checked diff against cddebc787d1356ed20532d719dd53c4c496b2851: all data-testid and aria-label attributes preserved.
 ```
 
-### 5.7 Route Coverage & Allowlist Assertion (Gate 7)
+### 5.7 Route Allowlist Assertion (Gate 7)
 ```powershell
 node frontend/scripts/ui-coverage.js --assert-allowlist
 ```
@@ -248,35 +248,33 @@ node frontend/scripts/ui-coverage.js --assert-allowlist
 ✓ [ui-coverage] Allowlist assertion passed. 20 pattern(s) verified against App.js routes.
 ```
 
-### 5.8 Route Allowlist Integrity (Gate 8)
-```javascript
-// THEMED_PATTERNS in frontend/src/components/ProtectedRoute.js:
-// Exactly 20 active patterns (14 from Phase 1-5D + 6 from Phase 5E):
-const THEMED_PATTERNS = [
-  '/dashboard',
-  '/expenditures',
-  '/expenditures/new',
-  '/expenditures/edit/:id',
-  '/expenditures/rules',
-  '/expenditures/budgets',
-  '/expenditures/recurring',
-  '/expenditures/bills',
-  '/expenditure-analysis',
-  '/salary/profiles',
-  '/salary/rules',
-  '/salary/paychecks',
-  '/salary/paychecks/new',
-  '/salary/paychecks/edit/:id',
-  '/salary-profile/history',
-  '/salary-profile/edit',
-  '/salary-profile/history/edit/:historyId',
-  '/salary-profile/update',
-  '/analysis/payroll',
-  '/salary/simulator',
-];
+### 5.8 Touched Unit Test Suites (Gate 8)
+```powershell
+npm test -- --watchAll=false src/pages/salary/__tests__/ src/pages/analysis/__tests__/ src/App.test.js
+```
+```
+PASS src/pages/salary/__tests__/SalaryHistory.test.js (6 tests)
+PASS src/pages/salary/__tests__/EditProfilePage.test.js (4 tests)
+PASS src/pages/salary/__tests__/EditHistoryRecord.test.js (4 tests)
+PASS src/pages/salary/__tests__/UpdateSalary.test.js (4 tests)
+PASS src/pages/analysis/__tests__/PayrollAnalyticsPage.test.js (6 tests)
+PASS src/pages/salary/__tests__/TaxSimulator.test.js (11 tests)
+PASS src/pages/salary/__tests__/PayrollRulesHub.test.js (5 tests)
+PASS src/pages/salary/__tests__/SalaryProfilePage.test.js (5 tests)
+PASS src/pages/salary/__tests__/SalaryProfileToggle.test.js (4 tests)
+PASS src/pages/salary/__tests__/PaycheckFormPage.test.js (10 tests)
+PASS src/pages/salary/__tests__/PaycheckFormPageAxe.test.js (1 test)
+PASS src/pages/salary/__tests__/PaycheckLog.test.js (8 tests)
+PASS src/pages/salary/__tests__/PaycheckTable.test.js (6 tests)
+PASS src/App.test.js (9 tests)
+
+Test Suites: 14 passed, 14 total
+Tests:       78 passed, 78 total
+Snapshots:   0 total
+Time:        20.96s
 ```
 
-### 5.9 Calculation Characterization Test Suite (Gate 9)
+### 5.9 Calculation Parity Invariant I3 (Gate 9)
 ```powershell
 npx jest --runInBand tests/calculations.spec.js
 ```
@@ -310,35 +308,9 @@ Time:        0.779 s, estimated 1 s
 Ran all test suites matching /tests\\calculations.spec.js/i.
 ```
 
-### 5.10 Unit & Integration Component Tests (Gate 10)
+### 5.10 Real-Browser Axe Accessibility (Gate 10)
 ```powershell
-npm test -- --watchAll=false src/pages/salary/__tests__/ src/pages/analysis/__tests__/ src/App.test.js
-```
-```
-PASS src/pages/salary/__tests__/SalaryHistory.test.js (6 tests)
-PASS src/pages/salary/__tests__/EditProfilePage.test.js (4 tests)
-PASS src/pages/salary/__tests__/EditHistoryRecord.test.js (4 tests)
-PASS src/pages/salary/__tests__/UpdateSalary.test.js (4 tests)
-PASS src/pages/analysis/__tests__/PayrollAnalyticsPage.test.js (6 tests)
-PASS src/pages/salary/__tests__/TaxSimulator.test.js (11 tests)
-PASS src/pages/salary/__tests__/PayrollRulesHub.test.js (5 tests)
-PASS src/pages/salary/__tests__/SalaryProfilePage.test.js (5 tests)
-PASS src/pages/salary/__tests__/SalaryProfileToggle.test.js (4 tests)
-PASS src/pages/salary/__tests__/PaycheckFormPage.test.js (10 tests)
-PASS src/pages/salary/__tests__/PaycheckFormPageAxe.test.js (1 test)
-PASS src/pages/salary/__tests__/PaycheckLog.test.js (8 tests)
-PASS src/pages/salary/__tests__/PaycheckTable.test.js (6 tests)
-PASS src/App.test.js (9 tests)
-
-Test Suites: 14 passed, 14 total
-Tests:       78 passed, 78 total
-Snapshots:   0 total
-Time:        20.96s
-```
-
-### 5.11 Real-Browser Un-injected axe-core Accessibility Suite (Gate 11)
-```powershell
-npx playwright test tests/visual/a11y.spec.js --project=a11y --grep="a11y check: (salary-profile|analysis-payroll|salary-simulator)"
+$env:CI="true"; npx playwright test tests/visual/a11y.spec.js --project=a11y --grep="a11y check: (salary-profile|analysis-payroll|salary-simulator)"
 ```
 ```
 Running 8 tests using 1 worker
@@ -353,7 +325,25 @@ Running 8 tests using 1 worker
   ok 8 [a11y] › a11y.spec.js:18:5 › Real-Browser Accessibility & Contrast (axe-core) › a11y check: salary-simulator (3.1s)
 
   8 passed (47.5s)
-# 0 critical, 0 serious accessibility violations across all 7 evaluated routes (5A salary-profiles + 6 Phase 5E routes)
+# 0 critical, 0 serious accessibility violations across all 7 evaluated routes (5A salary-profiles + 6 Phase 5E routes). Note: 5D paycheck routes were verified in Phase 5D.
+```
+
+### 5.11 Reference Match Spec (Gate 11)
+```powershell
+$env:CI="true"; npx playwright test tests/visual/payroll-history-reference-match.spec.js --project=reference
+```
+```
+Running 7 tests using 1 worker
+
+  ok 1 [setup] › fixtures\auth.setup.js:8:1 › authenticate visual test session (11ms)
+  ok 2 [reference] › payroll-history-reference-match.spec.js:24:3 › Phase 5E Canonical Reference Match Suite › 1. /salary-profile/history conforms to Reference Frame 01 (Desktop 1440px) (1.7s)
+  ok 3 [reference] › payroll-history-reference-match.spec.js:48:3 › Phase 5E Canonical Reference Match Suite › 2. /salary-profile/history conforms to Decision D19 mobile cards and zero overflow (Mobile 390px) (1.3s)
+  ok 4 [reference] › payroll-history-reference-match.spec.js:81:3 › Phase 5E Canonical Reference Match Suite › 3. /salary-profile/edit conforms to Reference Frame 02 (Form Variant B Desktop 1440px) (1.2s)
+  ok 5 [reference] › payroll-history-reference-match.spec.js:111:3 › Phase 5E Canonical Reference Match Suite › 4. /salary-profile/edit mobile primary CTA touch target >= 44px (Mobile 390px) (1.1s)
+  ok 6 [reference] › payroll-history-reference-match.spec.js:135:3 › Phase 5E Canonical Reference Match Suite › 5. /analysis/payroll conforms to Canonical Reference Frame 03 (Dashboard Variant B) (1.1s)
+  ok 7 [reference] › payroll-history-reference-match.spec.js:167:3 › Phase 5E Canonical Reference Match Suite › 6. /salary/simulator conforms to neutral KPI Invariant I15 and 8px ceiling (1.2s)
+
+  7 passed (20.8s)
 ```
 
 ### 5.12 Production Build Compilation (Gate 12)
@@ -384,7 +374,7 @@ The build folder is ready to be deployed.
 | **Flow 6** | `/salary/simulator` | Drag gross salary range slider; click quick presets; toggle Monthly/Annual view; verify progressive bracket breakdown table and statutory waterfall calculation; toggle employer cost accordion; neutral KPI styling. | `TaxSimulator.test.js` (11 tests); `payroll-history-reference-match.spec.js` test 6 | **PASS** |
 | **Flow 7** | Redirects | Verify `/analysis/calendar` -> `/analysis/payroll?cycle=calendar` and `/analysis/fiscal` -> `/analysis/payroll?cycle=fiscal` resolve smoothly with query cycle parameter preservation. | `App.test.js` (tests 1–9) | **PASS** |
 
-### 5.14 PR-Subset Visual Regression (Gate 14)
+### 5.14 Visual Regression PR-Subset Run (Gate 14)
 ```powershell
 $env:CI="true"; $env:PR_SUBSET="true"; npx playwright test tests/visual/visual.spec.js --project=visual
 ```
@@ -398,8 +388,18 @@ Running 71 tests using 1 worker
 ```
 
 ### 5.15 Full 65-Route Visual Regression Suite & AD14 Reconciliation (Gate 15)
+```powershell
+Remove-Item env:PR_SUBSET -ErrorAction SilentlyContinue; $env:CI="true"; npx playwright test tests/visual/visual.spec.js --project=visual
 ```
-# Visual Regression Run Summary:
+```
+Running 326 tests using 1 worker
+  ok 1 [setup] › fixtures/auth.setup.js:8:1 › authenticate visual test session (11ms)
+  ...
+  ok 326 [visual] › visual.spec.js:41:7 › Visual Regression Suite › salary-simulator @ 390px (2.4s)
+
+  316 passed, 10 failed (14.8m)
+
+# Visual Regression Reconciliation (§7.1, AD14 §6.6 / §6.9):
 Total tests: 326 (65 routes × 5 viewports = 325 visual regression tests + 1 auth setup fixture)
 - Passing with 0-pixel diff: 316 tests (100% green on all active and unaffected routes)
 - Accepted diffs under AD14 (§6.6 / §6.9): 10 tests
@@ -416,34 +416,29 @@ node frontend/scripts/verify-baseline-manifest.js
 334/334 baselines verified successfully.
 ```
 
-### 5.17 Canonical Reference Frame Conformance Audit & Zero-Teal / Orphan-CSS (Gate 17)
+### 5.17 Zero-Teal & Orphan-CSS Audit (Gate 17)
 ```powershell
-npx playwright test tests/visual/payroll-history-reference-match.spec.js
+# Step 1: Zero-Teal Audit
 git grep -in "#14b8a6" frontend/src/pages/salary/ frontend/src/pages/analysis/
+
+# Step 2: Orphan-CSS Absence Verification
+powershell -Command "if (Test-Path frontend/src/pages/salary/SalaryProfilePage.css) { throw 'SalaryProfilePage.css exists!' }; if (Test-Path frontend/src/pages/salary/PaycheckListPage.css) { throw 'PaycheckListPage.css exists!' }; Write-Host 'Orphan CSS absence verified.'"
 ```
 ```
-Running 7 tests using 1 worker
-
-  ok 1 [setup] › fixtures\auth.setup.js:8:1 › authenticate visual test session (19ms)
-  ok 2 [reference] › payroll-history-reference-match.spec.js:23:3 › Phase 5E Canonical Reference Match Suite › 1. /salary-profile/history conforms to Reference Frame 01 (Desktop 1440px) (3.1s)
-  ok 3 [reference] › payroll-history-reference-match.spec.js:47:3 › Phase 5E Canonical Reference Match Suite › 2. /salary-profile/history conforms to Decision D19 mobile cards and zero overflow (Mobile 390px) (2.4s)
-  ok 4 [reference] › payroll-history-reference-match.spec.js:80:3 › Phase 5E Canonical Reference Match Suite › 3. /salary-profile/edit conforms to Reference Frame 02 (Form Variant B Desktop 1440px) (2.0s)
-  ok 5 [reference] › payroll-history-reference-match.spec.js:110:3 › Phase 5E Canonical Reference Match Suite › 4. /salary-profile/edit mobile primary CTA touch target >= 44px (Mobile 390px) (2.1s)
-  ok 6 [reference] › payroll-history-reference-match.spec.js:134:3 › Phase 5E Canonical Reference Match Suite › 5. /analysis/payroll conforms to Canonical Reference Frame 03 (Dashboard Variant B) (2.2s)
-  ok 7 [reference] › payroll-history-reference-match.spec.js:166:3 › Phase 5E Canonical Reference Match Suite › 6. /salary/simulator conforms to neutral KPI Invariant I15 and 8px ceiling (2.4s)
-
-  7 passed (31.4s)
-
-# git grep exited with code 1 (0 occurrences of raw #14b8a6 in page CSS/JS)
-# SalaryProfilePage.css and PaycheckListPage.css confirmed absent
+# Step 1: git grep exited with code 1 (0 occurrences of raw #14b8a6 in page CSS/JS)
+# Step 2: Orphan CSS absence verified. (exited with code 0)
 ```
 
-### 5.18 No Page-Level Horizontal Scroll & Phase 5 Exit Gate Sign-Off (Gate 18)
-```
-✓ Verified scrollWidth <= clientWidth at 390px across all 6 Phase 5E routes.
-✓ Phase 5 Exit Gate checklist fully checked off in UI-UX-PLAN.md §6.9 (lines 1718–1733).
-✓ §5.4 route matrix and §6.1 phase board updated to ☑ | ☑.
-✓ §10 progress log table row updated at line 2527 and sub-phase block at lines 2767–2779.
+### 5.18 Documentation Deliverables & Phase 5 Exit Gate Sign-Off (Gate 18)
+```powershell
+# 1. 390px mobile horizontal scroll verification
+# Verified scrollWidth <= clientWidth at 390px across all 6 Phase 5E routes (0 overflow).
+
+# 2. Phase 5 Exit Gate checklist fully checked off in UI-UX-PLAN.md §6.9 (lines 1718–1733).
+# 3. §5.4 route matrix and §6.1 phase board updated to ☑ | ☑.
+# 4. §10 progress log table row updated at line 2527 and sub-phase block at lines 2768–2779.
+# 5. CHANGELOG.md updated with Phase 5E release notes.
+# 6. Screenshot policy amendment documented per Architecture Decision D5/D21.
 ```
 
 ---
@@ -485,15 +480,21 @@ Per `UI-UX-PLAN.md §6.10`, the next milestone following Phase 5 completion is:
 1. **Shared Component Styling Scoping (`SummaryRow.css` and `AnalysisCard.css`)**:
    - Initial modification of `SummaryRow.css` and `AnalysisCard.css` caused style leakage to unthemed legacy pages (`TradeSummaryPage`, `MutualFundSummaryPage`, `GoldSummaryPage`, `CreditCardPage`), resulting in 8 test diffs on unthemed routes.
    - *Remediation*: Reverted `SummaryRow.css` and `AnalysisCard.css` to their exact byte-for-byte legacy versions from merge base `cddebc7`. All Phase 5E dark design system rules were strictly scoped under `.payroll-analytics-container` in `PayrollAnalyticsPage.css`. This eliminated all leakage and restored PR-subset visual regression to **71/71 passing (0 diff)**.
-2. **UI Snapshots Git Untracking Policy & Prior Walkthrough Image Links Amendment**:
+2. **UI Snapshots Git Untracking Policy & Prior Walkthrough Image References Amendment**:
    - Per user instruction and Architecture Decision D5/D21, all snapshot PNGs in `docs/ui-snapshots/` were deleted from git tracking (`git rm -r docs/ui-snapshots`) and added to `.gitignore` to prevent repository and production bundle bloat.
    - All visual regression baselines are stored exclusively in the separate dedicated local git repository `D:\Projects\FinStat-visual-baselines` linked via Windows directory junction (`cmd /c mklink /J frontend\tests\visual\baseline D:\Projects\FinStat-visual-baselines`).
-   - Prior walkthroughs (5A–5D) that referenced snapshot paths in `docs/ui-snapshots/` are amended to reflect that visual baselines are preserved in `FinStat-visual-baselines` rather than tracked in `main`.
+   - Prior walkthroughs (5A–5D) that referenced snapshot paths in `docs/ui-snapshots/` have been amended to replace broken markdown image embeds with explanatory storage note blocks pointing to `FinStat-visual-baselines`. UI-UX-PLAN §6.9 exit gate criterion for screenshots has been reconciled to reflect this policy.
 3. **Baseline Commit Sequence**:
    - The 30 Phase 5E visual baselines were captured in `D:\Projects\FinStat-visual-baselines` across three sequential commits:
      - `a15949a`: Initial 30 Phase 5E baseline captures.
      - `3993e11`: Retouch of `analysis-payroll` baselines with accessible chart options and touch target heights.
      - `ea11e6a`: Final update of `analysis-payroll` baselines following component style scoping.
    - Manifest verified at 334/334 entries.
+4. **Reference Frame 01 Action Button Ceilings**:
+   - In `payroll-history-reference-match.spec.js`, desktop action buttons assert $\ge 28$px height and mobile expander chips assert $\ge 36$px height conforming to Canonical Reference Frame 01 (Variant B dense table, `docs/UI-UX_Plan/reference/01-dense-table.html`), while primary CTAs across forms assert $\ge 44$px touch targets.
+5. **`AnalysisCard.js` Defensive Display Aggregation**:
+   - Minor presentation adjustments in `frontend/src/components/AnalysisCard.js` (`(p.amount || 0)` fallback guards, `Array(monthLabels.length)` sizing) prevent NaN/undefined rendering in chart bars and summary tiles. These do not alter any domain calculation engine or characterization fixture (Invariant I3 verified green 11/11).
+6. **`AGENTS.md` Core Token Alignment**:
+   - Synchronized `AGENTS.md` Section 1 tokens (`--fs-card-bg: #1a1c20`, `--fs-border: #34383f`, `--fs-ink: #0d0e10`, ink contrast 7.76:1) with `frontend/src/styles/tokens.json` and UI-UX-PLAN §4.9 (authoritative single source of truth).
 
 **Zero Remote Push Policy Enforced**: All code, branches, and artifacts remain strictly on local working branch `phase-ui-5e-payroll-history` awaiting user review.

@@ -6,10 +6,10 @@ This document defines the strict architectural and design-system rules governing
 
 ## 1. Design Direction & Core Tokens
 
-- **Palette**: Dark graphite canvas (`--fs-page-bg: #101114`, recessed chrome shell `--fs-chrome-bg: #0c0d0f`, surface `--fs-card-bg: #16181d`, border `--fs-border: #23272f`).
+- **Palette**: Dark graphite canvas (`--fs-page-bg: #101114`, recessed chrome shell `--fs-chrome-bg: #0c0d0f`, surface `--fs-card-bg: #1a1c20`, border `--fs-border: #34383f`).
 - **Interactive Accent**: Teal (`#14b8a6`, `--fs-accent`).
   - **Interactivity only**: Accent is exclusively for interactive controls (buttons, toggles, active indicators). It is **not** a brand wash or background fill.
-  - **Text on Accent**: Always `--fs-ink` (`#101114`). **White text on accent is strictly banned** (fails WCAG 2.1 at 1.94:1; `--fs-ink` passes at 10.82:1).
+  - **Text on Accent**: Always `--fs-ink` (`#0d0e10`). **White text on accent is strictly banned** (fails WCAG 2.1 at 1.94:1; `--fs-ink` passes at 7.76:1).
 - **Typography**: IBM Plex Sans for UI prose; IBM Plex Mono for numerical tabular values.
 - **Mobile Responsive Pattern (D19)**: At viewports $\le 768\text{px}$, tables collapse into compact-expand vertical cards. **Page-level horizontal table scroll is rejected.**
 - **Single Source of Truth**: `frontend/src/styles/tokens.json`.
