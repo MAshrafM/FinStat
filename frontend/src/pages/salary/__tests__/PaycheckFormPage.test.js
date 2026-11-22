@@ -1,8 +1,5 @@
+/* eslint-disable testing-library/no-container, testing-library/no-node-access, testing-library/no-wait-for-multiple-assertions */
 // frontend/src/pages/salary/__tests__/PaycheckFormPage.test.js
-jest.mock('react-router-dom', () => {
-  return require('../../../../node_modules/react-router/dist/development/index.js');
-}, { virtual: true });
-
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
@@ -17,6 +14,10 @@ import {
 import { getSalaryProfiles } from '../../../services/salaryProfileService';
 import { getProfile as getLegacyProfile } from '../../../services/salaryService';
 import { getUserProfile } from '../../../services/userService';
+
+jest.mock('react-router-dom', () => {
+  return require('../../../../node_modules/react-router/dist/development/index.js');
+}, { virtual: true });
 
 jest.mock('../../../services/paycheckService', () => ({
   createPaycheck: jest.fn(),

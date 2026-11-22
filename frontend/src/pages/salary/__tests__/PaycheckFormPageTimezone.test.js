@@ -1,10 +1,10 @@
 // frontend/src/pages/salary/__tests__/PaycheckFormPageTimezone.test.js
+import { normalizePayDateInput } from '../PaycheckFormPage';
+
 jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn(),
   useParams: () => ({}),
 }), { virtual: true });
-
-import { normalizePayDateInput } from '../PaycheckFormPage';
 
 describe('Step 4B.2: Frontend normalizePayDateInput', () => {
   it('formats YYYY-MM-DD string to midday UTC', () => {

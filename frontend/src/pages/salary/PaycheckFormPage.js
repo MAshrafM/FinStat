@@ -16,6 +16,7 @@ import {
   Sparkles,
   Gift,
 } from 'lucide-react';
+import { Loading } from '../../components/ui';
 import ComponentTable from '../../components/salary/ComponentTable';
 import {
   createPaycheck,
@@ -287,9 +288,10 @@ const PaycheckFormPage = () => {
   const [calculating, setCalculating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadingInitial, setLoadingInitial] = useState(true);
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   // Form State
-    const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     type: 'Cash',
     disbursementType: 'Regular',
     destinationAccount: 'Bank',
@@ -457,7 +459,7 @@ const PaycheckFormPage = () => {
               activeProfile = multiRes.mainProfile;
             }
           }
-        } catch (ignored) {}
+        } catch (ignored) { }
 
         // 2. Try legacy getProfile()
         if (!activeProfile) {
@@ -466,7 +468,7 @@ const PaycheckFormPage = () => {
             if (legacyRes) {
               activeProfile = legacyRes.mainProfile || (legacyRes.profiles && legacyRes.profiles[0]) || legacyRes;
             }
-          } catch (ignored) {}
+          } catch (ignored) { }
         }
 
         // 3. Try getUserProfile()
@@ -477,7 +479,7 @@ const PaycheckFormPage = () => {
             if (u && (u.salaryProfile || u.currentSalary)) {
               activeProfile = u.salaryProfile || u;
             }
-          } catch (ignored) {}
+          } catch (ignored) { }
         }
 
         if (loadedProfiles.length > 0) {
@@ -583,6 +585,7 @@ const PaycheckFormPage = () => {
   // Form Submission
   const handleSavePaycheck = async (e) => {
     e.preventDefault();
+    setFormSubmitted(true);
 
     if (!formData.period) {
       if (notify) notify('Please provide a pay period (e.g. 2026-08)', 'error');
@@ -590,7 +593,7 @@ const PaycheckFormPage = () => {
     }
 
     const normalizedPayDate = normalizePayDateInput(formData.payDate);
-        const payload = {
+    const payload = {
       type: formData.disbursementType === 'Prepaid' ? 'Prepaid' : 'Cash',
       disbursementType: formData.disbursementType,
       destinationAccount: formData.destinationAccount || 'Bank',
@@ -652,12 +655,7 @@ const PaycheckFormPage = () => {
   };
 
   if (loadingInitial) {
-    return (
-      <div className="page-container paycheck-loading-container">
-        <RefreshCw className="spinning-icon paycheck-loading-icon" size={32} />
-        <p className="paycheck-loading-text">Loading profile & paycheck details...</p>
-      </div>
-    );
+    return <Loading variant="route" text="Loading profile & paycheck details..." />;
   }
 
   // Get auto-pulled value text for Section 2
@@ -747,6 +745,13 @@ const PaycheckFormPage = () => {
                 className="form-control"
                 placeholder="e.g. 2026-08 or August 2026"
                 value={formData.period}
+                aria-required="true"
+                aria-invalid={formSubmitted && !formData.period ? 'true' : 'false'}
+                aria-describedby={formSubmitted && !formData.period ? 'pay-period-error' : undefined}
+                onInvalid={(e) => {
+                  e.preventDefault();
+                  setFormSubmitted(true);
+                }}
                 onChange={(e) => {
                   const newPeriod = e.target.value;
                   setFormData({ ...formData, period: newPeriod });
@@ -754,6 +759,11 @@ const PaycheckFormPage = () => {
                 }}
                 required
               />
+              {formSubmitted && !formData.period && (
+                <span id="pay-period-error" className="form-error" role="alert">
+                  Please provide a pay period (e.g. 2026-08)
+                </span>
+              )}
             </div>
 
             <div className="form-group">
@@ -762,6 +772,7 @@ const PaycheckFormPage = () => {
                 id="pay-date"
                 type="date"
                 className="form-control"
+                aria-required="true"
                 value={formData.payDate}
                 onChange={(e) => {
                   const newDate = e.target.value;
@@ -993,29 +1004,29 @@ const PaycheckFormPage = () => {
             formData.disbursementType === 'Surplus' ||
             formData.disbursementType === 'End of Year Bonus' ||
             formData.disbursementType === 'Prepaid') && (
-            <div className="paycheck-adhoc-group">
-              <div className="form-group">
-                <label htmlFor="disbursement-amount" className="form-label">{formData.disbursementType} Amount (EGP) *</label>
-                <input
-                  id="disbursement-amount"
-                  type="number"
-                  step="any"
-                  className="form-control paycheck-adhoc-input"
-                  value={formData.unitRate}
-                  onChange={(e) => {
-                    const val = Number(e.target.value) || 0;
-                    setFormData({ ...formData, unitRate: val });
-                    triggerCalculation(formData.period, formData.components, true, { unitRate: val });
-                  }}
-                  placeholder="e.g. 25000"
-                  required
-                />
-                <span className="paycheck-input-helper-text">
-                  Enter ad-hoc {formData.disbursementType} amount for this period
-                </span>
+              <div className="paycheck-adhoc-group">
+                <div className="form-group">
+                  <label htmlFor="disbursement-amount" className="form-label">{formData.disbursementType} Amount (EGP) *</label>
+                  <input
+                    id="disbursement-amount"
+                    type="number"
+                    step="any"
+                    className="form-control paycheck-adhoc-input"
+                    value={formData.unitRate}
+                    onChange={(e) => {
+                      const val = Number(e.target.value) || 0;
+                      setFormData({ ...formData, unitRate: val });
+                      triggerCalculation(formData.period, formData.components, true, { unitRate: val });
+                    }}
+                    placeholder="e.g. 25000"
+                    required
+                  />
+                  <span className="paycheck-input-helper-text">
+                    Enter ad-hoc {formData.disbursementType} amount for this period
+                  </span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {formData.disbursementType === 'Regular' && (
             <ComponentTable

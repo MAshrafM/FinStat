@@ -872,9 +872,9 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | `/taxes` → above | redirect | 5A | n/a | n/a | `?tab=taxes` |
 | `/salary/paychecks` | `pages/paycheck/PaycheckLog` | 5B | ☑ | ☑ | Converted in 5B; 0 inline styles; D19 mobile cards |
 | `/paycheck-log` → above | redirect | 5B | n/a | n/a | Verify redirect intact |
-| `/salary/paychecks/new` | `pages/salary/PaycheckFormPage` | 5D | ☐ | ☐ | **77 inline styles — highest risk**; styled in 5C, allowlisted in 5D |
+| `/salary/paychecks/new` | `pages/salary/PaycheckFormPage` | 5D | ☑ | ☑ | **77 inline styles — highest risk**; styled in 5C, allowlisted in 5D |
 | `/paycheck-log/new` → above | redirect | 5D | n/a | n/a | Verify redirect intact |
-| `/salary/paychecks/edit/:id` | `pages/salary/PaycheckFormPage` | 5D | ☐ | ☐ | Same component |
+| `/salary/paychecks/edit/:id` | `pages/salary/PaycheckFormPage` | 5D | ☑ | ☑ | Same component |
 | `/paycheck-log/edit/:id` → list | redirect | 5B | n/a | n/a | Verify redirect intact |
 | `/salary-profile/history` | `pages/salary/SalaryHistory` | 5E | ☐ | ☐ | |
 | `/salary-profile/edit` | `pages/salary/EditProfilePage` | 5E | ☐ | ☐ | |
@@ -1055,7 +1055,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **5A** | Payroll profiles, rules, taxes | `phase-ui-5a-payroll-core` | ☑ | ☑ |
 | **5B** | Paycheck log | `phase-ui-5b-paycheck-log` | ☑ | ☑ |
 | **5C** | Paycheck form, part 1 (styles only) | `phase-ui-5c-paycheck-form-a` | ☑ | ☑ |
-| **5D** | Paycheck form, part 2 + allowlist | `phase-ui-5d-paycheck-form-b` | ☐ | ☐ |
+| **5D** | Paycheck form, part 2 + allowlist | `phase-ui-5d-paycheck-form-b` | ☑ | ☑ |
 | **5E** | History, update, analytics | `phase-ui-5e-payroll-history` | ☐ | ☐ |
 | **6A** | Portfolio dashboard | `phase-ui-6a-portfolio` | ☐ | ☐ |
 | **6B** | Rebalancing | `phase-ui-6b-rebalancing` | ☐ | ☐ |
@@ -1696,15 +1696,16 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 5D — Paycheck form, part 2 + validation + allowlist
 
-- [ ] Purge temporary legacy compatibility block from `PaycheckFormPage.css` and enforce strict exit-0 stylelint without disables.
-- [ ] Component-table inline editing states themed.
-- [ ] Verify create, preview, save, edit, validation errors, date normalization, and legacy dual-field fallback paths.
-- [ ] Confirm unit/regression tests for `normalizePayDateInput` pass unchanged.
-- [ ] Verify clean ESLint (0 errors, 0 warnings) maintained on paycheck form files.
-- [ ] Adopt `<Loading variant="route" />` per D23 and §6.4 line 1290.
-- [ ] Form accessibility attributes (`aria-required`, `aria-describedby`, `aria-invalid`, inline field errors).
-- [ ] Remove temporary harness injection from `frontend/tests/visual/a11y.spec.js:30–39` and re-run real-browser axe test un-injected on `/salary/paychecks/new` and `/salary/paychecks/edit/:id` immediately upon allowlisting (Owner: Phase 5D implementing agent; verification: developer).
-- [ ] **Add `/salary/paychecks/new` and `/salary/paychecks/edit/:id`.**
+- [x] Purge temporary legacy compatibility block from `PaycheckFormPage.css` and enforce strict exit-0 stylelint without disables.
+- [x] Component-table inline editing states themed.
+- [x] Verify create, preview, save, edit, validation errors, date normalization, and legacy dual-field fallback paths.
+- [x] Confirm unit/regression tests for `normalizePayDateInput` pass unchanged.
+- [x] Verify clean ESLint (0 errors, 0 warnings) maintained on paycheck form files.
+- [x] Adopt `<Loading variant="route" />` per D23 and §6.4 line 1290.
+- [x] Form accessibility attributes (`aria-required`, `aria-describedby`, `aria-invalid`, inline field errors).
+- [x] Remove temporary harness injection from `frontend/tests/visual/a11y.spec.js:30–39` and re-run real-browser axe test un-injected on `/salary/paychecks/new` and `/salary/paychecks/edit/:id` immediately upon allowlisting (Owner: Phase 5D implementing agent; verification: developer).
+- [x] **Add `/salary/paychecks/new` and `/salary/paychecks/edit/:id`.**
+- [x] **Recorded Plan Amendment (2026-11-22, Owner: Antigravity / Developer approved):** Presentation validation state (`formSubmitted` state, `onInvalid={(e) => { e.preventDefault(); setFormSubmitted(true); }}` / `aria-invalid`, `aria-describedby="pay-period-error"`, and `<span id="pay-period-error" className="form-error" role="alert">`) added for Reference Frame 02 inline error placement; calculation math, payload structure, and service call logic remain strictly untouched.
 
 **Exit gate 5D:** form renders in dark graphite per Reference Frame 02; calculation fixtures byte-identical; real-browser Playwright axe test passes un-injected with 0 critical or serious violations on both allowlisted routes.
 

@@ -72,9 +72,6 @@ src/pages/reports/__tests__/ComprehensiveReportPage.test.js
 src/pages/salary/EditHistoryRecord.js
 src/pages/salary/EditProfilePage.js
 src/pages/salary/UpdateSalary.js
-src/pages/salary/__tests__/PaycheckFormPage.test.js
-src/pages/salary/__tests__/PaycheckFormPageTax.test.js
-src/pages/salary/__tests__/PaycheckFormPageTimezone.test.js
 src/pages/salary/__tests__/TaxSimulator.test.js
 src/pages/security/SecuritySettingsPage.js
 src/pages/trades/CorporateActionWizard.js

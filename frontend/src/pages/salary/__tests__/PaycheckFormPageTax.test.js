@@ -1,16 +1,17 @@
-jest.mock('react-router-dom', () => ({
-  useNavigate: () => jest.fn(),
-  useParams: () => ({ id: undefined }),
-}), { virtual: true });
-
+/* eslint-disable testing-library/no-wait-for-multiple-assertions */
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import PaycheckFormPage from '../PaycheckFormPage';
-import { calculatePaycheckPreview, getPaycheckById } from '../../../services/paycheckService';
+import { calculatePaycheckPreview } from '../../../services/paycheckService';
 import { getSalaryProfiles } from '../../../services/salaryProfileService';
 import { getProfile as getLegacyProfile } from '../../../services/salaryService';
 import { getUserProfile } from '../../../services/userService';
 import { ToastProvider } from '../../../context/ToastContext';
+
+jest.mock('react-router-dom', () => ({
+  useNavigate: () => jest.fn(),
+  useParams: () => ({ id: undefined }),
+}), { virtual: true });
 
 jest.mock('../../../services/paycheckService', () => ({
   createPaycheck: jest.fn(),

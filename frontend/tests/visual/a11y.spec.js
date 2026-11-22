@@ -27,17 +27,6 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
       await page.locator('.loading-spinner, .loading-spinner-ring, .ca-loading-spinner, .dash-loading-spinner, .fs-loading, .fs-skeleton, .paycheck-loading-container').waitFor({ state: 'detached', timeout: 5000 }).catch(() => { });
       await page.waitForTimeout(500);
 
-      // In Phase 5C (Part 1 styles-only), route allowlisting is deferred to Phase 5D.
-      // Activate dormant dark theme harness to test authored design-token accessibility in Chromium.
-      if (route.slug === 'salary-paychecks-new' || route.slug === 'salary-paychecks-edit') {
-        await page.evaluate(() => {
-          document.documentElement.dataset.fsTheme = 'dark';
-          const main = document.querySelector('main') || document.body;
-          main.classList.add('fs-page');
-        });
-        await page.waitForTimeout(100);
-      }
-
       // Inject axe-core into the real browser DOM
       await page.addScriptTag({ path: AXE_SOURCE_PATH });
 
