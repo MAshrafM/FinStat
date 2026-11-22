@@ -352,4 +352,28 @@ describe('Step 5B.2: [AUD-TEST-002] PaycheckFormPage User Journey & Statutory Ve
     const taxCheckbox = screen.getByLabelText(/Apply Income Tax Bracket/i);
     expect(taxCheckbox.checked).toBe(false);
   });
+
+  it('10. renders inline #pay-period-error alert with aria-invalid when submitted without pay period', async () => {
+    const { container } = renderWithRouter();
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Loading profile & paycheck details/i)).not.toBeInTheDocument();
+    });
+
+    // Clear period input
+    const periodInput = container.querySelector('#pay-period');
+    expect(periodInput).not.toBeNull();
+    fireEvent.change(periodInput, { target: { value: '' } });
+
+    // Attempt submission
+    const submitBtn = screen.getByRole('button', { name: /Save & Log Regular/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(periodInput).toHaveAttribute('aria-invalid', 'true');
+      const errorAlert = container.querySelector('#pay-period-error');
+      expect(errorAlert).not.toBeNull();
+      expect(errorAlert).toHaveTextContent(/Please provide a pay period/i);
+    });
+  });
 });
