@@ -426,18 +426,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed - UI Phase 5E: Payroll Domain Completion (Salary Profile History, Analytics & Tax Simulator)
 - Promoted all remaining payroll routes and redirects to active `THEMED_PATTERNS` allowlist in `ProtectedRoute.js` (expanding active allowlist from 14 to 20 patterns).
-- Themed `/salary-profile/history` (`SalaryHistory.js`) adhering to Canonical Reference Frame 01 (Variant B dense table with IBM Plex Mono tabular numeric values, neutral action controls $\ge 28$px height, and responsive D19 compact-expand mobile cards at $\le 768$px).
+- Themed `/salary-profile/history` (`SalaryHistory.js`) adhering to Canonical Reference Frame 01 (Variant B dense table with IBM Plex Sans proportional tabular numbers via `font-variant-numeric: tabular-nums` per AD10/D16, neutral action controls $\ge 28$px height, and responsive D19 compact-expand mobile cards at $\le 768$px).
 - Themed `/salary-profile/edit` (`EditProfilePage.js`) adhering to Canonical Reference Frame 02 (Variant B stacked field card layout, single accent CTA `#14b8a6` with `#0d0e10` text, 4px input radii, and accessible field pairing).
 - Themed `/salary-profile/history/edit/:historyId` (`EditHistoryRecord.js`) matching Reference Frame 02 with full accessible labels, tabular numeric inputs, and safe neutral discard actions.
 - Themed `/salary-profile/update` (`UpdateSalary.js`) matching Reference Frame 02, integrated with themed `ComponentTable` inline editing controls from `theme-components.css`.
-- Themed `/analysis/payroll` (`PayrollAnalyticsPage.js`) adhering to Canonical Reference Frame 03 (recessed `#0c0d0f` chrome, dark graphite KPI tiles `#16181d`, Chart.js accessible series palette via `getChartPalette()`, zero teal accent in charts, scoped `SummaryRow` and `AnalysisCard` rules preventing style leakage to unthemed pages, and `aria-label` attribute on `<Bar />` canvas for WCAG 2.1 AA `role-img-alt` compliance).
+- Themed `/analysis/payroll` (`PayrollAnalyticsPage.js`) adhering to Canonical Reference Frame 03 (recessed `#0c0d0f` chrome, dark graphite KPI tiles `#1a1c20`, Chart.js accessible series palette via `getChartPalette()`, zero teal accent in charts, scoped `SummaryRow` and `AnalysisCard` rules preventing style leakage to unthemed pages, and `aria-label` attribute on `<Bar />` canvas for WCAG 2.1 AA `role-img-alt` compliance).
 - Themed `/salary/simulator` (`TaxSimulator.js` + `TaxSimulator.css`) adhering to Canonical Reference Frame 02 (interactive stacked comparison cards, progressive bracket slice table, and 150ms debounced simulation).
 - Standardized canonical redirects for `/analysis/calendar` and `/analysis/fiscal` mapping to `/analysis/payroll?cycle=calendar` and `/analysis/payroll?cycle=fiscal`.
-- Created comprehensive unit test suites: `SalaryHistory.test.js` (6 tests), `EditProfilePage.test.js` (4 tests), `EditHistoryRecord.test.js` (4 tests), `UpdateSalary.test.js` (4 tests), `PayrollAnalyticsPage.test.js` (4 tests), and `TaxSimulator.test.js` (11 tests). All 78/78 tests pass across 14 test suites.
-- Created `payroll-history-reference-match.spec.js` asserting Reference Frames 01 and 02 design tokens, touch targets, and responsive card collapse across desktop (1440px) and mobile (390px) viewports (5/5 tests green).
-- Verified un-injected real-browser axe test (`a11y.spec.js`) passing 0 critical and 0 serious violations across Phase 5 routes (8/8 tests green).
-- Captured 30 updated baselines in `D:\Projects\FinStat-visual-baselines` (commits `a15949a`, `3993e11`, and `ea11e6a`), verified PR-subset 71/71 passing with 0 diff on non-allowlisted routes (Invariant I13), and verified manifest integrity (334/334 baselines verified).
-- Formally signed off Phase 5E Exit Gate and concluded the entire Phase 5 Payroll Subsystem.
+- Created comprehensive unit test suites: `SalaryHistory.test.js` (6 tests), `EditProfilePage.test.js` (4 tests), `EditHistoryRecord.test.js` (4 tests), `UpdateSalary.test.js` (4 tests), `PayrollAnalyticsPage.test.js` (6 tests), and `TaxSimulator.test.js` (11 tests). All tests pass.
+- Created `payroll-history-reference-match.spec.js` asserting Reference Frames 01, 02, and 03 design tokens, touch targets, and responsive card collapse across desktop (1440px) and mobile (390px) viewports (7/7 tests green: 1 setup + 6 assertions).
+- Verified un-injected real-browser axe test (`a11y.spec.js`) passing 0 critical and 0 serious violations across touched Phase 5 routes (8/8 tests green: 1 setup + 7 routes).
+- Captured 30 updated baselines in `D:\Projects\FinStat-visual-baselines` (commits `a15949a`, `3993e11`, and `ea11e6a`), verified PR-subset 71/71 passing with 0 diff on non-allowlisted routes (Invariant I13), reconciled full-suite 326-test run with 10 accepted AD14 diffs, and verified manifest integrity (334/334 baselines verified).
+- Completed Phase 5E migration, verified all 18 gates, awaiting user sign-off.
 
 
 

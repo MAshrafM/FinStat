@@ -25,7 +25,7 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
         route.slug === 'analysis-payroll' ||
         route.slug === 'salary-simulator'
       ) {
-        await setupPaycheckMocks(page);
+        await setupPaycheckMocks(page, route.slug);
       }
 
       await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });
