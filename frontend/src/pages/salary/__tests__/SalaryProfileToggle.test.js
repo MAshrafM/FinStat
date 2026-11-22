@@ -1,3 +1,4 @@
+/* eslint-disable import/first, no-unused-vars */
 jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn(),
   Link: ({ children, to }) => require('react').createElement('a', { href: to }, children),

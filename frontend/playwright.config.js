@@ -34,7 +34,7 @@ module.exports = defineConfig({
     {
       name: 'reference',
       dependencies: ['setup'],
-      testMatch: /(reference-frames|dashboard-reference-match|expenditure-reference-match|expenditure-form-reference-match|paycheck-form-reference-match)\.spec\.js/,
+      testMatch: /(reference-frames|dashboard-reference-match|expenditure-reference-match|expenditure-form-reference-match|paycheck-form-reference-match|payroll-history-reference-match)\.spec\.js/,
     },
     {
       name: 'shared',

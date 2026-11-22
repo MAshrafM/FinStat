@@ -86,10 +86,10 @@ describe('TaxSimulator Component (Step 7D.2b - FEAT-008)', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText(/Net Take-Home Pay/i).length).toBeGreaterThan(0);
-      expect(screen.getByText(/Effective Tax Rate/i)).toBeInTheDocument();
-      expect(screen.getByText(/Total Deductions/i)).toBeInTheDocument();
-      expect(screen.getByText(/Statutory Deductions Waterfall/i)).toBeInTheDocument();
     });
+    expect(screen.getByText(/Effective Tax Rate/i)).toBeInTheDocument();
+    expect(screen.getByText(/Total Deductions/i)).toBeInTheDocument();
+    expect(screen.getByText(/Statutory Deductions Waterfall/i)).toBeInTheDocument();
   });
 
   // Test 2: Updates simulation instantly when moving gross salary slider
@@ -166,11 +166,11 @@ describe('TaxSimulator Component (Step 7D.2b - FEAT-008)', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Law 175\/2023 Progressive Tax Bracket Breakdown/i)).toBeInTheDocument();
-      expect(screen.getByText('Level 1')).toBeInTheDocument();
-      expect(screen.getByText('0 to 40,000')).toBeInTheDocument();
-      expect(screen.getByText('Level 4')).toBeInTheDocument();
-      expect(screen.getByText('70,001 to 200,000')).toBeInTheDocument();
     });
+    expect(screen.getByText('Level 1')).toBeInTheDocument();
+    expect(screen.getByText('0 to 40,000')).toBeInTheDocument();
+    expect(screen.getByText('Level 4')).toBeInTheDocument();
+    expect(screen.getByText('70,001 to 200,000')).toBeInTheDocument();
   });
 
   // Test 7: Displays Law 148/2019 Social Insurance 11% deduction and cap notes
@@ -179,9 +179,9 @@ describe('TaxSimulator Component (Step 7D.2b - FEAT-008)', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Social Insurance \(Employee 11%\)/i)).toBeInTheDocument();
-      expect(screen.getByText(/Capped at EGP 12,600/i)).toBeInTheDocument();
       expect(screen.getByText('Capped')).toBeInTheDocument();
     });
+    expect(screen.getByText(/Capped at EGP 12,600/i)).toBeInTheDocument();
   });
 
   // Test 8: Displays Law 4/2021 Martyrs Families Fund deduction
@@ -190,8 +190,8 @@ describe('TaxSimulator Component (Step 7D.2b - FEAT-008)', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Martyrs Families Fund/i)).toBeInTheDocument();
-      expect(screen.getByText(/0.05% of gross wage/i)).toBeInTheDocument();
     });
+    expect(screen.getByText(/0.05% of gross wage/i)).toBeInTheDocument();
   });
 
   // Test 9: Toggles Employer Cost view showing 18.75% employer contribution
@@ -216,10 +216,10 @@ describe('TaxSimulator Component (Step 7D.2b - FEAT-008)', () => {
       // 35,000 gross monthly formatted with EGP
       const grossElements = screen.getAllByText(/EGP 35,000.00/i);
       expect(grossElements.length).toBeGreaterThan(0);
-      // Net pay formatted with EGP
-      const netElements = screen.getAllByText(/EGP 28,549.67/i);
-      expect(netElements.length).toBeGreaterThan(0);
     });
+    // Net pay formatted with EGP
+    const netElements = screen.getAllByText(/EGP 28,549.67/i);
+    expect(netElements.length).toBeGreaterThan(0);
   });
 
   // Test 11: Viewer role can access the page without redirection

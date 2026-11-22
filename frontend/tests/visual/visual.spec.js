@@ -39,6 +39,8 @@ test.describe('Visual Regression Suite', () => {
       }
 
       test(`${route.slug} @ ${width}px`, async ({ page }) => {
+        page.on('pageerror', err => console.log('PAGE ERROR:', err.message));
+        page.on('console', msg => { if (msg.type() === 'error') console.log('BROWSER ERROR:', msg.text()); });
         await page.setViewportSize({ width, height: 900 });
 
         // Freeze clock at 2026-01-15T09:00:00Z
@@ -50,8 +52,13 @@ test.describe('Visual Regression Suite', () => {
         });
 
         // Set up route-specific mocks if available
-        if (route.slug.startsWith('salary-paycheck')) {
-          await setupPaycheckMocks(page);
+        if (
+          route.slug.startsWith('salary-paycheck') ||
+          route.slug.startsWith('salary-profile-') ||
+          route.slug === 'analysis-payroll' ||
+          route.slug === 'salary-simulator'
+        ) {
+          await setupPaycheckMocks(page, route.slug);
         }
 
         // Navigate to route

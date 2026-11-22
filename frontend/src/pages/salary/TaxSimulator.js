@@ -54,7 +54,7 @@ const TaxSimulator = () => {
   const displayData = isAnnual ? annual : monthly;
 
   return (
-    <div className="tax-simulator-container">
+    <div className="fs-page tax-simulator-container">
       {/* Header */}
       <div className="tax-sim-header">
         <div>
@@ -65,18 +65,18 @@ const TaxSimulator = () => {
         </div>
         {simulation?.appliedYear && (
           <div className="statutory-badge-wrapper">
-            <span className="statutory-year-badge">
+            <span className="statutory-year-badge fs-badge">
               Using {simulation.appliedYear} Statutory Rules
             </span>
             {simulation.isFallbackConfig && (
-              <span className="statutory-fallback-badge">Embedded Fallback</span>
+              <span className="statutory-fallback-badge fs-badge">Embedded Fallback</span>
             )}
           </div>
         )}
       </div>
 
       {/* Main Interactive Controls Card */}
-      <div className="tax-controls-card">
+      <div className="tax-controls-card fs-card">
         <div className="controls-top-row">
           <label htmlFor="gross-salary-input" className="control-label">
             Monthly Gross Salary (EGP)
@@ -109,7 +109,7 @@ const TaxSimulator = () => {
               min="0"
               max="1000000"
               step="500"
-              className="salary-number-input"
+              className="salary-number-input fs-input fs-num"
               value={grossSalary || ''}
               onChange={handleInputChange}
               aria-label="Gross Salary Input"
@@ -158,12 +158,12 @@ const TaxSimulator = () => {
         </div>
       )}
 
-      {/* KPI Summary Cards */}
+      {/* KPI Summary Cards (Neutral Dark Graphite Invariant I15) */}
       <div className="tax-kpi-grid">
         {/* Net Take-Home Pay */}
-        <div className="tax-kpi-card highlight-takehome">
+        <div className="tax-kpi-card fs-card">
           <span className="kpi-label">Net Take-Home Pay</span>
-          <div className="kpi-value text-green">
+          <div className="kpi-value fs-num">
             EGP {Number(displayData.netPay || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <span className="kpi-sub">
@@ -172,9 +172,9 @@ const TaxSimulator = () => {
         </div>
 
         {/* Gross Salary */}
-        <div className="tax-kpi-card">
+        <div className="tax-kpi-card fs-card">
           <span className="kpi-label">Gross Salary ({isAnnual ? 'Annual' : 'Monthly'})</span>
-          <div className="kpi-value">
+          <div className="kpi-value fs-num">
             EGP {Number(displayData.grossSalary || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <span className="kpi-sub">
@@ -183,9 +183,9 @@ const TaxSimulator = () => {
         </div>
 
         {/* Effective Tax Rate */}
-        <div className="tax-kpi-card">
+        <div className="tax-kpi-card fs-card">
           <span className="kpi-label">Effective Tax Rate</span>
-          <div className="kpi-value">
+          <div className="kpi-value fs-num">
             {simulation?.effectiveTaxRate || 0}%
           </div>
           <span className="kpi-sub">
@@ -194,9 +194,9 @@ const TaxSimulator = () => {
         </div>
 
         {/* Total Deductions */}
-        <div className="tax-kpi-card highlight-deductions">
+        <div className="tax-kpi-card fs-card">
           <span className="kpi-label">Total Deductions</span>
-          <div className="kpi-value text-red">
+          <div className="kpi-value fs-num">
             EGP {Number(displayData.totalDeductions || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <span className="kpi-sub">
@@ -207,14 +207,14 @@ const TaxSimulator = () => {
 
       {/* Progressive Tax Slices Meter */}
       {simulation?.bracketSlices && simulation.bracketSlices.length > 0 && (
-        <div className="bracket-slices-card">
+        <div className="bracket-slices-card fs-card">
           <div className="bracket-card-head">
             <h3>Law 175/2023 Progressive Tax Bracket Breakdown</h3>
             <span className="bracket-head-note">Slices annual taxable base across statutory tiers</span>
           </div>
 
-          <div className="bracket-table-wrapper">
-            <table className="bracket-breakdown-table">
+          <div className="bracket-table-wrapper fs-table-scroll">
+            <table className="bracket-breakdown-table fs-table">
               <thead>
                 <tr>
                   <th>Tier Level</th>
@@ -230,11 +230,11 @@ const TaxSimulator = () => {
                   <tr key={slice.level} className={slice.isMatched ? 'slice-matched' : 'slice-unmatched'}>
                     <td>Level {slice.level}</td>
                     <td>{slice.bracket}</td>
-                    <td>{slice.rate}%</td>
-                    <td>
+                    <td className="fs-num">{slice.rate}%</td>
+                    <td className="fs-num">
                       EGP {Number(slice.taxableAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </td>
-                    <td>
+                    <td className="fs-num">
                       EGP {Number(slice.tax || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </td>
                     <td>
@@ -251,14 +251,14 @@ const TaxSimulator = () => {
       )}
 
       {/* Statutory Deductions Waterfall Table */}
-      <div className="waterfall-card">
+      <div className="waterfall-card fs-card">
         <div className="waterfall-card-head">
           <h3>Statutory Deductions Waterfall</h3>
           <span className="waterfall-head-note">Calculation order under Egyptian Law 175/2023 & Law 148/2019</span>
         </div>
 
-        <div className="waterfall-table-wrapper">
-          <table className="waterfall-table">
+        <div className="waterfall-table-wrapper fs-table-scroll">
+          <table className="waterfall-table fs-table">
             <thead>
               <tr>
                 <th>Step / Line Item</th>
@@ -271,8 +271,8 @@ const TaxSimulator = () => {
               <tr>
                 <td><strong>1. Gross Salary</strong></td>
                 <td>Employment Contract</td>
-                <td>EGP {Number(monthly.grossSalary || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td>EGP {Number(annual.grossSalary || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="fs-num">EGP {Number(monthly.grossSalary || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="fs-num">EGP {Number(annual.grossSalary || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
               </tr>
               <tr className="deduction-row">
                 <td>2. (-) Social Insurance (Employee 11%)</td>
@@ -280,40 +280,40 @@ const TaxSimulator = () => {
                   Law 148/2019 (Capped at EGP {Number(deductions?.socialInsurance?.maxCap || 12600).toLocaleString()})
                   {deductions?.socialInsurance?.isCapped && <span className="cap-tag">Capped</span>}
                 </td>
-                <td className="text-red">- EGP {Number(monthly.employeeSI || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="text-red">- EGP {Number(annual.employeeSI || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="fs-num">- EGP {Number(monthly.employeeSI || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="fs-num">- EGP {Number(annual.employeeSI || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
               </tr>
               <tr className="exemption-row">
                 <td>3. (-) Personal Exemption</td>
                 <td>Law 175/2023 (EGP 20,000 / year)</td>
-                <td>- EGP {Number(deductions?.personalExemption?.monthly || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td>- EGP {Number(deductions?.personalExemption?.annual || 20000).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="fs-num">- EGP {Number(deductions?.personalExemption?.monthly || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="fs-num">- EGP {Number(deductions?.personalExemption?.annual || 20000).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
               </tr>
               <tr className="subtotal-row">
                 <td><strong>(=) Net Annual Taxable Base</strong></td>
                 <td>Gross - SI - Personal Exemption</td>
-                <td>EGP {Number(monthly.netTaxableBase || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td><strong>EGP {Number(annual.netTaxableBase || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></td>
+                <td className="fs-num">EGP {Number(monthly.netTaxableBase || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="fs-num"><strong>EGP {Number(annual.netTaxableBase || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></td>
               </tr>
               <tr className="deduction-row">
                 <td>4. (-) Progressive Income Tax</td>
                 <td>Law 175/2023 Sliced Brackets (Effective: {simulation?.effectiveTaxRate || 0}%)</td>
-                <td className="text-red">- EGP {Number(monthly.incomeTax || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="text-red">- EGP {Number(annual.incomeTax || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="fs-num">- EGP {Number(monthly.incomeTax || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="fs-num">- EGP {Number(annual.incomeTax || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
               </tr>
               <tr className="deduction-row">
                 <td>5. (-) Martyrs Families Fund</td>
                 <td>Law 4/2021 (0.05% of gross wage)</td>
-                <td className="text-red">- EGP {Number(monthly.martyrsFund || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td className="text-red">- EGP {Number(annual.martyrsFund || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="fs-num">- EGP {Number(monthly.martyrsFund || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td className="fs-num">- EGP {Number(annual.martyrsFund || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
               </tr>
               <tr className="final-net-row">
                 <td><strong>(=) Net Take-Home Pay</strong></td>
                 <td>Take-home earnings ({simulation?.netToGrossRatio || 0}%)</td>
-                <td className="text-green">
+                <td className="fs-num">
                   <strong>EGP {Number(monthly.netPay || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
                 </td>
-                <td className="text-green">
+                <td className="fs-num">
                   <strong>EGP {Number(annual.netPay || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
                 </td>
               </tr>
@@ -323,7 +323,7 @@ const TaxSimulator = () => {
       </div>
 
       {/* Employer Cost Section Toggle */}
-      <div className="employer-cost-card">
+      <div className="employer-cost-card fs-card">
         <button
           type="button"
           className="employer-cost-toggle-btn"
@@ -338,15 +338,15 @@ const TaxSimulator = () => {
             <div className="employer-cost-grid">
               <div className="cost-item">
                 <span className="cost-label">Employee Gross Salary</span>
-                <span className="cost-value">EGP {Number(monthly.grossSalary || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                <span className="cost-value fs-num">EGP {Number(monthly.grossSalary || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="cost-item">
                 <span className="cost-label">Employer Social Insurance (18.75%)</span>
-                <span className="cost-value text-red">+ EGP {Number(monthly.employerSI || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                <span className="cost-value fs-num">+ EGP {Number(monthly.employerSI || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="cost-item highlight">
                 <span className="cost-label">Total Cost to Company</span>
-                <span className="cost-value text-white">EGP {Number(monthly.totalEmployerCost || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                <span className="cost-value fs-num">EGP {Number(monthly.totalEmployerCost || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
             <p className="employer-cost-note">

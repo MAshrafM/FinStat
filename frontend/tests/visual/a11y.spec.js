@@ -19,7 +19,12 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await setFixedClock(page);
 
-      if (route.slug.startsWith('salary-paycheck')) {
+      if (
+        route.slug.startsWith('salary-paycheck') ||
+        route.slug.startsWith('salary-profile-') ||
+        route.slug === 'analysis-payroll' ||
+        route.slug === 'salary-simulator'
+      ) {
         await setupPaycheckMocks(page);
       }
 

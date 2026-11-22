@@ -3,7 +3,6 @@
 # migrating phase (see UI-UX-PLAN.md §6.7–§6.14), at which point the file must pass
 # --max-warnings=0.
 src/App.test.js
-src/components/AnalysisCard.js
 src/components/DataLoader.js
 src/components/Modal.js
 src/components/Sidebar.js
@@ -24,8 +23,6 @@ src/pages/admin/AdminDashboard.js
 src/pages/admin/BackupPage.js
 src/pages/admin/InsuranceConfigModal.js
 src/pages/admin/TaxConfigModal.js
-src/pages/analysis/PayrollAnalyticsPage.js
-src/pages/analysis/__tests__/PayrollAnalyticsPage.test.js
 src/pages/analytics/PurchasingPowerChart.js
 src/pages/analytics/__tests__/PurchasingPowerChart.test.js
 src/pages/certificates/CertificateDetailPage.js
@@ -69,10 +66,6 @@ src/pages/real-estate/RealEstateForm.js
 src/pages/real-estate/RealEstateLogPage.js
 src/pages/reports/ComprehensiveReportPage.js
 src/pages/reports/__tests__/ComprehensiveReportPage.test.js
-src/pages/salary/EditHistoryRecord.js
-src/pages/salary/EditProfilePage.js
-src/pages/salary/UpdateSalary.js
-src/pages/salary/__tests__/TaxSimulator.test.js
 src/pages/security/SecuritySettingsPage.js
 src/pages/trades/CorporateActionWizard.js
 src/pages/trades/CorporateActionsList.js

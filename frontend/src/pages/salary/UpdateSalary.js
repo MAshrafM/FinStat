@@ -1,12 +1,13 @@
 // frontend/src/pages/salary/UpdateSalary.js
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Save, ArrowLeft, RefreshCw, Briefcase } from 'lucide-react';
+import { Save, ArrowLeft, Briefcase } from 'lucide-react';
 import { getProfile, saveProfile } from '../../services/salaryService';
 import { updateSalaryProfile } from '../../services/salaryProfileService';
 import ComponentTable from '../../components/salary/ComponentTable';
 import { formatCurrency } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
+import { Loading } from '../../components/ui';
 import './SalaryProfile.css';
 
 const convertLegacyDetailsToComponents = (details) => {
@@ -83,20 +84,20 @@ const UpdateSalary = () => {
   }, [addToast]);
 
   const summary = useMemo(() => {
-    const active = components.filter(c => c && c.isActive !== false);
+    const active = components.filter((c) => c && c.isActive !== false);
     const basicSum = active
-      .filter(c => c.category === 'basic')
+      .filter((c) => c.category === 'basic')
       .reduce((sum, c) => sum + (Number(c.value) || 0), 0);
 
     let gross = 0;
     // Fixed earnings
-    active.forEach(c => {
+    active.forEach((c) => {
       if (c.category !== 'deduction' && (c.type === 'fixed' || !c.type)) {
-        gross += (Number(c.value) || 0);
+        gross += Number(c.value) || 0;
       }
     });
     // Percentage earnings
-    active.forEach(c => {
+    active.forEach((c) => {
       if (c.category !== 'deduction' && c.type === 'percentage') {
         const basis = c.calculationBasis === 'basic' ? basicSum : gross;
         gross += (basis * (Number(c.value) || 0)) / 100;
@@ -104,11 +105,11 @@ const UpdateSalary = () => {
     });
 
     const insurableGross = active
-      .filter(c => c.category !== 'deduction' && c.isInsurable !== false)
+      .filter((c) => c.category !== 'deduction' && c.isInsurable !== false)
       .reduce((sum, c) => sum + (Number(c.value) || 0), 0);
 
     const taxableGross = active
-      .filter(c => c.category !== 'deduction' && c.isTaxable !== false)
+      .filter((c) => c.category !== 'deduction' && c.isTaxable !== false)
       .reduce((sum, c) => sum + (Number(c.value) || 0), 0);
 
     return {
@@ -133,13 +134,13 @@ const UpdateSalary = () => {
 
     try {
       setSaving(true);
-      const cleanComponents = components.map(c => {
+      const cleanComponents = components.map((c) => {
         const isActive = c.isActive !== false;
         return {
           name: (c.name || 'Component').trim(),
           category: c.category || 'allowance',
           type: c.type || 'fixed',
-          value: isActive ? (Number(c.value) || 0) : 0,
+          value: isActive ? Number(c.value) || 0 : 0,
           calculationBasis: c.calculationBasis || 'gross',
           isTaxable: c.isTaxable !== false,
           isInsurable: c.isInsurable !== false,
@@ -167,7 +168,7 @@ const UpdateSalary = () => {
       }
 
       addToast('Salary profile updated successfully with improved components structure!', 'success');
-      navigate('/salary-profile');
+      navigate('/salary/profiles');
     } catch (err) {
       addToast(err.response?.data?.message || 'Failed to update salary profile', 'error');
     } finally {
@@ -176,44 +177,40 @@ const UpdateSalary = () => {
   };
 
   if (loading) {
-    return (
-      <div className="page-container" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-        <RefreshCw className="spinning-icon" size={32} style={{ color: '#009879', marginBottom: '1rem' }} />
-        <p style={{ color: '#6c757d' }}>Loading salary profile structure...</p>
-      </div>
-    );
+    return <Loading variant="route" text="Loading salary profile structure..." />;
   }
 
   return (
-    <div className="page-container">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+    <div className="fs-page update-salary-container">
+      <div className="page-header update-salary-header">
         <div>
-          <h1 style={{ margin: 0 }}>Update Salary Structure</h1>
-          <p style={{ color: '#6c757d', margin: '0.25rem 0 0 0', fontSize: '0.95rem' }}>
-            Customize your compensation breakdown, allowances, insurable badges, and tax rules
+          <h1>Update Salary Structure</h1>
+          <p className="update-salary-subtitle">
+            Customize compensation breakdown, allowances, insurable badges, and tax rules
           </p>
         </div>
-        <Link to="/salary-profile" className="nav-button" style={{ backgroundColor: '#64748b', textDecoration: 'none' }}>
+        <Link to="/salary/profiles" className="fs-btn fs-btn-secondary">
           <ArrowLeft size={16} /> Back to Salary Profile
         </Link>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <form onSubmit={handleSubmit} className="update-salary-form" data-testid="update-salary-form">
         {/* Profile Metadata Card */}
-        <div className="profile-card" style={{ maxWidth: '100%', margin: 0, padding: '1.5rem', borderRadius: '12px' }}>
-          <h3 style={{ color: '#2c3e50', fontSize: '1.15rem', marginTop: 0, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Briefcase size={20} color="#009879" /> Profile & Role Information
-          </h3>
+        <div className="fs-form-card update-salary-meta-card">
+          <div className="fs-form-card-header">
+            <Briefcase size={18} className="fs-form-icon" />
+            <h3>Profile & Role Information</h3>
+          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.4rem' }}>
-                Profile Name *
+          <div className="update-salary-grid">
+            <div className="fs-form-group">
+              <label htmlFor="update-profile-name" className="fs-label">
+                Profile Name <span className="required-mark">*</span>
               </label>
               <input
+                id="update-profile-name"
                 type="text"
-                className="component-input"
-                style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="fs-input"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g. Senior Software Engineer Profile"
@@ -221,14 +218,14 @@ const UpdateSalary = () => {
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.4rem' }}>
-                Job Title *
+            <div className="fs-form-group">
+              <label htmlFor="update-profile-title" className="fs-label">
+                Job Title <span className="required-mark">*</span>
               </label>
               <input
+                id="update-profile-title"
                 type="text"
-                className="component-input"
-                style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="fs-input"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="e.g. Lead Developer"
@@ -236,42 +233,42 @@ const UpdateSalary = () => {
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.4rem' }}>
+            <div className="fs-form-group">
+              <label htmlFor="update-profile-position" className="fs-label">
                 Position / Level
               </label>
               <input
+                id="update-profile-position"
                 type="text"
-                className="component-input"
-                style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="fs-input"
                 value={formData.position}
                 onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                 placeholder="e.g. Full-time / Grade 4"
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.4rem' }}>
-                Effective Year *
+            <div className="fs-form-group">
+              <label htmlFor="update-profile-year" className="fs-label">
+                Effective Year <span className="required-mark">*</span>
               </label>
               <input
+                id="update-profile-year"
                 type="number"
-                className="component-input"
-                style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="fs-input fs-num"
                 value={formData.year}
-                onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })}
+                onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value, 10) || new Date().getFullYear() })}
                 required
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.4rem' }}>
+            <div className="fs-form-group">
+              <label htmlFor="update-profile-date" className="fs-label">
                 Effective Date
               </label>
               <input
+                id="update-profile-date"
                 type="date"
-                className="component-input"
-                style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                className="fs-input"
                 value={formData.effectiveDate}
                 onChange={(e) => setFormData({ ...formData, effectiveDate: e.target.value })}
               />
@@ -280,7 +277,7 @@ const UpdateSalary = () => {
         </div>
 
         {/* Dynamic Components Table Card */}
-        <div className="profile-card" style={{ maxWidth: '100%', margin: 0, padding: '1.5rem', borderRadius: '12px' }}>
+        <div className="fs-form-card update-components-card">
           <ComponentTable
             components={components}
             onChange={setComponents}
@@ -288,47 +285,46 @@ const UpdateSalary = () => {
           />
         </div>
 
-        {/* Live Structure Summary Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem 1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Basic Salary</span>
-            <div style={{ fontSize: '1.35rem', fontWeight: 700, color: '#6366f1', marginTop: '0.25rem' }}>
+        {/* Live Structure Summary Cards (Neutral Dark Graphite Invariant I15) */}
+        <div className="update-salary-kpi-grid">
+          <div className="update-kpi-card fs-card">
+            <span className="update-kpi-label">Basic Salary</span>
+            <div className="update-kpi-value fs-num">
               {formatCurrency(summary.basicSum)}
             </div>
           </div>
 
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem 1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Estimated Gross</span>
-            <div style={{ fontSize: '1.35rem', fontWeight: 700, color: '#009879', marginTop: '0.25rem' }}>
+          <div className="update-kpi-card fs-card">
+            <span className="update-kpi-label">Estimated Gross</span>
+            <div className="update-kpi-value fs-num">
               {formatCurrency(summary.estimatedGross)}
             </div>
           </div>
 
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem 1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Insurable Earnings</span>
-            <div style={{ fontSize: '1.35rem', fontWeight: 700, color: '#0284c7', marginTop: '0.25rem' }}>
+          <div className="update-kpi-card fs-card">
+            <span className="update-kpi-label">Insurable Earnings</span>
+            <div className="update-kpi-value fs-num">
               {formatCurrency(summary.insurableGross)}
             </div>
           </div>
 
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem 1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Taxable Earnings</span>
-            <div style={{ fontSize: '1.35rem', fontWeight: 700, color: '#d97706', marginTop: '0.25rem' }}>
+          <div className="update-kpi-card fs-card">
+            <span className="update-kpi-label">Taxable Earnings</span>
+            <div className="update-kpi-value fs-num">
               {formatCurrency(summary.taxableGross)}
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '0.5rem' }}>
-          <Link to="/salary-profile" className="cancel-button" style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+        <div className="update-salary-actions">
+          <Link to="/salary/profiles" className="fs-btn fs-btn-secondary">
             Cancel
           </Link>
           <button
             type="submit"
             disabled={saving}
-            className="submit-button"
-            style={{ padding: '0.75rem 1.75rem', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '1rem' }}
+            className="fs-btn fs-btn-primary"
           >
             <Save size={18} />
             {saving ? 'Saving...' : 'Save Salary Structure'}
