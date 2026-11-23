@@ -349,8 +349,8 @@ node scripts/ui-coverage.js --assert-allowlist
 ```bash
 cd frontend
 
-# Run PortfolioDashboard unit tests and jest-axe
-npm test -- src/pages/portfolio/__tests__/PortfolioDashboard.test.js --watchAll=false
+# Run PortfolioDashboard unit tests, App.test.js route resolution, and jest-axe (Invariant I10)
+npm test -- src/pages/portfolio/__tests__/PortfolioDashboard.test.js src/App.test.js --watchAll=false
 
 # Run all calculation characterization tests (verify zero regressions, Invariant I3)
 npx jest --runInBand tests/calculations.spec.js
@@ -366,11 +366,11 @@ npx playwright test tests/visual/a11y.spec.js --grep "a11y check: portfolio$"
 # 2. Run Reference Frame 03 dashboard match test with reference project
 npx playwright test tests/visual/portfolio-reference-match.spec.js --project=reference
 
-# 3. Run PR-subset visual regression (71 tests passing, 0 diff on non-allowlisted routes)
-cmd /c "set PR_SUBSET=true && npx playwright test tests/visual/visual.spec.js"
+# 3. Run PR-subset visual regression (68 passed, 3 pre-existing payroll diffs under AD16 per Waiver W-6A-1; 0 diff attributable to Phase 6A)
+$env:PR_SUBSET="true"; npx playwright test tests/visual/visual.spec.js --project=pr-subset
 
-# 4. Run Full visual regression run reconciling 316 passing + 10 accepted AD14 diffs
-npx playwright test tests/visual/visual.spec.js
+# 4. Run Full visual regression run reconciling 292 passing + 10 accepted AD14 diffs + 24 accepted AD16 diffs (0 unexplained diffs)
+npx playwright test tests/visual/visual.spec.js --project=visual
 
 # 5. Verify external baseline manifest integrity (334/334 verified)
 node scripts/verify-baseline-manifest.js
@@ -389,13 +389,13 @@ node scripts/verify-baseline-manifest.js
 - [x] `frontend/src/components/ProtectedRoute.js`: `'/portfolio'` added to `THEMED_PATTERNS` (21 active allowlist routes).
 - [x] `frontend/playwright.config.js`: `portfolio-reference-match` added to `reference` project's `testMatch` regex.
 - [x] `portfolioMocks.js` with URL globs wired into `a11y.spec.js` and `visual.spec.js` for deterministic testing.
-- [x] `PortfolioDashboard.test.js` passes with `jest-axe` (0 violations), including $\ge 7$ category rollup test and accessible chart name assertion.
+- [x] Component unit & a11y tests pass: `PortfolioDashboard.test.js` (14/14 green, including $\ge 7$ category rollup test and accessible chart name assertion) and `App.test.js` (9/9 green) = 23/23 tests green (Invariant I10).
 - [x] `tests/calculations.spec.js` passes 11/11 tests green (Invariant I3).
 - [x] `a11y.spec.js` passes real-browser axe test on `/portfolio` (0 critical/serious violations).
 - [x] `portfolio-reference-match.spec.js --project=reference` passes Frame 03 token and D19 mobile card checks (1 setup + 2 reference tests).
 - [x] 5 visual baselines re-captured using exact `--grep="portfolio @ "` in `D:\Projects\FinStat-visual-baselines` and `manifest.json` (334/334) verified.
 - [x] PR subset (68/71 passed per Waiver W-6A-1 with 3 pre-existing diffs under AD16); full 326-test run reconciled against AD14 and AD16 (292 passing + 10 AD14 accepted diffs + 24 AD16 accepted diffs, 0 unexplained diffs; Invariant I13 verified).
-- [x] Developer signs taste checkpoint #4 (§6.1.1) approving rendered `/portfolio` at 1440 and 390 against Frame 3 Variant B before Phase 6B starts.
+- [ ] Developer signs taste checkpoint #4 (§6.1.1) approving rendered `/portfolio` at 1440 and 390 against Frame 3 Variant B before Phase 6B starts.
 - [x] Release & Documentation: Update `CHANGELOG.md` with Phase 6A "What's new" bullet (§3.2); update Route Coverage Matrix in `UI-UX-PLAN.md §5.5` (`/portfolio` row $\to$ ☑ / ☑); update Phase Board in §6.1; update Progress Log in §10 recording merge SHA, verification pass, and AD15/AD16 notes.
 - [x] All commits remain local on `phase-ui-6a-portfolio`; zero push to remote.
 
@@ -405,5 +405,6 @@ node scripts/verify-baseline-manifest.js
 
 1. **Recorded Amendment AD15 (Chart Series Discipline)**: Converted asset allocation from legacy doughnut to ranked horizontal bar chart (`indexAxis: 'y'`) constrained to top 6 categories + neutral "Other" rollup, with `createPattern()` fill textures and adjacent accessible data table alternative (§4.12).
 2. **Architecture Decision D19 (Mobile Responsive Table Collapse)**: Implemented mobile compact-expand cards for `HoldingsTable.js` at $\le 768\text{px}$ with $\ge 44\text{px}$ touch targets and zero page-level horizontal overflow at 390px.
-3. **Recorded Amendment AD16 (Pre-Existing Baseline Debt Acceptance)**: Accepted 24 pre-existing visual baseline diffs across 6 payroll routes (`salary-profiles` [3], `salary-profile-update` [5], `salary-paychecks-new` [3], `salary-paychecks-edit` [3], `analysis-payroll` [5], `salary-rules` [5]) introduced by commit `6f72554` on `main` (*"fix(ui): resolve mobile layout overflow and color issues on payroll routes"* merged at `d300091` after Phase 5E without regenerating visual baselines). Baseline regeneration is deferred to the next payroll touching maintenance sweep.
+3. **Recorded Amendment AD16 (Pre-Existing Baseline Debt Acceptance)**: Accepted 24 pre-existing visual baseline diffs across 6 payroll routes — specifically 3 sub-desktop viewports on `salary-profiles` [768, 480, 390px] (desktop 1440 and 1024px untouched and passing 0 diff); all 5 viewports on `salary-profile-update` [1440, 1024, 768, 480, 390px]; 3 sub-desktop viewports on `salary-paychecks-new` [768, 480, 390px] (1440 and 1024px passing 0 diff); 3 sub-desktop viewports on `salary-paychecks-edit` [768, 480, 390px] (1440 and 1024px passing 0 diff); all 5 viewports on `analysis-payroll` [1440, 1024, 768, 480, 390px]; all 5 viewports on `salary-rules` [1440, 1024, 768, 480, 390px] — introduced by commit `6f72554` on `main` (*"fix(ui): resolve mobile layout overflow and color issues on payroll routes"* merged at `d300091` after Phase 5E without regenerating visual baselines). Baseline regeneration is deferred to the next payroll touching maintenance sweep.
 4. **Exit Gate Waiver W-6A-1**: Authoritative PR-subset pass criterion formally relaxed from 71/71 to 68/71 (1 setup + 67 passing route tests + 3 accepted pre-existing payroll diffs under AD16; 0 diffs attributable to Phase 6A; Invariant I13 verified). Full 326-test run reconciled at 292 passing + 10 AD14 diffs + 24 AD16 diffs (0 unexplained diffs).
+5. **Gate 8 Suite Scope Alignment (Invariant I10)**: Expanded Gate 8 execution beyond `PortfolioDashboard.test.js` to also include `App.test.js` (app route suite, 9 tests), verifying Invariant I10 verbatim requirement for 'touched modules and the app route suite' (23/23 tests green).
