@@ -17,11 +17,14 @@ jest.mock('../../../services/userService');
 
 // Mock react-chartjs-2 to render canvas with role and props for test inspection
 jest.mock('react-chartjs-2', () => ({
-  Bar: ({ data, options }) => (
+  Bar: ({ data, options, 'aria-label': ariaLabel, ...props }) => (
     <div
+      role="img"
+      aria-label={ariaLabel}
       data-testid="mock-bar-chart"
       data-labels={JSON.stringify(data.labels)}
       data-values={JSON.stringify(data.datasets[0].data)}
+      {...props}
     />
   ),
   Doughnut: () => <div data-testid="mock-doughnut-chart" />,
@@ -184,6 +187,8 @@ describe('UI Phase 6A: PortfolioDashboard Component Tests', () => {
     });
 
     const chartElem = screen.getByTestId('mock-bar-chart');
+    expect(chartElem).toHaveAttribute('role', 'img');
+    expect(chartElem).toHaveAttribute('aria-label', expect.stringContaining('Portfolio Asset Allocation'));
     const labels = JSON.parse(chartElem.getAttribute('data-labels'));
 
     // Top 6 + Other = 7 labels in the chart
