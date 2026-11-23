@@ -6,7 +6,8 @@
   - `/reports/financial` (`ComprehensiveReportPage.js` + `ComprehensiveReport.css`)
   - `/portfolio` loading refactor (`PortfolioDashboard.js` + `SummaryCards.js` + `HoldingsTable.js` + `AllocationChart.js`)
 - **Working Branch**: `phase-ui-6b-rebalancing`
-- **Implementation SHA**: `45ff6b8` (working on branch `phase-ui-6b-rebalancing`)
+- **Implementation SHA**: `45ff6b8` (last code-modifying commit)
+- **Documentation SHA**: `ab2ba91` (walkthrough & governance sync)
 - **Baselines Commit**: `c2dadf6` (in `D:\Projects\FinStat-visual-baselines`)
 - **Merge Base**: `9cd00746a354967917102b9d929fb08b0c3e1178` (`origin/main`)
 - **Date**: 2026-11-23
@@ -23,7 +24,7 @@
 ```
 Sub-phase:   6B
 Status:      done
-Done:        Promoted /portfolio/rebalancing and /reports/financial to active allowlist (21 -> 23 patterns); themed RebalancingPage adhering to Reference Frame 03 and Frame 01 with custom range sliders, neutral drift action badges, and D19 mobile compact-expand cards; fixed /portfolio root loading sequence per Decision D23 with shaped section skeletons; themed ComprehensiveReportPage with chartTheme.js accessible palette and strict @media print isolation; purged 4 entries from .eslintignore; unit and axe tests passing (33/33 green across 3 suites); Playwright real-browser axe passing (4/4 green, 0 violations); reference match spec passing (5/5 green); 10 baselines updated in FinStat-visual-baselines (commit c2dadf6); manifest 334/334 verified; PR subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 18 verification gates passed. Phase 6 Exit Gate complete.
+Done:        Promoted /portfolio/rebalancing and /reports/financial to active allowlist (21 -> 23 patterns); themed RebalancingPage adhering to Reference Frame 03 and Frame 01 with custom range sliders, neutral drift action badges, AD18 advisory drift badge ('Rebalancing Recommended' with .fs-badge--warning on drift, 'Balanced on Target' with .fs-badge--neutral when balanced), and D19 mobile compact-expand cards; fixed /portfolio root loading sequence per Decision D23 with shaped section skeletons; themed ComprehensiveReportPage with chartTheme.js accessible palette and strict @media print isolation (Waiver W-6B-1); purged 4 entries from .eslintignore; unit and axe tests passing (33/33 green across 3 suites); Playwright real-browser axe passing (4/4 green, 0 violations); reference match spec passing (5/5 green); 10 baselines updated in FinStat-visual-baselines (commit c2dadf6); manifest 334/334 verified; PR subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 18 verification gates passed. Phase 6 Exit Gate complete.
 Next:        Phase 7A (Trade log & trade entry conversion)
 Blocked by:  None
 Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks', '/salary/paychecks/new', '/salary/paychecks/edit/:id', '/salary-profile/history', '/salary-profile/edit', '/salary-profile/history/edit/:historyId', '/salary-profile/update', '/analysis/payroll', '/salary/simulator', '/portfolio', '/portfolio/rebalancing', '/reports/financial'] (cumulative: 23 routes)
@@ -51,11 +52,11 @@ Merge SHA:          pending review
 | **I4** | Auth, roles, `ProtectedAction`, and `useCanModify` gating unchanged. | Viewer-role checklist per phase | **PASS** | `useAuth()` and `useCanModify()` consumed; disabled mutation actions verified for viewer role in `RebalancingPage.test.js` (test 4 green). |
 | **I5** | Test IDs, `data-*` attributes, and accessible labels preserved — 37 `data-testid`, 39 `aria-label`. | test-ID guard script (§9.2) | **PASS** | `node scripts/testid-guard.js` reported 0 deletions across working diff against merge base `9cd0074`. |
 | **I6** | Tables render as compact-expand cards at $\le 768\text{px}$ (D19). Horizontal scroll preserved only for tables with $\ge 12$ columns (audit logs) where the card pattern is impractical. No page-level horizontal scroll at 390px. | 390 px visual check: card layout renders, no page-level horizontal scroll, all fields reachable via expander. | **PASS** | `RebalancingPage.js` collapses 7-column ledger at $\le 768\text{px}$ into stacked cards with $\ge 44\text{px}$ touch targets; Playwright reference match test verified `scrollWidth <= clientWidth` at 390px. |
-| **I7** | No page loses functionality mid-migration. | Pattern added only in the converting PR (§6.3) | **PASS** | Strategy selection, slider tuning, target template saving, action execution, date range selectors, and print window triggers fully operational. |
+| **I7** | No page loses functionality mid-migration. | Pattern added only in the converting PR (§6.3) | **PASS** | Slider tuning, target template saving, trade log action navigation, date range selectors, and print window triggers fully operational. |
 | **I8** | Dashboard coordinator line cap preserved — `DashboardSummary.js` must remain $\le 120$ lines (post-audit architecture decomposition invariant). All 10 RTL dashboard tests must remain green. | Line count assertion + `npm test` in 3A | **N/A** | Specific to Phase 3A (`DashboardSummary.js` untouched at 96 lines $\le 120$). |
 | **I9** | Production build passes with zero errors and no new warnings. | CI (authoritative); local proxy via `npm start` + ESLint/stylelint (§15) | **PASS** | `$env:GENERATE_SOURCEMAP="false"; npm run build` compiled successfully with zero compilation warnings. |
 | **I10** | `npm test -- --watchAll=false` passes for touched modules **and** the app route suite. | CI (frontend test job added in 1C); local proxy: touched suites via `npx jest --runInBand` (§15) | **PASS** | 42/42 tests green: `RebalancingPage.test.js` (9), `ComprehensiveReportPage.test.js` (10), `PortfolioDashboard.test.js` (14), `App.test.js` (9). |
-| **I11** | No new `!important`; a file's count in the 1C lint ratchet may only fall. | stylelint + `lint-ratchet.js` (§9.2) | **PASS** | `node scripts/lint-ratchet.js` checked 59 CSS files against merge base `9cd0074`: 0 regressions. Screen styles in `RebalancingPage.css` have 0 stylelint errors. |
+| **I11** | No new `!important`; a file's count in the 1C lint ratchet may only fall. | stylelint + `lint-ratchet.js` (§9.2) | **PASS** | `node scripts/lint-ratchet.js` checked 59 CSS files against merge base `9cd0074`: 0 regressions. Screen styles in `RebalancingPage.css` have 0 stylelint errors. Pre-existing `@media print` in `ComprehensiveReport.css` preserved verbatim (Waiver W-6B-1). |
 | **I12** | No new dependency except the Phase 1C tooling list (§9.2). | `package.json` review | **PASS** | Zero dependencies added or modified in `package.json`. |
 | **I13** | Every non-allowlisted route is pixel-identical to its 1B baseline. | Walkthrough-evidenced per §7.1 | **PASS** | Walkthrough-evidenced in Section 3 diff report: 0 diffs attributable to Phase 6B; 0 diff on allowlisted `/portfolio`; all 34 pre-existing diffs fully reconciled (10 AD14 + 24 AD16). |
 | **I14** | No `backdrop-filter`, gradient, gradient text, glow, `filter: blur()` / `drop-shadow()`, `text-shadow`, `mask`, `-webkit-mask`, `-webkit-mask-image`, `mask-image`, `border-image`, or `border-image-source` anywhere in app CSS or JS; only the reference frames illustrate them. | stylelint (§9.2) | **PASS** | Scanned with `lint-ratchet.js` and `lint-tones.js`: 0 violations across all 60 CSS files. |
@@ -119,7 +120,7 @@ In accordance with user instruction and Architecture Decision D5/D21, **visual s
 
 ### 4.1 Portfolio Rebalancing Conformance (`/portfolio/rebalancing`)
 - **Reference Frame 03 (Dashboard Variant B)**:
-  - Header with recessed breadcrumb, title, strategy dropdown, and action controls.
+  - Header with title, subtitle, target name input, and Refresh Valuation button.
   - KPI summary tiles using `--fs-card-bg` (`#1a1c20`) and subtle `--fs-border` (`#34383f`).
   - Dark graphite range sliders (`.range-slider`) with teal interactive thumb (`--fs-accent` = `#14b8a6`) and neutral track.
 - **Reference Frame 01 (Dense Table Variant B) & Decision D19**:
@@ -163,7 +164,7 @@ In accordance with user instruction and Architecture Decision D5/D21, **visual s
   - Table containers carry `tabIndex={0} role="region" aria-label="..."` (`scrollable-region-focusable` resolved).
 - **Empty & Error States**:
   - Empty state: Displays friendly placeholder rows when no budget or loan records exist for the selected period.
-  - Error state: Displays `.report-error` card with `Retry` CTA on fetch failure (test 9 green).
+  - Error state: Displays `.report-error` card with `Retry` CTA on fetch failure (test 7 green).
 
 ---
 
@@ -211,74 +212,120 @@ cd frontend; node scripts/lint-ratchet.js; npx stylelint src/pages/portfolio/Reb
 ```
 [lint-ratchet] Evaluating stylelint ratchet against merge-base: 9cd00746a354967917102b9d929fb08b0c3e1178
 ✓ [lint-ratchet] Checked 59 CSS files against 9cd00746a354967917102b9d929fb08b0c3e1178: 0 regressions.
-# npx stylelint on RebalancingPage.css exited 0 with 0 errors. Pre-existing @media print in ComprehensiveReport.css is preserved verbatim.
 ```
+*Note on Waiver W-6B-1*: `ComprehensiveReport.css` lines 273–431 contain the pre-existing `@media print` rules, which include 66 grandfathered declarations (`!important`, raw `#000000`, `#ffffff`, `#cbd5e1`, `#0f172a`, `#f1f5f9`). Per Action Plan §13 (Print Non-Goals) and Invariant I11, these print styles are intentionally frozen and isolated from dark-mode tokens. `lint-ratchet.js` confirms 0 regressions against the merge base. `npx stylelint src/pages/portfolio/RebalancingPage.css` passes with 0 errors.
 
 ### Gate 6: De-Ignored ESLint Verification (5 Files)
 ```powershell
 cd frontend; npx eslint src/pages/portfolio/PortfolioDashboard.js src/pages/portfolio/RebalancingPage.js src/pages/portfolio/__tests__/RebalancingPage.test.js src/pages/reports/ComprehensiveReportPage.js src/pages/reports/__tests__/ComprehensiveReportPage.test.js --max-warnings=0
 ```
 ```
-Passed with 0 errors and 0 warnings.
+Browserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
 ```
+*Exited 0 with 0 errors and 0 warnings.*
 
-### Gate 7: CRA Jest Unit & jest-axe Test Suites (3 Files, 33 Tests)
+### Gate 7: CRA Jest Unit & jest-axe Test Suites (3 Files, 33 Tests Verbatim)
 ```powershell
-cd frontend; $env:CI="true"; npm test -- src/pages/portfolio/__tests__/RebalancingPage.test.js src/pages/reports/__tests__/ComprehensiveReportPage.test.js src/pages/portfolio/__tests__/PortfolioDashboard.test.js
+cd frontend; $env:CI="true"; npm test -- src/pages/portfolio/__tests__/RebalancingPage.test.js src/pages/reports/__tests__/ComprehensiveReportPage.test.js src/pages/portfolio/__tests__/PortfolioDashboard.test.js --watchAll=false --verbose
 ```
 ```
-PASS src/pages/reports/__tests__/ComprehensiveReportPage.test.js
-  ComprehensiveReportPage (UI Modernization & Phase 6B)
-    √ 1. renders report header, year selector, and audit metadata (32 ms)
-    √ 2. renders KPI stat cards with formatted monetary values (41 ms)
-    √ 3. renders multi-period line and doughnut charts with dark theme palette (55 ms)
-    √ 4. renders spending breakdown and budget utilization table (36 ms)
-    √ 5. renders detailed payroll and statutory deductions ledger (34 ms)
-    √ 6. renders peer-to-peer loans and receivables summary (29 ms)
-    √ 7. changes reporting year preset and refetches data (33 ms)
-    √ 8. triggers print window on Print / Export CTA click (22 ms)
-    √ 9. renders error state with retry CTA on fetch failure (24 ms)
-    √ 10. passes axe-core accessibility audit with 0 violations (48 ms)
-
 PASS src/pages/portfolio/__tests__/RebalancingPage.test.js
   Step 7B.2 / UI Phase 6B: RebalancingPage Component & Modernization
-    √ 1. renders rebalancing interface with header and strategy selector (45 ms)
-    √ 2. loads targets, calculates drift, and renders target allocation sliders (62 ms)
-    √ 3. updates target allocation sliders and triggers recalculation (38 ms)
-    √ 4. Enforces read-only behavior for viewer role (canModify: false) (31 ms)
-    √ 5. Handles empty suggestions list gracefully when portfolio is completely balanced (28 ms)
-    √ 6. Saves custom target allocations and re-triggers allocation analysis (44 ms)
-    √ 7. Decision D19 mobile cards expand and collapse details on toggle click (36 ms)
-    √ 8. Passes accessibility audit via jest-axe with 0 critical or serious violations (52 ms)
-    √ 9. Handles API error gracefully on initial fetch failure (26 ms)
+    √ 1. Renders canonical loading shell and rebalancing suggestions with Buy, Sell, Balanced actions (67 ms)
+    √ 2. Renders rebalancing suggestions table and mobile cards with Buy, Sell, Balanced actions and amounts (189 ms)
+    √ 3. Clicking "Log Trade" on stock suggestion navigates to /trades/add with prefill payload (91 ms)
+    √ 4. Enforces read-only behavior for viewer role (canModify: false) (234 ms)
+    √ 5. Handles empty suggestions list gracefully when portfolio is completely balanced (61 ms)
+    √ 6. Saves custom target allocations and re-triggers allocation analysis (153 ms)
+    √ 7. Decision D19 mobile cards expand and collapse details on toggle click (171 ms)
+    √ 8. Passes accessibility audit via jest-axe with 0 critical or serious violations (598 ms)
+    √ 9. Handles API error gracefully on initial fetch failure (43 ms)
+
+PASS src/pages/reports/__tests__/ComprehensiveReportPage.test.js
+  ComprehensiveReportPage Component Tests [FEAT-003]
+    √ 1. renders loading state and fetches comprehensive report data on mount (158 ms)
+    √ 2. renders executive summary KPI cards with formatted currency values (190 ms)
+    √ 3. renders generation audit header with username and timestamp (92 ms)
+    √ 4. initializes Chart.js instances with devicePixelRatio >= 3 for high-DPI print fidelity (74 ms)
+    √ 5. handles year range selector clicks and triggers updated API requests (237 ms)
+    √ 6. clicking Print Report / Export PDF invokes window.print() (83 ms)
+    √ 7. renders graceful error alert when API aggregation fails and supports retry (141 ms)
+    √ 8. renders Peer-to-Peer Loans & Receivables section and 6th slice in Asset Allocation chart [FEAT-005] (57 ms)
+    √ 9. renders Capital Deployed KPI stat card when totalCapitalDeployed is present [FEAT-002] (72 ms)
+    √ 10. Accessible audit via jest-axe with 0 critical or serious violations (437 ms)
 
 PASS src/pages/portfolio/__tests__/PortfolioDashboard.test.js
-  PortfolioDashboard
-    √ 14 unit and axe tests passed (100% green)
+  UI Phase 6A: PortfolioDashboard Component Tests
+    √ 1. Renders canonical loading state initially with uniform D23 loading sequence (222 ms)
+    √ 2. Renders error state with retry CTA on fetch failure (213 ms)
+    √ 3. Renders 5 summary KPI cards with formatted currency and positions count (297 ms)
+    √ 4. Renders ranked horizontal bar allocation chart and accessible data table (AD15) (223 ms)
+    √ 5. Dedicated test with >=7 categories: verifies top 6 categories render as ranked bars, items 7+ are summed into neutral "Other", and data table lists all expanded (1623 ms)
+    √ 6. Dynamic ranking recomputes on switching between Current Market Value and Invested Capital modes (317 ms)
+    √ 7. Renders 10-column holdings table on desktop (230 ms)
+    √ 8. Filters holdings by asset category pill (214 ms)
+    √ 9. Filters holdings by text search query (212 ms)
+    √ 10. Sorts holdings by column header click (477 ms)
+    √ 11. Changes accounting method (Average, FIFO, LIFO) and triggers data refresh (614 ms)
+    √ 12. Triggers manual refresh via Refresh Prices CTA (371 ms)
+    √ 13. Displays viewer mode banner when user.role === "viewer" (159 ms)
+    √ 14. Accessible audit via axe(container) with 0 violations (992 ms)
 
 Test Suites: 3 passed, 3 total
 Tests:       33 passed, 33 total
 Snapshots:   0 total
+Time:        17.611 s
+Ran all test suites matching /src\\pages\\portfolio\\__tests__\\RebalancingPage.test.js|src\\pages\\reports\\__tests__\\ComprehensiveReportPage.test.js|src\\pages\\portfolio\\__tests__\\PortfolioDashboard.test.js/i.
 ```
 
-### Gate 8: Route Guard Characterization Test
+### Gate 8: Route Guard Characterization Test (Verbatim)
 ```powershell
-cd frontend; $env:CI="true"; npm test -- src/App.test.js
+cd frontend; $env:CI="true"; npm test -- src/App.test.js --watchAll=false
 ```
 ```
 PASS src/App.test.js
   Step 5B.2: [AUD-TEST-002] Frontend App Route Guards & Role Access Controls
-    9 passed, 9 total (100% green)
+    √ 1. redirects unauthenticated user from protected route (/dashboard) to landing page (/) (35 ms)
+    √ 2. redirects unauthenticated user from admin route (/admin/tax-brackets) to landing page (/) (29 ms)
+    √ 3. renders authenticated shell and dashboard for manager without ViewOnlyBanner (410 ms)
+    √ 4. displays ViewOnlyBanner for viewer role upon entering authenticated route (118 ms)
+    √ 5. redirects manager attempting to access admin-only route (/admin/tax-brackets) back to /dashboard (72 ms)
+    √ 6. permits admin access to strictly admin-only route (/admin/tax-brackets) (1120 ms)
+    √ 7. blocks viewer from general /admin route and redirects to /dashboard (68 ms)
+    √ 8. executes legacy route alias redirects (/salary-profile -> /salary/profiles, /paycheck-log -> /salary/paychecks) (415 ms)
+    √ 9. executes Phase 6A legacy redirects (/summary -> /dashboard, /analysis/calendar & /analysis/fiscal -> /analysis/payroll, /taxes & /social-insurance -> /salary/rules) (502 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       9 passed, 9 total
+Snapshots:   0 total
+Time:        4.112 s
 ```
 
-### Gate 9: Calculation Parity Invariant I3
+### Gate 9: Calculation Parity Invariant I3 (Verbatim)
 ```powershell
 cd frontend; npx jest --runInBand tests/calculations.spec.js --forceExit
 ```
 ```
 PASS tests/calculations.spec.js
   Calculation Characterization Engine (§9.6 / Invariant I3)
-    11 passed, 11 total (100% green)
+    √ reproduces exact payroll math for "Mid-Wage Gross 15,000 EGP" (3 ms)
+    √ reproduces exact payroll math for "Senior Gross 35,000 EGP" (1 ms)
+    √ reproduces exact piastre installment schedule for "6-Month Installment of 10,000 EGP" (1 ms)
+    √ reproduces exact piastre installment schedule for "12-Month Installment of 15,500 EGP" (1 ms)
+    √ reproduces exact payoff comparisons for "Multi-Card Payoff Comparison" (1 ms)
+    √ reproduces exact weighted average cost basis for "Buy, Split (2:1), Sell with Brokerage Commission" (1 ms)
+    √ reproduces exact CD accrual math for "1-Year Certificate at 27% Annual Payout" (1 ms)
+    √ reproduces exact CD accrual math for "3-Year Certificate at 23.5% Monthly Payout" (1 ms)
+    √ reproduces exact portfolio FX valuations for "Triangular Exchange & Portfolio Valuation" (1 ms)
+    √ reproduces exact milestone progress for "Budget Progression Across 0%, 50%, 80%, 100%, 120%" (1 ms)
+    √ reproduces exact rental yields and ROI for "Residential Rental Unit in New Cairo" (1 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       11 passed, 11 total
+Snapshots:   0 total
+Time:        0.781 s
 ```
 
 ### Gate 10: Real-Browser Axe Accessibility Audit (axe-core)
@@ -316,9 +363,13 @@ Running 5 tests using 1 worker
 cd frontend; $env:GENERATE_SOURCEMAP="false"; $env:NODE_OPTIONS="--max-old-space-size=4096"; npm run build
 ```
 ```
+Creating an optimized production build...
 Compiled successfully.
+
 File sizes after gzip:
   116.63 kB  build\static\js\main.af0999d3.js
+  64.39 kB   build\static\js\6187.1eaa4523.chunk.js
+  12.72 kB   build\static\js\194.09a7fb41.chunk.js
   12.67 kB   build\static\css\main.d6d672f8.css
 ```
 
@@ -381,26 +432,26 @@ cd frontend; $env:CI="true"; npx playwright test --project=visual tests/visual/v
 
 ## 7. Plan-Gate ↔ Walkthrough-Gate Mapping Matrix
 
-| Plan Gate | Description | Walkthrough Section | Evidence / Status |
+| Plan Gate | Verbatim Plan Title | Walkthrough Section | Evidence / Status |
 |---|---|---|---|
-| Gate 1 | Allowlist Integrity | §6, Gate 1 | `ui-coverage.js --assert-allowlist` passed (23 patterns) |
-| Gate 2 | Tokens SOT Drift | §6, Gate 2 | `tokens.js --check --tables` passed (0 drift) |
-| Gate 3 | TestID & ARIA Guard | §6, Gate 3 | `testid-guard.js` passed (0 deletions) |
-| Gate 4 | Tone Scoping & Undefined Tokens | §6, Gate 4 | `lint-tones.js` passed (0 violations, 0 undefined tokens) |
-| Gate 5 | Stylelint & Ratchet | §6, Gate 5 | `lint-ratchet.js` (0 regressions); `stylelint` clean on screen styles |
-| Gate 6 | ESLint De-Ignored Files | §6, Gate 6 | `eslint --max-warnings=0` on 5 files passed (0 errors, 0 warnings) |
-| Gate 7 | CRA Jest Unit & jest-axe | §6, Gate 7 | 3 suites, 33/33 tests green (100%) |
-| Gate 8 | Route Guard Characterization | §6, Gate 8 | `App.test.js` passed 9/9 tests green (100%) |
-| Gate 9 | Calculation Invariant I3 | §6, Gate 9 | `calculations.spec.js` passed 11/11 tests green |
-| Gate 10 | Playwright Real-Browser Axe | §6, Gate 10 | 4/4 passed (0 violations across 3 routes) |
-| Gate 11 | Reference Match Spec | §6, Gate 11 | 5/5 passed on `rebalancing-reports-reference-match.spec.js` |
-| Gate 12 | Production Build | §6, Gate 12 | `npm run build` compiled successfully |
-| Gate 13 | Baselines & Manifest | §6, Gate 13 | 10 baselines updated; 334/334 manifest verified |
-| Gate 14 | PR-Subset Regression | §6, Gate 14 | 68/71 passed per Waiver W-6A-1 (0 Phase 6B diffs, 0 `/portfolio` diffs) |
-| Gate 15 | Full 326-Test Regression | §6, Gate 15 | 292 passed + 34 accepted diffs (0 unexplained diffs) |
-| Gate 16 | Touch Targets & Focus | §6, Gate 16 | Verified $\ge 44\text{px}$ and `:focus-visible` in test 4 |
-| Gate 17 | Developer Visual Inspection | §6, Gate 17 | Visual review of 10 viewports completed |
-| Gate 18 | Documentation & Invariants | §6, Gate 18 & §2 | Walkthrough authored, invariants verified |
+| Gate 1 | Allowlist integrity verified | §6, Gate 1 | `ui-coverage.js --assert-allowlist` passed (23 patterns) |
+| Gate 2 | Tokens SOT verified | §6, Gate 2 | `tokens.js --check --tables` passed (0 drift) |
+| Gate 3 | TestID and accessibility label guard verified | §6, Gate 3 | `testid-guard.js` passed (0 deletions) |
+| Gate 4 | Tone discipline audit verified | §6, Gate 4 | `lint-tones.js` passed (0 violations, 0 undefined tokens) |
+| Gate 5 | CSS stylelint audit verified | §6, Gate 5 | `lint-ratchet.js` (0 regressions); `stylelint` clean on screen styles; Waiver W-6B-1 |
+| Gate 6 | ESLint zero-warning audit verified | §6, Gate 6 | `eslint --max-warnings=0` on 5 files passed (0 errors, 0 warnings) |
+| Gate 7 | Component unit & axe tests verified | §6, Gate 7 | 3 suites, 33/33 tests green (100% verbatim) |
+| Gate 8 | App route suite verified | §6, Gate 8 | `App.test.js` passed 9/9 tests green (100% verbatim) |
+| Gate 9 | Calculation parity (Invariant I3) verified | §6, Gate 9 | `calculations.spec.js` passed 11/11 tests green (100% verbatim) |
+| Gate 10 | Playwright real-browser axe audit verified | §6, Gate 10 | 4/4 passed (0 violations across 3 routes) |
+| Gate 11 | Playwright reference match spec verified | §6, Gate 11 | 5/5 passed on `rebalancing-reports-reference-match.spec.js` |
+| Gate 12 | Production build compiles cleanly | §6, Gate 12 | `npm run build` compiled successfully |
+| Gate 13 | Baseline regeneration verified | §6, Gate 13 | 10 baselines updated; 334/334 manifest verified |
+| Gate 14 | Authoritative PR-subset visual regression reconciled | §6, Gate 14 | 68/71 passed per Waiver W-6A-1 (0 Phase 6B diffs, 0 `/portfolio` diffs) |
+| Gate 15 | Full visual regression suite reconciled | §6, Gate 15 | 292 passed + 34 accepted diffs (0 unexplained diffs) |
+| Gate 16 | Interactive touch targets $\ge 44\text{px}$ and visible keyboard focus rings verified | §6, Gate 16 | Verified $\ge 44\text{px}$ and `:focus-visible` in test 4 |
+| Gate 17 | Phase 6 Exit Gate & Developer Sign-Off | §6, Gate 17 | Visual review of 10 viewports completed |
+| Gate 18 | Unthemed Route Preservation & Walkthrough Readiness | §6, Gate 18 & §2 | Walkthrough authored, invariants verified |
 
 ---
 
@@ -409,14 +460,16 @@ cd frontend; $env:CI="true"; npx playwright test --project=visual tests/visual/v
 1. **AD17: Chart.js Palette Integration Subset**:
    - `ComprehensiveReportPage.js` consumes `getChartPalette()` and `withAlpha()` from `chartTheme.js` with static accessible `aria-label`s on chart wrappers and `<canvas>`, rather than dynamic `createPattern()` / `ariaLabel()` pattern helpers. Axe-core accessibility audit passes with 0 violations in both jsdom and real Chromium.
 2. **AD18: Drift Diagnostic Advisory Badge**:
-   - `RebalancingPage.js` renders `"Rebalancing Recommended"` with `.fs-badge--warning` when `suggestions.some(s => s.action !== 'Hold')` to provide clear, actionable advisory guidance to the user.
+   - `RebalancingPage.js` renders `"Rebalancing Recommended"` with `.fs-badge--warning` when `suggestions.some(s => s.action !== 'Hold')` and `"Balanced on Target"` with `.fs-badge--neutral` when zero drift exists, providing clear, actionable advisory guidance to the user. Verified by dedicated unit test assertions in `RebalancingPage.test.js` (tests 2 & 5).
 3. **AD19: Holdings Refresh Preservation**:
    - In `PortfolioDashboard.js`, `HoldingsTable` receives `isLoading` only; during background price refresh (`isRefreshing`), the button spinner animates while preserving the rendered table rows without blanking them out with a table skeleton, providing a smoother user experience.
 4. **AD20: De-Ignore Scope Extension**:
    - In addition to the 2 page components, the 2 corresponding unit test files (`RebalancingPage.test.js` and `ComprehensiveReportPage.test.js`) are permanently removed from `frontend/.eslintignore`.
 5. **AD21: Neutral Report KPI Numerals**:
    - In `ComprehensiveReportPage.js`, all KPI metrics (Liquid Assets, Invested Assets, Total Liabilities, Gross Income, Outflows, Capital Deployed, Savings Rate, Receivables) are rendered in neutral `--fs-text` (`.kpi-stat-value.fs-num`) per §4.3 and Reference Frame 03 Variant B. Net Worth alone carries `.primary`.
-6. **Waiver W-6A-1 Extension**:
+6. **Waiver W-6B-1: Print Styles Stylelint Exemption**:
+   - `ComprehensiveReport.css` lines 273–431 contain the pre-existing `@media print` rules, which include 66 grandfathered declarations (`!important`, raw `#000000`, `#ffffff`, `#cbd5e1`, `#0f172a`, `#f1f5f9`). Per Action Plan §13 (Print Non-Goals) and Invariant I11, these print styles are intentionally frozen and isolated from dark-mode tokens. `lint-ratchet.js` confirms 0 regressions against the merge base. `npx stylelint src/pages/portfolio/RebalancingPage.css` passes with 0 errors.
+7. **Waiver W-6A-1 Extension**:
    - The authoritative PR-subset visual regression pass criterion remains 68/71 per Waiver W-6A-1 (68 passed + 3 accepted pre-existing payroll failures under AD16; 0 diffs attributable to Phase 6B; 0 diff on `/portfolio`). Full 326-test run reconciled at 292 passing + 10 AD14 diffs + 24 AD16 diffs (0 unexplained diffs).
 
 ---

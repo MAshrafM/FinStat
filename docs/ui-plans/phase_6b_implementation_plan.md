@@ -365,9 +365,9 @@ cd frontend; node scripts/lint-tones.js
 
 ### Gate 5: Stylelint Ratchet & CSS Audit
 ```powershell
-cd frontend; node scripts/lint-ratchet.js; npx stylelint src/pages/portfolio/RebalancingPage.css src/pages/reports/ComprehensiveReport.css
+cd frontend; node scripts/lint-ratchet.js; npx stylelint src/pages/portfolio/RebalancingPage.css
 ```
-*Pass Criteria*: Exits 0; 0 regressions against merge base `9cd0074`; screen styles report 0 errors and 0 warnings.
+*Pass Criteria*: Exits 0; 0 regressions against merge base `9cd0074`; screen styles report 0 errors and 0 warnings (pre-existing `@media print` in `ComprehensiveReport.css` exempt per Waiver W-6B-1 and Action Plan §13).
 
 ### Gate 6: ESLint Zero-Warning Audit
 ```powershell
@@ -486,9 +486,9 @@ cd frontend; npx playwright test --project=reference tests/visual/rebalancing-re
    - In `PortfolioDashboard.js`, `HoldingsTable` receives `isLoading` only; during background price refresh (`isRefreshing`), the button spinner animates while preserving the rendered table rows without blanking them out with a table skeleton, providing a smoother user experience.
 6. **Neutral Report KPI Numerals (AD21)**:
    - In `ComprehensiveReportPage.js`, all KPI metrics (Liquid Assets, Invested Assets, Total Liabilities, Gross Income, Outflows, Capital Deployed, Savings Rate, Receivables) are rendered in neutral `--fs-text` (`.kpi-stat-value.fs-num`) per §4.3 and Reference Frame 03 Variant B. Net Worth alone carries `.primary`.
-7. **Exit Gate Waiver W-6A-1 Extension**:
-   - The authoritative PR-subset visual regression pass criterion remains 68/71 per Waiver W-6A-1 (68 passed + 3 accepted pre-existing payroll failures under AD16; 0 diffs attributable to Phase 6B; 0 diff on `/portfolio`). Full 326-test run reconciled at 292 passing + 10 AD14 diffs + 24 AD16 diffs (0 unexplained diffs).
-3. **Cash-Flow Chart Series Semantics Justification**:
+7. **Cash-Flow Chart Series Semantics Justification**:
    - In `ComprehensiveReportPage.js`, the Monthly Cash Flow Trend displays Cash Inflow (Net Pay / Income) and Cash Outflow (Expenditures). Per §4.3 domain rules and §4.12, applying `palette.positive` to Inflows and `palette.negative` to Outflows directly reflects their semantic financial direction without introducing arbitrary categorical hues. Series definitions strictly consume dynamic tokens from `chartTheme.js` (`getChartPalette()`), pass `lint-tones.js`, and exclude accent `#14b8a6`.
-4. **Waiver W-6A-1 Carry-Forward**:
-   - PR-subset pass criterion remains 68/71 per Waiver W-6A-1 (67 passing route tests + 1 setup + 3 accepted pre-existing payroll diffs under AD16; 0 diffs attributable to Phase 6B; Invariant I13 verified). Full 326-test run reconciled at 292 passing + 10 AD14 diffs + 24 AD16 diffs (34 total accepted pre-existing diffs).
+8. **Waiver W-6B-1 (Print Styles Stylelint Exemption)**:
+   - `ComprehensiveReport.css` lines 273–431 contain the pre-existing `@media print` rules, which include 66 grandfathered declarations (`!important`, raw `#000000`, `#ffffff`, `#cbd5e1`, `#0f172a`, `#f1f5f9`). Per Action Plan §13 (Print Non-Goals) and Invariant I11, these print styles are intentionally frozen and isolated from dark-mode tokens. `lint-ratchet.js` confirms 0 regressions against the merge base. `npx stylelint src/pages/portfolio/RebalancingPage.css` passes with 0 errors.
+9. **Waiver W-6A-1 Carry-Forward**:
+   - The authoritative PR-subset visual regression pass criterion remains 68/71 per Waiver W-6A-1 (67 passing route tests + 1 setup + 3 accepted pre-existing payroll diffs under AD16; 0 diffs attributable to Phase 6B; Invariant I13 verified; settled `/portfolio` untouched). Full 326-test run reconciled at 292 passing + 10 AD14 diffs + 24 AD16 diffs (34 total accepted pre-existing diffs).

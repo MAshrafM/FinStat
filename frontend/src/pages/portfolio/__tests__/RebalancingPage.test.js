@@ -101,6 +101,11 @@ describe('Step 7B.2 / UI Phase 6B: RebalancingPage Component & Modernization', (
       expect(screen.getByText('Actionable Rebalancing Suggestions')).toBeInTheDocument();
     });
 
+    // Amendment AD18: asserts 'Rebalancing Recommended' badge with .fs-badge--warning
+    const driftBadge = screen.getByText('Rebalancing Recommended');
+    expect(driftBadge).toBeInTheDocument();
+    expect(driftBadge).toHaveClass('fs-badge--warning');
+
     // Check Buy action badge and Log Buy button
     expect(screen.getAllByText('Buy').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Log Buy').length).toBeGreaterThan(0);
@@ -173,6 +178,11 @@ describe('Step 7B.2 / UI Phase 6B: RebalancingPage Component & Modernization', (
     await waitFor(() => {
       expect(screen.getByText('Actionable Rebalancing Suggestions')).toBeInTheDocument();
     });
+
+    // Amendment AD18: asserts 'Balanced on Target' badge with .fs-badge--neutral when drift is zero
+    const balancedBadge = screen.getByText('Balanced on Target');
+    expect(balancedBadge).toBeInTheDocument();
+    expect(balancedBadge).toHaveClass('fs-badge--neutral');
 
     // The desktop table renders headers but zero data rows
     const rows = screen.queryAllByRole('row');
