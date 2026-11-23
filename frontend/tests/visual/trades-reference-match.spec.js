@@ -116,16 +116,27 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     await page.waitForTimeout(500);
     await page.locator('.loading-spinner, .loading-spinner-ring, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
 
+    // Assert .trade-card elements exist and are rendered at mobile viewport
+    const tradeCards = page.locator('.trade-log-page .trade-card');
+    await expect(tradeCards.first()).toBeVisible();
+    const tradeCardCount = await tradeCards.count();
+    expect(tradeCardCount).toBeGreaterThan(0);
+
     // Assert zero page-level horizontal scroll on /trades
     const tradesOverflow = await page.evaluate(() => {
       return document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1;
     });
     expect(tradesOverflow).toBe(true);
 
-    // Navigate to /trade-summary and verify zero overflow
+    // Navigate to /trade-summary and verify .trade-card elements and zero overflow
     await page.goto('/trade-summary', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(500);
     await page.locator('.loading-spinner, .loading-spinner-ring, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+
+    const summaryCards = page.locator('.trade-summary-page .trade-card');
+    await expect(summaryCards.first()).toBeVisible();
+    const summaryCardCount = await summaryCards.count();
+    expect(summaryCardCount).toBeGreaterThan(0);
 
     const summaryOverflow = await page.evaluate(() => {
       return document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1;
@@ -138,15 +149,31 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     await page.goto('/trades', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(500);
 
+    // 1. Interactive CTA button touch target >= 44x44px
     const addBtn = page.locator('.trade-log-page .fs-btn-primary');
     await expect(addBtn).toBeVisible();
-
     const box = await addBtn.boundingBox();
-    expect(box.height).toBeGreaterThanOrEqual(36);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(box.width).toBeGreaterThanOrEqual(44);
 
-    // Tab navigation focus test
-    await page.keyboard.press('Tab');
-    const focusedTag = await page.evaluate(() => document.activeElement ? document.activeElement.tagName : '');
-    expect(focusedTag).toBeTruthy();
+    // 2. Inline action button touch target >= 32px
+    const deleteBtn = page.locator('.trade-log-page .action-btn-delete').first();
+    await expect(deleteBtn).toBeVisible();
+    const deleteBox = await deleteBtn.boundingBox();
+    expect(deleteBox.height).toBeGreaterThanOrEqual(32);
+    expect(deleteBox.width).toBeGreaterThanOrEqual(32);
+
+    // 3. Tab navigation focus test with :focus-visible computed outline
+    await addBtn.focus();
+    const outlineInfo = await addBtn.evaluate((el) => {
+      const style = window.getComputedStyle(el);
+      return {
+        outlineStyle: style.outlineStyle,
+        outlineWidth: parseFloat(style.outlineWidth) || 0,
+        outlineColor: style.outlineColor,
+      };
+    });
+    expect(outlineInfo.outlineStyle).not.toBe('none');
+    expect(outlineInfo.outlineWidth).toBeGreaterThanOrEqual(1);
   });
 });

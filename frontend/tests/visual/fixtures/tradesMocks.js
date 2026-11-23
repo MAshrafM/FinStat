@@ -167,14 +167,15 @@ const MOCK_SUMMARY_METRICS = {
 };
 
 async function setupTradesMocks(page, routeSlug) {
-  const headers = {
-    'Access-Control-Allow-Origin': 'http://localhost:3000',
-    'Access-Control-Allow-Credentials': 'true',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, x-auth-token',
-  };
+  await page.route(/\/api\/trades/, async (route) => {
+    const origin = route.request().headers().origin || 'http://localhost:3000';
+    const headers = {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, x-auth-token, Authorization',
+    };
 
-  await page.route('**/api/trades**', async (route) => {
     if (route.request().method() === 'OPTIONS') {
       return route.fulfill({ status: 204, headers });
     }
@@ -230,7 +231,12 @@ async function setupTradesMocks(page, routeSlug) {
       });
     }
 
-    return route.continue();
+    return route.fulfill({
+      status: 200,
+      headers,
+      contentType: 'application/json',
+      body: JSON.stringify({ success: true }),
+    });
   });
 }
 

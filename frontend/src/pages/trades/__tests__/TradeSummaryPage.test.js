@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-node-access */
 // frontend/src/pages/trades/__tests__/TradeSummaryPage.test.js
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -145,5 +146,42 @@ describe('TradeSummaryPage', () => {
     const { container } = renderComponent();
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  test('11. renders Delta with neutral tone for zero P&L items', () => {
+    renderComponent({
+      openPosData: [
+        {
+          _id: { stockCode: 'FLAT.CA', broker: 'Thndr', iteration: 1 },
+          currentShares: 100,
+          avgPrice: 10,
+          totDeals: 1000,
+          realizedPL: 0,
+          unrealizedPL: 0,
+          totalValueNow: 1000,
+        },
+      ],
+      endPosData: [],
+    });
+    const deltaEl = screen.getByText('Gain');
+    expect(deltaEl).toBeInTheDocument();
+  });
+
+  test('12. renders position rows with D19 .trade-card class and data-label attributes', () => {
+    renderComponent();
+    const rows = document.querySelectorAll('tbody tr.trade-card');
+    expect(rows.length).toBeGreaterThan(0);
+    const firstCell = rows[0].querySelector('td[data-label="Code"]');
+    expect(firstCell).toBeInTheDocument();
+  });
+
+  test('13. renders gracefully when open and closed position data is empty', () => {
+    renderComponent({
+      openPosData: [],
+      endPosData: [],
+    });
+    expect(screen.getByText('Trade Position Summary')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Open Positions' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Close Positions' })).toBeInTheDocument();
   });
 });

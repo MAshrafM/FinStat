@@ -161,7 +161,7 @@ const TradeLogPage = () => {
           <ProtectedAction tooltip="View-only access">
             <Link
               to="/trades/add"
-              className="btn fs-btn-primary"
+              className="btn fs-btn fs-btn-primary"
               title="Record a new trade or cash transaction"
             >
               <FaPlus size={13} /> Add Trade

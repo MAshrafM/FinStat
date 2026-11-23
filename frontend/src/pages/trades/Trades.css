@@ -472,6 +472,10 @@ html[data-fs-theme] .trade-summary-page .table-empty-cell {
   color: var(--fs-text-3);
 }
 
+html[data-fs-theme] .trade-log-page .page-header-actions .btn {
+  min-height: 44px;
+}
+
 html[data-fs-theme] .trade-log-page .action-btn-delete {
   background: none;
   border: none;
@@ -482,7 +486,23 @@ html[data-fs-theme] .trade-log-page .action-btn-delete {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 32px;
+  min-width: 32px;
   transition: color var(--fs-duration-fast);
+}
+
+html[data-fs-theme] .trade-log-page .fs-btn:focus-visible,
+html[data-fs-theme] .trade-log-page .fs-btn:focus,
+html[data-fs-theme] .trade-log-page .fs-btn-primary:focus-visible,
+html[data-fs-theme] .trade-log-page .fs-btn-primary:focus,
+html[data-fs-theme] .trade-log-page .page-header-actions .btn:focus-visible,
+html[data-fs-theme] .trade-log-page .page-header-actions .btn:focus,
+html[data-fs-theme] .trade-log-page .filter-controls button:focus-visible,
+html[data-fs-theme] .trade-log-page .filter-controls button:focus,
+html[data-fs-theme] .trade-log-page .action-btn-delete:focus-visible,
+html[data-fs-theme] .trade-log-page .action-btn-delete:focus {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
 }
 
 html[data-fs-theme] .trade-log-page .action-btn-delete:hover {
@@ -555,6 +575,7 @@ html[data-fs-theme] .trade-form-page .trade-stock-info p {
 }
 
 html[data-fs-theme] .trade-form-page .action-button {
+  min-height: 44px;
   border: 1px solid transparent;
   border-radius: var(--fs-radius-md);
   font-family: var(--fs-font-sans);
@@ -562,6 +583,12 @@ html[data-fs-theme] .trade-form-page .action-button {
   cursor: pointer;
   box-shadow: none;
   transition: background var(--fs-duration-fast);
+}
+
+html[data-fs-theme] .trade-form-page .action-button:focus-visible,
+html[data-fs-theme] .trade-form-page .action-button:focus {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
 }
 
 /* Reference Frame 03: Dashboard / Summary Elements */

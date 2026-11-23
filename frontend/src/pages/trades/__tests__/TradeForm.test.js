@@ -149,4 +149,17 @@ describe('TradeForm', () => {
     const results = await axe(container);
     expect(results).toHaveNoViolations();
   });
+
+  test('11. renders split ratio field when transaction type is Split', () => {
+    renderComponent({ initialData: { type: 'Split' } });
+    expect(screen.getByLabelText(/Split Ratio/i)).toBeInTheDocument();
+  });
+
+  test('12. auto-calculates iteration for new Buy trade based on open positions and past trades', () => {
+    renderComponent();
+    const stockInput = screen.getByLabelText(/^Stock Code$/i);
+    fireEvent.change(stockInput, { target: { value: 'COMI.CA' } });
+    const iterationInput = screen.getByLabelText(/Iteration/i);
+    expect(iterationInput).toHaveValue(1);
+  });
 });

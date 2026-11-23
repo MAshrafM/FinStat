@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-node-access */
 // frontend/src/pages/trades/__tests__/TradeLogPage.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
@@ -193,5 +194,46 @@ describe('TradeLogPage', () => {
     });
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  test('11. renders loading skeleton indicator while fetching trades', () => {
+    tradeService.getTrades.mockReturnValue(new Promise(() => {}));
+    renderComponent();
+    expect(screen.getByRole('status', { name: /loading/i })).toBeInTheDocument();
+  });
+
+  test('12. renders trade rows with D19 .trade-card class and data-label attributes', async () => {
+    renderComponent();
+    await waitFor(() => {
+      expect(screen.getByText('COMI.CA')).toBeInTheDocument();
+    });
+    const row = screen.getByText('COMI.CA').closest('tr');
+    expect(row).toHaveClass('trade-card');
+    const cells = row.querySelectorAll('td');
+    expect(cells[0]).toHaveAttribute('data-label', 'Date');
+    expect(cells[1]).toHaveAttribute('data-label', 'Type');
+    expect(cells[2]).toHaveAttribute('data-label', 'Code');
+  });
+
+  test('13. disables mutation actions when user is in viewer role', async () => {
+    jest.spyOn(AuthContext, 'useAuth').mockReturnValue({
+      isViewOnly: true,
+      user: { role: 'viewer', username: 'viewer' },
+    });
+    jest.spyOn(AuthContext, 'useCanModify').mockReturnValue({
+      canModify: false,
+    });
+    render(
+      <ToastProvider>
+        <MemoryRouter>
+          <TradeLogPage />
+        </MemoryRouter>
+      </ToastProvider>
+    );
+    await waitFor(() => {
+      expect(screen.getByText('COMI.CA')).toBeInTheDocument();
+    });
+    const deleteBtn = screen.getAllByTitle(/Delete trade/i)[0];
+    expect(deleteBtn).toHaveAttribute('aria-disabled', 'true');
   });
 });
