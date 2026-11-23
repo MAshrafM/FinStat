@@ -1762,6 +1762,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] `RebalancingPage.css` — light → graphite.
 - [ ] `RebalancingPage.js` (24) → classes.
 - [ ] `ComprehensiveReportPage.js` + `ComprehensiveReport.css` — multi-module consolidated PDF/Excel report generator, date range selectors, module toggle checkboxes.
+- [ ] Fix Portfolio dashboard loading sequence (Phase 6A manual verification finding): align `/portfolio` with D23 uniform loading sequence (render page shell with shaped skeletons `<Loading variant="card|table" />`, `Button` `isLoading={isRefreshing}`).
 - [ ] Rebalancing drift uses only the threshold recorded in §4.3.1; if none exists, the drift figure is neutral and carries no `Rebalance` label.
 - [ ] Verify empty and error states with the new tokens.
 - [ ] Remove `RebalancingPage.js` and `ComprehensiveReportPage.js` from `frontend/.eslintignore`; verify clean ESLint.
