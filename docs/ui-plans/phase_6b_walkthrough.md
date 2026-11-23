@@ -6,7 +6,7 @@
   - `/reports/financial` (`ComprehensiveReportPage.js` + `ComprehensiveReport.css`)
   - `/portfolio` loading refactor (`PortfolioDashboard.js` + `SummaryCards.js` + `HoldingsTable.js` + `AllocationChart.js`)
 - **Working Branch**: `phase-ui-6b-rebalancing`
-- **Implementation SHA**: `1b31dfb` (working on branch `phase-ui-6b-rebalancing`)
+- **Implementation SHA**: `45ff6b8` (working on branch `phase-ui-6b-rebalancing`)
 - **Baselines Commit**: `c2dadf6` (in `D:\Projects\FinStat-visual-baselines`)
 - **Merge Base**: `9cd00746a354967917102b9d929fb08b0c3e1178` (`origin/main`)
 - **Date**: 2026-11-23
@@ -31,7 +31,7 @@ Visual diff: 0 diff attributable to Phase 6B; 10 newly updated Phase 6B baseline
 Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
 Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
 Branch:      phase-ui-6b-rebalancing
-Implementation SHA: 1b31dfb (working on branch phase-ui-6b-rebalancing)
+Implementation SHA: 45ff6b8 (working on branch phase-ui-6b-rebalancing)
 Merge SHA:          pending review
 ```
 
