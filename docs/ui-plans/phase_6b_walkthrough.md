@@ -33,7 +33,7 @@ Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests gree
 Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
 Branch:      phase-ui-6b-rebalancing
 Implementation SHA: 45ff6b8 (last code-modifying commit; working on branch phase-ui-6b-rebalancing)
-Merge SHA:          pending review
+Merge SHA:          46f2108 (merged to main)
 ```
 
 **User-Facing Acceptance Criterion Verification**:
