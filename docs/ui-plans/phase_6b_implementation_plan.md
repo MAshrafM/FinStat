@@ -492,3 +492,12 @@ cd frontend; npx playwright test --project=reference tests/visual/rebalancing-re
    - `ComprehensiveReport.css` lines 273–431 contain the pre-existing `@media print` rules, which include 66 grandfathered declarations (`!important`, raw `#000000`, `#ffffff`, `#cbd5e1`, `#0f172a`, `#f1f5f9`). Per Action Plan §13 (Print Non-Goals) and Invariant I11, these print styles are intentionally frozen and isolated from dark-mode tokens. `lint-ratchet.js` confirms 0 regressions against the merge base. `npx stylelint src/pages/portfolio/RebalancingPage.css` passes with 0 errors.
 9. **Waiver W-6A-1 Carry-Forward**:
    - The authoritative PR-subset visual regression pass criterion remains 68/71 per Waiver W-6A-1 (67 passing route tests + 1 setup + 3 accepted pre-existing payroll diffs under AD16; 0 diffs attributable to Phase 6B; Invariant I13 verified; settled `/portfolio` untouched). Full 326-test run reconciled at 292 passing + 10 AD14 diffs + 24 AD16 diffs (34 total accepted pre-existing diffs).
+
+---
+
+## 8. Phase 6 Exit Gate Sign-Off
+
+- **Status**: Signed Off & Approved for Mainline Integration
+- **Sign-Off Date**: 2026-11-23
+- **Reviewed By**: User
+- **Exit Gate Decision**: Phase 6B satisfies all Exit Gate criteria. Approved to merge `phase-ui-6b-rebalancing` into `main` and advance to Phase 7A.

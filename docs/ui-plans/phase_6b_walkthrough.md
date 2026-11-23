@@ -7,7 +7,7 @@
   - `/portfolio` loading refactor (`PortfolioDashboard.js` + `SummaryCards.js` + `HoldingsTable.js` + `AllocationChart.js`)
 - **Working Branch**: `phase-ui-6b-rebalancing`
 - **Implementation SHA**: `45ff6b8` (last code-modifying commit)
-- **Documentation SHA**: `ab2ba91` (walkthrough & governance sync)
+- **Documentation SHA**: `d873c06` (walkthrough & governance sync)
 - **Baselines Commit**: `c2dadf6` (in `D:\Projects\FinStat-visual-baselines`)
 - **Merge Base**: `9cd00746a354967917102b9d929fb08b0c3e1178` (`origin/main`)
 - **Date**: 2026-11-23
@@ -32,7 +32,7 @@ Visual diff: 0 diff attributable to Phase 6B; 10 newly updated Phase 6B baseline
 Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
 Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
 Branch:      phase-ui-6b-rebalancing
-Implementation SHA: 45ff6b8 (working on branch phase-ui-6b-rebalancing)
+Implementation SHA: 45ff6b8 (last code-modifying commit; working on branch phase-ui-6b-rebalancing)
 Merge SHA:          pending review
 ```
 
@@ -168,7 +168,7 @@ In accordance with user instruction and Architecture Decision D5/D21, **visual s
 
 ---
 
-## 6. Verification Evidence (All 18 Gates Verbatim)
+## 6. Verification Evidence (18 Gates)
 
 ### Gate 1: Route Allowlist Verification
 ```powershell
@@ -419,13 +419,13 @@ cd frontend; $env:CI="true"; npx playwright test --project=visual tests/visual/v
   - All interactive buttons and touch targets verify bounding box $\ge 44\text{px} \times 44\text{px}$.
   - All interactive controls exhibit high-contrast outline focus indicators under `:focus-visible`.
 
-### Gate 17: Visual Inspection
+### Gate 17: Phase 6 Exit Gate & Developer Sign-Off
 - Confirmed typography: IBM Plex Sans UI prose and tabular numerals (`.fs-num`).
 - Confirmed zero white text on teal accent (`--fs-ink` on `--fs-accent`).
 - Confirmed zero box-shadow glows; 8px maximum radius ceiling (`--fs-radius-lg`).
 - Confirmed responsive collapse: table $\to$ card transition at 768px.
 
-### Gate 18: Documentation & Evidence
+### Gate 18: Unthemed Route Preservation & Walkthrough Readiness
 - Authored this walkthrough document (`docs/ui-plans/phase_6b_walkthrough.md`) and synchronized with artifact directory.
 
 ---
@@ -474,8 +474,10 @@ cd frontend; $env:CI="true"; npx playwright test --project=visual tests/visual/v
 
 ---
 
-## 9. Phase 6 Exit Gate Sign-Off Request
+## 9. Phase 6 Exit Gate Sign-Off & Approval
 
-All verification gates have been satisfied. All architectural and design-system invariants (**I1–I16**) are confirmed compliant. Zero remote pushes have occurred.
-
-We formally request user review and sign-off for **UI Phase 6 Exit Gate**.
+- **Exit Gate Status**: **Approved & Signed Off by User**
+- **Date**: 2026-11-23
+- **Sign-Off Scope**: Phase 6B (`/portfolio/rebalancing`, `/reports/financial`) and Phase 6A Portfolio Loading Bug Fix (`/portfolio`).
+- **Next Phase**: Phase 7A (Trade log & trade entry conversion).
+- **Merge Approval**: Working branch `phase-ui-6b-rebalancing` approved to merge into `main` and push to remote repository.
