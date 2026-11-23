@@ -243,4 +243,14 @@ describe('Step 7B.2 / UI Phase 6B: RebalancingPage Component & Modernization', (
     );
     expect(criticalOrSerious).toEqual([]);
   });
+
+  test('9. Handles API error gracefully on initial fetch failure', async () => {
+    portfolioService.getRebalancingData.mockRejectedValueOnce(new Error('Network Error'));
+
+    render(<RebalancingPage />);
+
+    await waitFor(() => {
+      expect(mockAddToast).toHaveBeenCalledWith('Failed to load rebalancing data', 'error');
+    });
+  });
 });

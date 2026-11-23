@@ -294,7 +294,7 @@ const ComprehensiveReportPage = () => {
         </div>
         <div className="kpi-stat-card">
           <div className="kpi-stat-label">Liquid Assets</div>
-          <div className="kpi-stat-value success fs-num">{formatCurrency(kpi.liquidAssets || 0)}</div>
+          <div className="kpi-stat-value fs-num">{formatCurrency(kpi.liquidAssets || 0)}</div>
         </div>
         <div className="kpi-stat-card">
           <div className="kpi-stat-label">Invested Assets</div>
@@ -302,7 +302,7 @@ const ComprehensiveReportPage = () => {
         </div>
         <div className="kpi-stat-card">
           <div className="kpi-stat-label">Total Liabilities</div>
-          <div className="kpi-stat-value danger fs-num">{formatCurrency(kpi.totalLiabilities || 0)}</div>
+          <div className="kpi-stat-value fs-num">{formatCurrency(kpi.totalLiabilities || 0)}</div>
         </div>
         <div className="kpi-stat-card">
           <div className="kpi-stat-label">Gross Income</div>
@@ -320,7 +320,7 @@ const ComprehensiveReportPage = () => {
         </div>
         <div className="kpi-stat-card">
           <div className="kpi-stat-label">Savings Rate</div>
-          <div className="kpi-stat-value success fs-num">{kpi.savingsRate || 0}%</div>
+          <div className="kpi-stat-value fs-num">{kpi.savingsRate || 0}%</div>
         </div>
         <div className="kpi-stat-card">
           <div className="kpi-stat-label">Total Receivables</div>

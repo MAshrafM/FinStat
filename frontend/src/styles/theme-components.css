@@ -1949,14 +1949,6 @@ html[data-fs-theme] .range-slider {
   accent-color: var(--fs-accent);
 }
 
-html[data-fs-theme] .kpi-stat-value.success {
-  color: var(--fs-positive);
-}
-
-html[data-fs-theme] .kpi-stat-value.danger {
-  color: var(--fs-negative);
-}
-
 html[data-fs-theme] .report-error h3 {
   color: var(--fs-negative);
 }
