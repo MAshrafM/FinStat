@@ -10,6 +10,7 @@ const { test, expect } = require('@playwright/test');
 const { ROUTES } = require('./fixtures/routes');
 const { setFixedClock } = require('./fixtures/clock');
 const { setupPaycheckMocks } = require('./fixtures/paycheckMocks');
+const { setupPortfolioMocks } = require('./fixtures/portfolioMocks');
 
 const AXE_SOURCE_PATH = require.resolve('axe-core/axe.min.js');
 
@@ -26,6 +27,8 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
         route.slug === 'salary-simulator'
       ) {
         await setupPaycheckMocks(page, route.slug);
+      } else if (route.slug === 'portfolio') {
+        await setupPortfolioMocks(page);
       }
 
       await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });

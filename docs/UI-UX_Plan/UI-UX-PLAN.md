@@ -891,7 +891,7 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 
 | Route | Component | Phase | Theme applied | Visual QA | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| `/portfolio` | `pages/portfolio/PortfolioDashboard` | 6A | ☐ | ☐ | `AllocationChart` |
+| `/portfolio` | `pages/portfolio/PortfolioDashboard` | 6A | ☑ | ☑ | `AllocationChart` (AD15 horizontal bar + data table) |
 | `/portfolio/rebalancing` | `pages/portfolio/RebalancingPage` | 6B | ☐ | ☐ | 24 inline styles |
 | `/reports/financial` | `pages/reports/ComprehensiveReportPage` | 6B | ☐ | ☐ | Multi-module PDF/Excel consolidated reporting |
 
@@ -1057,7 +1057,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **5C** | Paycheck form, part 1 (styles only) | `phase-ui-5c-paycheck-form-a` | ☑ | ☑ |
 | **5D** | Paycheck form, part 2 + allowlist | `phase-ui-5d-paycheck-form-b` | ☑ | ☑ |
 | **5E** | History, update, analytics | `phase-ui-5e-payroll-history` | ☑ | ☑ |
-| **6A** | Portfolio dashboard | `phase-ui-6a-portfolio` | ☐ | ☐ |
+| **6A** | Portfolio dashboard | `phase-ui-6a-portfolio` | ☑ | ☑ |
 | **6B** | Rebalancing | `phase-ui-6b-rebalancing` | ☐ | ☐ |
 | **7A** | Trades + trade summary | `phase-ui-7a-trades` | ☐ | ☐ |
 | **7B** | Corporate actions | `phase-ui-7b-corporate-actions` | ☐ | ☐ |
@@ -1583,7 +1583,9 @@ New file: `frontend/src/styles/chartTheme.js`
 | AD11 | Six tones, 12% tints and coloured KPI cards → three tones, neutral cards | badges, KPIs, charts | AS7 |
 | AD12 | Chart gradients and glows → solid fills + patterns | every chart | AS3, §4.12 |
 | AD13 | Red and green removed from ordinary amounts: expenses, income, and balances → neutral `--fs-text` | every log, summary, and KPI card | I15, §4.3; announced in §3.2 and the 4A changelog |
-| AD14 | Pre-existing baseline debt: 3 stale baselines on `/expenditure-analysis` (1024, 768, 480px) from post-bugfix commit `720b7bf7` (where only 390px was updated in `02d0c29`), plus 7 sub-desktop viewports on `not-found` (768, 480, 390px), `dashboard` (768, 480px), and `expenditures` (768, 480px) showing 20px headless Chromium fullPage height calculation variance | `expenditure-analysis`, `not-found`, `dashboard`, `expenditures` | Pre-existing baseline debt outside Phase 5D scope; verified zero regressions from 5D; authoritative PR-subset suite (71/71) passing 100% with 0 diff on non-allowlisted routes; recorded amendment in §6.9 |
+| AD14 | Pre-existing baseline debt: 3 stale baselines on `/expenditure-analysis` (1024, 768, 480px) from post-bugfix commit `720b7bf7` (where only 390px was updated in `02d0c29`), plus 7 sub-desktop viewports on `not-found` (768, 480, 390px), `dashboard` (768, 480px), and `expenditures` (768, 480px) showing 20px headless Chromium fullPage height calculation variance | `expenditure-analysis`, `not-found`, `dashboard`, `expenditures` | Pre-existing baseline debt outside Phase 5D scope; verified zero regressions from 5D; authoritative PR-subset suite (71/71 in Phase 5D/5E; 68/71 in Phase 6A per AD16) passing with 0 diff attributable to new changes on non-allowlisted routes; recorded amendment in §6.9 |
+| AD15 | Portfolio asset allocation converts from 8-category doughnut to ranked horizontal bar chart (capped at top 6 + neutral "Other") plus data table alternative | `/portfolio` (`AllocationChart.js`) | §4.12 series discipline; supersedes §6.10 line 1747 "allocation doughnut" |
+| AD16 | Pre-existing baseline debt on payroll routes: 24 stale baselines across 6 routes — specifically: 3 sub-desktop viewports on `salary-profiles` [768, 480, 390px] (desktop 1440px and 1024px untouched and passing 0 diff); all 5 viewports on `salary-profile-update` [1440, 1024, 768, 480, 390px]; 3 sub-desktop viewports on `salary-paychecks-new` [768, 480, 390px] (1440 and 1024px passing 0 diff); 3 sub-desktop viewports on `salary-paychecks-edit` [768, 480, 390px] (1440 and 1024px passing 0 diff); all 5 viewports on `analysis-payroll` [1440, 1024, 768, 480, 390px]; all 5 viewports on `salary-rules` [1440, 1024, 768, 480, 390px] — introduced by commit `6f72554` on `main` ("fix(ui): resolve mobile layout overflow and color issues on payroll routes" merged at `d300091` after Phase 5E without regenerating visual baselines); exactly 3 of these diffs appear in the PR-subset suite (`salary-profile-update`, `analysis-payroll`, `salary-rules` at 1440px) | `salary-profiles`, `salary-profile-update`, `salary-paychecks-new`, `salary-paychecks-edit`, `analysis-payroll`, `salary-rules` | Pre-existing baseline debt from main bugfix commit `6f72554`; verified zero regressions attributable to Phase 6A; baseline regeneration deferred to next payroll touching maintenance sweep |
 
 Anything not on this list is a regression, not an accepted diff.
 
@@ -1740,14 +1742,20 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 6A — Portfolio dashboard
 
-- [ ] `pages/portfolio/Portfolio.css` — shared backdrop; remove the `#090d16 → #0f172a → #0b1120` local gradient.
-- [ ] `PortfolioDashboard.js` — chart colours via `chartTheme`.
-- [ ] `components/portfolio/*` (`AllocationChart`, `HoldingsTable`, `SummaryCards`, `UtilizationWidget`) — token colours, no layout change.
-- [ ] Unrealised P&L is neutral unless it is the subject of the view, and then uses `Delta` with sign, arrow, and label.
-- [ ] Verify summary cards, holdings table, allocation doughnut at all widths.
-- [ ] Holdings table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
-- [ ] Remove `PortfolioDashboard.js` and `components/portfolio/*` from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add `/portfolio`.**
+- [x] `pages/portfolio/Portfolio.css` — shared backdrop; remove the `#090d16 → #0f172a → #0b1120` local gradient.
+- [x] `PortfolioDashboard.js` — chart colours via `chartTheme`.
+- [x] `components/portfolio/*` (`AllocationChart`, `HoldingsTable`, `SummaryCards`; note: `UtilizationWidget` is in `components/creditCards` for Phase 7) — token colours, no layout change except D19 table collapse.
+- [x] Unrealised P&L is neutral unless it is the subject of the view, and then uses `Delta` with sign, arrow, and label.
+- [x] Verify summary cards, holdings table, ranked horizontal bar allocation chart and data table at all widths (AD15).
+- [x] Holdings table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
+- [x] Remove `PortfolioDashboard.js` and `components/portfolio/*` from `frontend/.eslintignore`; verify clean ESLint.
+- [x] **Add `/portfolio`.**
+- [x] **Recorded Plan Amendments & Waivers (2026-11-23, Owner: Antigravity / Developer approved):**
+  1. *AD15 (Chart Series Discipline)*: Converted asset allocation from legacy 8-slice doughnut to ranked horizontal bar chart (`indexAxis: 'y'`) constrained to top 6 categories + neutral "Other" rollup, with `createPattern()` fill textures and adjacent accessible data table alternative (§4.12).
+  2. *D19 (Mobile Responsive Table Collapse)*: Implemented mobile compact-expand cards for `HoldingsTable.js` at $\le 768\text{px}$ with $\ge 44\text{px}$ touch targets and zero page-level horizontal overflow at 390px.
+  3. *AD16 (Pre-Existing Baseline Debt Acceptance)*: Accepted 24 pre-existing visual baseline diffs across 6 payroll routes — specifically 3 sub-desktop viewports on `salary-profiles` [768, 480, 390px] (desktop 1440 and 1024px untouched and passing 0 diff); all 5 viewports on `salary-profile-update` [1440, 1024, 768, 480, 390px]; 3 sub-desktop viewports on `salary-paychecks-new` [768, 480, 390px] (1440 and 1024px passing 0 diff); 3 sub-desktop viewports on `salary-paychecks-edit` [768, 480, 390px] (1440 and 1024px passing 0 diff); all 5 viewports on `analysis-payroll` [1440, 1024, 768, 480, 390px]; all 5 viewports on `salary-rules` [1440, 1024, 768, 480, 390px] — introduced by commit `6f72554` on `main` ("fix(ui): resolve mobile layout overflow and color issues on payroll routes" merged at `d300091` after Phase 5E without baseline regeneration). Baseline regeneration deferred to the next payroll touching maintenance sweep.
+  4. *Exit Gate Waiver W-6A-1*: Authoritative PR-subset pass criterion formally relaxed from 71/71 to 68/71 (1 setup + 67 passing route tests + 3 accepted pre-existing payroll diffs under AD16; 0 diffs attributable to Phase 6A; Invariant I13 verified). Full 326-test run reconciled at 292 passing + 10 AD14 diffs + 24 AD16 diffs (0 unexplained diffs).
+  5. *Gate 8 Suite Scope Alignment (Invariant I10)*: Expanded Gate 8 execution beyond `PortfolioDashboard.test.js` to also include `App.test.js` (app route suite, 9 tests), verifying Invariant I10 verbatim requirement for 'touched modules and the app route suite' (23/23 tests green).
 
 #### 6B — Rebalancing & comprehensive reporting
 
@@ -2525,6 +2533,7 @@ Append one row per sub-phase. Never edit past rows.
 | 5C | 2026-11-20 | Paycheck form, part 1 (styles only): styles-only refactor of PaycheckFormPage.js and PaycheckFormPage.css (/salary/paychecks/new and /salary/paychecks/edit/:id); zero allowlist change (exactly 12 allowlisted routes maintained); eliminated all 77 inline styles; removed presentation color from DISBURSEMENT_TYPES (Amendment 6); paired 20 form inputs with explicit labels; removed PaycheckFormPage.js from frontend/.eslintignore (0 errors, 0 warnings); authored dual-block CSS with legacy block under sunset waiver (Amendment 4) and dormant .fs-page block aligned to Reference Frame 02; component axe test passing (1/1); Playwright axe passing (3/3); Frame 02 Playwright reference spec passing (3/3); production build compiled successfully; PR-subset visual regression passing 71/71 with 0 diff on all unthemed routes; 334/334 baselines verified; anti-slop audits clean. | 5D (Paycheck form part 2 & allowlist) | None | merged to main |
 | 5D | 2026-11-22 | Paycheck form, part 2 (allowlist, accessibility & verification): promoted /salary/paychecks/new and /salary/paychecks/edit/:id to active allowlist (12 -> 14 routes); permanently deleted legacy CSS block in PaycheckFormPage.css (986 lines, 0 stylelint-disable remaining); themed component-table inline editing controls in theme-components.css; adopted <Loading variant="route" /> per D23; enhanced WCAG 2.1 AA form accessibility (aria-required, aria-invalid, aria-describedby, inline role="alert" .form-error); added unit test 10 for inline error alert; removed temporary harness injection in a11y.spec.js; un-injected real-browser axe test passing 0 critical/serious violations; reference match spec passing 5/5; regenerated 10 baselines in D:\Projects\FinStat-visual-baselines (commit 4d118b9); manifest 334/334 verified; PR-subset 71/71 passing; 14 verification gates passed. | 5E (Tax simulator conversion) | None | 190523a, aea1cf1, b4b94be (working on branch phase-ui-5d-paycheck-form-b) |
 | 5E | 2026-11-22 | History, update, analytics, tax simulator: converted all remaining 6 payroll routes (/salary-profile/history, /salary-profile/edit, /salary-profile/history/edit/:historyId, /salary-profile/update, /analysis/payroll, /salary/simulator) and canonical redirects; active allowlist expanded from 14 to 20 patterns; Reference Frame 01 dense tables with D19 mobile cards; Reference Frame 02 stacked field cards; Reference Frame 03 dashboard with Chart.js accessible series palette; scoped SummaryRow and AnalysisCard preventing leakage to unthemed pages; purged 7 Phase 5 entries from .eslintignore (0 warnings); un-injected real-browser axe test passing 0 critical/serious violations (8/8 tests green: 1 setup + 7 routes); calculations characterization passing (11/11); reference match passing 7/7 (1 setup + 6 reference tests); 30 baselines captured in FinStat-visual-baselines (commits a15949a, 3993e11, and ea11e6a); manifest 334/334 verified; PR subset 71/71 passing; full 326-test run reconciled (316 passing + 10 AD14 accepted diffs, 0 unexplained diffs); 18 verification gates passed. Phase 5 complete. | 6A (Portfolio dashboard) | None | f471911 (merged to main) |
+| 6A | 2026-11-23 | Portfolio dashboard: promoted /portfolio to active allowlist (20 -> 21 patterns); themed Portfolio Dashboard adhering to Reference Frame 03 (Dashboard Variant B) and Reference Frame 01 (Dense Table Variant B); converted asset allocation from doughnut to ranked horizontal bar chart (AD15, capped at top 6 + neutral Other rollup) using chartTheme.js accessible grey palette and createPattern() styling, with adjacent accessible data table alternative; formatted 5 summary KPI cards with neutral tone and Delta Gain/Loss indicators; implemented Decision D19 mobile compact-expand cards for HoldingsTable at <= 768px with >= 44px touch targets and zero page-level horizontal scroll at 390px; tokenized cost-basis accounting switcher and view-only banner; purged all 4 portfolio files from .eslintignore (0 warnings); verified component unit and axe tests (14/14 green, including accessible chart name assertion); verified Playwright real-browser axe audit (0 critical/serious violations); verified Playwright reference match spec (3/3 green: 1 setup + 2 reference tests); re-captured 5 visual baselines in D:\Projects\FinStat-visual-baselines (commit e742200); manifest verified (334/334); full 326-test run reconciled (292 passing + 10 AD14 accepted diffs + 24 AD16 accepted diffs, 0 unexplained diffs); PR-subset 68/71 passing per Waiver W-6A-1; 18 verification gates passed. | 6B (Rebalancing & Financial Report) | None | c65190a (branch phase-ui-6a-portfolio) |
 
 ```
 Sub-phase:   1A
@@ -2777,6 +2786,21 @@ Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in 
 Branch:      phase-ui-5e-payroll-history
 Implementation SHA: c11f023 (branch phase-ui-5e-payroll-history)
 Merge SHA:          f471911 (merged to main)
+```
+
+```
+Sub-phase:   6A
+Status:      done
+Done:        Promoted /portfolio to active allowlist (20 -> 21 patterns); themed Portfolio Dashboard adhering to Canonical Reference Frame 03 (Dashboard Variant B) and Reference Frame 01 (Dense Table Variant B); converted asset allocation from doughnut to ranked horizontal bar chart (AD15, capped at top 6 + neutral Other rollup) using chartTheme.js accessible grey palette and createPattern() styling, alongside an accessible data table alternative; formatted 5 summary KPI cards with neutral tone and Delta Gain/Loss indicators; implemented Decision D19 mobile compact-expand cards for HoldingsTable at <= 768px with >= 44px touch targets and zero page-level horizontal scroll at 390px; tokenized cost-basis accounting switcher and view-only banner; purged all 4 portfolio files from .eslintignore (0 warnings); verified component unit and axe tests (14/14 green, including accessible chart name assertion); verified App.test.js route resolution (9/9 green); verified Playwright real-browser axe audit (0 critical/serious violations); verified Playwright Reference Match spec (3/3 green: 1 setup + 2 reference tests); re-captured 5 visual baselines in D:\Projects\FinStat-visual-baselines (commit e742200); manifest verified (334/334); full 326-test run reconciled (292 passing + 10 AD14 accepted diffs + 24 AD16 accepted diffs, 0 unexplained diffs); PR-subset 68/71 passing per Waiver W-6A-1; 18 verification gates passed. Phase 6A complete.
+Next:        Phase 6B (Rebalancing & Comprehensive Financial Report)
+Blocked by:  None
+Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks', '/salary/paychecks/new', '/salary/paychecks/edit/:id', '/salary-profile/history', '/salary-profile/edit', '/salary-profile/history/edit/:historyId', '/salary-profile/update', '/analysis/payroll', '/salary/simulator', '/portfolio'] (cumulative: 21 routes)
+Visual diff: 0 diff attributable to Phase 6A; 5 newly captured Phase 6A baselines matching Frames 03 and 01 across 5 viewports; PR-subset 68/71 passing with 3 pre-existing payroll diffs under AD16; full 326-test run reconciled (292 passing + 10 AD14 diffs + 24 AD16 diffs, 0 unexplained diffs); manifest 334/334 verified
+Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
+Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
+Branch:      phase-ui-6a-portfolio
+Implementation SHA: c65190a (branch phase-ui-6a-portfolio)
+Merge SHA:   pending user walkthrough sign-off and merge to main
 ```
 
 ### Sub-phase note template

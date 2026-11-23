@@ -153,6 +153,22 @@ export function doughnutDefaults(overrides = {}) {
   };
 }
 
+export function barDefaults(overrides = {}) {
+  const base = baseChartOptions(overrides);
+  return {
+    ...base,
+    indexAxis: 'y',
+    elements: {
+      bar: {
+        borderRadius: 4,
+        borderWidth: 1,
+      },
+      ...overrides.elements?.bar,
+    },
+    ...overrides,
+  };
+}
+
 export function ariaLabel(seriesName, dataPoints = []) {
   if (!dataPoints || dataPoints.length === 0) {
     return `${seriesName} chart with no data.`;

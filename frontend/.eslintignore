@@ -14,9 +14,6 @@ src/components/common/__tests__/ConfirmModal.test.js
 src/components/common/__tests__/UndoToast.test.js
 src/components/creditCards/UtilizationWidget.js
 src/components/layout/AccountSwitcher.js
-src/components/portfolio/AllocationChart.js
-src/components/portfolio/HoldingsTable.js
-src/components/portfolio/SummaryCards.js
 src/config/dashboardActions.js
 src/pages/LandingPage.js
 src/pages/admin/AdminDashboard.js
@@ -54,7 +51,6 @@ src/pages/mutual-funds/MutualFundForm.js
 src/pages/mutual-funds/MutualFundLogPage.js
 src/pages/mutual-funds/MutualFundSummaryPage.js
 src/pages/mutual-funds/__tests__/MutualFundForm.test.js
-src/pages/portfolio/PortfolioDashboard.js
 src/pages/portfolio/RebalancingPage.js
 src/pages/portfolio/__tests__/RebalancingPage.test.js
 src/pages/profile/ProfilePage.js
