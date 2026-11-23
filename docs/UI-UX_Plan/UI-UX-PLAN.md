@@ -1785,16 +1785,16 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 7A — Trades + summary
 
-- [ ] `Trades.css` — filter pills (currently `#007bff`), table header, `.page-header`; remove the 8 `!important`.
-- [ ] `TradeForm.js` — token controls.
-- [ ] `TradeLogPage.js` — filters, sortable headers, row actions. Sortable headers use `--fs-accent` on the active sort indicator.
-- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
-- [ ] `TradeSummaryPage.js` (54) → gains, losses, and zero rendered through `Delta` with sign + arrow + label; zero neutral. Page CSS never names a tone token.
-- [ ] `AddTradePage.js` / `EditTradePage.js` headers.
-- [ ] Verify broker presets, custom broker entry, symbol search, validation.
-- [ ] Trade P&L fixtures unchanged.
-- [ ] Remove Trade components (`TradeLogPage.js`, `TradeForm.js`, `TradeSummaryPage.js`, `AddTradePage.js`, `EditTradePage.js`) from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add `/trades`, `/trades/add`, `/trades/edit/:id`, `/trade-summary`.**
+- [x] `Trades.css` — filter pills (currently `#007bff`), table header, `.page-header`; remove the 8 `!important`.
+- [x] `TradeForm.js` — token controls.
+- [x] `TradeLogPage.js` — filters, sortable headers, row actions. Sortable headers use `--fs-accent` on the active sort indicator.
+- [x] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
+- [x] `TradeSummaryPage.js` (54) → gains, losses, and zero rendered through `Delta` with sign + arrow + label; zero neutral. Page CSS never names a tone token.
+- [x] `AddTradePage.js` / `EditTradePage.js` headers.
+- [x] Verify broker presets, custom broker entry, symbol search, validation.
+- [x] Trade P&L fixtures unchanged.
+- [x] Remove Trade components (`TradeLogPage.js`, `TradeForm.js`, `TradeSummaryPage.js`, `AddTradePage.js`, `EditTradePage.js`) from `frontend/.eslintignore`; verify clean ESLint.
+- [x] **Add `/trades`, `/trades/add`, `/trades/edit/:id`, `/trade-summary`.**
 
 #### 7B — Corporate actions
 
@@ -2825,6 +2825,21 @@ Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in 
 Branch:      phase-ui-6b-rebalancing
 Implementation SHA: 45ff6b8 (working on branch phase-ui-6b-rebalancing)
 Merge SHA:          46f2108 (merged to main)
+```
+
+```
+Sub-phase:   7A
+Status:      done (pending Taste Checkpoint #5 sign-off)
+Done:        Modernized Stock Trading & Performance Subsystem across 4 routes (/trades, /trades/add, /trades/edit/:id, /trade-summary); promoted allowlist from 23 to 27 patterns; removed 8 legacy !important declarations from Trades.css; authored modern dark-theme rules using neutral tokens only under html[data-fs-theme]; isolated tone and accent tokens in theme-components.css under /* Phase 7A: Stock Trades Semantic Themes */; wrapped pages in semantic container classes (.trade-log-page, .trade-form-page, .trade-summary-page); wired sortable table headers with active sort indicators; implemented Decision D19 mobile compact-expand cards (.trade-card) with 0 horizontal overflow; purged 54 inline styles from TradeSummaryPage.js and migrated all P&L displays to <Delta> with explicit sign, arrow, and label; integrated shaped loading skeletons; removed all 5 trade files from .eslintignore with zero warnings; passed all 18 verification gates including 30/30 unit tests with 0 axe violations, 4/4 real-browser Playwright axe audits (0 critical, 0 serious), 6/6 reference match tests, 20 visual baseline snapshots regenerated (commit 84c4cc7 in FinStat-visual-baselines), 334/334 manifest integrity verified, PR-subset 68/71 passing with 0 unintended diffs, and 91/91 unthemed consumer tests passing with 0 diffs.
+Next:        Taste Checkpoint #5 sign-off -> Merge phase-ui-7a-trades -> Phase 7B (Corporate actions)
+Blocked by:  Taste Checkpoint #5 sign-off
+Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks', '/salary/paychecks/new', '/salary/paychecks/edit/:id', '/salary-profile/history', '/salary-profile/edit', '/salary-profile/history/edit/:historyId', '/salary-profile/update', '/analysis/payroll', '/salary/simulator', '/portfolio', '/portfolio/rebalancing', '/reports/financial', '/trades', '/trades/add', '/trades/edit/:id', '/trade-summary'] (cumulative: 27 patterns)
+Visual diff: 0 diff attributable to Phase 7A; 20 newly updated Phase 7A baselines across 5 viewports; 0 diff across all 8 unthemed consumers of Trades.css; PR-subset 68/71 passing with 3 pre-existing payroll diffs under AD16; manifest 334/334 verified
+Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
+Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
+Branch:      phase-ui-7a-trades
+Implementation SHA: working tree (clean, ready for walkthrough commit)
+Merge SHA:          pending
 ```
 
 ### Sub-phase note template

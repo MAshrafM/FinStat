@@ -1953,3 +1953,48 @@ html[data-fs-theme] .report-error h3 {
   color: var(--fs-negative);
 }
 
+/* ----------------------------------------------------
+   Phase 7A: Stock Trades Semantic Themes
+---------------------------------------------------- */
+html[data-fs-theme] .trade-log-page .filter-controls button.active {
+  background: var(--fs-accent);
+  color: var(--fs-ink);
+  border-color: var(--fs-accent);
+}
+
+html[data-fs-theme] .trade-log-page .styled-table th.active-sort {
+  color: var(--fs-accent);
+}
+
+html[data-fs-theme] .trade-log-page .styled-table th.active-sort .sort-indicator {
+  color: var(--fs-accent);
+}
+
+html[data-fs-theme] .trade-log-page .icon-warning {
+  color: var(--fs-warning);
+}
+
+html[data-fs-theme] .trade-form-page .form-field-error {
+  color: var(--fs-negative);
+}
+
+html[data-fs-theme] .trade-form-page .stock-info-warning {
+  color: var(--fs-warning);
+}
+
+html[data-fs-theme] .trade-form-page .action-button {
+  background: var(--fs-action-bg);
+  color: var(--fs-action-text);
+}
+
+html[data-fs-theme] .trade-form-page .action-button:hover:not(:disabled) {
+  background: var(--fs-action-hover);
+  color: var(--fs-action-text);
+}
+
+html[data-fs-theme] .trade-summary-page .free-ride-badge {
+  color: var(--fs-positive);
+  font-weight: 600;
+}
+
+

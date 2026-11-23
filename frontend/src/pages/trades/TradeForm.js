@@ -30,7 +30,7 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         return PRESET_BROKERS.includes(b) ? '' : b;
     });
 
-        const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({
         date: initialData?.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         broker: initialData?.broker || 'Thndr',
         type: initialData?.type || 'Buy',
@@ -53,9 +53,8 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     };
 
     const selectedStockInfo = getSelectedStockInfo(formData.stockCode);
-    //console.log('Selected Stock Info:', selectedStockInfo);
 
-        useEffect(() => {
+    useEffect(() => {
         if (initialData && Object.keys(initialData).length > 0) {
             const b = initialData.broker || 'Thndr';
             const isPreset = PRESET_BROKERS.includes(b);
@@ -164,7 +163,7 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-                const resolvedBroker = (selectedBrokerOption === 'Other' ? customBroker : formData.broker).trim();
+        const resolvedBroker = (selectedBrokerOption === 'Other' ? customBroker : formData.broker).trim();
         if (!resolvedBroker) {
             if (notify) notify('Please select or specify a valid broker name.', 'error');
             return;
@@ -175,7 +174,7 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             const sharesToSell = parseFloat(formData.shares) || 0;
             const availableShares = selectedStockInfo ? parseFloat(selectedStockInfo.currentShares) || 0 : 0;
 
-                        if (sharesToSell > availableShares) {
+            if (sharesToSell > availableShares) {
                 if (notify) notify(`Cannot sell ${sharesToSell} shares. You only have ${availableShares} shares available.`, 'error');
                 return;
             }
@@ -209,12 +208,13 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
     return (
         <form onSubmit={handleSubmit} className="standard-form">
             <div className="form-group">
-                <label>Date</label>
-                <input type="date" name="date" value={formData.date} onChange={handleChange} required />
+                <label htmlFor="trade-date">Date</label>
+                <input id="trade-date" type="date" name="date" value={formData.date} onChange={handleChange} required />
             </div>
             <div className="form-group">
-                <label>Broker</label>
+                <label htmlFor="trade-broker">Broker</label>
                 <select
+                    id="trade-broker"
                     name="brokerSelect"
                     value={selectedBrokerOption}
                     onChange={handleBrokerDropdownChange}
@@ -227,8 +227,9 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             </div>
             {selectedBrokerOption === 'Other' && (
                 <div className="form-group">
-                    <label>Custom Broker Name</label>
+                    <label htmlFor="trade-custom-broker">Custom Broker Name</label>
                     <input
+                        id="trade-custom-broker"
                         type="text"
                         name="customBroker"
                         placeholder="e.g., Interactive Brokers, QNB Finansbank"
@@ -240,8 +241,8 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                 </div>
             )}
             <div className="form-group">
-                <label>Transaction Type</label>
-                <select name="type" value={formData.type} onChange={handleChange}>
+                <label htmlFor="trade-type">Transaction Type</label>
+                <select id="trade-type" name="type" value={formData.type} onChange={handleChange}>
                     <option value="Buy">Buy</option>
                     <option value="Sell">Sell</option>
                     <option value="TopUp">Top-up (Cash Deposit)</option>
@@ -272,15 +273,15 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
             {isStockTrade && (!isSellTransaction || isEdit) && (
                 <div className="form-group">
-                    <label>Stock Code</label>
-                    <input type="text" name="stockCode" placeholder="e.g., AAPL, COMI.CA" value={formData.stockCode} onChange={handleChange} required />
+                    <label htmlFor="trade-stock-code">Stock Code</label>
+                    <input id="trade-stock-code" type="text" name="stockCode" placeholder="e.g., AAPL, COMI.CA" value={formData.stockCode} onChange={handleChange} required />
                 </div>
             )}
 
             {isSellTransaction && !isEdit && (
                 <div className="form-group">
-                    <label>Select Stock to Sell</label>
-                    <select name="stockCode" value={formData.stockCode} onChange={handleChange} required>
+                    <label htmlFor="trade-sell-stock">Select Stock to Sell</label>
+                    <select id="trade-sell-stock" name="stockCode" value={formData.stockCode} onChange={handleChange} required>
                         <option value="">-- Select a stock --</option>
                         {openPosData && openPosData
                             .filter(position => position._id.broker === formData.broker)
@@ -292,14 +293,7 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                     </select>
 
                     {selectedStockInfo && (
-                        <div className="stock-info" style={{
-                            marginTop: '10px',
-                            padding: '12px',
-                            backgroundColor: '#f8f9fa',
-                            border: '1px solid #dee2e6',
-                            borderRadius: '4px',
-                            fontSize: '14px'
-                        }}>
+                        <div className="trade-stock-info">
                             <div><strong>Stock:</strong> {selectedStockInfo._id.stockCode}</div>
                             <div><strong>Current Shares:</strong> {parseFloat(selectedStockInfo.currentShares || 0).toLocaleString()}</div>
                             <div><strong>Current Iteration:</strong> {selectedStockInfo._id.iteration}</div>
@@ -314,24 +308,25 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
 
             {isCashTrade && (
                 <div className="form-group">
-                    <label>Amount</label>
-                    <input type="number" step="0.01" name="totalValue" placeholder="Enter cash amount" value={formData.totalValue} onChange={handleCashChange} required />
+                    <label htmlFor="trade-amount">Amount</label>
+                    <input id="trade-amount" type="number" step="0.01" name="totalValue" placeholder="Enter cash amount" value={formData.totalValue} onChange={handleCashChange} required />
                 </div>
             )}
 
             {formData.type === 'Dividend' && (
                 <div className="form-group">
-                    <label>Dividend Amount Cash</label>
-                    <input type="number" step="0.01" name="totalValue" placeholder="Enter total dividend received" value={formData.totalValue} onChange={handleCashChange} required />
-                    <label>Dividend Amount Shares</label>
-                    <input type="number" name="shares" placeholder="Enter total dividend received" value={formData.shares} onChange={handleChange} required />
+                    <label htmlFor="trade-div-cash">Dividend Amount Cash</label>
+                    <input id="trade-div-cash" type="number" step="0.01" name="totalValue" placeholder="Enter total dividend received" value={formData.totalValue} onChange={handleCashChange} required />
+                    <label htmlFor="trade-div-shares">Dividend Amount Shares</label>
+                    <input id="trade-div-shares" type="number" name="shares" placeholder="Enter total dividend received" value={formData.shares} onChange={handleChange} required />
                 </div>
             )}
 
             {formData.type === 'Split' && (
                 <div className="form-group">
-                    <label>Split Ratio (e.g. 2 for 2:1 Split)</label>
+                    <label htmlFor="trade-split-ratio">Split Ratio (e.g. 2 for 2:1 Split)</label>
                     <input
+                        id="trade-split-ratio"
                         type="number"
                         step="any"
                         min="0.0001"
@@ -347,8 +342,9 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
             {['Buy', 'Sell'].includes(formData.type) && (
                 <>
                     <div className="form-group">
-                        <label>Shares</label>
+                        <label htmlFor="trade-shares">Shares</label>
                         <input
+                            id="trade-shares"
                             type="number"
                             step="any"
                             name="shares"
@@ -359,44 +355,47 @@ const TradeForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
                             placeholder={isSellTransaction && !isEdit && selectedStockInfo ? `Max: ${selectedStockInfo.currentShares}` : ''}
                         />
                         {isSellTransaction && !isEdit && selectedStockInfo && parseFloat(formData.shares) > parseFloat(selectedStockInfo.currentShares) && (
-                            <div style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>
+                            <div className="form-field-error stock-info-warning">
                                 ⚠️ Cannot sell more than {selectedStockInfo.currentShares} shares
                             </div>
                         )}
                         {isSellTransaction && isEdit && selectedStockInfo && (
-                            <div style={{ color: '#6c757d', fontSize: '12px', marginTop: '4px' }}>
+                            <div className="form-field-hint">
                                 Available in portfolio: ~{selectedStockInfo.currentShares} shares (adjusted by splits)
                             </div>
                         )}
                     </div>
                     <div className="form-group">
-                        <label>Price per Share</label>
-                        <input type="number" step="any" name="price" value={formData.price} onChange={handleChange} required />
+                        <label htmlFor="trade-price">Price per Share</label>
+                        <input id="trade-price" type="number" step="any" name="price" value={formData.price} onChange={handleChange} required />
                     </div>
                 </>
             )}
 
             <div className="form-group">
-                <label>Fees</label>
-                <input type="number" step="any" name="fees" value={formData.fees} onChange={handleChange} />
+                <label htmlFor="trade-fees">Fees</label>
+                <input id="trade-fees" type="number" step="any" name="fees" value={formData.fees} onChange={handleChange} />
             </div>
             {isStockTrade && (
                 <div className="form-group">
-                    <label>Iteration</label>
-                    <input type="number" name="iteration" value={formData.iteration} onChange={handleChange} required />
+                    <label htmlFor="trade-iteration">Iteration</label>
+                    <input id="trade-iteration" type="number" name="iteration" value={formData.iteration} onChange={handleChange} required />
                 </div>
             )}
 
             <div className="form-group">
-                <label>Total Value</label>
-                <input type="text"
+                <label htmlFor="trade-total-value">Total Value</label>
+                <input
+                    id="trade-total-value"
+                    type="text"
                     value={formatCurrency(formData.totalValue)}
                     readOnly
                     disabled
-                    className="total-display" />
+                    className="total-display"
+                />
             </div>
 
-            <button type="submit" className="action-button">{isEdit ? 'Update' : 'Create'} Trade</button>
+            <button type="submit" className="action-button btn fs-btn-primary">{isEdit ? 'Update' : 'Create'} Trade</button>
         </form>
     );
 };

@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getTradeById, updateTrade } from '../../services/tradeService';
 import TradeForm from './TradeForm';
 import { useToast } from '../../context/ToastContext';
+import { Loading } from '../../components/ui';
 
 const EditTradePage = () => {
   const navigate = useNavigate();
@@ -28,13 +29,23 @@ const EditTradePage = () => {
     }
   };
 
-  if (!initialData) return <p>Loading trade data...</p>;
+  if (!initialData) {
+    return (
+      <div className="page-container trade-form-page">
+        <Loading variant="card" />
+      </div>
+    );
+  }
 
   return (
-    <div className="page-container">
-      <div className="page-header"><h1>Edit Trade</h1></div>
+    <div className="page-container trade-form-page">
+      <div className="page-header">
+        <p className="trade-log-subtitle">Stock Trading &gt; Edit Trade</p>
+        <h1>Edit Trade</h1>
+      </div>
       <TradeForm onFormSubmit={handleFormSubmit} initialData={initialData} isEdit={true} />
     </div>
   );
 };
+
 export default EditTradePage;

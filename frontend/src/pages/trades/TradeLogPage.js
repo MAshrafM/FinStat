@@ -1,10 +1,11 @@
 // frontend/src/pages/trades/TradeLogPage.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { getTrades, deleteTrade } from '../../services/tradeService';
 import apiClient from '../../services/apiClient';
 import { BASE_API_URL } from '../../config/api';
 import { formatDate, formatCurrency } from '../../utils/formatters';
+import { sortData, getNextSortConfig } from '../../utils/helper';
 import { FaEdit, FaTrash, FaPlus, FaBolt } from 'react-icons/fa';
 import PaginationControls from '../../components/PaginationControls';
 import ProtectedAction from '../../components/common/ProtectedAction';
@@ -12,6 +13,7 @@ import ConfirmModal from '../../components/common/ConfirmModal';
 import DebouncedSearchInput from '../../components/common/DebouncedSearchInput';
 import UndoToast from '../../components/common/UndoToast';
 import { useToast } from '../../context/ToastContext';
+import { Loading } from '../../components/ui';
 import '../../components/Table.css';
 import './Trades.css';
 
@@ -26,6 +28,10 @@ const TradeLogPage = () => {
   const [deletingTradeId, setDeletingTradeId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletedUndoItem, setDeletedUndoItem] = useState(null);
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: 'asc',
+  });
 
   const loadTrades = useCallback((page, broker, search) => {
     setIsLoading(true);
@@ -106,27 +112,56 @@ const TradeLogPage = () => {
     setCurrentPage(1);
   }, []);
 
+  const getSortValue = useCallback((item, key) => {
+    switch (key) {
+      case 'date':
+        return new Date(item.date || 0).getTime();
+      case 'type':
+        return (item.type || '').toLowerCase();
+      case 'stockCode':
+        return (item.stockCode || '').toLowerCase();
+      case 'shares':
+        return Number(item.shares) || 0;
+      case 'price':
+        return Number(item.price) || 0;
+      case 'fees':
+        return Number(item.fees) || 0;
+      case 'totalValue':
+        return Number(item.totalValue) || 0;
+      default:
+        return '';
+    }
+  }, []);
+
+  const sortedTrades = useMemo(() => {
+    return sortData(trades, sortConfig, getSortValue);
+  }, [trades, sortConfig, getSortValue]);
+
+  const handleSort = (key) => {
+    setSortConfig(prev => getNextSortConfig(prev, key));
+  };
+
   return (
-    <div className="page-container">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+    <div className="page-container trade-log-page">
+      <div className="page-header trade-log-header">
         <div>
           <h1>Stock Trade Log</h1>
-          <p style={{ margin: 0, color: '#6b7280', fontSize: '0.95rem' }}>
+          <p className="trade-log-subtitle">
             Historical trade logs, purchases, sales, cash deposits, and dividends.
           </p>
         </div>
-        <div className="page-header-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className="page-header-actions trade-log-header-actions">
           <Link
             to="/corporate-actions"
             className="btn btn-secondary"
             title="View & apply corporate actions (stock splits and bonus shares)"
           >
-            <FaBolt size={13} color="#f59e0b" /> Corporate Actions
+            <FaBolt size={13} className="icon-warning" /> Corporate Actions
           </Link>
           <ProtectedAction tooltip="View-only access">
             <Link
-              to="/trades/new"
-              className="btn btn-primary"
+              to="/trades/add"
+              className="btn fs-btn-primary"
               title="Record a new trade or cash transaction"
             >
               <FaPlus size={13} /> Add Trade
@@ -136,11 +171,11 @@ const TradeLogPage = () => {
       </div>
 
       <div className="filter-controls">
-        <button onClick={() => handleFilterClick(null)} className={!brokerFilter ? 'active' : ''}>All Brokers</button>
-        <button onClick={() => handleFilterClick('Thndr')} className={brokerFilter === 'Thndr' ? 'active' : ''}>Thndr</button>
-        <button onClick={() => handleFilterClick('EFG')} className={brokerFilter === 'EFG' ? 'active' : ''}>EFG</button>
-        <button onClick={() => handleFilterClick('Telda')} className={brokerFilter === 'Telda' ? 'active' : ''}>Telda</button>
-        <button onClick={() => handleFilterClick('TopUp')} className={brokerFilter === 'TopUp' ? 'active' : ''}>Top Ups</button>
+        <button type="button" onClick={() => handleFilterClick(null)} className={!brokerFilter ? 'active' : ''}>All Brokers</button>
+        <button type="button" onClick={() => handleFilterClick('Thndr')} className={brokerFilter === 'Thndr' ? 'active' : ''}>Thndr</button>
+        <button type="button" onClick={() => handleFilterClick('EFG')} className={brokerFilter === 'EFG' ? 'active' : ''}>EFG</button>
+        <button type="button" onClick={() => handleFilterClick('Telda')} className={brokerFilter === 'Telda' ? 'active' : ''}>Telda</button>
+        <button type="button" onClick={() => handleFilterClick('TopUp')} className={brokerFilter === 'TopUp' ? 'active' : ''}>Top Ups</button>
         <DebouncedSearchInput
           value={searchTerm}
           onChange={handleSearchChange}
@@ -154,51 +189,66 @@ const TradeLogPage = () => {
         <table className="styled-table">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Stock</th>
-              <th>Shares</th>
-              <th>Price</th>
-              <th>Fees</th>
-              <th>Total Value</th>
+              <th className={`sortable ${sortConfig.key === 'date' ? 'active-sort' : ''}`} onClick={() => handleSort('date')}>
+                Date {sortConfig.key === 'date' && <span className="sort-indicator">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
+              </th>
+              <th className={`sortable ${sortConfig.key === 'type' ? 'active-sort' : ''}`} onClick={() => handleSort('type')}>
+                Type {sortConfig.key === 'type' && <span className="sort-indicator">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
+              </th>
+              <th className={`sortable ${sortConfig.key === 'stockCode' ? 'active-sort' : ''}`} onClick={() => handleSort('stockCode')}>
+                Stock {sortConfig.key === 'stockCode' && <span className="sort-indicator">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
+              </th>
+              <th className={`sortable ${sortConfig.key === 'shares' ? 'active-sort' : ''}`} onClick={() => handleSort('shares')}>
+                Shares {sortConfig.key === 'shares' && <span className="sort-indicator">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
+              </th>
+              <th className={`sortable ${sortConfig.key === 'price' ? 'active-sort' : ''}`} onClick={() => handleSort('price')}>
+                Price {sortConfig.key === 'price' && <span className="sort-indicator">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
+              </th>
+              <th className={`sortable ${sortConfig.key === 'fees' ? 'active-sort' : ''}`} onClick={() => handleSort('fees')}>
+                Fees {sortConfig.key === 'fees' && <span className="sort-indicator">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
+              </th>
+              <th className={`sortable ${sortConfig.key === 'totalValue' ? 'active-sort' : ''}`} onClick={() => handleSort('totalValue')}>
+                Total Value {sortConfig.key === 'totalValue' && <span className="sort-indicator">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>}
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan="8" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-                  Loading trades...
+                <td colSpan="8" className="table-empty-cell">
+                  <Loading variant="table" rows={6} />
                 </td>
               </tr>
-            ) : trades.length === 0 ? (
+            ) : sortedTrades.length === 0 ? (
               <tr>
-                <td colSpan="8" style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+                <td colSpan="8" className="table-empty-cell">
                   No stock trade records found. Click <strong>Add Trade</strong> to record a transaction.
                 </td>
               </tr>
             ) : (
-              trades.map(trade => {
+              sortedTrades.map(trade => {
                 const tradeType = trade.type || 'Buy';
                 return (
-                  <tr key={trade._id}>
+                  <tr key={trade._id} className="trade-card">
                     <td data-label="Date">{formatDate(trade.date)}</td>
                     <td data-label="Type" className={`trade-type-${tradeType.toLowerCase()}`}>{tradeType}</td>
                     <td data-label="Code">{trade.stockCode || '-'}</td>
-                    <td data-label="Shares">{trade.shares ?? '-'}</td>
-                    <td data-label="Price">{trade.price ? formatCurrency(trade.price) : '-'}</td>
-                    <td data-label="Fees">{formatCurrency(trade.fees || 0)}</td>
-                    <td data-label="Value" className="total-value">{formatCurrency(trade.totalValue || 0)}</td>
+                    <td data-label="Shares" className="fs-num">{trade.shares ?? '-'}</td>
+                    <td data-label="Price" className="fs-num">{trade.price ? formatCurrency(trade.price) : '-'}</td>
+                    <td data-label="Fees" className="fs-num">{formatCurrency(trade.fees || 0)}</td>
+                    <td data-label="Value" className="total-value fs-num">{formatCurrency(trade.totalValue || 0)}</td>
                     <td data-label="Actions" className="action-cell">
                       <ProtectedAction tooltip="View-only access">
-                        <Link to={`/trades/edit/${trade._id}`}><FaEdit className="action-icon edit-icon" /></Link>
+                        <Link to={`/trades/edit/${trade._id}`} title="Edit trade"><FaEdit className="action-icon edit-icon" /></Link>
                       </ProtectedAction>
                       <ProtectedAction tooltip="View-only access">
                         <button
                           type="button"
                           onClick={() => handleDeleteClick(trade._id)}
-                          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                          className="action-btn-delete"
                           title="Delete trade"
+                          aria-label="Delete trade"
                         >
                           <FaTrash className="action-icon delete-icon" />
                         </button>
