@@ -12,7 +12,7 @@ import SummaryCards from '../../components/portfolio/SummaryCards';
 import AllocationChart from '../../components/portfolio/AllocationChart';
 import HoldingsTable from '../../components/portfolio/HoldingsTable';
 import { FaSyncAlt, FaBalanceScale, FaCheck } from 'react-icons/fa';
-import { Loading } from '../../components/ui';
+import { Button } from '../../components/ui';
 import './Portfolio.css';
 
 const PortfolioDashboard = () => {
@@ -103,16 +103,6 @@ const PortfolioDashboard = () => {
     loadData(true, newMethod);
   };
 
-  if (isLoading) {
-    return (
-      <div className="fs-page portfolio-page-wrapper">
-        <div className="portfolio-container">
-          <Loading variant="route" text="Loading Unified Investment Portfolio..." />
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="fs-page portfolio-page-wrapper">
@@ -196,30 +186,31 @@ const PortfolioDashboard = () => {
             </Link>
 
             {/* Refresh Prices */}
-            <button
-              type="button"
-              className="fs-btn fs-btn-primary refresh-btn"
+            <Button
+              variant="primary"
+              className="refresh-btn"
               onClick={handleRefresh}
-              disabled={isRefreshing}
+              isLoading={isRefreshing}
+              icon={<FaSyncAlt aria-hidden="true" />}
             >
-              <FaSyncAlt className={isRefreshing ? 'fa-spin' : ''} aria-hidden="true" />
               <span>{isRefreshing ? 'Refreshing...' : 'Refresh Prices'}</span>
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* 1. Summary KPI Cards */}
-        <SummaryCards summary={summary || {}} />
+        <SummaryCards summary={summary || {}} isLoading={isLoading} />
 
         {/* 2. Asset Allocation Breakdown (AD15 Ranked Horizontal Bars + Data Table) */}
         <AllocationChart
           allocations={allocations}
           totalInvested={summary?.totalInvested || 0}
           totalCurrentValue={summary?.totalCurrentValue || 0}
+          isLoading={isLoading}
         />
 
         {/* 3. Multi-Asset Holdings Table */}
-        <HoldingsTable holdings={holdings} isLoading={isRefreshing} />
+        <HoldingsTable holdings={holdings} isLoading={isLoading} />
       </div>
     </div>
   );

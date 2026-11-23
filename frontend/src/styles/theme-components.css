@@ -1932,3 +1932,24 @@ html[data-fs-theme] .dash-budget-track span.dash-budget-bar--negative {
   background: var(--fs-negative);
 }
 
+/* ----------------------------------------------------
+   Phase 6B: Rebalancing & Comprehensive Report Semantic Themes
+---------------------------------------------------- */
+html[data-fs-theme] .sum-badge--valid {
+  color: var(--fs-positive);
+  border-color: var(--fs-border-control);
+}
+
+html[data-fs-theme] .sum-badge--invalid {
+  color: var(--fs-negative);
+  border-color: var(--fs-border);
+}
+
+html[data-fs-theme] .range-slider {
+  accent-color: var(--fs-accent);
+}
+
+html[data-fs-theme] .report-error h3 {
+  color: var(--fs-negative);
+}
+

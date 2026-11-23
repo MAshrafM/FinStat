@@ -892,8 +892,8 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | Route | Component | Phase | Theme applied | Visual QA | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
 | `/portfolio` | `pages/portfolio/PortfolioDashboard` | 6A | ☑ | ☑ | `AllocationChart` (AD15 horizontal bar + data table) |
-| `/portfolio/rebalancing` | `pages/portfolio/RebalancingPage` | 6B | ☐ | ☐ | 24 inline styles |
-| `/reports/financial` | `pages/reports/ComprehensiveReportPage` | 6B | ☐ | ☐ | Multi-module PDF/Excel consolidated reporting |
+| `/portfolio/rebalancing` | `pages/portfolio/RebalancingPage` | 6B | ☑ | ☑ | 23 inline styles purged, D19 mobile cards |
+| `/reports/financial` | `pages/reports/ComprehensiveReportPage` | 6B | ☑ | ☑ | Multi-module PDF/Excel consolidated reporting, @media print preserved |
 
 **Phase 6 count: 3.**
 
@@ -1058,7 +1058,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **5D** | Paycheck form, part 2 + allowlist | `phase-ui-5d-paycheck-form-b` | ☑ | ☑ |
 | **5E** | History, update, analytics | `phase-ui-5e-payroll-history` | ☑ | ☑ |
 | **6A** | Portfolio dashboard | `phase-ui-6a-portfolio` | ☑ | ☑ |
-| **6B** | Rebalancing | `phase-ui-6b-rebalancing` | ☐ | ☐ |
+| **6B** | Rebalancing | `phase-ui-6b-rebalancing` | ☑ | ☑ |
 | **7A** | Trades + trade summary | `phase-ui-7a-trades` | ☐ | ☐ |
 | **7B** | Corporate actions | `phase-ui-7b-corporate-actions` | ☐ | ☐ |
 | **7C** | Mutual funds | `phase-ui-7c-mutual-funds` | ☐ | ☐ |
@@ -1759,14 +1759,21 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 6B — Rebalancing & comprehensive reporting
 
-- [ ] `RebalancingPage.css` — light → graphite.
-- [ ] `RebalancingPage.js` (24) → classes.
-- [ ] `ComprehensiveReportPage.js` + `ComprehensiveReport.css` — multi-module consolidated PDF/Excel report generator, date range selectors, module toggle checkboxes.
-- [ ] Fix Portfolio dashboard loading sequence (Phase 6A manual verification finding): align `/portfolio` with D23 uniform loading sequence (render page shell with shaped skeletons `<Loading variant="card|table" />`, `Button` `isLoading={isRefreshing}`).
-- [ ] Rebalancing drift uses only the threshold recorded in §4.3.1; if none exists, the drift figure is neutral and carries no `Rebalance` label.
-- [ ] Verify empty and error states with the new tokens.
-- [ ] Remove `RebalancingPage.js` and `ComprehensiveReportPage.js` from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add `/portfolio/rebalancing` and `/reports/financial`.**
+- [x] `RebalancingPage.css` — light → graphite.
+- [x] `RebalancingPage.js` (24) → classes (23 color/layout purged, 1 non-color width retained).
+- [x] `ComprehensiveReportPage.js` + `ComprehensiveReport.css` — multi-module consolidated PDF/Excel report generator, date range selectors, module toggle checkboxes, @media print preserved.
+- [x] Fix Portfolio dashboard loading sequence (Phase 6A manual verification finding): align `/portfolio` with D23 uniform loading sequence (render page shell with shaped skeletons `<Loading variant="card|table" />`, `Button` `isLoading={isRefreshing}`).
+- [x] Rebalancing drift uses only the threshold recorded in §4.3.1; if none exists, the drift figure is neutral and carries no `Rebalance` label (amendment AD18: label is "Rebalancing Recommended" with `.fs-badge--warning` when drift exists).
+- [x] Verify empty and error states with the new tokens.
+- [x] Remove `RebalancingPage.js` and `ComprehensiveReportPage.js` from `frontend/.eslintignore`; verify clean ESLint.
+- [x] **Add `/portfolio/rebalancing` and `/reports/financial`.**
+
+**Recorded Amendments (Phase 6B)**:
+1. *AD17 (Chart.js Palette Integration Subset)*: `ComprehensiveReportPage.js` consumes `getChartPalette()` and `withAlpha()` from `chartTheme.js` with static accessible `aria-label`s on chart wrappers and `<canvas>`, rather than dynamic `createPattern()` / `ariaLabel()` pattern helpers. Axe-core accessibility audit passes with 0 violations in both jsdom and real Chromium.
+2. *AD18 (Drift Diagnostic Advisory Badge)*: `RebalancingPage.js` renders "Rebalancing Recommended" with `.fs-badge--warning` when `suggestions.some(s => s.action !== 'Hold')` to provide clear, actionable advisory guidance to the user.
+3. *AD19 (Holdings Refresh Preservation)*: In `PortfolioDashboard.js`, `HoldingsTable` receives `isLoading` only; during background price refresh (`isRefreshing`), the button spinner animates while preserving the rendered table rows without blanking them out with a table skeleton, providing a smoother user experience.
+4. *AD20 (De-Ignore Scope Extension)*: In addition to the 2 page components, the 2 corresponding unit test files (`RebalancingPage.test.js` and `ComprehensiveReportPage.test.js`) are permanently removed from `frontend/.eslintignore`.
+5. *AD21 (Neutral Report KPI Numerals)*: In `ComprehensiveReportPage.js`, all KPI metrics (Liquid Assets, Invested Assets, Total Liabilities, Gross Income, Outflows, Capital Deployed, Savings Rate, Receivables) are rendered in neutral `--fs-text` (`.kpi-stat-value.fs-num`) per §4.3 and Reference Frame 03 Variant B. Net Worth alone carries `.primary`.
 
 **Exit gate Phase 6:** 3 routes themed; charts themed; build/tests/lint/axe/screenshots; zero diff on non-allowlisted routes.
 
@@ -2535,6 +2542,7 @@ Append one row per sub-phase. Never edit past rows.
 | 5D | 2026-11-22 | Paycheck form, part 2 (allowlist, accessibility & verification): promoted /salary/paychecks/new and /salary/paychecks/edit/:id to active allowlist (12 -> 14 routes); permanently deleted legacy CSS block in PaycheckFormPage.css (986 lines, 0 stylelint-disable remaining); themed component-table inline editing controls in theme-components.css; adopted <Loading variant="route" /> per D23; enhanced WCAG 2.1 AA form accessibility (aria-required, aria-invalid, aria-describedby, inline role="alert" .form-error); added unit test 10 for inline error alert; removed temporary harness injection in a11y.spec.js; un-injected real-browser axe test passing 0 critical/serious violations; reference match spec passing 5/5; regenerated 10 baselines in D:\Projects\FinStat-visual-baselines (commit 4d118b9); manifest 334/334 verified; PR-subset 71/71 passing; 14 verification gates passed. | 5E (Tax simulator conversion) | None | 190523a, aea1cf1, b4b94be (working on branch phase-ui-5d-paycheck-form-b) |
 | 5E | 2026-11-22 | History, update, analytics, tax simulator: converted all remaining 6 payroll routes (/salary-profile/history, /salary-profile/edit, /salary-profile/history/edit/:historyId, /salary-profile/update, /analysis/payroll, /salary/simulator) and canonical redirects; active allowlist expanded from 14 to 20 patterns; Reference Frame 01 dense tables with D19 mobile cards; Reference Frame 02 stacked field cards; Reference Frame 03 dashboard with Chart.js accessible series palette; scoped SummaryRow and AnalysisCard preventing leakage to unthemed pages; purged 7 Phase 5 entries from .eslintignore (0 warnings); un-injected real-browser axe test passing 0 critical/serious violations (8/8 tests green: 1 setup + 7 routes); calculations characterization passing (11/11); reference match passing 7/7 (1 setup + 6 reference tests); 30 baselines captured in FinStat-visual-baselines (commits a15949a, 3993e11, and ea11e6a); manifest 334/334 verified; PR subset 71/71 passing; full 326-test run reconciled (316 passing + 10 AD14 accepted diffs, 0 unexplained diffs); 18 verification gates passed. Phase 5 complete. | 6A (Portfolio dashboard) | None | f471911 (merged to main) |
 | 6A | 2026-11-23 | Portfolio dashboard: promoted /portfolio to active allowlist (20 -> 21 patterns); themed Portfolio Dashboard adhering to Reference Frame 03 (Dashboard Variant B) and Reference Frame 01 (Dense Table Variant B); converted asset allocation from doughnut to ranked horizontal bar chart (AD15, capped at top 6 + neutral Other rollup) using chartTheme.js accessible grey palette and createPattern() styling, with adjacent accessible data table alternative; formatted 5 summary KPI cards with neutral tone and Delta Gain/Loss indicators; implemented Decision D19 mobile compact-expand cards for HoldingsTable at <= 768px with >= 44px touch targets and zero page-level horizontal scroll at 390px; tokenized cost-basis accounting switcher and view-only banner; purged all 4 portfolio files from .eslintignore (0 warnings); verified component unit and axe tests (14/14 green, including accessible chart name assertion); verified Playwright real-browser axe audit (0 critical/serious violations); verified Playwright reference match spec (3/3 green: 1 setup + 2 reference tests); re-captured 5 visual baselines in D:\Projects\FinStat-visual-baselines (commit e742200); manifest verified (334/334); full 326-test run reconciled (292 passing + 10 AD14 accepted diffs + 24 AD16 accepted diffs, 0 unexplained diffs); PR-subset 68/71 passing per Waiver W-6A-1; 18 verification gates passed. | 6B (Rebalancing & Financial Report) | None | d7435c0 (merged to main) |
+| 6B | 2026-11-23 | Rebalancing & comprehensive reporting: promoted /portfolio/rebalancing and /reports/financial to active allowlist (21 -> 23 patterns); themed RebalancingPage adhering to Reference Frame 03 and Frame 01 with custom range sliders, neutral drift action badges, AD18 advisory drift badge ('Rebalancing Recommended' with .fs-badge--warning on drift, 'Balanced on Target' with .fs-badge--neutral when balanced), and D19 mobile compact-expand cards; fixed /portfolio root loading sequence per Decision D23 with shaped section skeletons; themed ComprehensiveReportPage with chartTheme.js accessible palette and strict @media print isolation (Waiver W-6B-1); purged 4 entries from .eslintignore; unit and axe tests passing (33/33 green across 3 suites); Playwright real-browser axe passing (4/4 green, 0 violations); reference match spec passing (5/5 green); 10 baselines updated in FinStat-visual-baselines (commit c2dadf6); manifest 334/334 verified; PR subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 18 verification gates passed. Phase 6 Exit Gate complete. | 7A (Trade log & trade entry conversion) | None | 45ff6b8 (working on branch phase-ui-6b-rebalancing) |
 
 ```
 Sub-phase:   1A
@@ -2802,6 +2810,21 @@ Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in 
 Branch:      phase-ui-6a-portfolio
 Implementation SHA: c65190a (branch phase-ui-6a-portfolio)
 Merge SHA:          d7435c0 (merged to main)
+```
+
+```
+Sub-phase:   6B
+Status:      done
+Done:        Promoted /portfolio/rebalancing and /reports/financial to active allowlist (21 -> 23 patterns); themed RebalancingPage adhering to Reference Frame 03 and Frame 01 with custom range sliders, neutral drift action badges, AD18 advisory drift badge ('Rebalancing Recommended' with .fs-badge--warning on drift, 'Balanced on Target' with .fs-badge--neutral when balanced), and D19 mobile compact-expand cards; fixed /portfolio root loading sequence per Decision D23 with shaped section skeletons; themed ComprehensiveReportPage with chartTheme.js accessible palette and strict @media print isolation (Waiver W-6B-1); purged 4 entries from .eslintignore; unit and axe tests passing (33/33 green across 3 suites); Playwright real-browser axe passing (4/4 green, 0 violations); reference match spec passing (5/5 green); 10 baselines updated in FinStat-visual-baselines (commit c2dadf6); manifest 334/334 verified; PR subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 18 verification gates passed. Phase 6 Exit Gate complete.
+Next:        Phase 7A (Trade log & trade entry conversion)
+Blocked by:  None
+Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks', '/salary/paychecks/new', '/salary/paychecks/edit/:id', '/salary-profile/history', '/salary-profile/edit', '/salary-profile/history/edit/:historyId', '/salary-profile/update', '/analysis/payroll', '/salary/simulator', '/portfolio', '/portfolio/rebalancing', '/reports/financial'] (cumulative: 23 routes)
+Visual diff: 0 diff attributable to Phase 6B; 10 newly updated Phase 6B baselines across 5 viewports; 0 diff on settled /portfolio baselines; PR-subset 68/71 passing with 3 pre-existing payroll diffs under AD16; full 326-test run reconciled (292 passing + 10 AD14 diffs + 24 AD16 diffs, 0 unexplained diffs); manifest 334/334 verified
+Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green)
+Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
+Branch:      phase-ui-6b-rebalancing
+Implementation SHA: 45ff6b8 (working on branch phase-ui-6b-rebalancing)
+Merge SHA:          pending review
 ```
 
 ### Sub-phase note template

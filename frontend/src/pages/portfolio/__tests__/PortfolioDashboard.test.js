@@ -125,10 +125,16 @@ describe('UI Phase 6A: PortfolioDashboard Component Tests', () => {
     );
   };
 
-  test('1. Renders canonical loading state initially', () => {
+  test('1. Renders canonical loading state initially with uniform D23 loading sequence', () => {
     portfolioService.getPortfolioSummary.mockReturnValue(new Promise(() => {}));
     renderDashboard();
-    expect(screen.getByText(/Loading Unified Investment Portfolio.../i)).toBeInTheDocument();
+    // Persistent header shell is rendered immediately
+    expect(screen.getByText(/Portfolio Analytics & Performance/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Refresh Prices/i })).toBeInTheDocument();
+    // Shaped skeleton loaders are rendered for content sections
+    expect(screen.getByText(/Loading portfolio metrics.../i)).toBeInTheDocument();
+    expect(screen.getByText(/Loading asset allocation.../i)).toBeInTheDocument();
+    expect(screen.getByText(/Loading holdings.../i)).toBeInTheDocument();
   });
 
   test('2. Renders error state with retry CTA on fetch failure', async () => {
@@ -227,13 +233,12 @@ describe('UI Phase 6A: PortfolioDashboard Component Tests', () => {
     renderDashboard();
 
     await waitFor(() => {
-      expect(screen.getByTestId('portfolio-holdings-section')).toBeInTheDocument();
+      expect(screen.getAllByText('Apple Inc.').length).toBeGreaterThan(0);
     });
 
     const holdingsSection = screen.getByTestId('portfolio-holdings-section');
     const tableHeaders = within(holdingsSection).getAllByRole('columnheader');
     expect(tableHeaders.length).toBe(10);
-    expect(screen.getAllByText('Apple Inc.').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Microsoft Corp.').length).toBeGreaterThan(0);
   });
 
