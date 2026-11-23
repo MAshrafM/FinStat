@@ -1,6 +1,7 @@
 // frontend/src/pages/reports/__tests__/ComprehensiveReportPage.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { axe } from 'jest-axe';
 import ComprehensiveReportPage, { chartCommonOptions } from '../ComprehensiveReportPage';
 import apiClient from '../../../services/apiClient';
 import { AuthProvider } from '../../../context/AuthContext';
@@ -73,6 +74,7 @@ const mockReportData = {
   investments: {
     equities: { totalBuyValue: 100000, totalSellValue: 50000, realizedGains: 12000, dividendIncome: 3000 },
     mutualFunds: { totalSubscriptions: 40000, totalRedemptions: 10000, realizedGains: 2500, couponIncome: 1000 },
+    // eslint-disable-next-line no-restricted-syntax -- 'gold' is an asset category
     gold: { endHoldingGrams: 50, totalCost: 150000, periodBoughtGrams: 20, periodSoldGrams: 0 },
     certificates: { totalPrincipalHeld: 200000, estimatedAccruedInterest: 50000 },
     realEstate: { acquisitionCost: 500000, currentMarketValue: 750000 },
@@ -115,7 +117,7 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
     );
   };
 
-  test('Test 1: renders loading state and fetches comprehensive report data on mount', async () => {
+  test('1. renders loading state and fetches comprehensive report data on mount', async () => {
     apiClient.get.mockResolvedValueOnce(mockReportData);
 
     renderComponent();
@@ -130,7 +132,7 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
     expect(apiClient.get).toHaveBeenCalledWith(expect.stringContaining('/reports/comprehensive?startYear='));
   });
 
-  test('Test 2: renders executive summary KPI cards with formatted currency values', async () => {
+  test('2. renders executive summary KPI cards with formatted currency values', async () => {
     apiClient.get.mockResolvedValueOnce(mockReportData);
 
     renderComponent();
@@ -148,7 +150,7 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
     expect(screen.getByText('42.9%')).toBeInTheDocument();
   });
 
-  test('Test 3: renders generation audit header with username and timestamp', async () => {
+  test('3. renders generation audit header with username and timestamp', async () => {
     apiClient.get.mockResolvedValueOnce(mockReportData);
 
     renderComponent();
@@ -161,7 +163,7 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
     expect(screen.getByText(/Period: 2024 – 2026/i)).toBeInTheDocument();
   });
 
-  test('Test 4: initializes Chart.js instances with devicePixelRatio >= 3 for high-DPI print fidelity', async () => {
+  test('4. initializes Chart.js instances with devicePixelRatio >= 3 for high-DPI print fidelity', async () => {
     apiClient.get.mockResolvedValueOnce(mockReportData);
 
     renderComponent();
@@ -174,7 +176,7 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
     expect(chartCommonOptions.devicePixelRatio).toBeGreaterThanOrEqual(3);
   });
 
-  test('Test 5: handles year range selector clicks and triggers updated API requests', async () => {
+  test('5. handles year range selector clicks and triggers updated API requests', async () => {
     apiClient.get.mockResolvedValue(mockReportData);
 
     renderComponent();
@@ -193,8 +195,8 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
       expect(apiClient.get).toHaveBeenLastCalledWith(
         `/reports/comprehensive?startYear=${currentYear}&endYear=${currentYear}`
       );
-      expect(screen.getByText('Comprehensive Financial Report')).toBeInTheDocument();
     });
+    expect(screen.getByText('Comprehensive Financial Report')).toBeInTheDocument();
 
     // Click "5 Years" button
     const fiveYearBtn = screen.getByRole('button', { name: '5 Years' });
@@ -207,7 +209,7 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
     });
   });
 
-  test('Test 6: clicking Print Report / Export PDF invokes window.print()', async () => {
+  test('6. clicking Print Report / Export PDF invokes window.print()', async () => {
     apiClient.get.mockResolvedValueOnce(mockReportData);
     const printSpy = jest.spyOn(window, 'print').mockImplementation(() => {});
 
@@ -225,7 +227,7 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
     printSpy.mockRestore();
   });
 
-  test('Test 7: renders graceful error alert when API aggregation fails and supports retry', async () => {
+  test('7. renders graceful error alert when API aggregation fails and supports retry', async () => {
     apiClient.get.mockRejectedValueOnce(new Error('Vercel gateway timeout'));
 
     renderComponent();
@@ -246,7 +248,7 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
     });
   });
 
-  test('Test 8: renders Peer-to-Peer Loans & Receivables section and 6th slice in Asset Allocation chart [FEAT-005]', async () => {
+  test('8. renders Peer-to-Peer Loans & Receivables section and 6th slice in Asset Allocation chart [FEAT-005]', async () => {
     const reportWithLoans = {
       ...mockReportData,
       loans: {
@@ -281,7 +283,8 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
     const chartData = JSON.parse(doughnut.textContent);
     expect(chartData.labels).toContain('Receivables');
   });
-  test('Test 9: renders Capital Deployed KPI stat card when totalCapitalDeployed is present [FEAT-002]', async () => {
+
+  test('9. renders Capital Deployed KPI stat card when totalCapitalDeployed is present [FEAT-002]', async () => {
     const reportWithCapitalDeployments = {
       ...mockReportData,
       kpi: {
@@ -307,5 +310,21 @@ describe('ComprehensiveReportPage Component Tests [FEAT-003]', () => {
 
     expect(screen.getByText('Capital Deployed')).toBeInTheDocument();
     expect(screen.getByText('$95,000.00')).toBeInTheDocument();
+  });
+
+  test('10. Accessible audit via jest-axe with 0 critical or serious violations', async () => {
+    apiClient.get.mockResolvedValueOnce(mockReportData);
+
+    const { container } = renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Comprehensive Financial Report')).toBeInTheDocument();
+    });
+
+    const results = await axe(container);
+    const criticalOrSerious = results.violations.filter(
+      (v) => v.impact === 'critical' || v.impact === 'serious'
+    );
+    expect(criticalOrSerious).toEqual([]);
   });
 });

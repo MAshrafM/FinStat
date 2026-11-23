@@ -11,6 +11,7 @@ import {
   FaChevronDown,
   FaChevronUp,
 } from 'react-icons/fa';
+import { Loading } from '../ui';
 
 const ASSET_CATEGORIES = [
   'All',
@@ -171,8 +172,17 @@ const HoldingsTable = ({ holdings = [], isLoading = false }) => {
         </div>
       </div>
 
-      {/* Desktop 10-Column Table (>768px, Canonical Reference Frame 01) */}
-      <div className="table-responsive holdings-desktop-table">
+      {/* Table / Skeleton Area */}
+      {isLoading ? (
+        <div className="table-responsive holdings-desktop-table">
+          <div className="fs-table-container">
+            <Loading variant="table" rows={5} text="Loading holdings..." />
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Desktop 10-Column Table (>768px, Canonical Reference Frame 01) */}
+          <div className="table-responsive holdings-desktop-table">
         <div className="fs-table-container">
           <table className="fs-table portfolio-table">
             <thead>
@@ -364,6 +374,8 @@ const HoldingsTable = ({ holdings = [], isLoading = false }) => {
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 };

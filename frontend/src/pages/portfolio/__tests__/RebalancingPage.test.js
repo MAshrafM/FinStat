@@ -1,6 +1,7 @@
 // frontend/src/pages/portfolio/__tests__/RebalancingPage.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { axe } from 'jest-axe';
 import RebalancingPage from '../RebalancingPage';
 import * as portfolioService from '../../../services/portfolioService';
 import * as AuthContext from '../../../context/AuthContext';
@@ -18,21 +19,23 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }), { virtual: true });
 
-describe('Step 7B.2: RebalancingPage Component & Closed-Loop Execution Bridge [FEAT-004, GAP-001]', () => {
+describe('Step 7B.2 / UI Phase 6B: RebalancingPage Component & Modernization', () => {
   const mockRebalancingData = {
     totalPortfolioValue: 500000,
     categories: [
-      { assetType: 'stocks', label: 'Stocks (Equities)', value: 150000, percentage: 30, color: '#3498db' },
-      { assetType: 'gold', label: 'Gold (Precious Metals)', value: 150000, percentage: 30, color: '#f1c40f' },
-      { assetType: 'mutualFunds', label: 'Mutual Funds', value: 100000, percentage: 20, color: '#9b59b6' },
-      { assetType: 'cash', label: 'Cash & Foreign Currencies', value: 50000, percentage: 10, color: '#2ecc71' },
-      { assetType: 'certificates', label: 'Bank Certificates', value: 50000, percentage: 10, color: '#e67e22' },
+      { assetType: 'stocks', label: 'Stocks (Equities)', value: 150000, percentage: 30 },
+      // eslint-disable-next-line no-restricted-syntax -- 'gold' is an asset category
+      { assetType: 'gold', label: 'Gold (Precious Metals)', value: 150000, percentage: 30 },
+      { assetType: 'mutualFunds', label: 'Mutual Funds', value: 100000, percentage: 20 },
+      { assetType: 'cash', label: 'Cash & Foreign Currencies', value: 50000, percentage: 10 },
+      { assetType: 'certificates', label: 'Bank Certificates', value: 50000, percentage: 10 },
     ],
     target: {
       name: 'Standard Target',
       excludeRealEstate: true,
       targets: [
         { assetType: 'stocks', percentage: 40 },
+        // eslint-disable-next-line no-restricted-syntax -- 'gold' is an asset category
         { assetType: 'gold', percentage: 20 },
         { assetType: 'mutualFunds', percentage: 20 },
         { assetType: 'cash', percentage: 10 },
@@ -52,6 +55,7 @@ describe('Step 7B.2: RebalancingPage Component & Closed-Loop Execution Bridge [F
         description: 'Under-allocated by 10.0%. Buy EGP 50,000 worth of equities.',
       },
       {
+        // eslint-disable-next-line no-restricted-syntax -- 'gold' is an asset category
         assetType: 'gold',
         action: 'Sell',
         amount: 50000,
@@ -81,36 +85,43 @@ describe('Step 7B.2: RebalancingPage Component & Closed-Loop Execution Bridge [F
     jest.restoreAllMocks();
   });
 
-  test('1. Renders rebalancing suggestions table with Buy, Sell, Balanced actions and amounts', async () => {
+  test('1. Renders canonical loading shell and rebalancing suggestions with Buy, Sell, Balanced actions', async () => {
+    portfolioService.getRebalancingData.mockReturnValue(new Promise(() => {}));
     render(<RebalancingPage />);
 
+    // D23 uniform loading sequence: persistent header and loading skeletons
+    expect(screen.getByText('Portfolio Rebalancing & Advisory')).toBeInTheDocument();
     expect(screen.getByText(/Analyzing asset allocation/i)).toBeInTheDocument();
+  });
+
+  test('2. Renders rebalancing suggestions table and mobile cards with Buy, Sell, Balanced actions and amounts', async () => {
+    render(<RebalancingPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Actionable Rebalancing Suggestions')).toBeInTheDocument();
     });
 
     // Check Buy action badge and Log Buy button
-    expect(screen.getByText('Buy')).toBeInTheDocument();
-    expect(screen.getByText('Log Buy')).toBeInTheDocument();
+    expect(screen.getAllByText('Buy').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Log Buy').length).toBeGreaterThan(0);
 
     // Check Sell action badge and Log Sell button
-    expect(screen.getByText('Sell')).toBeInTheDocument();
-    expect(screen.getByText('Log Sell')).toBeInTheDocument();
+    expect(screen.getAllByText('Sell').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Log Sell').length).toBeGreaterThan(0);
 
     // Check Balanced state for Hold action
-    expect(screen.getByText('Hold')).toBeInTheDocument();
-    expect(screen.getByText('Balanced')).toBeInTheDocument();
+    expect(screen.getAllByText('Hold').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Balanced').length).toBeGreaterThan(0);
   });
 
-  test('2. Clicking "Log Trade" on stock suggestion navigates to /trades/add with prefill payload', async () => {
+  test('3. Clicking "Log Trade" on stock suggestion navigates to /trades/add with prefill payload', async () => {
     render(<RebalancingPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Log Buy')).toBeInTheDocument();
+      expect(screen.getAllByText('Log Buy').length).toBeGreaterThan(0);
     });
 
-    const logBuyBtn = screen.getByText('Log Buy');
+    const logBuyBtn = screen.getAllByText('Log Buy')[0];
     fireEvent.click(logBuyBtn);
 
     expect(mockNavigate).toHaveBeenCalledTimes(1);
@@ -130,7 +141,7 @@ describe('Step 7B.2: RebalancingPage Component & Closed-Loop Execution Bridge [F
     });
   });
 
-  test('3. Enforces read-only behavior for viewer role (canModify: false)', async () => {
+  test('4. Enforces read-only behavior for viewer role (canModify: false)', async () => {
     jest.spyOn(AuthContext, 'useCanModify').mockReturnValue({ canModify: false, role: 'viewer' });
 
     render(<RebalancingPage />);
@@ -144,14 +155,14 @@ describe('Step 7B.2: RebalancingPage Component & Closed-Loop Execution Bridge [F
     expect(saveBtn).toBeDisabled();
 
     // Log Buy button is disabled under ProtectedAction
-    const logBuyBtn = screen.getByText('Log Buy').closest('button');
+    const logBuyBtn = screen.getAllByRole('button', { name: /Log Buy/i })[0];
     expect(logBuyBtn).toBeDisabled();
 
     fireEvent.click(logBuyBtn);
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  test('4. Handles empty suggestions list gracefully when portfolio is completely balanced', async () => {
+  test('5. Handles empty suggestions list gracefully when portfolio is completely balanced', async () => {
     portfolioService.getRebalancingData.mockResolvedValueOnce({
       ...mockRebalancingData,
       suggestions: [],
@@ -163,13 +174,13 @@ describe('Step 7B.2: RebalancingPage Component & Closed-Loop Execution Bridge [F
       expect(screen.getByText('Actionable Rebalancing Suggestions')).toBeInTheDocument();
     });
 
-    // The table renders headers but zero data rows
+    // The desktop table renders headers but zero data rows
     const rows = screen.queryAllByRole('row');
     // Header row only
     expect(rows.length).toBe(1);
   });
 
-  test('5. Saves custom target allocations and re-triggers allocation analysis', async () => {
+  test('6. Saves custom target allocations and re-triggers allocation analysis', async () => {
     render(<RebalancingPage />);
 
     await waitFor(() => {
@@ -195,5 +206,41 @@ describe('Step 7B.2: RebalancingPage Component & Closed-Loop Execution Bridge [F
 
     // Verifies re-fetch is called
     expect(portfolioService.getRebalancingData).toHaveBeenCalledTimes(2);
+  });
+
+  test('7. Decision D19 mobile cards expand and collapse details on toggle click', async () => {
+    render(<RebalancingPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Actionable Rebalancing Suggestions')).toBeInTheDocument();
+    });
+
+    const toggleBtn = screen.getByLabelText(/Expand details for Stocks \(Equities\)/i);
+    expect(toggleBtn).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getAllByText(/Under-allocated by 10.0%/i)).toHaveLength(1);
+
+    // Click to expand
+    fireEvent.click(toggleBtn);
+    expect(toggleBtn).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getAllByText(/Under-allocated by 10.0%/i)).toHaveLength(2);
+
+    // Click to collapse
+    fireEvent.click(toggleBtn);
+    expect(toggleBtn).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getAllByText(/Under-allocated by 10.0%/i)).toHaveLength(1);
+  });
+
+  test('8. Passes accessibility audit via jest-axe with 0 critical or serious violations', async () => {
+    const { container } = render(<RebalancingPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Actionable Rebalancing Suggestions')).toBeInTheDocument();
+    });
+
+    const results = await axe(container);
+    const criticalOrSerious = results.violations.filter(
+      (v) => v.impact === 'critical' || v.impact === 'serious'
+    );
+    expect(criticalOrSerious).toEqual([]);
   });
 });

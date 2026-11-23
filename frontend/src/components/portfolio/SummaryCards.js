@@ -8,9 +8,16 @@ import {
   FaCoins,
   FaInfoCircle,
 } from 'react-icons/fa';
-import { Delta } from '../ui';
+import { Delta, Loading } from '../ui';
 
-const SummaryCards = ({ summary = {} }) => {
+const SummaryCards = ({ summary = {}, isLoading = false }) => {
+  if (isLoading) {
+    return (
+      <div className="portfolio-kpi-grid" data-testid="portfolio-kpi-grid-loading">
+        <Loading variant="card" text="Loading portfolio metrics..." />
+      </div>
+    );
+  }
   const {
     totalInvested = 0,
     totalCurrentValue = 0,

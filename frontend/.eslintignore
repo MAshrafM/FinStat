@@ -51,8 +51,6 @@ src/pages/mutual-funds/MutualFundForm.js
 src/pages/mutual-funds/MutualFundLogPage.js
 src/pages/mutual-funds/MutualFundSummaryPage.js
 src/pages/mutual-funds/__tests__/MutualFundForm.test.js
-src/pages/portfolio/RebalancingPage.js
-src/pages/portfolio/__tests__/RebalancingPage.test.js
 src/pages/profile/ProfilePage.js
 src/pages/profile/SettingsPage.js
 src/pages/profile/__tests__/RecycleBin.test.js
@@ -60,8 +58,6 @@ src/pages/real-estate/AddRealEstatePage.js
 src/pages/real-estate/EditRealEstatePage.js
 src/pages/real-estate/RealEstateForm.js
 src/pages/real-estate/RealEstateLogPage.js
-src/pages/reports/ComprehensiveReportPage.js
-src/pages/reports/__tests__/ComprehensiveReportPage.test.js
 src/pages/security/SecuritySettingsPage.js
 src/pages/trades/CorporateActionWizard.js
 src/pages/trades/CorporateActionsList.js

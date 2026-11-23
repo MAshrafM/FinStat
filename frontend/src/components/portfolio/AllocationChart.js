@@ -17,12 +17,12 @@ import {
   createPattern,
   ariaLabel,
 } from '../../styles/chartTheme';
-import { Delta } from '../ui';
+import { Delta, Loading } from '../ui';
 import { FaChartBar } from 'react-icons/fa';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend, ChartDataLabels);
 
-const AllocationChart = ({ allocations = [], totalInvested = 0, totalCurrentValue = 0 }) => {
+const AllocationChart = ({ allocations = [], totalInvested = 0, totalCurrentValue = 0, isLoading = false }) => {
   const [allocationMode, setAllocationMode] = useState('current'); // 'current' | 'invested'
   const isCurrent = allocationMode === 'current';
 
@@ -167,7 +167,11 @@ const AllocationChart = ({ allocations = [], totalInvested = 0, totalCurrentValu
 
   return (
     <div className="allocation-unified-card" data-testid="portfolio-allocation-card">
-      {/* Header & Controls */}
+      {isLoading ? (
+        <Loading variant="card" text="Loading asset allocation..." />
+      ) : (
+        <>
+          {/* Header & Controls */}
       <div className="allocation-unified-header">
         <div className="allocation-header-title-group">
           <div className="allocation-title-icon-wrap" aria-hidden="true">
@@ -264,6 +268,8 @@ const AllocationChart = ({ allocations = [], totalInvested = 0, totalCurrentValu
           </table>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };
