@@ -23,7 +23,7 @@ This encompasses:
 6. De-ignoring `PortfolioDashboard.js` and all three `components/portfolio/*` files from `frontend/.eslintignore` (0 errors, 0 warnings).
 7. Adding `'/portfolio'` to `THEMED_PATTERNS` in `ProtectedRoute.js`, advancing the allowlist from 20 to 21 route patterns.
 8. Updating `frontend/playwright.config.js` to include `portfolio-reference-match` in the `reference` project's `testMatch` filter.
-9. Creating a comprehensive unit test suite with `jest-axe`, Playwright Reference Frame 03 matcher, real-browser Playwright axe test with dedicated globbed portfolio mocks, capturing 5 updated visual baselines (1440, 1024, 768, 480, 390) using exact grep `--grep="portfolio @ "` in `D:\Projects\FinStat-visual-baselines`, reconciling PR-subset visual regression (71 tests passing, 0 diff on non-allowlisted routes), full 326-test visual regression (316 passing + 10 accepted AD14 diffs), and developer taste checkpoint #4 sign-off.
+9. Creating a comprehensive unit test suite with `jest-axe`, Playwright Reference Frame 03 matcher, real-browser Playwright axe test with dedicated globbed portfolio mocks, capturing 5 updated visual baselines (1440, 1024, 768, 480, 390) using exact grep `--grep="portfolio @ "` in `D:\Projects\FinStat-visual-baselines`, reconciling PR-subset visual regression (68 passed per Waiver W-6A-1 with 3 pre-existing payroll diffs under AD16, 0 diffs attributable to Phase 6A), full 326-test visual regression (292 passing + 10 AD14 accepted diffs + 24 AD16 accepted diffs, 0 unexplained diffs), and developer taste checkpoint #4 sign-off.
 
 ---
 
@@ -395,7 +395,7 @@ node scripts/verify-baseline-manifest.js
 - [x] `portfolio-reference-match.spec.js --project=reference` passes Frame 03 token and D19 mobile card checks (1 setup + 2 reference tests).
 - [x] 5 visual baselines re-captured using exact `--grep="portfolio @ "` in `D:\Projects\FinStat-visual-baselines` and `manifest.json` (334/334) verified.
 - [x] PR subset (68/71 passed per Waiver W-6A-1 with 3 pre-existing diffs under AD16); full 326-test run reconciled against AD14 and AD16 (292 passing + 10 AD14 accepted diffs + 24 AD16 accepted diffs, 0 unexplained diffs; Invariant I13 verified).
-- [ ] Developer signs taste checkpoint #4 (§6.1.1) approving rendered `/portfolio` at 1440 and 390 against Frame 3 Variant B before Phase 6B starts.
+- [x] Developer signs taste checkpoint #4 (§6.1.1) approving rendered `/portfolio` at 1440 and 390 against Frame 3 Variant B before Phase 6B starts.
 - [x] Release & Documentation: Update `CHANGELOG.md` with Phase 6A "What's new" bullet (§3.2); update Route Coverage Matrix in `UI-UX-PLAN.md §5.5` (`/portfolio` row $\to$ ☑ / ☑); update Phase Board in §6.1; update Progress Log in §10 recording merge SHA, verification pass, and AD15/AD16 notes.
 - [x] All commits remain local on `phase-ui-6a-portfolio`; zero push to remote.
 
