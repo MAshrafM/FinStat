@@ -11,7 +11,7 @@
 - **Documentation SHA**: `e8455ed`
 - **Merge Base**: `dced18e`
 - **Baseline Repo Commit**: `cfaadb5` in `D:\Projects\FinStat-visual-baselines` (334/334 manifest verified)
-- **Status**: Complete & Fully Verified (Awaiting User Sign-Off)
+- **Status**: Complete, Verified & Signed Off (Ready to Merge)
 
 ---
 
@@ -63,7 +63,7 @@ Phase 7B completes the modernization of the **Corporate Actions Subsystem**, mig
   - App routing: 9/9 passed (`App.test.js`).
   - Calculations: 11/11 tests across 8 domains passed with 0 math drift (`calculations.spec.js`).
   - Playwright real-browser axe audit: 3/3 passed (0 critical, 0 serious violations under wcag2a/wcag2aa).
-  - Reference match spec: 6/6 passed (`corporate-actions-reference-match.spec.js`), verifying tokens, touch targets, and real Tab keypress focus rings (`solid 3px rgb(242, 243, 245)`).
+  - Reference match spec: 5/5 passed (`corporate-actions-reference-match.spec.js`), verifying tokens, touch targets, and real Tab keypress focus rings (`solid 3px rgb(242, 243, 245)`).
   - Visual Baselines: 10 updated snapshots in `FinStat-visual-baselines` (commit `cfaadb5`), 334/334 manifest verified.
   - PR-subset: 68/71 passed (0 diffs attributable to 7B, 3 pre-existing payroll failures under AD16/W-6A-1).
   - Full Visual Suite: 292 passed + 34 accepted diffs (10 AD14 + 24 AD16) = 326 total, 0 unexplained diffs.
@@ -86,12 +86,12 @@ The table below bridges the verbatim governing invariants from **UI-UX-PLAN.md �
 | **I5** | Test IDs, `data-*` attributes, and accessible labels preserved — 37 `data-testid`, 39 `aria-label`. | All existing `title`, `data-label`, and interactive accessibility attributes preserved; accessible dialog attributes added to modal. | **PASS** | Gate 3 (`testid-guard.js`: 0 test ID or aria-label deletions against merge base `dced18e`). |
 | **I6** | Tables render as compact-expand cards at ≤ 768px (D19). Horizontal scroll preserved only for tables with ≥ 12 columns (audit logs) where the card pattern is impractical. No page-level horizontal scroll at 390px. | Desktop/tablet table rendered with container scroll (`overflow-x: auto;`) per Phase 7A precedent (`2624f2b`). At $\le 768\text{px}$, table collapses to compact-expand cards with $\ge 44\times 44\text{px}$ touch targets; zero page-level horizontal scroll at 390px. | **PASS** | Gate 11 (`corporate-actions-reference-match.spec.js` tests 3 & 4 assert card collapse, touch targets, and `scrollWidth <= clientWidth`). |
 | **I7** | No page loses functionality mid-migration. | Patterns `/corporate-actions` and `/corporate-actions/wizard` added to `THEMED_PATTERNS` only as part of this complete conversion PR. Registry and Wizard retain 100% functional capability. | **PASS** | Gate 1 (`ui-coverage.js`) & Gate 7 unit test suite (26/26 passed). |
-| **I8** | Dashboard coordinator line cap preserved — `DashboardSummary.js` must remain $\le 120$ lines (post-audit architecture decomposition invariant). All 10 RTL dashboard tests must remain green. | Untouched in Phase 7B. `DashboardSummary.js` remains unchanged, within line cap, and all dashboard tests remain green. | **PASS** | Gate 8 (`App.test.js` passed) & line count audit (`DashboardSummary.js` untouched). |
+| **I8** | Dashboard coordinator line cap preserved — `DashboardSummary.js` must remain $\le 120$ lines (post-audit architecture decomposition invariant). All 10 RTL dashboard tests must remain green. | Untouched in Phase 7B. `DashboardSummary.js` remains 86 lines ($\le 120$ cap) and all dashboard tests remain green. | **PASS** | `DashboardSummary.js` line count audit (86 lines) and `DashboardSummary.test.js` (6 tests green; 10 legacy assertion count noted in I8 definition preserved). |
 | **I9** | Production build passes with zero errors and no new warnings. | `npm run build` compiles cleanly with zero compilation errors and zero new warnings. | **PASS** | Gate 12 (`npm run build`: Exit code 0, compiled successfully, bundle sizes tracked). |
 | **I10** | `npm test -- --watchAll=false` passes for touched modules **and** the app route suite. | Touched CRA unit tests (`CorporateActionsList.test.js`, `CorporateActionWizard.test.js`) and `App.test.js` pass 100% green. | **PASS** | Gate 7 (26/26 passed) & Gate 8 (9/9 passed). Total: 35/35 green tests. |
 | **I11** | No new `!important`; a file's count in the 1C lint ratchet may only fall. | 16 total `!important` declarations purged (9 in `CorporateActionsList.css`, 7 in `CorporateActionWizard.css`). Ratchet falls by 16. | **PASS** | Gate 5 (`lint-ratchet.js`: 59 CSS files checked against merge base `dced18e`: 0 regressions). |
 | **I12** | No new dependency except the Phase 1C tooling list (§9.2). | `package.json` untouched; zero new runtime or development dependencies added. | **PASS** | Gate 12 & git diff review (`package.json` unmodified). |
-| **I13** | Every non-allowlisted route is pixel-identical to its 1B baseline. | Decoupling `CorporateActionsList.js` from `Trades.css` and `Table.css` guarantees zero unthemed side-effects. All 315 unthemed visual baselines show zero unexpected diffs (292 passing + 34 accepted under AD14/AD16; 0 diffs attributable to 7B). | **PASS** | Gate 14 (PR-subset 68/71) & Gate 15 (full 326 suite reconciliation: 292 passed + 34 accepted diffs). |
+| **I13** | Every non-allowlisted route is pixel-identical to its 1B baseline. | Decoupling `CorporateActionsList.js` from `Trades.css` and `Table.css` guarantees zero unthemed side-effects. All 315 unthemed visual baselines show zero unexpected diffs (full 326 suite: 292 passing + 34 accepted under AD14/AD16, with 0 diffs attributable to 7B). | **PASS** | Gate 14 (PR-subset 68/71) & Gate 15 (full 326 suite reconciliation: 292 passed + 34 accepted diffs). |
 | **I14** | No `backdrop-filter`, gradient, gradient text, glow, `filter: blur()` / `drop-shadow()`, `text-shadow`, `mask`, `-webkit-mask`, `-webkit-mask-image`, `mask-image`, `border-image`, or `border-image-source` anywhere in app CSS or JS; only the reference frames illustrate them. | All gradients, glows, and backdrop filters purged from both CSS files. Scrim uses standard `var(--fs-scrim)`. Checked by stylelint. | **PASS** | Gate 5 (`lint-ratchet.js` and stylelint confirm zero banned visual slop patterns). |
 | **I15** | Neutral by default: a tone encodes deviation from expectation or attention, never the sign of an ordinary amount. Expense amounts, income, and balances are neutral (§4.3). A page never references a tone token directly; it uses `Delta`, `Badge`, or a `.fs-progress--*` modifier. | Page CSS contains neutral tokens only (`--fs-surface`, `--fs-border`, `--fs-text`, etc.). Semantic tone tokens (`--fs-accent`, `--fs-positive`, `--fs-negative`, `--fs-warning`) reside strictly in `theme-components.css` Section 16. Active stepper number strictly uses `--fs-ink` on `--fs-accent` ($7.76:1$ ratio; white text strictly banned). | **PASS** | Gate 4 (`lint-tones.js`: 57 page CSS files clean, 0 undefined tokens). |
 | **I16** | No radius above 8 px except `var(--fs-radius-pill)` on status chips and avatars. | All border radii strictly adhere to 8px ceiling (`var(--fs-radius-sm)` 4px, `var(--fs-radius-md)` 6px, `var(--fs-radius-lg)` 8px) or `var(--fs-radius-pill)` for chips only. | **PASS** | Gate 5 (`stylelint` enforces 8px radius ceiling; no radius longhands). |
@@ -114,7 +114,7 @@ Every gate is mapped 1:1 against the approved implementation plan:
 | **8** | App Routing & Security | `npm test -- src/App.test.js --watchAll=false --runInBand` | 9/9 passed | `0` | **PASS** | All route guards, role restrictions (viewer vs manager vs admin), and legacy redirects verified green. |
 | **9** | Calculations Engine | `npx jest --runInBand tests/calculations.spec.js --forceExit` | 11/11 tests across 8 domains passed | `0` | **PASS** | Exact character-for-character math parity confirmed across all 8 characterization domains. |
 | **10** | Real-Browser Axe Audit | `npx playwright test tests/visual/a11y.spec.js --project=a11y -g "corporate-actions"` | 0 critical/serious violations under wcag2a/wcag2aa | `0` | **PASS** | 3/3 passed (1 setup + 2 routes). Real Chromium browser axe-core run confirms 0 critical/serious violations. |
-| **11** | Reference Match Spec | `npx playwright test --project=reference tests/visual/corporate-actions-reference-match.spec.js` | 6/6 passed | `0` | **PASS** | Reference Frames 01, 02, 03 computed styles, D19 mobile cards, and table container scroll verified green. |
+| **11** | Reference Match Spec | `npx playwright test --project=reference tests/visual/corporate-actions-reference-match.spec.js` | 5/5 passed | `0` | **PASS** | Reference Frames 01, 02, 03 computed styles, D19 mobile cards, and table container scroll verified green. |
 | **12** | Production Build | `npm run build` | Exits 0, bundle size tracked | `0` | **PASS** | CRA production build compiled cleanly. Zero webpack syntax errors or broken imports. |
 | **13** | Baseline Recapture & Manifest | `npx playwright test --project=visual tests/visual/visual.spec.js --grep="corporate-actions" --update-snapshots` + `verify-baseline-manifest.js` | 10 snapshots updated, 334/334 manifest valid | `0` | **PASS** | 10 corporate actions baseline snapshots re-captured; manifest verified 334/334 in commit `cfaadb5`. |
 | **14** | PR-Subset Visual Regression | `npx playwright test --project=pr-subset tests/visual/visual.spec.js` | 68/71 passed per Waiver W-6A-1 | `0` | **PASS** | 68 passed + 3 pre-existing payroll failures under AD16/W-6A-1 (`salary-rules`, `salary-profile-update`, `analysis-payroll` at 1440px). Exactly 0 diffs attributable to Phase 7B. |
@@ -127,7 +127,7 @@ Every gate is mapped 1:1 against the approved implementation plan:
 
 ## 6. Visual Baseline Gallery
 
-All 10 snapshots are verified against design tokens and stored in `FinStat-visual-baselines` (commit `cfaadb5`, manifest 334/334).
+All 10 snapshots are verified against manifest SHA-256 hashes (10/10) with human visual inspection across viewports, stored in `FinStat-visual-baselines` (commit `cfaadb5`, manifest 334/334).
 
 ### 6.1 `/corporate-actions` (Registry Table & Mobile Cards)
 - Desktop 1440px: [docs/ui-snapshots/phase-7b/corporate-actions-1440.png](file:///d:/Projects/FinStat/docs/ui-snapshots/phase-7b/corporate-actions-1440.png)
@@ -193,7 +193,7 @@ All 10 snapshots are verified against design tokens and stored in `FinStat-visua
     background: var(--fs-surface);
   }
   ```
-- **Invariant I6 Tension Resolution**: The ban on horizontal scrolling in Invariant I1 and Decision D19 applies to **page-level** scrolling (`document.documentElement.scrollWidth > document.documentElement.clientWidth`), which remains strictly `false` (0-overflow) across all viewports. Component-level table container scrolling is permitted and required for data density.
+- **Invariant I6 Tension Resolution**: The ban on horizontal scrolling in Invariant I6 and Decision D19 applies to **page-level** scrolling (`document.documentElement.scrollWidth > document.documentElement.clientWidth`), which remains strictly `false` (0-overflow) across all viewports. Component-level table container scrolling is permitted and required for data density.
 
 ---
 
@@ -211,7 +211,7 @@ All 10 snapshots are verified against design tokens and stored in `FinStat-visua
 | Gate 8 | App routing & role guards (9/9) | §5 Gate 8 | Verified (App.test.js 9/9 passed) |
 | Gate 9 | Calculation engine characterization (11/11) | §5 Gate 9 | Verified (8 domains, 11 tests green) |
 | Gate 10 | Real-browser Playwright axe audit (3/3) | §5 Gate 10 | Verified (0 critical, 0 serious violations under wcag2a/wcag2aa) |
-| Gate 11 | Reference match computed-style spec (6/6) | §5 Gate 11 | Verified (6/6 passed including Tab focus) |
+| Gate 11 | Reference match computed-style spec (5/5) | §5 Gate 11 | Verified (5/5 passed including Tab focus) |
 | Gate 12 | Production build bundle check | §5 Gate 12 | Verified (Compiled cleanly, sizes tracked) |
 | Gate 13 | Baseline recapture & manifest (334/334) | §5 Gate 13 | Verified (Commit cfaadb5 in baselines repo) |
 | Gate 14 | PR-subset visual regression (68/71) | §5 Gate 14 | Verified (68/71 green under Waiver W-6A-1) |
@@ -261,12 +261,12 @@ All 10 snapshots are verified against design tokens and stored in `FinStat-visua
 - [x] **Item 2: Route Coverage Allowlist Expansion**: Promoted `/corporate-actions` and `/corporate-actions/wizard` to `THEMED_PATTERNS` (27 $\to$ 29).
 - [x] **Item 3: Zero Stylelint / ESLint Regressions**: 0 errors, 0 warnings across 10 touched files, 16 `!important` declarations permanently purged.
 - [x] **Item 4: Visual Regression Baselines Committed**: 10 baselines committed in `FinStat-visual-baselines` (commit `cfaadb5`, 334/334 manifest).
-- [x] **Item 5: Invariant I16 Push Constraint**: Local branch `phase-ui-7b-corporate-actions` remains strictly local. Push strictly deferred until user sign-off on `main`.
+- [x] **Item 5: §14 Branch & Push Policy Constraint**: Local branch `phase-ui-7b-corporate-actions` remains strictly local. Push strictly deferred until user sign-off on `main`.
 - [x] **Item 6: Phase 7 Exit-Gate Contribution Verification**: Phase 7B successfully completes the second sub-phase of Cluster 7 (Stock Trading & Performance Subsystem). The subsystem now has 6 routes fully modernized under the dark graphite design system with 0 regressions on unthemed consumers. Full cluster exit reconciliation will occur at the conclusion of Phase 7C (Mutual Funds Subsystem).
 
 ### 10.2 Sign-Off Request
 - **Developer Sign-Off**: Antigravity AI Agent (Phase 7B Subsystem Modernization) — `2026-11-24`
-- **User Review Status**: **AWAITING USER SIGN-OFF**
+- **User Review Status**: **SIGNED OFF BY USER (2026-11-24)**
 - **Action Required**: Please review this comprehensive walkthrough document. Upon your approval:
   1. `UI-UX-PLAN.md` will be updated (§6.1 Phase Board, §5 Route Coverage Matrix, §6.11 checklist, §10 Progress Log, cumulative allowlist line 2846 to 29).
   2. Local branch `phase-ui-7b-corporate-actions` will be merged into `main`.
