@@ -8,10 +8,10 @@
   - `/trades/edit/:id` (`EditTradePage.js` + `TradeForm.js` + `Trades.css` + `theme-components.css`)
   - `/trade-summary` (`TradeSummaryPage.js` + `Trades.css`)
   - `/trades/new` → `/trades/add` redirect preserved
-- **Working Branch**: `phase-ui-7a-trades` / `phase-ui-7a-mobile-fixes`
-- **Implementation SHA**: `6f437dc` (initial Phase 7A) / `709202e` (mobile fixes)
+- **Working Branch**: `phase-ui-7a-trades` / `phase-ui-7a-mobile-fixes` / `phase-ui-7a-table-scroll`
+- **Implementation SHA**: `6f437dc` (initial) / `709202e` (mobile fixes) / `2624f2b` (table scroll)
 - **Documentation SHA**: `063b6ff` (walkthrough remediation & governance sync)
-- **Merge SHA**: `8a94fdb` (merged to main)
+- **Merge SHA**: `7e007a8` (merged to main)
 - **Baselines Commit**: `c89845e` (in `D:\Projects\FinStat-visual-baselines`)
 - **Merge Base**: `5c57915a3c65f4fe8e5047e59d968c3d6a1eaa7a` (`origin/main`)
 - **Date**: 2026-11-24
@@ -34,10 +34,10 @@ Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures
 Visual diff: 0 diff attributable to Phase 7A; 20 newly updated Phase 7A baselines across 5 viewports; 0 diff across all 8 unthemed consumers of Trades.css (111 tests green across 22 routes x 5 viewports + 1 fixture); PR-subset 68/71 passing with 3 pre-existing payroll diffs under AD16; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); manifest 334/334 verified
 Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green via Jest)
 Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
-Branch:      phase-ui-7a-trades / phase-ui-7a-mobile-fixes
-Implementation SHA: 6f437dc (initial) / 709202e (mobile fixes)
+Branch:      phase-ui-7a-trades / phase-ui-7a-mobile-fixes / phase-ui-7a-table-scroll
+Implementation SHA: 6f437dc (initial) / 709202e (mobile fixes) / 2624f2b (table scroll)
 Documentation SHA:  063b6ff
-Merge SHA:          8a94fdb (merged to main)
+Merge SHA:          7e007a8 (merged to main)
 ```
 
 **User-Facing Acceptance Criterion Verification**:
