@@ -412,8 +412,11 @@ html[data-fs-theme] .trade-summary-page .table-container {
   background: var(--fs-surface);
   border: 1px solid var(--fs-border);
   border-radius: var(--fs-radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: none;
+  width: 100%;
+  max-width: 100%;
 }
 
 html[data-fs-theme] .trade-log-page .styled-table,
@@ -421,6 +424,7 @@ html[data-fs-theme] .trade-summary-page .styled-table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--fs-text-sm);
+  white-space: nowrap;
 }
 
 html[data-fs-theme] .trade-log-page .styled-table th,
@@ -470,6 +474,7 @@ html[data-fs-theme] .trade-summary-page .table-empty-cell {
   text-align: center;
   padding: 2rem;
   color: var(--fs-text-3);
+  white-space: normal;
 }
 
 html[data-fs-theme] .trade-log-page .page-header-actions .btn,

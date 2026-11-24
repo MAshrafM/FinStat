@@ -62,6 +62,10 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
 
     const btnRadius = await primaryBtn.evaluate((el) => parseFloat(window.getComputedStyle(el).borderRadius));
     expect(btnRadius).toBeLessThanOrEqual(8);
+
+    // 6. Table container enables horizontal scrolling on desktop/tablet
+    const overflowX = await tableContainer.evaluate((el) => window.getComputedStyle(el).overflowX);
+    expect(overflowX).toBe('auto');
   });
 
   test('2. /trades/add and /trades/edit/1 conform to Reference Frame 02 (Variant B — Form) at 1440px', async ({ page }) => {
@@ -115,6 +119,12 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     // 3. Card radius <= 8px
     const cardRadius = await kpiCard.evaluate((el) => parseFloat(window.getComputedStyle(el).borderRadius));
     expect(cardRadius).toBeLessThanOrEqual(8);
+
+    // 4. Table container enables horizontal scrolling on desktop/tablet
+    const summaryTableContainer = page.locator('.trade-summary-page .table-container').first();
+    await expect(summaryTableContainer).toBeVisible();
+    const summaryOverflowX = await summaryTableContainer.evaluate((el) => window.getComputedStyle(el).overflowX);
+    expect(summaryOverflowX).toBe('auto');
   });
 
   test('4. /trades and /trade-summary conform to Decision D19 mobile compact-expand cards with zero overflow at 390px', async ({ page }) => {
