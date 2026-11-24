@@ -8,10 +8,10 @@
   - `/trades/edit/:id` (`EditTradePage.js` + `TradeForm.js` + `Trades.css` + `theme-components.css`)
   - `/trade-summary` (`TradeSummaryPage.js` + `Trades.css`)
   - `/trades/new` → `/trades/add` redirect preserved
-- **Working Branch**: `phase-ui-7a-mobile-fixes` (branched from `main` to address manual mobile verification findings)
-- **Implementation SHA**: `6f437dc` (initial Phase 7A implementation) + mobile fixes commit
+- **Working Branch**: `phase-ui-7a-trades` / `phase-ui-7a-mobile-fixes`
+- **Implementation SHA**: `6f437dc` (initial Phase 7A) / `709202e` (mobile fixes)
 - **Documentation SHA**: `063b6ff` (walkthrough remediation & governance sync)
-- **Merge SHA**: `6650d5a` (initial merge) + mobile fixes merge
+- **Merge SHA**: `8a94fdb` (merged to main)
 - **Baselines Commit**: `c89845e` (in `D:\Projects\FinStat-visual-baselines`)
 - **Merge Base**: `5c57915a3c65f4fe8e5047e59d968c3d6a1eaa7a` (`origin/main`)
 - **Date**: 2026-11-24
@@ -27,16 +27,17 @@
 ```
 Sub-phase:   7A
 Status:      done (Taste Checkpoint #5 signed off)
-Done:        Modernized Stock Trading & Performance Subsystem across 4 routes (/trades, /trades/add, /trades/edit/:id, /trade-summary); promoted allowlist from 23 to 27 patterns; removed 8 legacy !important declarations from Trades.css; authored modern dark-theme rules using neutral tokens only under html[data-fs-theme]; isolated tone and accent tokens in theme-components.css under /* Phase 7A: Stock Trades Semantic Themes */; wrapped pages in semantic container classes (.trade-log-page, .trade-form-page, .trade-summary-page); wired sortable table headers with active sort indicators; implemented Decision D19 mobile compact-expand cards (.trade-card) with 0 horizontal overflow; purged 54 inline styles from TradeSummaryPage.js and migrated all P&L displays to <Delta> with explicit sign, arrow, and label; integrated shaped loading skeletons; removed 3 trade files (TradeForm.js, TradeLogPage.js, TradeSummaryPage.js) from .eslintignore (confirmed AddTradePage.js and EditTradePage.js were never ignored) with zero warnings; passed all 18 verification gates including 38/38 unit tests with 0 axe violations across 3 suites, real-browser Playwright axe audits (4 routes + 1 setup fixture = 5 passed, 0 critical, 0 serious violations), reference match spec (5 spec tests + 1 setup fixture = 6 passed), 20 visual baseline snapshots regenerated (commit 7d61525 in FinStat-visual-baselines), 334/334 manifest integrity verified, PR-subset 68/71 passing with 0 unintended diffs, full 326-test visual run reconciled (292 passed + 34 accepted diffs under AD14/AD16, 0 unexplained diffs), and 111/111 unthemed consumer tests (22 routes x 5 viewports + 1 fixture) passing with 0 diffs. Taste Checkpoint #5 signed off by User on 2026-11-24.
+Done:        Modernized Stock Trading & Performance Subsystem across 4 routes (/trades, /trades/add, /trades/edit/:id, /trade-summary); promoted allowlist from 23 to 27 patterns; removed 8 legacy !important declarations from Trades.css; authored modern dark-theme rules using neutral tokens only under html[data-fs-theme]; isolated tone and accent tokens in theme-components.css under /* Phase 7A: Stock Trades Semantic Themes */; wrapped pages in semantic container classes (.trade-log-page, .trade-form-page, .trade-summary-page); wired sortable table headers with active sort indicators; implemented Decision D19 mobile compact-expand cards (.trade-card) with 0 horizontal overflow; purged 54 inline styles from TradeSummaryPage.js and migrated all P&L displays to <Delta> with explicit sign, arrow, and label; integrated shaped loading skeletons; removed 3 trade files (TradeForm.js, TradeLogPage.js, TradeSummaryPage.js) from .eslintignore (confirmed AddTradePage.js and EditTradePage.js were never ignored) with zero warnings; passed all 18 verification gates including 38/38 unit tests with 0 axe violations across 3 suites, real-browser Playwright axe audits (4 routes + 1 setup fixture = 5 passed, 0 critical, 0 serious violations), reference match spec (5 spec tests + 1 setup fixture = 6 passed), 20 visual baseline snapshots regenerated (commit c89845e in FinStat-visual-baselines), 334/334 manifest integrity verified, PR-subset 68/71 passing with 0 unintended diffs, full 326-test visual run reconciled (292 passed + 34 accepted diffs under AD14/AD16, 0 unexplained diffs), and 111/111 unthemed consumer tests (22 routes x 5 viewports + 1 fixture) passing with 0 diffs. Remediated Corporate Actions button to standard secondary CTA and implemented D19 mobile collapsible cards per user verification. Taste Checkpoint #5 signed off by User on 2026-11-24.
 Next:        Phase 7B (Corporate actions)
 Blocked by:  None
 Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks', '/salary/paychecks/new', '/salary/paychecks/edit/:id', '/salary-profile/history', '/salary-profile/edit', '/salary-profile/history/edit/:historyId', '/salary-profile/update', '/analysis/payroll', '/salary/simulator', '/portfolio', '/portfolio/rebalancing', '/reports/financial', '/trades', '/trades/add', '/trades/edit/:id', '/trade-summary'] (cumulative: 27 patterns)
 Visual diff: 0 diff attributable to Phase 7A; 20 newly updated Phase 7A baselines across 5 viewports; 0 diff across all 8 unthemed consumers of Trades.css (111 tests green across 22 routes x 5 viewports + 1 fixture); PR-subset 68/71 passing with 3 pre-existing payroll diffs under AD16; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); manifest 334/334 verified
 Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green via Jest)
 Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
-Branch:      phase-ui-7a-trades
-Implementation SHA: 6f437dc (branch phase-ui-7a-trades)
-Merge SHA:          6650d5a (merged to main)
+Branch:      phase-ui-7a-trades / phase-ui-7a-mobile-fixes
+Implementation SHA: 6f437dc (initial) / 709202e (mobile fixes)
+Documentation SHA:  063b6ff
+Merge SHA:          8a94fdb (merged to main)
 ```
 
 **User-Facing Acceptance Criterion Verification**:
