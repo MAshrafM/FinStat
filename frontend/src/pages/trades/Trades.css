@@ -663,86 +663,193 @@ html[data-fs-theme] .trade-summary-page .broker {
   color: var(--fs-text-3);
 }
 
+html[data-fs-theme] .trades-mobile-cards {
+  display: none;
+}
+
+html[data-fs-theme] .trade-mobile-card {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+html[data-fs-theme] .trade-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+html[data-fs-theme] .trade-card-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+html[data-fs-theme] .trade-card-date {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+}
+
+html[data-fs-theme] .trade-card-stock {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--fs-text-base);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .trade-card-broker-chip {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--fs-surface-raised);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-pill);
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .trade-card-sub-info {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+}
+
+html[data-fs-theme] .trade-card-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+html[data-fs-theme] .trade-card-total {
+  font-size: var(--fs-text-base);
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .trade-card-pnl {
+  display: flex;
+  align-items: center;
+}
+
+html[data-fs-theme] .trade-type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--fs-radius-sm);
+  font-size: var(--fs-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  background: var(--fs-surface-raised);
+  border: 1px solid var(--fs-border);
+  color: var(--fs-text-2);
+}
+
+/* Expander Button */
+html[data-fs-theme] .trade-card-expander-btn {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem;
+  background: var(--fs-surface-raised);
+  border: 1px solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-xs);
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: background var(--fs-duration-fast), color var(--fs-duration-fast);
+  box-sizing: border-box;
+}
+
+html[data-fs-theme] .trade-card-expander-btn:hover {
+  background: var(--fs-surface);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .trade-card-expander-btn:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+}
+
+/* Expanded Drawer */
+html[data-fs-theme] .trade-card-drawer {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--fs-border);
+}
+
+html[data-fs-theme] .trade-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+html[data-fs-theme] .trade-card-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+html[data-fs-theme] .trade-card-label {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+  text-transform: uppercase;
+}
+
+html[data-fs-theme] .trade-card-val {
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .trade-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--fs-border);
+}
+
+html[data-fs-theme] .trade-card-actions .trade-card-action-link,
+html[data-fs-theme] .trade-card-actions .trade-card-delete-btn {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.5rem 1rem;
+  font-size: var(--fs-text-sm);
+  box-sizing: border-box;
+}
+
+html[data-fs-theme] .empty-trades-box {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--fs-text-3);
+}
+
 /* Decision D19 Mobile Cards (<= 768px) */
 @media (max-width: 768px) {
-  html[data-fs-theme] .trade-log-page .table-container,
-  html[data-fs-theme] .trade-summary-page .table-container {
-    background: transparent;
-    border: none;
-  }
-
-  html[data-fs-theme] .trade-log-page .styled-table,
-  html[data-fs-theme] .trade-summary-page .styled-table {
-    display: block;
-    width: 100%;
-  }
-
-  html[data-fs-theme] .trade-log-page .styled-table thead,
-  html[data-fs-theme] .trade-summary-page .styled-table thead {
+  html[data-fs-theme] .trade-log-page .trades-desktop-table,
+  html[data-fs-theme] .trade-summary-page .trades-desktop-table {
     display: none;
   }
 
-  html[data-fs-theme] .trade-log-page .styled-table tbody,
-  html[data-fs-theme] .trade-summary-page .styled-table tbody {
+  html[data-fs-theme] .trade-log-page .trades-mobile-cards,
+  html[data-fs-theme] .trade-summary-page .trades-mobile-cards {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  html[data-fs-theme] .trade-log-page .styled-table tbody tr.trade-card,
-  html[data-fs-theme] .trade-summary-page .styled-table tbody tr.trade-card {
-    display: flex;
-    flex-direction: column;
-    background: var(--fs-surface);
-    border: 1px solid var(--fs-border);
-    border-radius: var(--fs-radius-lg);
-    padding: 1rem;
-    box-sizing: border-box;
-  }
-
-  html[data-fs-theme] .trade-log-page .styled-table tbody tr.trade-card td,
-  html[data-fs-theme] .trade-summary-page .styled-table tbody tr.trade-card td {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.25rem 0;
-    border-bottom: 1px solid var(--fs-border);
-    font-size: var(--fs-text-sm);
-  }
-
-  html[data-fs-theme] .trade-log-page .styled-table tbody tr.trade-card td:last-child,
-  html[data-fs-theme] .trade-summary-page .styled-table tbody tr.trade-card td:last-child {
-    border-bottom: none;
-    padding-top: 0.5rem;
-  }
-
-  html[data-fs-theme] .trade-log-page .styled-table tbody tr.trade-card td::before,
-  html[data-fs-theme] .trade-summary-page .styled-table tbody tr.trade-card td::before {
-    content: attr(data-label);
-    font-size: var(--fs-text-xs);
-    font-weight: 500;
-    color: var(--fs-text-3);
-    text-transform: uppercase;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
   }
 
   html[data-fs-theme] .trade-log-page .action-btn-delete {
     min-height: 44px;
     min-width: 44px;
-  }
-
-  html[data-fs-theme] .trade-card .trade-card-toggle {
-    min-height: 44px;
-    min-width: 44px;
-    padding: 0.25rem 0.5rem;
-    background: var(--fs-surface-raised);
-    border: 1px solid var(--fs-border);
-    border-radius: var(--fs-radius-md);
-    color: var(--fs-text);
-    font-size: var(--fs-text-xs);
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
   }
 }

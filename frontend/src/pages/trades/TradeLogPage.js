@@ -32,6 +32,30 @@ const TradeLogPage = () => {
     key: null,
     direction: 'asc',
   });
+  const [expandedCardIds, setExpandedCardIds] = useState(new Set());
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth <= 768
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const toggleCardExpand = (id) => {
+    setExpandedCardIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const loadTrades = useCallback((page, broker, search) => {
     setIsLoading(true);
@@ -153,7 +177,7 @@ const TradeLogPage = () => {
         <div className="page-header-actions trade-log-header-actions">
           <Link
             to="/corporate-actions"
-            className="btn btn-secondary"
+            className="fs-btn fs-btn-secondary"
             title="View & apply corporate actions (stock splits and bonus shares)"
           >
             <FaBolt size={13} className="icon-warning" /> Corporate Actions
@@ -185,8 +209,101 @@ const TradeLogPage = () => {
         />
       </div>
 
-      <div className="table-container">
-        <table className="styled-table">
+      {isMobile ? (
+        /* Mobile Compact-Expand Cards (D19, <=768px) */
+        <div className="trades-mobile-cards" data-testid="trades-mobile-card-list">
+          {isLoading ? (
+            <div className="trade-card-loading">
+              <Loading variant="table" rows={4} />
+            </div>
+          ) : sortedTrades.length === 0 ? (
+            <div className="empty-trades-box">
+              <p>{searchTerm || brokerFilter ? 'No trades match your search/filter criteria.' : 'No trades logged yet.'}</p>
+            </div>
+          ) : (
+            sortedTrades.map(trade => {
+              const isExpanded = expandedCardIds.has(trade._id);
+              const tradeType = trade.type || 'Buy';
+              return (
+                <article key={trade._id} className="trade-card trade-mobile-card">
+                  <div className="trade-card-header">
+                    <div className="trade-card-header-left">
+                      <span className="trade-card-date">{formatDate(trade.date)}</span>
+                      <span className="trade-card-stock">
+                        <strong>{trade.stockCode}</strong>
+                        {trade.broker && <span className="trade-card-broker-chip">{trade.broker}</span>}
+                      </span>
+                    </div>
+                    <div className="trade-card-header-right">
+                      <span className={`trade-type-badge trade-type-${tradeType.toLowerCase()}`}>
+                        {tradeType}
+                      </span>
+                      <span className="trade-card-total fs-num">{formatCurrency(trade.totalValue || 0)}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="trade-card-expander-btn"
+                    aria-expanded={isExpanded}
+                    onClick={() => toggleCardExpand(trade._id)}
+                    aria-label={`${isExpanded ? 'Hide' : 'Show'} details for ${trade.stockCode} trade`}
+                  >
+                    {isExpanded ? 'Hide details ▲' : 'Show details ▼'}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="trade-card-drawer">
+                      <div className="trade-card-grid">
+                        <div className="trade-card-field">
+                          <span className="trade-card-label">Shares</span>
+                          <span className="trade-card-val fs-num">{trade.shares ?? '-'}</span>
+                        </div>
+                        <div className="trade-card-field">
+                          <span className="trade-card-label">Price</span>
+                          <span className="trade-card-val fs-num">{trade.price ? formatCurrency(trade.price) : '-'}</span>
+                        </div>
+                        <div className="trade-card-field">
+                          <span className="trade-card-label">Fees</span>
+                          <span className="trade-card-val fs-num">{formatCurrency(trade.fees || 0)}</span>
+                        </div>
+                        <div className="trade-card-field">
+                          <span className="trade-card-label">Total Value</span>
+                          <span className="trade-card-val fs-num font-semibold">{formatCurrency(trade.totalValue || 0)}</span>
+                        </div>
+                      </div>
+
+                      <div className="trade-card-actions">
+                        <Link
+                          to={`/trades/edit/${trade._id}`}
+                          className="fs-btn fs-btn-secondary trade-card-action-link"
+                          title="Edit trade"
+                        >
+                          <FaEdit className="action-icon edit-icon" /> Edit
+                        </Link>
+                        <ProtectedAction tooltip="View-only access">
+                          <button
+                            type="button"
+                            className="action-btn-delete fs-btn fs-btn-secondary trade-card-delete-btn"
+                            title="Delete trade"
+                            aria-label={`Delete trade for ${trade.stockCode}`}
+                            onClick={() => setDeletingTradeId(trade._id)}
+                          >
+                            <FaTrash className="action-icon delete-icon" /> Delete
+                          </button>
+                        </ProtectedAction>
+                      </div>
+                    </div>
+                  )}
+                </article>
+              );
+            })
+          )}
+        </div>
+      ) : (
+        /* Desktop Dense Table (>768px, Reference Frame 01) */
+        <div className="trades-desktop-table table-container">
+          <table className="styled-table">
           <thead>
             <tr>
               <th className={`sortable ${sortConfig.key === 'date' ? 'active-sort' : ''}`} onClick={() => handleSort('date')}>
@@ -261,6 +378,7 @@ const TradeLogPage = () => {
           </tbody>
         </table>
       </div>
+      )}
       <PaginationControls page={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
 
       <ConfirmModal

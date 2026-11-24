@@ -43,6 +43,13 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     const btnColor = await primaryBtn.evaluate((el) => window.getComputedStyle(el).color);
     expect(btnColor).toBe('rgb(13, 14, 16)');
 
+    // 3b. Corporate Actions button uses standard secondary styling (.fs-btn-secondary)
+    const caBtn = page.locator('.trade-log-page a[href="/corporate-actions"]');
+    await expect(caBtn).toBeVisible();
+    await expect(caBtn).toHaveClass(/fs-btn-secondary/);
+    const caBg = await caBtn.evaluate((el) => window.getComputedStyle(el).backgroundColor);
+    expect(caBg).not.toBe('rgb(255, 255, 255)'); // Banned legacy white button
+
     // 4. Table container background: rgb(26, 28, 32) (#1a1c20, --fs-surface)
     const tableContainer = page.locator('.trade-log-page .table-container');
     await expect(tableContainer).toBeVisible();
@@ -122,6 +129,16 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     const tradeCardCount = await tradeCards.count();
     expect(tradeCardCount).toBeGreaterThan(0);
 
+    // Verify D19 compact-expand interaction on /trades
+    const expanderBtn = page.locator('.trade-log-page .trade-card-expander-btn').first();
+    await expect(expanderBtn).toBeVisible();
+    expect(await expanderBtn.getAttribute('aria-expanded')).toBe('false');
+    await expanderBtn.click();
+    expect(await expanderBtn.getAttribute('aria-expanded')).toBe('true');
+    await expect(page.locator('.trade-log-page .trade-card-drawer').first()).toBeVisible();
+    await expanderBtn.click();
+    expect(await expanderBtn.getAttribute('aria-expanded')).toBe('false');
+
     // Assert zero page-level horizontal scroll on /trades
     const tradesOverflow = await page.evaluate(() => {
       return document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1;
@@ -137,6 +154,16 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     await expect(summaryCards.first()).toBeVisible();
     const summaryCardCount = await summaryCards.count();
     expect(summaryCardCount).toBeGreaterThan(0);
+
+    // Verify D19 compact-expand interaction on /trade-summary
+    const summaryExpander = page.locator('.trade-summary-page .trade-card-expander-btn').first();
+    await expect(summaryExpander).toBeVisible();
+    expect(await summaryExpander.getAttribute('aria-expanded')).toBe('false');
+    await summaryExpander.click();
+    expect(await summaryExpander.getAttribute('aria-expanded')).toBe('true');
+    await expect(page.locator('.trade-summary-page .trade-card-drawer').first()).toBeVisible();
+    await summaryExpander.click();
+    expect(await summaryExpander.getAttribute('aria-expanded')).toBe('false');
 
     const summaryOverflow = await page.evaluate(() => {
       return document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1;
@@ -166,6 +193,8 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     // 3. Mobile touch target >= 44x44px at 390px (per UI-UX-PLAN §4.8)
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(300);
+    // Expand mobile card to access action controls in details drawer
+    await page.locator('.trade-log-page .trade-card-expander-btn').first().click();
     const mobileDeleteBtn = page.locator('.trade-log-page .action-btn-delete').first();
     await expect(mobileDeleteBtn).toBeVisible();
     const mobileDeleteBox = await mobileDeleteBtn.boundingBox();
