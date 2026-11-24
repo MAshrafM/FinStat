@@ -95,9 +95,9 @@ frontend/
 │   │       ├── AddTradePage.js                      # [MODIFY] Theme header with breadcrumbs and .trade-form-page wrapper
 │   │       ├── EditTradePage.js                     # [MODIFY] Theme header, D23 loading skeleton, .trade-form-page wrapper
 │   │       └── __tests__/
-│   │           ├── TradeLogPage.test.js             # [NEW] 10 CRA unit + axe tests
-│   │           ├── TradeForm.test.js                # [NEW] 10 CRA unit + axe tests
-│   │           └── TradeSummaryPage.test.js         # [NEW] 10 CRA unit + axe tests
+│   │           ├── TradeLogPage.test.js             # [NEW] 13 CRA unit + axe tests
+│   │           ├── TradeForm.test.js                # [NEW] 12 CRA unit + axe tests
+│   │           └── TradeSummaryPage.test.js         # [NEW] 13 CRA unit + axe tests
 ├── tests/
 │   └── visual/
 │       ├── a11y.spec.js                             # [MODIFY] Wire setupTradesMocks for deterministic axe audits
@@ -294,10 +294,10 @@ export const THEMED_PATTERNS = [
    - Test 3: `/trades/add` conforms to Reference Frame 02 form design tokens at 1440px.
    - Test 4: `/trade-summary` conforms to Reference Frame 03 and Frame 01 design tokens at 1440px.
    - Test 5: Interactive controls satisfy touch targets $\ge 44\text{px} \times 44\text{px}$ and visible keyboard focus rings under `:focus-visible`.
-5. **CRA Unit & jest-axe Test Suites (30 Tests Total)**:
-   - `TradeLogPage.test.js` (10 tests): Loading skeleton, table rendering, broker pill filtering, symbol search, column sorting, delete confirm modal + undo, D19 mobile cards, viewer role gating (`ProtectedAction`), empty state, `jest-axe` zero violations.
-   - `TradeForm.test.js` (10 tests): Label associations, Buy totalValue calculation, Sell totalValue calculation, Buy iteration auto-calculation, broker dropdown and custom entry, Sell share availability validation, cash trades with `AccountSelector`, corporate actions (`Dividend`, `Split`), form submission, `jest-axe` zero violations.
-   - `TradeSummaryPage.test.js` (10 tests): Loading state, broker KPI cards, total overview summary row, `<Delta>` rendering for P&L, zero P&L neutral tone, Open Positions sorting, Closed Positions sorting, D19 mobile cards, empty positions, `jest-axe` zero violations.
+5. **CRA Unit & jest-axe Test Suites (38 Tests Total)**:
+   - `TradeLogPage.test.js` (13 tests): Loading skeleton, table rendering, broker pill filtering, symbol search, column sorting, delete confirm modal + undo, D19 mobile cards, viewer role gating (`ProtectedAction`), empty state, `jest-axe` zero violations.
+   - `TradeForm.test.js` (12 tests): Label associations, Buy totalValue calculation, Sell totalValue calculation, Buy iteration auto-calculation, broker dropdown and custom entry, Sell share availability validation, cash trades with `AccountSelector`, corporate actions (`Dividend`, `Split`), form submission, `jest-axe` zero violations.
+   - `TradeSummaryPage.test.js` (13 tests): Loading state, broker KPI cards, total overview summary row, `<Delta>` rendering for P&L, zero P&L neutral tone, Open Positions sorting, Closed Positions sorting, D19 mobile cards, empty positions, `jest-axe` zero violations.
 6. **ESLint De-Ignore**:
    - Permanently remove lines 64–66 from `frontend/.eslintignore`.
    - Verify all 5 component files + 3 test files pass `npx eslint ... --max-warnings=0`.
@@ -313,7 +313,7 @@ flowchart TD
     G3 --> G4["Gate 4: Tone Scoping (lint-tones.js)"]
     G4 --> G5["Gate 5: Stylelint Ratchet (Waiver W-7A-1)"]
     G5 --> G6["Gate 6: De-Ignored ESLint Zero-Warning Audit (8 files)"]
-    G6 --> G7["Gate 7: CRA Jest Unit & jest-axe (3 suites, 30 tests)"]
+    G6 --> G7["Gate 7: CRA Jest Unit & jest-axe (3 suites, 38 tests)"]
     G7 --> G8["Gate 8: App Route Guard Suite (App.test.js)"]
     G8 --> G9["Gate 9: Calculation Parity (calculations.spec.js)"]
     G9 --> G10["Gate 10: Real-Browser axe-core Audit (4 routes)"]
@@ -447,7 +447,7 @@ Review all 20 snapshots across 5 viewports (1440, 1024, 768, 480, 390px):
 - [ ] 8. Modernize `AddTradePage.js` and `EditTradePage.js`: wrap in `.trade-form-page`, canonical page headers, breadcrumbs, shaped loading skeletons.
 - [ ] 9. Modernize `TradeSummaryPage.js`: wrap in `.trade-summary-page`, purge 54 inline styles, wire up `<Delta>` for all P&L fields, tokenized broker KPI tiles, D19 mobile cards for position tables.
 - [ ] 10. Author `tradesMocks.js` fixture in `frontend/tests/visual/fixtures/` and wire into `visual.spec.js` and `a11y.spec.js`.
-- [ ] 11. Author unit & jest-axe test suites: `TradeLogPage.test.js`, `TradeForm.test.js`, `TradeSummaryPage.test.js` (30 tests total).
+- [ ] 11. Author unit & jest-axe test suites: `TradeLogPage.test.js`, `TradeForm.test.js`, `TradeSummaryPage.test.js` (38 tests total).
 - [ ] 12. Author Playwright reference match spec: `trades-reference-match.spec.js` (5 tests).
 - [ ] 13. De-ignore lines 64–66 in `frontend/.eslintignore`.
 - [ ] 14. Run and satisfy Gates 1–12 (linting, unit tests, a11y, build).
@@ -467,7 +467,7 @@ Review all 20 snapshots across 5 viewports (1440, 1024, 768, 480, 390px):
 - [ ] **Gate 4**: Tone discipline audit verified (`lint-tones.js` reports 0 violations and 0 undefined tokens).
 - [ ] **Gate 5**: Stylelint ratchet audit verified (`lint-ratchet.js` reports 0 regressions; 8 `!important` removed; Waiver W-7A-1).
 - [ ] **Gate 6**: ESLint zero-warning audit verified (`eslint --max-warnings=0` on 8 files passes with 0 errors, 0 warnings).
-- [ ] **Gate 7**: Component unit & axe tests verified (3 suites, 30/30 tests pass green, 0 axe violations).
+- [ ] **Gate 7**: Component unit & axe tests verified (3 suites, 38/38 tests pass green, 0 axe violations).
 - [ ] **Gate 8**: App route suite verified (`App.test.js` passes 9/9 tests green).
 - [ ] **Gate 9**: Calculation parity (Invariant I3) verified (`calculations.spec.js` passes 11/11 tests byte-identical, `trades.snapshot.json` intact).
 - [ ] **Gate 10**: Playwright real-browser axe audit verified (4/4 passed, 0 violations across 4 trade routes).
@@ -509,3 +509,9 @@ Review all 20 snapshots across 5 viewports (1440, 1024, 768, 480, 390px):
    - `TradeForm.js` unifies preset broker selection and custom broker text input into a single controlled state machine with accessible label bindings and inline error surfaces.
 10. **Amendment AD25: Table Inline Action Touch Target Calibration**:
    - `TradeLogPage.js` and `Trades.css` calibrate inline table action buttons (e.g. `.action-btn-delete`) to $\ge 32\times 32\text{px}$ on desktop viewports ($> 768\text{px}$) to preserve dense numerical table readability per Reference Frame 01 Variant B, and expand to $\ge 44\times 44\text{px}$ on mobile viewports ($\le 768\text{px}$) via `@media (max-width: 768px)` overrides to strictly fulfill mobile touch target accessibility per UI-UX-PLAN §4.8. Primary page actions and form buttons maintain $\ge 44\times 44\text{px}$ across all viewports.
+11. **Amendment AD26: Mock Dispatcher Architecture for Playwright Trades Tests**:
+   - Centralize mock handling into `setupTradesMocks` dispatcher in `frontend/tests/visual/fixtures/tradesMocks.js` covering both `/api/trades` and `/api/trades/summary`, shared across `visual.spec.js`, `a11y.spec.js`, and `trades-reference-match.spec.js` for deterministic, zero-flakiness test execution without live backend dependencies.
+12. **Amendment AD27: Extended 38-Test CRA Unit & Axe Suite**:
+   - Expand unit test suite from 30 to 38 tests across `TradeLogPage.test.js` (13 tests), `TradeForm.test.js` (12 tests), and `TradeSummaryPage.test.js` (13 tests) to comprehensively verify sort state toggles, modal cancellation, empty states, and accessibility across all trade sub-components.
+13. **Amendment AD28: Scoped Component Overrides for Unthemed Consumer Safety**:
+   - Scope shared `.trade-table`, `.action-btn`, and form controls strictly under `html[data-fs-theme] .trade-log-page`, `.trade-form-page`, and `.trade-summary-page` in `Trades.css`, and register tone classes in Section 15 of `theme-components.css` to guarantee 100% regression-free visual stability across all 8 unthemed consumer routes.

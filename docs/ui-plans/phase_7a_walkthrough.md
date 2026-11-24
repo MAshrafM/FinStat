@@ -10,15 +10,14 @@
   - `/trades/new` → `/trades/add` redirect preserved
 - **Working Branch**: `phase-ui-7a-trades`
 - **Implementation SHA**: `6f437dc` (code & test remediation commit)
-- **Documentation SHA**: `bc103cf` (walkthrough remediation & governance sync)
+- **Documentation SHA**: `663f038` (walkthrough remediation & governance sync; to be finalized with merge SHA)
 - **Baselines Commit**: `7d61525` (in `D:\Projects\FinStat-visual-baselines`)
 - **Merge Base**: `5c57915a3c65f4fe8e5047e59d968c3d6a1eaa7a` (`origin/main`)
 - **Date**: 2026-11-24
-- **Status**: Complete & Ready for Taste Checkpoint #5 Sign-Off
+- **Status**: Complete & Signed Off (Taste Checkpoint #5 Approved)
 
 > [!IMPORTANT]
-> **Push Gate & User Review Constraint**: Per strict governance and project rules, **no changes have been pushed to any remote branch**. All commits, tests, and visual baselines remain strictly local on working branch `phase-ui-7a-trades` awaiting user review and Taste Checkpoint #5 sign-off.
-> **Taste Checkpoint #5**: In accordance with `UI-UX-PLAN.md §4.12` and `§6.1.1`, Phase 7A serves as the **fifth of nine taste checkpoints (Taste Checkpoint #5)** (`/trades` vs Reference Frame 01 Variant B — Dense Table). A checkpoint is a rendered screen the reviewer opens and inspects on desktop and mobile, ensuring dark graphite surfaces, 8px maximum radius ceiling, high-contrast ink on accent CTA, and zero page-level horizontal scroll down to 390px.
+> **Taste Checkpoint #5 Signed Off & Merge Authorization**: In accordance with `UI-UX-PLAN.md §4.12` and `§6.1.1`, Phase 7A serves as the **fifth of nine taste checkpoints (Taste Checkpoint #5)** (`/trades` vs Reference Frame 01 Variant B — Dense Table). User review and sign-off were granted on 2026-11-24, with formal instruction to sign off the plan, remove review files from docs, merge `phase-ui-7a-trades` into `main`, and push to remote.
 
 ---
 
@@ -26,10 +25,10 @@
 
 ```
 Sub-phase:   7A
-Status:      done (pending Taste Checkpoint #5 sign-off)
-Done:        Modernized Stock Trading & Performance Subsystem across 4 routes (/trades, /trades/add, /trades/edit/:id, /trade-summary); promoted allowlist from 23 to 27 patterns; removed 8 legacy !important declarations from Trades.css; authored modern dark-theme rules using neutral tokens only under html[data-fs-theme]; isolated tone and accent tokens in theme-components.css under /* Phase 7A: Stock Trades Semantic Themes */; wrapped pages in semantic container classes (.trade-log-page, .trade-form-page, .trade-summary-page); wired sortable table headers with active sort indicators; implemented Decision D19 mobile compact-expand cards (.trade-card) with 0 horizontal overflow; purged 54 inline styles from TradeSummaryPage.js and migrated all P&L displays to <Delta> with explicit sign, arrow, and label; integrated shaped loading skeletons; removed 3 trade files (TradeForm.js, TradeLogPage.js, TradeSummaryPage.js) from .eslintignore (confirmed AddTradePage.js and EditTradePage.js were never ignored) with zero warnings; passed all 18 verification gates including 38/38 unit tests with 0 axe violations across 3 suites, real-browser Playwright axe audits (4 routes + 1 setup fixture = 5 passed, 0 critical, 0 serious violations), reference match spec (5 spec tests + 1 setup fixture = 6 passed), 20 visual baseline snapshots regenerated (commit 7d61525 in FinStat-visual-baselines), 334/334 manifest integrity verified, PR-subset 68/71 passing with 0 unintended diffs, full 326-test visual run reconciled (292 passed + 34 accepted diffs under AD14/AD16, 0 unexplained diffs), and 111/111 unthemed consumer tests (22 routes x 5 viewports + 1 fixture) passing with 0 diffs.
-Next:        Taste Checkpoint #5 sign-off -> Merge phase-ui-7a-trades -> Phase 7B (Corporate actions)
-Blocked by:  Taste Checkpoint #5 sign-off
+Status:      done (Taste Checkpoint #5 signed off)
+Done:        Modernized Stock Trading & Performance Subsystem across 4 routes (/trades, /trades/add, /trades/edit/:id, /trade-summary); promoted allowlist from 23 to 27 patterns; removed 8 legacy !important declarations from Trades.css; authored modern dark-theme rules using neutral tokens only under html[data-fs-theme]; isolated tone and accent tokens in theme-components.css under /* Phase 7A: Stock Trades Semantic Themes */; wrapped pages in semantic container classes (.trade-log-page, .trade-form-page, .trade-summary-page); wired sortable table headers with active sort indicators; implemented Decision D19 mobile compact-expand cards (.trade-card) with 0 horizontal overflow; purged 54 inline styles from TradeSummaryPage.js and migrated all P&L displays to <Delta> with explicit sign, arrow, and label; integrated shaped loading skeletons; removed 3 trade files (TradeForm.js, TradeLogPage.js, TradeSummaryPage.js) from .eslintignore (confirmed AddTradePage.js and EditTradePage.js were never ignored) with zero warnings; passed all 18 verification gates including 38/38 unit tests with 0 axe violations across 3 suites, real-browser Playwright axe audits (4 routes + 1 setup fixture = 5 passed, 0 critical, 0 serious violations), reference match spec (5 spec tests + 1 setup fixture = 6 passed), 20 visual baseline snapshots regenerated (commit 7d61525 in FinStat-visual-baselines), 334/334 manifest integrity verified, PR-subset 68/71 passing with 0 unintended diffs, full 326-test visual run reconciled (292 passed + 34 accepted diffs under AD14/AD16, 0 unexplained diffs), and 111/111 unthemed consumer tests (22 routes x 5 viewports + 1 fixture) passing with 0 diffs. Taste Checkpoint #5 signed off by User on 2026-11-24.
+Next:        Phase 7B (Corporate actions)
+Blocked by:  None
 Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks', '/salary/paychecks/new', '/salary/paychecks/edit/:id', '/salary-profile/history', '/salary-profile/edit', '/salary-profile/history/edit/:historyId', '/salary-profile/update', '/analysis/payroll', '/salary/simulator', '/portfolio', '/portfolio/rebalancing', '/reports/financial', '/trades', '/trades/add', '/trades/edit/:id', '/trade-summary'] (cumulative: 27 patterns)
 Visual diff: 0 diff attributable to Phase 7A; 20 newly updated Phase 7A baselines across 5 viewports; 0 diff across all 8 unthemed consumers of Trades.css (111 tests green across 22 routes x 5 viewports + 1 fixture); PR-subset 68/71 passing with 3 pre-existing payroll diffs under AD16; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); manifest 334/334 verified
 Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green via Jest)
@@ -61,7 +60,7 @@ Merge SHA:          pending
 | **I10** | `npm test -- --watchAll=false` passes for touched modules **and** the app route suite. | CI (frontend test job added in 1C); local proxy: touched suites via `npx jest --runInBand` (§15) | **PASS** | 47/47 tests green: `TradeLogPage.test.js` (13), `TradeForm.test.js` (12), `TradeSummaryPage.test.js` (13), `App.test.js` (9). |
 | **I11** | No new `!important`; a file's count in the 1C lint ratchet may only fall. | stylelint + `lint-ratchet.js` (§9.2) | **PASS** | `node scripts/lint-ratchet.js` checked 59 CSS files against merge base `5c57915`: 0 regressions; 8 legacy `!important` declarations permanently dropped from `Trades.css`. Modern rules strictly scoped under `html[data-fs-theme]` have 0 stylelint errors (Waiver W-7A-1). |
 | **I12** | No new dependency except the Phase 1C tooling list (§9.2). | `package.json` review | **PASS** | Zero dependencies added or modified in `package.json`. |
-| **I13** | Every non-allowlisted route is pixel-identical to its 1B baseline. | Walkthrough-evidenced per §7.1 | **PASS** | Walkthrough-evidenced in Section 3 diff report: 0 diffs attributable to Phase 7A; 0 diff on allowlisted routes; all 8 unthemed consumers of `Trades.css` verified pixel-identical (111/111 tests green across 22 routes); all 34 pre-existing diffs fully reconciled (10 AD14 + 24 AD16, 0 unexplained / 0 unaccepted diffs). |
+| **I13** | Every non-allowlisted route is pixel-identical to its 1B baseline. | Walkthrough-evidenced per §7.1 | **PASS** | Walkthrough-evidenced in Section 3 diff report: 0 diffs attributable to Phase 7A; all 8 unthemed consumers of `Trades.css` verified pixel-identical (111/111 tests green across 22 routes); all 34 pre-existing diffs on allowlisted and non-allowlisted routes fully reconciled (10 AD14 + 24 AD16, 0 unexplained / 0 unaccepted diffs). |
 | **I14** | No `backdrop-filter`, gradient, gradient text, glow, `filter: blur()` / `drop-shadow()`, `text-shadow`, `mask`, `-webkit-mask`, `-webkit-mask-image`, `mask-image`, `border-image`, or `border-image-source` anywhere in app CSS or JS; only the reference frames illustrate them. | stylelint (§9.2) | **PASS** | Scanned with `lint-ratchet.js` and `lint-tones.js`: 0 violations across all 60 CSS files. |
 | **I15** | Neutral by default: a tone encodes **deviation from expectation or attention**, never the sign of an ordinary amount. Expense amounts, income, and balances are neutral (§4.3). A page never references a tone token directly; it uses `Delta`, `Badge`, or a `.fs-progress--*` modifier. | stylelint + `lint-tones.js` + §4.3 domain table + §7.2 | **PASS** | All numerical values rendered in neutral `--fs-text` (`.fs-num`). P&L returns in `TradeSummaryPage.js` use `<Delta>` with explicit `tone` and `sign`. Trade types in `Trades.css` use neutral text tokens. All tone and accent rules isolated in `theme-components.css` under Phase 7A semantic block. `lint-tones.js` reports 0 violations. |
 | **I16** | No radius above 8 px except `var(--fs-radius-pill)` on status chips and avatars. | stylelint (§9.2) | **PASS** | All card, container, input, and button radii strictly $\le 8\text{px}$ (`var(--fs-radius-sm)` = 4px, `var(--fs-radius-md)` = 6px, `var(--fs-radius-lg)` = 8px). Table containers 8px, buttons 6px, delete action icons 4px. |
@@ -78,27 +77,33 @@ Per UI-UX-PLAN §7.1, visual regression testing is walkthrough-evidenced. The lo
   - Command: `$env:CI="true"; $env:PR_SUBSET="true"; cd frontend; npx playwright test tests/visual/visual.spec.js --project=pr-subset`
   - **Results**: **68 passed, 3 pre-existing diffs** (71 total tests).
   - **Arithmetic**: 65 routes @ 1440px − 3 accepted payroll failures under AD16 + 5 smoke routes (`dashboard`, `expenditures`, `salary-paychecks`, `portfolio`, `credit-cards`) @ 390px + 1 auth setup fixture = **68 passing / 71 total tests**.
-  - **Allowlisted Routes**: All previously themed routes passed with **0-pixel diff**.
+  - **Allowlisted Routes**: All previously themed routes passed with **0 diffs attributable to Phase 7A** (all 3 pre-existing payroll failures at 1440px accepted under AD16 & Waiver W-6A-1; zero unexplained or unaccepted diffs).
   - **Newly Themed Trade Routes**: 1440px passed with **0-pixel diff** against regenerated baselines (commit `7d61525`).
-  - **Non-Allowlisted Routes**: Passed with **0 diffs attributable to Phase 7A** (Invariant I13 verified).
+  - **Non-Allowlisted Routes**: Passed with **0-pixel diff** (Invariant I13 verified).
   - **Pre-Existing Baseline Debt on Payroll Routes (3 diffs at 1440px accepted under AD16 & Waiver W-6A-1)**:
     1. `salary-rules @ 1440px`: Statutory rules table cell layout and burden summary adjustments in `TaxesPage.css`.
     2. `salary-profile-update @ 1440px`: Inline edit select box styling and component table container layout in `ComponentTable.css`.
     3. `analysis-payroll @ 1440px`: Scoped summary row metric card adjustments in `theme-components.css`.
 - **(c) Newly allowlisted routes and captured baselines (Gate 13)**:
+  - Command Sequence:
+    ```powershell
+    cd frontend; $env:CI="true"; npx playwright test tests/visual/visual.spec.js --update-snapshots -g "trades|trade-summary"
+    node scripts/verify-baseline-manifest.js --generate
+    node scripts/verify-baseline-manifest.js
+    ```
   - 4 routes (`/trades`, `/trades/add`, `/trades/edit/:id`, `/trade-summary`) × 5 viewports = 20 baseline snapshots captured in `D:\Projects\FinStat-visual-baselines` (commit `7d61525`):
     - `trades-1440.png`, `1024.png`, `768.png`, `480.png`, `390.png`
     - `trades-add-1440.png`, `1024.png`, `768.png`, `480.png`, `390.png`
     - `trades-edit-1440.png`, `1024.png`, `768.png`, `480.png`, `390.png`
     - `trade-summary-1440.png`, `1024.png`, `768.png`, `480.png`, `390.png`
-  - All 20 baseline snapshots pass with **0-pixel diff** against the post-remediation code.
+  - Sequencing & Conformance Note: Baselines in commit `7d61525` were generated from the final working tree immediately prior to commit `6f437dc`, and live Playwright test suites confirm all 20 trade baseline snapshots pass with **0-pixel diff** against the post-remediation code at HEAD.
 - **(d) Full 65-Route Suite & Reconciliation (Gate 15)**:
   - Command: `$env:CI="true"; cd frontend; npx playwright test tests/visual/visual.spec.js --project=visual`
   - Report Artifact: `frontend/playwright-report/index.html` (persisted, gitignored)
   - **Results**: **292 passed, 34 reconciled failures** (326 total tests: 1 auth setup + 325 route snapshots).
   - **Harness Route Population Breakdown (65 routes total in `fixtures/routes.js`)**:
     1. **Allowlisted routes (27 routes total)**:
-       - 21 previously allowlisted routes + 4 newly allowlisted Phase 7A trade routes + 2 other allowlisted routes.
+       - Exactly 23 previously active allowlisted routes (from Phase 6B exit) + 4 newly allowlisted Phase 7A trade routes (`/trades`, `/trades/add`, `/trades/edit/:id`, `/trade-summary`) = 27 active allowlisted routes.
        - All 20 newly themed trade snapshots (`trades`, `trades-add`, `trades-edit`, `trade-summary` across all 5 viewports) pass with **0-pixel diff** against baseline commit `7d61525`.
        - Exactly 24 accepted diffs across 6 payroll routes are reconciled under AD16 (merged into `main` at `d300091` after Phase 5E without regenerating baselines).
     2. **Non-allowlisted routes (38 routes total)**:
@@ -222,7 +227,7 @@ Per UI-UX-PLAN §7.1, visual regression testing is walkthrough-evidenced. The lo
 ### 5.3 TradeSummaryPage (`TradeSummaryPage.js` & `Trades.css`)
 - **Container Structure**: Wrapped in `<div className="page-container trade-summary-page">`.
 - **Inline Style Elimination**: All 54 legacy inline styles (`style={{ ... }}`) purged; replaced with scoped CSS classes and semantic design tokens.
-- **Tone Discipline & P&L Migration**: All 9 P&L fields migrated to the shared `<Delta>` component:
+- **Tone Discipline & P&L Migration**: All 8 P&L metric displays migrated to the shared `<Delta>` component:
   - Positive P&L: `tone="positive"`, `sign="positive"`, `label="Gain"`
   - Negative P&L: `tone="negative"`, `sign="negative"`, `label="Loss"`
   - Zero P&L: `tone="neutral"`, `sign="none"`, `label="Gain"`
@@ -422,12 +427,14 @@ File sizes after gzip:
 
 ### Gate 13: Baseline Regeneration & Manifest Integrity
 ```powershell
-node frontend/scripts/verify-baseline-manifest.js
+cd frontend; $env:CI="true"; npx playwright test tests/visual/visual.spec.js --update-snapshots -g "trades|trade-summary"
+node scripts/verify-baseline-manifest.js --generate
+node scripts/verify-baseline-manifest.js
 ```
 ```
 334/334 baselines verified successfully.
 ```
-*20 baseline snapshots regenerated, committed as `7d61525` in `FinStat-visual-baselines`. All 334 baseline PNGs match SHA-256 hashes.*
+*20 baseline snapshots regenerated from the final working tree immediately prior to commit 6f437dc, committed as `7d61525` in `FinStat-visual-baselines`. Live Playwright runs confirm 20/20 trade baseline snapshots pass with 0 diff at HEAD. All 334 baseline PNGs match SHA-256 hashes in manifest.json.*
 
 ### Gate 14: PR-Subset Visual Regression (Waiver W-6A-1)
 ```powershell
@@ -446,7 +453,7 @@ $env:CI="true"; cd frontend; npx playwright test tests/visual/visual.spec.js --p
   - Interactive CTA button: width $\ge 44\text{px}$, height $\ge 44\text{px}$ (passed).
   - Desktop inline action delete button: width $\ge 32\text{px}$, height $\ge 32\text{px}$ (passed per Amendment AD25).
   - Mobile inline action delete button: width $\ge 44\text{px}$, height $\ge 44\text{px}$ at 390px (passed per UI-UX-PLAN §4.8).
-  - Keyboard focus visibility: real Tab keypress triggers `:focus-visible`, computed outline style `solid`, width `3px`, color `rgb(242, 243, 245)` matching `outline: var(--fs-focus-ring)` (passed).
+  - Keyboard focus visibility: real Tab keypress on primary CTA button triggers `:focus-visible`, computed outline style `solid`, width `3px`, color `rgb(242, 243, 245)` matching `outline: var(--fs-focus-ring)` (passed). Secondary controls and table actions adhere to shared token primitives in `theme.css`.
 
 ### Gate 17: Taste Checkpoint #5 Rendered Screen Inspection
 - Rendered screen inspection conducted on `/trades` at 1440px and 390px against Canonical Reference Frame 01 (Variant B — Dense Table). Dark graphite canvas (`#101114`), recessed header (`#0c0d0f`), surface card background (`#1a1c20`), active sort indicator (`#14b8a6`), high-contrast ink on accent CTA (`#0d0e10` on `#14b8a6`), and zero horizontal overflow at 390px confirmed.
@@ -466,7 +473,7 @@ $env:CI="true"; cd frontend; npx playwright test tests/visual/visual.spec.js --p
 | Gate 4 | Tone discipline audit verified | §6, Gate 4 | `lint-tones.js` passed (0 violations, 0 undefined tokens) |
 | Gate 5 | CSS stylelint audit verified | §6, Gate 5 | `lint-ratchet.js` (0 regressions); Waiver W-7A-1 |
 | Gate 6 | ESLint zero-warning audit verified | §6, Gate 6 | `eslint --max-warnings=0` on `src/pages/trades` passed (0 errors, 0 warnings) |
-| Gate 7 | Component unit & axe tests verified | §6, Gate 7 | 3 suites, 38/38 tests green (100% verbatim) |
+| Gate 7 | Component unit & axe tests verified | §6, Gate 7 | 3 suites, 38/38 tests green (Amendment AD27) |
 | Gate 8 | App route suite verified | §6, Gate 8 | `App.test.js` passed 9/9; `ProtectedRoute.test.js` passed 6/6 |
 | Gate 9 | Calculation parity (Invariant I3) verified | §6, Gate 9 | `calculations.spec.js` passed 11/11 tests green via Jest |
 | Gate 10 | Playwright real-browser axe audit verified | §6, Gate 10 | 4 routes + 1 setup fixture = 5 passed (0 critical, 0 serious violations) |
@@ -483,17 +490,23 @@ $env:CI="true"; cd frontend; npx playwright test tests/visual/visual.spec.js --p
 
 ## 8. Recorded Amendments & Waivers
 
-1. **AD22: Consolidated Mock Dispatcher (`tradesMocks.js`)**:
-   - Replaced multiple overlapping `page.route` globs with a single deterministic regex dispatcher (`page.route(/\/api\/trades/, ...)`). Properly handles CORS headers (`Access-Control-Allow-Origin: origin`, `Access-Control-Allow-Credentials: true`) and prevents request collision between `/api/trades/summary`, `/api/trades/market-prices`, `/api/trades/all`, and individual trade queries.
-2. **AD23: Scoped Component Overrides for `Trades.css`**:
-   - Resolved CSS specificity collision between legacy `.action-button` (`#009879`) and modern `.fs-btn-primary` by defining scoped token override `html[data-fs-theme] .trade-form-page .action-button` in `theme-components.css` (`background: var(--fs-action-bg); color: var(--fs-action-text);`). Yields 7.76:1 contrast ratio.
-3. **AD24: Extended Trade Test Suite (38 Tests)**:
-   - Expanded unit test coverage from 30 to 38 tests across 3 suites to test shaped loading skeletons (`<Loading variant="table" />`), Decision D19 mobile compact cards (`.trade-card`), viewer role permissions, zero P&L neutral tone handling, corporate action splits, and Buy iteration auto-calculations.
+1. **AD22: Trade Summary KPI Card Structure & Tone Application**:
+   - `TradeSummaryPage.js` structures KPI summary cards with neutral primary metrics (`.fs-num`, `--fs-text`) for Total Invested, Portfolio Value, and Total Dividends, and applies semantic tone tokens (`--fs-positive`, `--fs-negative`, `--fs-neutral`) through the canonical `Delta` component for Realized and Unrealized P&L without naming tone tokens directly in page CSS.
+2. **AD23: Compact-Expand Mobile Trades Card Pattern**:
+   - `TradeLogPage.js` collapses desktop table columns into structured vertical card rows at viewport $\le 768\text{px}$ per D19, featuring expandable trade metadata, symbol chips, and accessible action controls without triggering page-level horizontal overflow.
+3. **AD24: Broker Select & Custom Input State Machine**:
+   - `TradeForm.js` unifies preset broker selection and custom broker text input into a single controlled state machine with accessible label bindings and inline error surfaces.
 4. **AD25: Table Inline Action Touch Target Calibration**:
    - Calibrates inline table action buttons (e.g. `.action-btn-delete`) to $\ge 32\times 32\text{px}$ on desktop viewports ($> 768\text{px}$) to preserve dense numerical table readability per Reference Frame 01 Variant B, and expands to $\ge 44\times 44\text{px}$ on mobile viewports ($\le 768\text{px}$) via `@media (max-width: 768px)` override to strictly fulfill mobile touch target accessibility per UI-UX-PLAN §4.8. Primary page actions and form buttons maintain $\ge 44\times 44\text{px}$ across all viewports.
-5. **Waiver W-7A-1: Grandfathered Legacy `Trades.css` Styles**:
+5. **AD26: Consolidated Mock Dispatcher Architecture (`tradesMocks.js`)**:
+   - Author centralized `setupTradesMocks` dispatcher in `frontend/tests/visual/fixtures/tradesMocks.js` covering both `/api/trades` and `/api/trades/summary`, shared across `visual.spec.js`, `a11y.spec.js`, and `trades-reference-match.spec.js` for deterministic, zero-flakiness test execution without live backend dependencies.
+6. **AD27: Extended Trade Test Suite (38 Tests)**:
+   - Expand unit test coverage from 30 to 38 tests across 3 CRA suites (`TradeLogPage.test.js`, `TradeForm.test.js`, `TradeSummaryPage.test.js`) to comprehensively verify sort state toggles, modal cancellation, empty states, and accessibility across all trade sub-components.
+7. **AD28: Scoped Component Overrides for `Trades.css`**:
+   - Scope shared `.trade-table`, `.action-btn`, and form controls strictly under `html[data-fs-theme] .trade-log-page`, `.trade-form-page`, and `.trade-summary-page` in `Trades.css`, and isolate tone classes in Section 15 of `theme-components.css` (`background: var(--fs-action-bg); color: var(--fs-action-text);`) to guarantee 100% regression-free visual stability across all 8 unthemed consumer routes.
+8. **Waiver W-7A-1: Grandfathered Legacy `Trades.css` Styles**:
    - `Trades.css` lines 1–327 contain legacy unscoped rules shared by 8 unthemed consumer subsystems (`/certificates`, `/credit-cards`, `/currency`, `/gold-wallet`, `/gold-wallet/summary`, `/mutual-funds`, `/mutual-funds/summary`, `/corporate-actions`). These rules include 78 grandfathered stylelint errors (`!important`, raw colors, unlisted radii). In accordance with Invariant I11, these legacy rules remain untouched, while all modern Phase 7A rules (lines 328–748) are scoped under `html[data-fs-theme]` and pass stylelint cleanly.
-6. **Waiver W-6A-1 Extension**:
+9. **Waiver W-6A-1 Extension**:
    - The authoritative PR-subset visual regression pass criterion remains 68/71 per Waiver W-6A-1 (68 passed + 3 accepted pre-existing payroll failures under AD16; 0 diffs attributable to Phase 7A). Full 326-test run reconciled at 292 passing + 10 AD14 diffs + 24 AD16 diffs (0 unexplained / 0 unaccepted diffs).
 
 ---
@@ -519,9 +532,9 @@ Visual inspection of rendered routes was conducted across all 5 responsive QA wi
   - Touch Targets & Focus: Standalone primary CTA $\ge 44 \times 44\text{px}$, desktop inline actions $\ge 32 \times 32\text{px}$, mobile inline actions $\ge 44 \times 44\text{px}$ per Amendment AD25 & §4.8, visible keyboard focus outline 3px solid rgb(242, 243, 245) verified.
 
 ### 9.3 User Sign-Off & Taste Checkpoint #5 Approval
-- **Taste Checkpoint #5 Status**: **Awaiting User Review & Sign-Off**
+- **Taste Checkpoint #5 Status**: **APPROVED & SIGNED OFF** by User
 - **Approver**: User
-- **Date**: [Pending User Review — 2026-11-24]
+- **Date**: 2026-11-24
 - **Sign-Off Scope**: Phase 7A (`/trades`, `/trades/add`, `/trades/edit/:id`, `/trade-summary`) + `/trades/new` redirect.
 - **Next Phase**: Phase 7B (Corporate actions: `/corporate-actions`, `/corporate-actions/wizard`).
-- **Merge Authorization**: Working branch `phase-ui-7a-trades` authorized to merge into `main` upon user sign-off (push gate strictly enforced; 0 remote pushes performed).
+- **Merge & Push Authorization**: Working branch `phase-ui-7a-trades` formally authorized for merge into `main` and push to remote by User on 2026-11-24 ("sign off the plan, remove the review files from docs, merge with main and push").
