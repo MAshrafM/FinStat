@@ -58,6 +58,10 @@ test.describe('Phase 7B: Corporate Actions Reference Match Suite', () => {
     await expect(ratioCell).toBeVisible();
     const fontFamily = await ratioCell.evaluate((el) => window.getComputedStyle(el).fontFamily);
     expect(fontFamily.toLowerCase()).toContain('mono');
+
+    // 6. Container padding matches Reference Frame 01 dense layout
+    const containerPadding = await pageContainer.evaluate((el) => window.getComputedStyle(el).paddingTop);
+    expect(parseFloat(containerPadding)).toBeGreaterThan(0);
   });
 
   test('2. /corporate-actions/wizard conforms to Reference Frame 03 Stepper with compliant contrast at 1440px', async ({ page }) => {
@@ -105,6 +109,12 @@ test.describe('Phase 7B: Corporate Actions Reference Match Suite', () => {
       const firstExpander = mobileList.locator('.ca-card-expander-btn').first();
       await expect(firstExpander).toBeVisible();
 
+      // Verify 3 compact row elements: stock ticker, badge, formatted ratio
+      const firstCard = mobileList.locator('.ca-mobile-card').first();
+      await expect(firstCard.locator('.ca-card-stock')).toHaveText('COMI');
+      await expect(firstCard.locator('.ca-badge')).toHaveText('Stock Split');
+      await expect(firstCard.locator('.ca-card-ratio')).toHaveText('2:1');
+
       // Verify touch target >= 44x44px
       const box = await firstExpander.boundingBox();
       expect(box.width).toBeGreaterThanOrEqual(44);
@@ -117,6 +127,11 @@ test.describe('Phase 7B: Corporate Actions Reference Match Suite', () => {
       // Click to expand
       await firstExpander.click();
       await expect(expandedContent).toBeVisible();
+
+      // Verify expanded content displays Broker, Effective Date, Notes
+      await expect(expandedContent).toContainText('Broker');
+      await expect(expandedContent).toContainText('Effective Date');
+      await expect(expandedContent).toContainText('Notes');
 
       // Verify delete button is reachable with >= 44px touch height
       const deleteBtn = expandedContent.locator('.ca-btn-table-delete');
@@ -145,6 +160,7 @@ test.describe('Phase 7B: Corporate Actions Reference Match Suite', () => {
   });
 
   test('5. interactive touch targets >= 44px and visible focus rings', async ({ page }) => {
+    // 1. Desktop primary CTA touch target >= 44x44px
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/corporate-actions', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(500);
@@ -152,21 +168,47 @@ test.describe('Phase 7B: Corporate Actions Reference Match Suite', () => {
     const primaryBtn = page.locator('.ca-header-actions .ca-btn-primary');
     await expect(primaryBtn).toBeVisible();
     const btnBox = await primaryBtn.boundingBox();
-    expect(btnBox.height).toBeGreaterThanOrEqual(36);
+    expect(btnBox.height).toBeGreaterThanOrEqual(44);
+    expect(btnBox.width).toBeGreaterThanOrEqual(44);
 
-    // Focus ring test
-    await primaryBtn.focus();
-    const hasFocus = await primaryBtn.evaluate((el) => document.activeElement === el);
-    expect(hasFocus).toBe(true);
+    // 2. Desktop inline action button touch target >= 32px (calibrated per Amendment AD25)
+    const tableDeleteBtn = page.locator('.ca-btn-table-delete').first();
+    await expect(tableDeleteBtn).toBeVisible();
+    const deleteBox = await tableDeleteBtn.boundingBox();
+    expect(deleteBox.height).toBeGreaterThanOrEqual(32);
+    expect(deleteBox.width).toBeGreaterThanOrEqual(32);
 
-    // Test on Wizard page as well
-    await page.goto('/corporate-actions/wizard', { waitUntil: 'domcontentloaded' });
+    // 3. Mobile touch target >= 44x44px at 390px (per UI-UX-PLAN §4.8)
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(300);
+    const expanderBtn = page.locator('.ca-mobile-card .ca-card-expander-btn').first();
+    await expanderBtn.click();
+    const mobileDeleteBtn = page.locator('.ca-card-expanded-content .ca-btn-mobile-delete').first();
+    await expect(mobileDeleteBtn).toBeVisible();
+    const mobileDeleteBox = await mobileDeleteBtn.boundingBox();
+    expect(mobileDeleteBox.height).toBeGreaterThanOrEqual(44);
+    expect(mobileDeleteBox.width).toBeGreaterThanOrEqual(44);
+
+    // 4. Keyboard focus test with real Tab keypress triggering :focus-visible
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/corporate-actions', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(500);
 
-    const continueBtn = page.locator('.wizard-actions .ca-btn-primary');
-    await expect(continueBtn).toBeVisible();
-    await continueBtn.focus();
-    const wizardBtnHasFocus = await continueBtn.evaluate((el) => document.activeElement === el);
-    expect(wizardBtnHasFocus).toBe(true);
+    const refreshBtn = page.locator('.ca-header-actions button[title="Refresh action list"]');
+    await refreshBtn.focus();
+    await page.keyboard.press('Tab');
+    await expect(primaryBtn).toBeFocused();
+
+    const outlineInfo = await primaryBtn.evaluate((el) => {
+      const style = window.getComputedStyle(el);
+      return {
+        outlineStyle: style.outlineStyle,
+        outlineWidth: parseFloat(style.outlineWidth) || 0,
+        outlineColor: style.outlineColor,
+      };
+    });
+    expect(outlineInfo.outlineStyle).toBe('solid');
+    expect(outlineInfo.outlineWidth).toBeGreaterThanOrEqual(2);
+    expect(outlineInfo.outlineColor).toBe('rgb(242, 243, 245)');
   });
 });

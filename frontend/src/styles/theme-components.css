@@ -2039,5 +2039,18 @@ html[data-fs-theme] .ca-page-container .ca-btn-table-delete:hover:not(:disabled)
   border-color: var(--fs-negative);
 }
 
+html[data-fs-theme] .ca-page-container .ca-btn-danger,
+html[data-fs-theme] .ca-modal-overlay .ca-btn-danger {
+  background: var(--fs-danger);
+  color: var(--fs-ink);
+  border-color: transparent;
+}
+
+html[data-fs-theme] .ca-page-container .ca-btn-danger:hover:not(:disabled),
+html[data-fs-theme] .ca-modal-overlay .ca-btn-danger:hover:not(:disabled) {
+  background: var(--fs-negative);
+  color: var(--fs-ink);
+}
+
 
 

@@ -1,5 +1,5 @@
 // frontend/src/pages/trades/CorporateActionsList.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Trash2, RefreshCw, Layers, ChevronDown, ChevronUp } from 'lucide-react';
 import { getCorporateActions, deleteCorporateAction } from '../../services/corporateActionService';
@@ -20,6 +20,8 @@ const CorporateActionsList = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [expandedCardIds, setExpandedCardIds] = useState(new Set());
+  const modalRef = useRef(null);
+  const lastActiveElementRef = useRef(null);
 
   const fetchActions = useCallback(async () => {
     try {
@@ -37,20 +39,64 @@ const CorporateActionsList = () => {
     fetchActions();
   }, [fetchActions]);
 
-  // Handle Escape key to close delete modal
+  const closeModal = useCallback(() => {
+    setShowConfirmModal(false);
+    setSelectedAction(null);
+    if (lastActiveElementRef.current && typeof lastActiveElementRef.current.focus === 'function') {
+      lastActiveElementRef.current.focus();
+    }
+  }, []);
+
+  // Handle Escape key and focus trap cycling for delete modal
   useEffect(() => {
     if (!showConfirmModal) return;
+
+    // Focus first focusable element inside modal upon opening
+    const timer = setTimeout(() => {
+      const focusable = modalRef.current?.querySelectorAll('button:not([disabled])');
+      if (focusable && focusable.length > 0) {
+        focusable[0].focus();
+      }
+    }, 50);
+
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && deletingId === null) {
-        setShowConfirmModal(false);
+        closeModal();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = modalRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable || focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showConfirmModal, deletingId]);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showConfirmModal, deletingId, closeModal]);
 
   const handleDeleteClick = (action) => {
     if (!canModify) return;
+    lastActiveElementRef.current = document.activeElement;
     setSelectedAction(action);
     setShowConfirmModal(true);
   };
@@ -62,8 +108,7 @@ const CorporateActionsList = () => {
       setDeletingId(selectedAction._id);
       await deleteCorporateAction(selectedAction._id);
       addToast('Corporate action removed. Portfolio cache invalidated.', 'success');
-      setShowConfirmModal(false);
-      setSelectedAction(null);
+      closeModal();
       fetchActions();
     } catch (err) {
       addToast(err.response?.data?.message || 'Failed to delete corporate action', 'error');
@@ -123,7 +168,7 @@ const CorporateActionsList = () => {
           <div className="ca-empty-icon-wrap">
             <Layers size={36} />
           </div>
-          <h3>No Corporate Actions Registered</h3>
+          <h2 className="ca-empty-title">No Corporate Actions Registered</h2>
           <p>
             Record stock splits and bonus distributions to automatically adjust share quantities and prices for pre-event trades.
           </p>
@@ -256,8 +301,8 @@ const CorporateActionsList = () => {
           aria-labelledby="ca-delete-dialog-title"
           aria-describedby="ca-delete-dialog-desc"
         >
-          <div className="ca-modal-card">
-            <h3 id="ca-delete-dialog-title">Remove Corporate Action?</h3>
+          <div className="ca-modal-card" ref={modalRef}>
+            <h2 id="ca-delete-dialog-title">Remove Corporate Action?</h2>
             <p id="ca-delete-dialog-desc">
               Are you sure you want to remove the <strong>{selectedAction.type === 'split' ? 'Stock Split' : 'Bonus Issue'}</strong> on <strong>{selectedAction.stockCode}</strong>? This will immediately revert the on-the-fly adjusted shares and average price for your portfolio.
             </p>
@@ -265,7 +310,7 @@ const CorporateActionsList = () => {
               <button
                 type="button"
                 className="ca-btn ca-btn-secondary"
-                onClick={() => setShowConfirmModal(false)}
+                onClick={closeModal}
                 disabled={deletingId !== null}
               >
                 Cancel
@@ -273,7 +318,7 @@ const CorporateActionsList = () => {
               <ProtectedAction tooltip="View-only access">
                 <button
                   type="button"
-                  className="ca-btn ca-btn-danger"
+                  className="ca-btn fs-btn-danger"
                   onClick={handleConfirmDelete}
                   disabled={deletingId !== null}
                 >

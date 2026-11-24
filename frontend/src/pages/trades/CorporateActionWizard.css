@@ -36,6 +36,7 @@ html[data-fs-theme] .wizard-page .wizard-back-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 44px;
 }
 
 /* Main Card */
@@ -235,7 +236,7 @@ html[data-fs-theme] .wizard-page .toggle-btn span {
 }
 
 html[data-fs-theme] .wizard-page .toggle-btn:focus-visible {
-  outline: 2px solid var(--fs-focus-ring);
+  outline: var(--fs-focus-ring);
   outline-offset: 2px;
 }
 
@@ -338,6 +339,7 @@ html[data-fs-theme] .wizard-page .wizard-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-height: 44px;
 }
 
 /* Mobile Adjustments (<= 768px per D19) */

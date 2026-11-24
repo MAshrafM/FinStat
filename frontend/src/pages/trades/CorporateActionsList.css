@@ -134,10 +134,15 @@ html[data-fs-theme] .ca-empty-icon-wrap {
   margin-bottom: 16px;
 }
 
-html[data-fs-theme] .ca-empty-card h3 {
+html[data-fs-theme] .ca-header-actions .ca-btn {
+  min-height: 44px;
+}
+
+html[data-fs-theme] .ca-empty-card h2 {
   margin: 0 0 8px 0;
   font-size: var(--fs-text-lg);
   color: var(--fs-text);
+  font-weight: 600;
 }
 
 html[data-fs-theme] .ca-empty-card p {
@@ -244,6 +249,7 @@ html[data-fs-theme] .ca-btn-table-delete {
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
+  min-height: 32px;
   font-size: var(--fs-text-xs);
   font-weight: 500;
   border-radius: var(--fs-radius-sm);
@@ -393,10 +399,11 @@ html[data-fs-theme] .ca-modal-card {
   padding: 24px;
 }
 
-html[data-fs-theme] .ca-modal-card h3 {
+html[data-fs-theme] .ca-modal-card h2 {
   margin: 0 0 12px 0;
   font-size: var(--fs-text-lg);
   color: var(--fs-text);
+  font-weight: 600;
 }
 
 html[data-fs-theme] .ca-modal-card p {

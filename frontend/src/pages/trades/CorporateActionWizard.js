@@ -159,7 +159,7 @@ const CorporateActionWizard = () => {
         {/* STEP 1: SELECT STOCK */}
         {step === 1 && (
           <div className="step-content">
-            <h3>Select a Position</h3>
+            <h2>Select a Position</h2>
             <p className="step-desc">Choose from your currently active stock positions to apply this corporate action.</p>
 
             {availablePositions.length === 0 && !isLoading ? (
@@ -226,7 +226,7 @@ const CorporateActionWizard = () => {
         {/* STEP 2: CONFIGURE ACTION */}
         {step === 2 && (
           <div className="step-content">
-            <h3>Configure Corporate Action</h3>
+            <h2>Configure Corporate Action</h2>
             <p className="step-desc">Define the event type, ratio, and the date the corporate action took effect on the exchange.</p>
 
             <div className="form-group">
@@ -324,12 +324,12 @@ const CorporateActionWizard = () => {
         {/* STEP 3: PREVIEW & CONFIRM */}
         {step === 3 && (
           <div className="step-content">
-            <h3>Review & Confirm Impact</h3>
+            <h2>Review & Confirm Impact</h2>
             <p className="step-desc">Inspect how your position's shares and average cost basis will be adjusted on-the-fly.</p>
 
             <div className="impact-comparison-box">
               <div className="comparison-col before">
-                <h4>Before Adjustment</h4>
+                <h3>Before Adjustment</h3>
                 <div className="metric-row">
                   <span>Shares:</span>
                   <strong className="ca-num">{previewData.currentShares.toLocaleString()}</strong>
@@ -349,7 +349,7 @@ const CorporateActionWizard = () => {
               </div>
 
               <div className="comparison-col after">
-                <h4>After Corporate Action</h4>
+                <h3>After Corporate Action</h3>
                 <div className="metric-row">
                   <span>Shares:</span>
                   <strong className="ca-impact-stat-positive ca-num">{previewData.newShares.toLocaleString()}</strong>

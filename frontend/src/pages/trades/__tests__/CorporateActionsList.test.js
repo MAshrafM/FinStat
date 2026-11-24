@@ -80,7 +80,7 @@ describe('CorporateActionsList Component', () => {
     expect(screen.getByTitle('Launch Action Wizard')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText('COMI')).toBeInTheDocument();
+      expect(screen.getAllByText('COMI')[0]).toBeInTheDocument();
     });
   });
 
@@ -117,12 +117,12 @@ describe('CorporateActionsList Component', () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('COMI')).toBeInTheDocument();
+      expect(screen.getAllByText('COMI')[0]).toBeInTheDocument();
     });
 
-    expect(screen.getByText('AMOC')).toBeInTheDocument();
-    expect(screen.getByText('Thndr')).toBeInTheDocument();
-    expect(screen.getByText('Hermes')).toBeInTheDocument();
+    expect(screen.getAllByText('AMOC')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Thndr')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Hermes')[0]).toBeInTheDocument();
     expect(screen.getByText('2:1 Stock Split approved by EGX')).toBeInTheDocument();
     expect(screen.getByText('10% Bonus Share Distribution')).toBeInTheDocument();
   });
@@ -148,7 +148,7 @@ describe('CorporateActionsList Component', () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('COMI')).toBeInTheDocument();
+      expect(screen.getAllByText('COMI')[0]).toBeInTheDocument();
     });
 
     const removeButtons = screen.getAllByTitle('Remove corporate action');
@@ -167,7 +167,7 @@ describe('CorporateActionsList Component', () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('COMI')).toBeInTheDocument();
+      expect(screen.getAllByText('COMI')[0]).toBeInTheDocument();
     });
 
     const removeButtons = screen.getAllByTitle('Remove corporate action');
@@ -193,7 +193,7 @@ describe('CorporateActionsList Component', () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('COMI')).toBeInTheDocument();
+      expect(screen.getAllByText('COMI')[0]).toBeInTheDocument();
     });
 
     const removeButtons = screen.getAllByTitle('Remove corporate action');
@@ -219,7 +219,7 @@ describe('CorporateActionsList Component', () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('COMI')).toBeInTheDocument();
+      expect(screen.getAllByText('COMI')[0]).toBeInTheDocument();
     });
 
     const removeButtons = screen.getAllByTitle('Remove corporate action');
@@ -242,7 +242,7 @@ describe('CorporateActionsList Component', () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('COMI')).toBeInTheDocument();
+      expect(screen.getAllByText('COMI')[0]).toBeInTheDocument();
     });
 
     const expanderButtons = screen.getAllByLabelText('Expand corporate action details');
@@ -267,11 +267,15 @@ describe('CorporateActionsList Component', () => {
     renderComponent(false); // viewer mode
 
     await waitFor(() => {
-      expect(screen.getByText('COMI')).toBeInTheDocument();
+      expect(screen.getAllByText('COMI')[0]).toBeInTheDocument();
     });
 
     const removeButtons = screen.queryAllByTitle('Remove corporate action');
-    expect(removeButtons.length).toBe(0);
+    expect(removeButtons.length).toBeGreaterThan(0);
+    removeButtons.forEach((btn) => {
+      expect(btn).toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
+    });
   });
 
   test('12. Passes jest-axe accessibility audit with 0 violations', async () => {
@@ -282,7 +286,7 @@ describe('CorporateActionsList Component', () => {
     const { container } = renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('COMI')).toBeInTheDocument();
+      expect(screen.getAllByText('COMI')[0]).toBeInTheDocument();
     });
 
     const results = await axe(container);
