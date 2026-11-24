@@ -10,7 +10,7 @@
   - `/trades/new` → `/trades/add` redirect preserved
 - **Working Branch**: `phase-ui-7a-trades`
 - **Implementation SHA**: `6f437dc` (code & test remediation commit)
-- **Documentation SHA**: `663f038` (walkthrough remediation & governance sync; to be finalized with merge SHA)
+- **Documentation SHA**: `063b6ff` (walkthrough remediation & governance sync; to be finalized with merge SHA)
 - **Baselines Commit**: `7d61525` (in `D:\Projects\FinStat-visual-baselines`)
 - **Merge Base**: `5c57915a3c65f4fe8e5047e59d968c3d6a1eaa7a` (`origin/main`)
 - **Date**: 2026-11-24

@@ -2849,7 +2849,7 @@ Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests gree
 Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
 Branch:      phase-ui-7a-trades
 Implementation SHA: 6f437dc (branch phase-ui-7a-trades)
-Documentation SHA:  663f038
+Documentation SHA:  063b6ff
 Merge SHA:          pending
 ```
 
