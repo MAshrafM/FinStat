@@ -906,8 +906,8 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | `/trades/new` → `/trades/add` | redirect | 7A | n/a | n/a | Verify redirect intact |
 | `/trades/edit/:id` | `pages/trades/EditTradePage` | 7A | ☑ | ☑ | |
 | `/trade-summary` | `pages/trades/TradeSummaryPage` | 7A | ☑ | ☑ | 54 inline styles |
-| `/corporate-actions` | `pages/trades/CorporateActionsList` | 7B | ☐ | ☐ | 9 `!important` |
-| `/corporate-actions/wizard` | `pages/trades/CorporateActionWizard` | 7B | ☐ | ☐ | 14 inline styles |
+| `/corporate-actions` | `pages/trades/CorporateActionsList` | 7B | ☑ | ☑ | 9 `!important` |
+| `/corporate-actions/wizard` | `pages/trades/CorporateActionWizard` | 7B | ☑ | ☑ | 14 inline styles |
 | `/mutual-funds` | `pages/mutual-funds/MutualFundLogPage` | 7C | ☐ | ☐ | |
 | `/mutual-funds/new` | `pages/mutual-funds/AddMutualFundPage` | 7C | ☐ | ☐ | + `MutualFundForm` (15) |
 | `/mutual-funds/edit/:id` | `pages/mutual-funds/EditMutualFundPage` | 7C | ☐ | ☐ | |
@@ -1060,7 +1060,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **6A** | Portfolio dashboard | `phase-ui-6a-portfolio` | ☑ | ☑ |
 | **6B** | Rebalancing | `phase-ui-6b-rebalancing` | ☑ | ☑ |
 | **7A** | Trades + trade summary | `phase-ui-7a-trades` | ☑ | ☑ |
-| **7B** | Corporate actions | `phase-ui-7b-corporate-actions` | ☐ | ☐ |
+| **7B** | Corporate actions | `phase-ui-7b-corporate-actions` | ☑ | ☑ |
 | **7C** | Mutual funds | `phase-ui-7c-mutual-funds` | ☐ | ☐ |
 | **8A** | Gold wallet | `phase-ui-8a-gold` | ☐ | ☐ |
 | **8B** | Certificates: log | `phase-ui-8b-certificates-log` | ☐ | ☐ |
@@ -1807,12 +1807,12 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 7B — Corporate actions
 
-- [ ] `CorporateActionsList.css` + `.js` — dark list/table; remove the 9 `!important`.
-- [ ] `CorporateActionWizard.css` (14 inline) + `.js` — stepper tokens, step panels, review summary.
-- [ ] Remove the 7 `!important` in the wizard.
-- [ ] Verify wizard navigation, validation, and submit.
-- [ ] Remove Corporate Action components (`CorporateActionsList.js`, `CorporateActionWizard.js`) from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add `/corporate-actions` and `/corporate-actions/wizard`.**
+- [x] `CorporateActionsList.css` + `.js` — dark list/table; remove the 9 `!important`.
+- [x] `CorporateActionWizard.css` (14 inline) + `.js` — stepper tokens, step panels, review summary.
+- [x] Remove the 7 `!important` in the wizard.
+- [x] Verify wizard navigation, validation, and submit.
+- [x] Remove Corporate Action components (`CorporateActionsList.js`, `CorporateActionWizard.js`) from `frontend/.eslintignore`; verify clean ESLint.
+- [x] **Add `/corporate-actions` and `/corporate-actions/wizard`.**
 
 #### 7C — Mutual funds
 
@@ -2553,6 +2553,7 @@ Append one row per sub-phase. Never edit past rows.
 | 6A | 2026-11-23 | Portfolio dashboard: promoted /portfolio to active allowlist (20 -> 21 patterns); themed Portfolio Dashboard adhering to Reference Frame 03 (Dashboard Variant B) and Reference Frame 01 (Dense Table Variant B); converted asset allocation from doughnut to ranked horizontal bar chart (AD15, capped at top 6 + neutral Other rollup) using chartTheme.js accessible grey palette and createPattern() styling, with adjacent accessible data table alternative; formatted 5 summary KPI cards with neutral tone and Delta Gain/Loss indicators; implemented Decision D19 mobile compact-expand cards for HoldingsTable at <= 768px with >= 44px touch targets and zero page-level horizontal scroll at 390px; tokenized cost-basis accounting switcher and view-only banner; purged all 4 portfolio files from .eslintignore (0 warnings); verified component unit and axe tests (14/14 green, including accessible chart name assertion); verified Playwright real-browser axe audit (0 critical/serious violations); verified Playwright reference match spec (3/3 green: 1 setup + 2 reference tests); re-captured 5 visual baselines in D:\Projects\FinStat-visual-baselines (commit e742200); manifest verified (334/334); full 326-test run reconciled (292 passing + 10 AD14 accepted diffs + 24 AD16 accepted diffs, 0 unexplained diffs); PR-subset 68/71 passing per Waiver W-6A-1; 18 verification gates passed. | 6B (Rebalancing & Financial Report) | None | d7435c0 (merged to main) |
 | 6B | 2026-11-23 | Rebalancing & comprehensive reporting: promoted /portfolio/rebalancing and /reports/financial to active allowlist (21 -> 23 patterns); themed RebalancingPage adhering to Reference Frame 03 and Frame 01 with custom range sliders, neutral drift action badges, AD18 advisory drift badge ('Rebalancing Recommended' with .fs-badge--warning on drift, 'Balanced on Target' with .fs-badge--neutral when balanced), and D19 mobile compact-expand cards; fixed /portfolio root loading sequence per Decision D23 with shaped section skeletons; themed ComprehensiveReportPage with chartTheme.js accessible palette and strict @media print isolation (Waiver W-6B-1); purged 4 entries from .eslintignore; unit and axe tests passing (33/33 green across 3 suites); Playwright real-browser axe passing (4/4 green, 0 violations); reference match spec passing (5/5 green); 10 baselines updated in FinStat-visual-baselines (commit c2dadf6); manifest 334/334 verified; PR subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 18 verification gates passed. Phase 6 Exit Gate complete. | 7A (Trade log & trade entry conversion) | None | 46f2108 (merged to main) |
 | 7A | 2026-11-24 | Stock Trading & Performance Subsystem conversion: promoted /trades, /trades/add, /trades/edit/:id, /trade-summary to active allowlist (23 -> 27 patterns); Reference Frame 01 dense table with sort indicators, Reference Frame 02 stacked forms, Reference Frame 03 summary dashboard; implemented Decision D19 mobile compact-expand cards (.trade-card) with 0 horizontal overflow; purged 54 inline styles from TradeSummaryPage.js and migrated all P&L displays to <Delta> with explicit sign, arrow, and label; eliminated 8 !important from Trades.css; removed 3 trade files (TradeForm.js, TradeLogPage.js, TradeSummaryPage.js) from .eslintignore (0 warnings); passed all 18 verification gates; un-injected real-browser axe test passing 0 critical/serious violations (5/5 green); reference match spec passing 6/6; 20 baselines updated in FinStat-visual-baselines (commit c89845e); manifest 334/334 verified; PR-subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 111/111 unthemed consumer tests green across 22 routes. Taste Checkpoint #5 signed off by User; mobile collapsible card remediation (D19), secondary Corporate Actions button fix, and desktop/tablet horizontal table scroll verified; merged to main. | 7B (Corporate actions) | None | 7e007a8 (merged to main) |
+| 7B | 2026-11-24 | Corporate Actions Subsystem conversion: promoted /corporate-actions and /corporate-actions/wizard to active allowlist (27 -> 29 patterns); Reference Frame 01 dense table with container horizontal scroll (overflow-x: auto; 2624f2b) and Decision D19 mobile compact-expand cards (.ca-mobile-card) with 0 page-level horizontal overflow at 390px; Reference Frame 02 stacked form and Reference Frame 03 segmented stepper with WCAG 2.1 AA compliant --fs-ink on --fs-accent (7.76:1 ratio); accessible WAI-ARIA APG delete confirmation modal with focus trap (modalRef, Tab/Shift+Tab cycling, Escape dismissal, focus return); eliminated all 14 inline styles from CorporateActionWizard.js and all 6 from CorporateActionsList.js; permanently dropped 16 legacy !important declarations (9 in CorporateActionsList.css, 7 in CorporateActionWizard.css); severed coupling to Trades.css and Table.css; removed both components from .eslintignore (0 errors across 10 touched JS/JSX files); passed all 18 verification gates; CRA unit tests 26/26 passed with 0 critical/serious axe violations; Playwright real-browser axe audit passing 3/3; reference match spec passing 5/5; 10 baselines updated in FinStat-visual-baselines (commit cfaadb5); manifest 334/334 verified; PR-subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 111/111 unthemed consumer tests green across 22 routes. Signed off by User on 2026-11-24; merged to main. | 7C (Mutual funds) | None | Merged to main |
 
 ```
 Sub-phase:   1A
@@ -2851,6 +2852,22 @@ Branch:      phase-ui-7a-trades / phase-ui-7a-mobile-fixes
 Implementation SHA: 6f437dc (initial) / 709202e (mobile fixes)
 Documentation SHA:  063b6ff
 Merge SHA:          7e007a8 (merged to main)
+```
+
+```
+Sub-phase:   7B
+Status:      done (Signed off by User)
+Done:        Modernized Corporate Actions Subsystem across 2 routes (/corporate-actions, /corporate-actions/wizard); promoted allowlist from 27 to 29 patterns; permanently purged 16 legacy !important declarations (9 in CorporateActionsList.css, 7 in CorporateActionWizard.css); completely severed coupling to Trades.css and Table.css; authored scoped modern dark-theme rules under html[data-fs-theme] .ca-page-container; isolated semantic tones in Section 16 of theme-components.css; enforced strict heading hierarchy sequence (h1 -> h2 -> h3) with 0 skipped levels; implemented WAI-ARIA APG delete confirmation modal with focus trap (modalRef, Tab/Shift-Tab cycling, initial focus, focus return upon cancel, Escape listener); implemented Decision D19 mobile compact-expand cards (.ca-mobile-card) at <= 768px with >= 44px touch targets and zero page-level horizontal overflow at 390px; implemented desktop/tablet table container scroll (overflow-x: auto; 2624f2b); implemented 3-step wizard with WCAG 2.1 AA compliant --fs-ink on --fs-accent (7.76:1 ratio; strictly zero white on accent); eliminated all 14 inline styles from CorporateActionWizard.js and 6 from CorporateActionsList.js; removed both components from .eslintignore with 0 warnings; passed all 18 verification gates including 26/26 unit tests with 0 critical/serious axe violations, 9/9 App routing tests, 11/11 calculation characterization tests across 8 domains, real-browser Playwright axe audit (3/3 passed, 0 critical/serious violations under wcag2a/wcag2aa), reference match spec (5/5 passed), 10 visual baseline snapshots updated in FinStat-visual-baselines (commit cfaadb5), 334/334 manifest integrity verified, PR-subset 68/71 passing per Waiver W-6A-1 (0 diffs attributable to 7B), full 326 visual suite reconciled (292 passed + 34 accepted diffs under AD14/AD16, 0 unexplained diffs), and 111/111 unthemed consumer tests passing with 0 drift. Signed off by User on 2026-11-24.
+Next:        Phase 7C (Mutual funds)
+Blocked by:  None
+Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks', '/salary/paychecks/new', '/salary/paychecks/edit/:id', '/salary-profile/history', '/salary-profile/edit', '/salary-profile/history/edit/:historyId', '/salary-profile/update', '/analysis/payroll', '/salary/simulator', '/portfolio', '/portfolio/rebalancing', '/reports/financial', '/trades', '/trades/add', '/trades/edit/:id', '/trade-summary', '/corporate-actions', '/corporate-actions/wizard'] (cumulative: 29 patterns)
+Visual diff: 0 diff attributable to Phase 7B; 10 newly updated Phase 7B baselines across 5 viewports; 0 diff across all 8 unthemed consumers of Trades.css (111 tests green across 22 routes x 5 viewports + 1 fixture); PR-subset 68/71 passing with 3 pre-existing payroll diffs under AD16; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); manifest 334/334 verified
+Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green via Jest)
+Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
+Branch:      phase-ui-7b-corporate-actions
+Implementation SHA: 510e6a8
+Documentation SHA:  Pending merge
+Merge SHA:          Pending merge
 ```
 
 ### Sub-phase note template

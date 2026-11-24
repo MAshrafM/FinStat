@@ -15,6 +15,7 @@ const { setupPortfolioMocks } = require('./fixtures/portfolioMocks');
 const { setupRebalancingMocks } = require('./fixtures/rebalancingMocks');
 const { setupReportsMocks } = require('./fixtures/reportsMocks');
 const { setupTradesMocks } = require('./fixtures/tradesMocks');
+const { setupCorporateActionsMocks } = require('./fixtures/corporateActionsMocks');
 
 const MANDATORY_QA_WIDTHS = [1440, 1024, 768, 480, 390];
 
@@ -74,6 +75,8 @@ test.describe('Visual Regression Suite', () => {
           route.slug === 'trade-summary'
         ) {
           await setupTradesMocks(page, route.slug);
+        } else if (route.slug.startsWith('corporate-actions')) {
+          await setupCorporateActionsMocks(page);
         }
 
         // Navigate to route

@@ -1997,4 +1997,60 @@ html[data-fs-theme] .trade-summary-page .free-ride-badge {
   font-weight: 600;
 }
 
+/* ----------------------------------------------------
+   Phase 7B: Corporate Actions Semantic Themes
+---------------------------------------------------- */
+html[data-fs-theme] .wizard-page .step-item.active .step-number {
+  background: var(--fs-accent);
+  color: var(--fs-ink);
+  border-color: var(--fs-accent);
+}
+
+html[data-fs-theme] .wizard-page .step-item.completed .step-number {
+  background: var(--fs-surface-raised);
+  color: var(--fs-positive);
+  border-color: var(--fs-border);
+}
+
+html[data-fs-theme] .wizard-page .toggle-btn.active {
+  border-color: var(--fs-accent);
+  background: var(--fs-surface-raised);
+}
+
+html[data-fs-theme] .wizard-page .confirmation-summary {
+  background: var(--fs-surface-sunken);
+  border-left: 3px solid var(--fs-accent);
+}
+
+html[data-fs-theme] .wizard-page .ca-impact-stat-positive {
+  color: var(--fs-positive);
+}
+
+html[data-fs-theme] .wizard-page .ca-impact-stat-accent {
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .wizard-page .wizard-empty-icon {
+  color: var(--fs-warning);
+}
+
+html[data-fs-theme] .ca-page-container .ca-btn-table-delete:hover:not(:disabled) {
+  color: var(--fs-negative);
+  border-color: var(--fs-negative);
+}
+
+html[data-fs-theme] .ca-page-container .ca-btn-danger,
+html[data-fs-theme] .ca-modal-overlay .ca-btn-danger {
+  background: var(--fs-danger);
+  color: var(--fs-ink);
+  border-color: transparent;
+}
+
+html[data-fs-theme] .ca-page-container .ca-btn-danger:hover:not(:disabled),
+html[data-fs-theme] .ca-modal-overlay .ca-btn-danger:hover:not(:disabled) {
+  background: var(--fs-negative);
+  color: var(--fs-ink);
+}
+
+
 

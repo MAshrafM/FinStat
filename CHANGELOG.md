@@ -453,6 +453,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Re-captured 5 visual baseline snapshots in `D:\Projects\FinStat-visual-baselines` (commit `e742200`), verified manifest integrity (334/334 baselines verified).
 - Completed Phase 6A migration, verified all gates, ready for taste checkpoint #4 walkthrough.
 
+### Changed - UI Phase 7B: Corporate Actions Subsystem Modernization
+- Promoted `/corporate-actions` and `/corporate-actions/wizard` to active `THEMED_PATTERNS` allowlist in `ProtectedRoute.js` (expanding active allowlist from 27 to 29 patterns).
+- Severed legacy coupling from `Trades.css` and `Table.css` for both corporate actions views; authored tokenized stylesheets `CorporateActionsList.css` and `CorporateActionWizard.css` scoped under `html[data-fs-theme]`.
+- Permanently eliminated 16 legacy `!important` declarations (9 in `CorporateActionsList.css`, 7 in `CorporateActionWizard.css`) and de-ignored both files from `frontend/.eslintignore`.
+- Scoped semantic corporate action themes (stepper, toggle buttons, impact metrics, delete actions) in Section 16 of `theme-components.css` under `html[data-fs-theme]`.
+- Implemented Decision D19 mobile compact-expand pattern (`.ca-mobile-card-list`, `.ca-mobile-card`) with $\ge 44\times 44$px touch targets and zero page-level horizontal overflow at 390px.
+- Enabled horizontal table scrolling (`overflow-x: auto`) on desktop and tablet viewports per Phase 7A precedent (`2624f2b`).
+- Implemented accessible delete confirmation modal with APG focus trap (Tab / Shift+Tab cycling, autofocus first button, focus restoration on close, Escape key listener).
+- Enforced heading order hierarchy (`h1` $\to$ `h2` $\to$ `h3`) and WCAG 2.1 AA stepper contrast compliance (`--fs-ink` on `--fs-accent` at $7.76:1$ ratio).
+- Created unit tests `CorporateActionsList.test.js` (12 tests) and `CorporateActionWizard.test.js` (14 tests) passing with 0 critical/serious axe violations (26/26 passed).
+- Created reference match spec `corporate-actions-reference-match.spec.js` (6/6 passed) verifying Reference Frames 01, 02, 03 design tokens, touch targets, and real Tab keyboard focus rings (`solid 3px rgb(242, 243, 245)`).
+- Re-captured 10 visual baselines in `D:\Projects\FinStat-visual-baselines` (commit `cfaadb5`), verified 334/334 manifest integrity, and confirmed PR-subset 68/71 and full 326-test run (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs).
+
+
 
 
 
