@@ -501,3 +501,11 @@ Review all 20 snapshots across 5 viewports (1440, 1024, 768, 480, 390px):
    - In `TradeSummaryPage.js`, all 54 inline styles are purged. Unrealized P/L, Trading P/L, Total Return, Profit %, and Price Change are rendered via `<Delta>` with explicit sign, arrow, and label. Zero returns are rendered strictly neutral (`tone="neutral"`).
 6. **De-Ignore Scope Realignment**:
    - Lines 64–66 in `frontend/.eslintignore` (`TradeForm.js`, `TradeLogPage.js`, `TradeSummaryPage.js`) are permanently removed. `AddTradePage.js` and `EditTradePage.js` are verified not ignored. All 5 production files and 3 new unit test files are held to 0 errors and 0 warnings under `--max-warnings=0`.
+7. **Amendment AD22: Trade Summary KPI Card Structure & Tone Application**:
+   - `TradeSummaryPage.js` structures KPI summary cards with neutral primary metrics (`.fs-num`, `--fs-text`) for Total Invested, Portfolio Value, and Total Dividends, and applies semantic tone tokens (`--fs-positive`, `--fs-negative`, `--fs-neutral`) through the canonical `Delta` component for Realized and Unrealized P&L without naming tone tokens directly in page CSS.
+8. **Amendment AD23: Compact-Expand Mobile Trades Card Pattern**:
+   - `TradeLogPage.js` collapses desktop table columns into structured vertical card rows at viewport $\le 768\text{px}$ per D19, featuring expandable trade metadata, symbol chips, and accessible action controls without triggering page-level horizontal overflow.
+9. **Amendment AD24: Broker Select & Custom Input State Machine**:
+   - `TradeForm.js` unifies preset broker selection and custom broker text input into a single controlled state machine with accessible label bindings and inline error surfaces.
+10. **Amendment AD25: Table Inline Action Touch Target Calibration**:
+   - `TradeLogPage.js` and `Trades.css` calibrate inline table action buttons (e.g. `.action-btn-delete`) to $\ge 32\times 32\text{px}$ on desktop viewports ($> 768\text{px}$) to preserve dense numerical table readability per Reference Frame 01 Variant B, and expand to $\ge 44\times 44\text{px}$ on mobile viewports ($\le 768\text{px}$) via `@media (max-width: 768px)` overrides to strictly fulfill mobile touch target accessibility per UI-UX-PLAN §4.8. Primary page actions and form buttons maintain $\ge 44\times 44\text{px}$ across all viewports.
