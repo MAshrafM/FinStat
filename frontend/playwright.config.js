@@ -1,5 +1,5 @@
 // frontend/playwright.config.js
-const { defineConfig, devices } = require('@playwright/test');
+const { defineConfig } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests/visual',
@@ -34,7 +34,7 @@ module.exports = defineConfig({
     {
       name: 'reference',
       dependencies: ['setup'],
-      testMatch: /(reference-frames|dashboard-reference-match|expenditure-reference-match|expenditure-form-reference-match|paycheck-form-reference-match|payroll-history-reference-match|portfolio-reference-match|rebalancing-reports-reference-match|trades-reference-match)\.spec\.js/,
+      testMatch: /(reference-frames|dashboard-reference-match|expenditure-reference-match|expenditure-form-reference-match|paycheck-form-reference-match|payroll-history-reference-match|portfolio-reference-match|rebalancing-reports-reference-match|trades-reference-match|corporate-actions-reference-match)\.spec\.js/,
     },
     {
       name: 'shared',

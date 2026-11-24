@@ -56,7 +56,7 @@ const CorporateActionWizard = () => {
     const ratio = Number(formData.ratio || 1);
 
     if (currentShares <= 0 || ratio <= 0) {
-      return { newShares: 0, newAvgPrice: 0, multiplier: 1 };
+      return { newShares: 0, newAvgPrice: 0, multiplier: 1, totalPositionCost: 0 };
     }
 
     let multiplier = 1;
@@ -127,12 +127,12 @@ const CorporateActionWizard = () => {
 
   return (
     <div className="page-container wizard-page">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="wizard-header">
         <div>
           <h1>Corporate Action Wizard</h1>
           <p className="page-subtitle">Apply stock splits or bonus share distributions retroactively without altering historical data.</p>
         </div>
-        <Link to="/corporate-actions" className="btn btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+        <Link to="/corporate-actions" className="ca-btn ca-btn-secondary wizard-back-btn">
           <ArrowLeft size={16} /> View All Actions
         </Link>
       </div>
@@ -164,13 +164,14 @@ const CorporateActionWizard = () => {
 
             {availablePositions.length === 0 && !isLoading ? (
               <div className="empty-notice">
-                <AlertCircle size={24} style={{ color: '#e67e22' }} />
+                <AlertCircle size={24} className="wizard-empty-icon" />
                 <p>No open stock positions found in your portfolio. You must hold active shares to apply a corporate action.</p>
               </div>
             ) : (
               <div className="form-group">
-                <label>Select Open Stock Holding</label>
+                <label htmlFor="wizard-stock-select">Select Open Stock Holding</label>
                 <select
+                  id="wizard-stock-select"
                   value={`${formData.stockCode}_${formData.broker}`}
                   onChange={handleStockSelection}
                   className="wizard-select"
@@ -197,11 +198,11 @@ const CorporateActionWizard = () => {
                     </div>
                     <div className="preview-stat">
                       <span className="stat-label">Current Shares</span>
-                      <strong className="stat-val">{selectedPosition.currentShares.toLocaleString()}</strong>
+                      <strong className="stat-val ca-num">{selectedPosition.currentShares.toLocaleString()}</strong>
                     </div>
                     <div className="preview-stat">
                       <span className="stat-label">Avg Buy Price</span>
-                      <strong className="stat-val">{formatCurrency(selectedPosition.avgPrice || selectedPosition.averageBuyPrice)}</strong>
+                      <strong className="stat-val ca-num">{formatCurrency(selectedPosition.avgPrice || selectedPosition.averageBuyPrice)}</strong>
                     </div>
                   </div>
                 )}
@@ -212,10 +213,9 @@ const CorporateActionWizard = () => {
               <span />
               <button
                 type="button"
-                className="btn btn-primary"
+                className="ca-btn ca-btn-primary wizard-action-btn"
                 disabled={!formData.stockCode}
                 onClick={() => setStep(2)}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
               >
                 Continue to Action Setup <ArrowRight size={16} />
               </button>
@@ -230,7 +230,7 @@ const CorporateActionWizard = () => {
             <p className="step-desc">Define the event type, ratio, and the date the corporate action took effect on the exchange.</p>
 
             <div className="form-group">
-              <label>Corporate Action Type</label>
+              <span className="wizard-label">Corporate Action Type</span>
               <div className="type-toggle-group">
                 <button
                   type="button"
@@ -251,12 +251,13 @@ const CorporateActionWizard = () => {
               </div>
             </div>
 
-            <div className="form-row" style={{ display: 'flex', gap: '20px', marginTop: '15px' }}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>
+            <div className="wizard-form-row">
+              <div className="form-group wizard-form-col">
+                <label htmlFor="wizard-ratio-input">
                   {formData.type === 'split' ? 'Split Ratio (Multiplier)' : 'Bonus Issue Ratio (Decimal)'}
                 </label>
                 <input
+                  id="wizard-ratio-input"
                   type="number"
                   step="any"
                   min="0.0001"
@@ -267,16 +268,17 @@ const CorporateActionWizard = () => {
                   placeholder={formData.type === 'split' ? 'e.g. 2 for 2-for-1' : 'e.g. 0.10 for 10%'}
                   className="wizard-input"
                 />
-                <small style={{ color: '#64748b', display: 'block', marginTop: '4px' }}>
+                <small className="wizard-help-text">
                   {formData.type === 'split'
                     ? 'Enter 2 for a 2:1 split, 3 for 3:1, or 0.5 for a 1:2 reverse split.'
                     : 'Enter 0.10 for a 10% bonus share issue, 0.25 for 25%.'}
                 </small>
               </div>
 
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Effective Date</label>
+              <div className="form-group wizard-form-col">
+                <label htmlFor="wizard-date-input">Effective Date</label>
                 <input
+                  id="wizard-date-input"
                   type="date"
                   name="effectiveDate"
                   value={formData.effectiveDate}
@@ -284,15 +286,16 @@ const CorporateActionWizard = () => {
                   required
                   className="wizard-input"
                 />
-                <small style={{ color: '#64748b', display: 'block', marginTop: '4px' }}>
+                <small className="wizard-help-text">
                   Trades entered prior to this date will be adjusted.
                 </small>
               </div>
             </div>
 
-            <div className="form-group" style={{ marginTop: '15px' }}>
-              <label>Notes (Optional)</label>
+            <div className="form-group wizard-notes-group">
+              <label htmlFor="wizard-notes-input">Notes (Optional)</label>
               <input
+                id="wizard-notes-input"
                 type="text"
                 name="notes"
                 value={formData.notes}
@@ -303,15 +306,14 @@ const CorporateActionWizard = () => {
             </div>
 
             <div className="wizard-actions">
-              <button type="button" className="btn btn-secondary" onClick={() => setStep(1)}>
+              <button type="button" className="ca-btn ca-btn-secondary" onClick={() => setStep(1)}>
                 Back
               </button>
               <button
                 type="button"
-                className="btn btn-primary"
+                className="ca-btn ca-btn-primary wizard-action-btn"
                 disabled={!formData.ratio || formData.ratio <= 0}
                 onClick={() => setStep(3)}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
               >
                 Preview Impact <ArrowRight size={16} />
               </button>
@@ -330,15 +332,15 @@ const CorporateActionWizard = () => {
                 <h4>Before Adjustment</h4>
                 <div className="metric-row">
                   <span>Shares:</span>
-                  <strong>{previewData.currentShares.toLocaleString()}</strong>
+                  <strong className="ca-num">{previewData.currentShares.toLocaleString()}</strong>
                 </div>
                 <div className="metric-row">
                   <span>Avg Price:</span>
-                  <strong>{formatCurrency(previewData.currentAvgPrice)}</strong>
+                  <strong className="ca-num">{formatCurrency(previewData.currentAvgPrice)}</strong>
                 </div>
                 <div className="metric-row">
                   <span>Total Cost:</span>
-                  <strong>{formatCurrency(previewData.totalPositionCost)}</strong>
+                  <strong className="ca-num">{formatCurrency(previewData.totalPositionCost)}</strong>
                 </div>
               </div>
 
@@ -350,15 +352,15 @@ const CorporateActionWizard = () => {
                 <h4>After Corporate Action</h4>
                 <div className="metric-row">
                   <span>Shares:</span>
-                  <strong style={{ color: '#27ae60' }}>{previewData.newShares.toLocaleString()}</strong>
+                  <strong className="ca-impact-stat-positive ca-num">{previewData.newShares.toLocaleString()}</strong>
                 </div>
                 <div className="metric-row">
                   <span>Avg Price:</span>
-                  <strong style={{ color: '#2980b9' }}>{formatCurrency(previewData.newAvgPrice)}</strong>
+                  <strong className="ca-impact-stat-accent ca-num">{formatCurrency(previewData.newAvgPrice)}</strong>
                 </div>
                 <div className="metric-row">
                   <span>Total Cost:</span>
-                  <strong>{formatCurrency(previewData.totalPositionCost)}</strong>
+                  <strong className="ca-num">{formatCurrency(previewData.totalPositionCost)}</strong>
                 </div>
               </div>
             </div>
@@ -370,15 +372,14 @@ const CorporateActionWizard = () => {
             </div>
 
             <div className="wizard-actions">
-              <button type="button" className="btn btn-secondary" onClick={() => setStep(2)}>
+              <button type="button" className="ca-btn ca-btn-secondary" onClick={() => setStep(2)}>
                 Back
               </button>
               <button
                 type="button"
-                className="btn btn-primary"
+                className="ca-btn ca-btn-primary wizard-action-btn"
                 disabled={submitting}
                 onClick={handleSubmit}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
               >
                 <Wand2 size={18} />
                 {submitting ? 'Applying...' : 'Confirm & Apply Corporate Action'}
