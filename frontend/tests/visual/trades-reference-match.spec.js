@@ -25,7 +25,7 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/trades', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(500);
-    await page.locator('.loading-spinner, .loading-spinner-ring, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+    await page.locator('.loading-spinner, .loading-spinner-ring, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => { });
 
     // 1. Page canvas background: rgb(16, 17, 20) (#101114, --fs-bg)
     const pageWrapper = page.locator('.trade-log-page');
@@ -90,7 +90,7 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/trade-summary', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(500);
-    await page.locator('.loading-spinner, .loading-spinner-ring, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+    await page.locator('.loading-spinner, .loading-spinner-ring, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => { });
 
     const pageWrapper = page.locator('.trade-summary-page');
     await expect(pageWrapper).toBeVisible();
@@ -114,7 +114,7 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/trades', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(500);
-    await page.locator('.loading-spinner, .loading-spinner-ring, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+    await page.locator('.loading-spinner, .loading-spinner-ring, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => { });
 
     // Assert .trade-card elements exist and are rendered at mobile viewport
     const tradeCards = page.locator('.trade-log-page .trade-card');
@@ -131,7 +131,7 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     // Navigate to /trade-summary and verify .trade-card elements and zero overflow
     await page.goto('/trade-summary', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(500);
-    await page.locator('.loading-spinner, .loading-spinner-ring, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+    await page.locator('.loading-spinner, .loading-spinner-ring, .fs-loading, .fs-skeleton').waitFor({ state: 'detached', timeout: 5000 }).catch(() => { });
 
     const summaryCards = page.locator('.trade-summary-page .trade-card');
     await expect(summaryCards.first()).toBeVisible();
@@ -156,14 +156,14 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     expect(box.height).toBeGreaterThanOrEqual(44);
     expect(box.width).toBeGreaterThanOrEqual(44);
 
-    // 2. Inline action button touch target >= 32px
+    // 2. Inline action button touch target >= 32px (calibrated per Amendment AD25)
     const deleteBtn = page.locator('.trade-log-page .action-btn-delete').first();
     await expect(deleteBtn).toBeVisible();
     const deleteBox = await deleteBtn.boundingBox();
     expect(deleteBox.height).toBeGreaterThanOrEqual(32);
     expect(deleteBox.width).toBeGreaterThanOrEqual(32);
 
-    // 3. Tab navigation focus test with :focus-visible computed outline
+    // 3. Keyboard focus test with :focus-visible computed outline
     await addBtn.focus();
     const outlineInfo = await addBtn.evaluate((el) => {
       const style = window.getComputedStyle(el);
@@ -175,5 +175,6 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     });
     expect(outlineInfo.outlineStyle).not.toBe('none');
     expect(outlineInfo.outlineWidth).toBeGreaterThanOrEqual(1);
+    expect(['rgb(242, 243, 245)', '#f2f3f5', 'rgb(17, 18, 20)']).toContain(outlineInfo.outlineColor);
   });
 });

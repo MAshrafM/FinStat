@@ -163,8 +163,13 @@ describe('TradeSummaryPage', () => {
       ],
       endPosData: [],
     });
-    const deltaEl = screen.getByText('Gain');
+    const labelEl = screen.getByText('Gain');
+    expect(labelEl).toBeInTheDocument();
+    const deltaEl = labelEl.closest('.fs-delta');
     expect(deltaEl).toBeInTheDocument();
+    expect(deltaEl).toHaveClass('fs-delta--neutral');
+    expect(deltaEl).not.toHaveClass('fs-delta--positive');
+    expect(deltaEl).not.toHaveClass('fs-delta--negative');
   });
 
   test('12. renders position rows with D19 .trade-card class and data-label attributes', () => {

@@ -501,7 +501,7 @@ html[data-fs-theme] .trade-log-page .filter-controls button:focus-visible,
 html[data-fs-theme] .trade-log-page .filter-controls button:focus,
 html[data-fs-theme] .trade-log-page .action-btn-delete:focus-visible,
 html[data-fs-theme] .trade-log-page .action-btn-delete:focus {
-  outline: var(--fs-focus-ring);
+  outline: 3px solid var(--fs-focus-ring-color);
   outline-offset: var(--fs-focus-offset);
 }
 
@@ -665,7 +665,7 @@ html[data-fs-theme] .trade-summary-page .stock-code-title {
 html[data-fs-theme] .trade-summary-page .broker {
   margin: 0;
   font-size: var(--fs-text-xs);
-  color: var(--fs-text-4);
+  color: var(--fs-text-3);
 }
 
 /* Decision D19 Mobile Cards (<= 768px) */
