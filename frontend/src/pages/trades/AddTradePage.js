@@ -30,8 +30,11 @@ const AddTradePage = () => {
   };
 
   return (
-    <div className="page-container">
-      <div className="page-header"><h1>Add New Trade</h1></div>
+    <div className="page-container trade-form-page">
+      <div className="page-header">
+        <p className="trade-log-subtitle">Stock Trading &gt; Add Trade</p>
+        <h1>Add New Trade</h1>
+      </div>
       <TradeForm initialData={initialData} onFormSubmit={handleFormSubmit} />
     </div>
   );

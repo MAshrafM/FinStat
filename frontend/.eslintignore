@@ -61,9 +61,6 @@ src/pages/real-estate/RealEstateLogPage.js
 src/pages/security/SecuritySettingsPage.js
 src/pages/trades/CorporateActionWizard.js
 src/pages/trades/CorporateActionsList.js
-src/pages/trades/TradeForm.js
-src/pages/trades/TradeLogPage.js
-src/pages/trades/TradeSummaryPage.js
 src/services/apiClient.test.js
 src/services/portfolioService.test.js
 src/services/realEstateService.test.js

@@ -1,19 +1,19 @@
 // frontend/src/pages/trades/TradeSummaryPage.js
 import React, { useState, useMemo, useCallback } from 'react';
-//import { getAllTrades, getTradeSummary, getMarketData } from '../../services/tradeService';
 import { useData } from '../../context/DataContext';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { sortData, getNextSortConfig } from '../../utils/helper';
+import { Delta, Loading } from '../../components/ui';
 import './Trades.css'; // Reuse the same CSS file
-import '../../components/SummaryRow.css'; // Reuse summary row styles'
+import '../../components/SummaryRow.css'; // Reuse summary row styles
 import '../../components/Table.css'; // Reuse table styles
 
 const TradeSummaryPage = () => {
     const { openPosData,
         endPosData,
-        stMarketPrices,
+        stMarketPrices = {},
         summaryMetrics,
-        isLoading, } = useData();
+        isLoading } = useData();
 
     const [closeSortConfig, setCloseSortConfig] = useState({
         key: null,
@@ -35,27 +35,27 @@ const TradeSummaryPage = () => {
     const getCloseSortValue = useCallback((item, key) => {
         switch (key) {
             case 'stockCode':
-                return item._id.stockCode;
+                return item._id?.stockCode || '';
             case 'tradingPL':
                 return item.tradingPL || 0;
             case 'dividendIncome':
                 return item.dividendIncome || 0;
             case 'realizedPL':
-                return item.totalRealizedReturn;
+                return item.totalRealizedReturn || 0;
             case 'profitPercentage':
-                return item.profitPercentage;
+                return item.profitPercentage || 0;
             case 'sellPrice':
                 return item.sellingPrice || 0;
             case 'totalSell':
-                return item.totalSellValue;
+                return item.totalSellValue || 0;
             case 'totalBuy':
-                return item.totalBuyValue;
+                return item.totalBuyValue || 0;
             case 'totalFees':
-                return item.totalFees;
+                return item.totalFees || 0;
             case 'tradeCount':
-                return item.tradeCount;
+                return item.tradeCount || 0;
             case 'dateRange':
-                return new Date(item.firstTradeDate);
+                return new Date(item.firstTradeDate || 0);
             case 'days':
                 return daysBetween(item.firstTradeDate, item.lastTradeDate);
             default:
@@ -66,46 +66,45 @@ const TradeSummaryPage = () => {
     const getOpenSortValue = useCallback((item, key) => {
         switch (key) {
             case 'stockCode':
-                return item._id.stockCode;
+                return item._id?.stockCode || '';
             case 'realizedPL':
-                return Math.abs(item.totalRealizedReturn);
+                return Math.abs(item.totalRealizedReturn || 0);
             case 'deals':
-                return Math.abs(item.totDeals);
+                return Math.abs(item.totDeals || 0);
             case 'shares':
-                return item.currentShares;
+                return item.currentShares || 0;
             case 'avgPrice':
-                return Math.abs(item.avgPrice);
+                return Math.abs(item.avgPrice || 0);
             case 'target':
-                return Math.abs(item.targetPrice);
+                return Math.abs(item.targetPrice || 0);
             case 'sell0':
-                return Math.abs(item.targetSell);
+                return Math.abs(item.targetSell || 0);
             case 'currPrice':
-                return stMarketPrices[item._id.stockCode] || 0;
+                return stMarketPrices[item._id?.stockCode] || 0;
             case 'currValue':
-                return item.totalValueNow;
+                return item.totalValueNow || 0;
             case 'currChange':
-                return item.changeNow;
+                return item.changeNow || 0;
             case 'fees':
-                return item.totalFees;
+                return item.totalFees || 0;
             case 'counts':
-                return item.tradeCount;
+                return item.tradeCount || 0;
             case 'range':
-                return new Date(item.firstTradeDate);
+                return new Date(item.firstTradeDate || 0);
             default:
                 return '';
         }
     }, [stMarketPrices]);
 
-
     // Memoized sorted data - moved to top level before any other functions
     const sortedEndPosData = useMemo(
-        () => sortData(endPosData, closeSortConfig, getCloseSortValue),
+        () => sortData(endPosData || [], closeSortConfig, getCloseSortValue),
         [endPosData, closeSortConfig, getCloseSortValue]
     );
 
     // Memoized sorted data for Open Positions
     const sortedOpenPosData = useMemo(
-        () => sortData(openPosData, openSortConfig, getOpenSortValue),
+        () => sortData(openPosData || [], openSortConfig, getOpenSortValue),
         [openPosData, openSortConfig, getOpenSortValue]
     );
 
@@ -113,11 +112,10 @@ const TradeSummaryPage = () => {
     const handleCloseSort = (key) => setCloseSortConfig(getNextSortConfig(closeSortConfig, key));
     const handleOpenSort = (key) => setOpenSortConfig(getNextSortConfig(openSortConfig, key));
 
-
     // Function to render sort indicator
     const getCloseSortIndicator = (columnKey) => {
         if (closeSortConfig.key !== columnKey) {
-            return ' ⇅'; // No sort indicator
+            return ' ⇅';
         }
         return closeSortConfig.direction === 'asc' ? ' ↑' : ' ↓';
     };
@@ -129,116 +127,144 @@ const TradeSummaryPage = () => {
         return openSortConfig.direction === 'asc' ? ' ↑' : ' ↓';
     };
 
-
-
     if (isLoading) {
-        return <p className="page-container">Loading summary data...</p>;
+        return (
+            <div className="page-container trade-summary-page">
+                <Loading variant="card" />
+            </div>
+        );
     }
 
     return (
-        <div className="page-container">
+        <div className="page-container trade-summary-page">
             <div className="page-header">
+                <p className="trade-log-subtitle">Stock Trading &gt; Position Summary</p>
                 <h1>Trade Position Summary</h1>
             </div>
 
             {summaryMetrics && summaryMetrics.brokerMetrics && (
-                <div className="broker-summaries" style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', marginBottom: '20px' }}>
-                    {Object.entries(summaryMetrics.brokerMetrics).map(([broker, metrics]) => (
-                        <div key={broker} style={{ flex: '1', minWidth: '280px', backgroundColor: '#fff', borderRadius: '8px', padding: '15px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                            <h3 style={{ margin: '0 0 15px 0', color: '#34495e', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>{broker}</h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                <div>
-                                    <div style={{ fontSize: '0.85em', color: '#7f8c8d', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Net Deposits</div>
-                                    <strong style={{ fontSize: '1.1em', color: '#2c3e50' }}>{formatCurrency(metrics.netDeposits)}</strong>
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: '0.85em', color: '#7f8c8d', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Investment</div>
-                                    <strong style={{ fontSize: '1.1em', color: '#2c3e50' }}>{formatCurrency(metrics.totalTradesNow)}</strong>
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: '0.85em', color: '#7f8c8d', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Wallet</div>
-                                    <strong style={{ fontSize: '1.1em', color: '#2c3e50' }}>{formatCurrency(metrics.walletBalance)}</strong>
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: '0.85em', color: '#7f8c8d', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Profit %</div>
-                                    <strong style={{ fontSize: '1.1em', color: metrics.profitPercentage >= 0 ? '#27ae60' : '#c0392b' }}>
-                                        {metrics.profitPercentage.toFixed(2)}%
-                                    </strong>
+                <div className="broker-summaries-section">
+                    <h2 className="section-title">Broker Summaries</h2>
+                    <div className="broker-summaries">
+                        {Object.entries(summaryMetrics.brokerMetrics).map(([broker, metrics]) => (
+                            <div key={broker} className="kpi-card">
+                                <h3 className="broker-title">{broker}</h3>
+                                <div className="broker-metrics-grid">
+                                    <div>
+                                        <div className="kpi-card-header">Net Deposits</div>
+                                        <div className="kpi-card-value fs-num">{formatCurrency(metrics.netDeposits)}</div>
+                                    </div>
+                                    <div>
+                                        <div className="kpi-card-header">Investment</div>
+                                        <div className="kpi-card-value fs-num">{formatCurrency(metrics.totalTradesNow)}</div>
+                                    </div>
+                                    <div>
+                                        <div className="kpi-card-header">Wallet</div>
+                                        <div className="kpi-card-value fs-num">{formatCurrency(metrics.walletBalance)}</div>
+                                    </div>
+                                    <div>
+                                        <div className="kpi-card-header">Profit %</div>
+                                        <div className="kpi-card-value fs-num">
+                                            <Delta
+                                                value={`${Math.abs(metrics.profitPercentage || 0).toFixed(2)}%`}
+                                                tone={(metrics.profitPercentage || 0) > 0 ? 'positive' : (metrics.profitPercentage || 0) < 0 ? 'negative' : 'neutral'}
+                                                sign={(metrics.profitPercentage || 0) > 0 ? 'positive' : (metrics.profitPercentage || 0) < 0 ? 'negative' : 'none'}
+                                                label={(metrics.profitPercentage || 0) >= 0 ? 'Profit' : 'Loss'}
+                                                className="fs-num"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             )}
 
             {summaryMetrics && (
-                <div style={{ marginBottom: '15px' }}>
-                    <h3 style={{ margin: '0 0 10px 10px', color: '#34495e' }}>Total Overview</h3>
+                <div className="overview-container">
+                    <h2 className="section-title">Total Overview</h2>
                     <div className="summary-row">
-                        <div className="summary-item">
-                            <h4>Total Net Deposits</h4>
-                            <strong className="value">{formatCurrency(summaryMetrics.netDeposits)}</strong>
+                        <div className="kpi-card">
+                            <div className="kpi-card-header">Total Net Deposits</div>
+                            <div className="kpi-card-value fs-num">{formatCurrency(summaryMetrics.netDeposits)}</div>
                         </div>
-                    <div className="summary-item">
-                        <h4>Total Deals</h4>
-                        <strong className="value">{formatCurrency(summaryMetrics.totalTrades)}</strong>
+                        <div className="kpi-card">
+                            <div className="kpi-card-header">Total Deals</div>
+                            <div className="kpi-card-value fs-num">{formatCurrency(summaryMetrics.totalTrades)}</div>
+                        </div>
+                        <div className="kpi-card">
+                            <div className="kpi-card-header">Total Investment Now</div>
+                            <div className="kpi-card-value fs-num">{formatCurrency(summaryMetrics.totalTradesNow)}</div>
+                        </div>
+                        <div className="kpi-card">
+                            <div className="kpi-card-header">Investment Wallet</div>
+                            <div className="kpi-card-value fs-num">{formatCurrency(summaryMetrics.walletBalance)}</div>
+                        </div>
+                        <div className="kpi-card">
+                            <div className="kpi-card-header">Realized Profit</div>
+                            <div className="kpi-card-value fs-num">
+                                <Delta
+                                    value={formatCurrency(Math.abs(summaryMetrics.realizedProfit || 0))}
+                                    tone={(summaryMetrics.realizedProfit || 0) > 0 ? 'positive' : (summaryMetrics.realizedProfit || 0) < 0 ? 'negative' : 'neutral'}
+                                    sign={(summaryMetrics.realizedProfit || 0) > 0 ? 'positive' : (summaryMetrics.realizedProfit || 0) < 0 ? 'negative' : 'none'}
+                                    label={(summaryMetrics.realizedProfit || 0) >= 0 ? 'Profit' : 'Loss'}
+                                    className="fs-num"
+                                />
+                            </div>
+                        </div>
+                        <div className="kpi-card">
+                            <div className="kpi-card-header">Total Profit Now</div>
+                            <div className="kpi-card-value fs-num">
+                                <Delta
+                                    value={formatCurrency(Math.abs(summaryMetrics.totalProfitNow || 0))}
+                                    tone={(summaryMetrics.totalProfitNow || 0) > 0 ? 'positive' : (summaryMetrics.totalProfitNow || 0) < 0 ? 'negative' : 'neutral'}
+                                    sign={(summaryMetrics.totalProfitNow || 0) > 0 ? 'positive' : (summaryMetrics.totalProfitNow || 0) < 0 ? 'negative' : 'none'}
+                                    label={(summaryMetrics.totalProfitNow || 0) >= 0 ? 'Profit' : 'Loss'}
+                                    className="fs-num"
+                                />
+                            </div>
+                        </div>
                     </div>
-                    <div className="summary-item">
-                        <h4>Total Investment Now</h4>
-                        <strong className="value">{formatCurrency(summaryMetrics.totalTradesNow)}</strong>
-                    </div>
-                    <div className="summary-item">
-                        <h4>Investment Wallet</h4>
-                        <strong className="value">{formatCurrency(summaryMetrics.walletBalance)}</strong>
-                    </div>
-                    <div className="summary-item">
-                        <h4>Realized Profilt</h4>
-                        <strong className="value">{formatCurrency(summaryMetrics.realizedProfit)}</strong>
-                    </div>
-                    <div className="summary-item">
-                        <h4>Total Profilt Now</h4>
-                        <strong className="value">{formatCurrency(summaryMetrics.totalProfitNow)}</strong>
-                    </div>
-                </div>
                 </div>
             )}
 
             <div className="table-container">
-                <h2>Open Positions</h2>
+                <h2 className="section-title">Open Positions</h2>
                 <table className="styled-table">
                     <thead>
                         <tr>
                             <th
                                 onClick={() => handleOpenSort('stockCode')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Stock Code"
                             >
                                 Stock Code{getOpenSortIndicator('stockCode')}
                             </th>
                             <th
                                 onClick={() => handleOpenSort('realizedPL')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Realized P/L"
                             >
                                 UnReal P/L{getOpenSortIndicator('realizedPL')}
                             </th>
                             <th
                                 onClick={() => handleOpenSort('deals')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Deals"
                             >
                                 All Deals {getOpenSortIndicator('deals')}
                             </th>
                             <th
                                 onClick={() => handleOpenSort('shares')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Shares"
                             >
                                 Shares{getOpenSortIndicator('shares')}
                             </th>
                             <th
                                 onClick={() => handleOpenSort('target')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Target"
                             >
                                 Net BE{getOpenSortIndicator('target')}
@@ -248,49 +274,49 @@ const TradeSummaryPage = () => {
                             </th>
                             <th
                                 onClick={() => handleOpenSort('sell0')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Sell 0"
                             >
                                 Sell 0{getOpenSortIndicator('sell0')}
                             </th>
                             <th
                                 onClick={() => handleOpenSort('currPrice')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Curr Price"
                             >
                                 Price{getOpenSortIndicator('currPrice')}
                             </th>
                             <th
                                 onClick={() => handleOpenSort('currValue')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Curr Value"
                             >
                                 Tot. Value{getOpenSortIndicator('currValue')}
                             </th>
                             <th
                                 onClick={() => handleOpenSort('currChange')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Curr Change"
                             >
                                 Change{getOpenSortIndicator('currChange')}
                             </th>
                             <th
                                 onClick={() => handleOpenSort('fees')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Fees"
                             >
                                 Fees{getOpenSortIndicator('fees')}
                             </th>
                             <th
                                 onClick={() => handleOpenSort('counts')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Counts"
                             >
                                 Counts{getOpenSortIndicator('counts')}
                             </th>
                             <th
                                 onClick={() => handleOpenSort('range')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Range"
                             >
                                 Range{getOpenSortIndicator('range')}
@@ -299,31 +325,50 @@ const TradeSummaryPage = () => {
                     </thead>
                     <tbody>
                         {sortedOpenPosData.map((item, index) => (
-                            <tr key={index}>
+                            <tr key={index} className="trade-card">
                                 <td data-label="Code">
-                                    <p style={{ fontWeight: 'bold' }}>{item._id.stockCode}</p>
-                                    <p>{item._id.iteration || '0'}</p>
-                                    <p className="broker">{item._id.broker}</p>
+                                    <p className="stock-code-title"><strong>{item._id?.stockCode}</strong></p>
+                                    <p>{item._id?.iteration || '0'}</p>
+                                    <p className="broker">{item._id?.broker}</p>
                                 </td>
-                                <td data-label="UnRealized P/L" className="total-value" style={{ color: item.unrealizedPL >= 0 ? '#27ae60' : '#c0392b' }}>
-                                    {formatCurrency(item.unrealizedPL)}
+                                <td data-label="UnRealized P/L" className="total-value fs-num">
+                                    <Delta
+                                        value={formatCurrency(Math.abs(item.unrealizedPL || 0))}
+                                        tone={(item.unrealizedPL || 0) > 0 ? 'positive' : (item.unrealizedPL || 0) < 0 ? 'negative' : 'neutral'}
+                                        sign={(item.unrealizedPL || 0) > 0 ? 'positive' : (item.unrealizedPL || 0) < 0 ? 'negative' : 'none'}
+                                        label={(item.unrealizedPL || 0) >= 0 ? 'Gain' : 'Loss'}
+                                    />
                                 </td>
-                                <td data-label="Deals" style={{ color: item.totDeals <= item.totalValueNow ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totDeals)}</td>
-
-                                <td data-label="Shares" style={{ fontWeight: 'bold' }}>{item.currentShares}</td>
-                                <td data-label="Net Break Even">{item.netBreakEven < 0 ? <span style={{ color: '#27ae60', fontWeight: 'bold' }}>Free Ride</span> : formatCurrency(item.netBreakEven)}</td>
-                                <td data-label="Break Even Price">{formatCurrency(item.breakEvenPrice)}</td>
-                                <td data-label="Target Sell">{item.netBreakEven < 0 ? <span style={{ color: '#27ae60', fontWeight: 'bold' }}>Free Ride</span> : formatCurrency(item.breakEvenTarget)}</td>
-                                <td data-label="Price" style={{ color: (item.netBreakEven > (stMarketPrices[item._id.stockCode] || 0)) ? '#c0392b' : '#27ae60' }}>
-                                    {stMarketPrices[item._id.stockCode] ? formatCurrency(stMarketPrices[item._id.stockCode]) : '-'}
+                                <td data-label="Deals" className="fs-num">
+                                    {formatCurrency(item.totDeals)}
                                 </td>
-                                <td data-label="Total Now" className="total-value" style={{ color: item.totalValueNow >= item.totDeals ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.totalValueNow)}</td>
-                                <td data-label="Change" className="total-value" style={{ color: item.changeNow > 0 ? '#27ae60' : '#c0392b' }}>{item.changeNow}%</td>
-
-                                <td data-label="Fees">{formatCurrency(item.totalFees)}</td>
-                                <td data-label="Count">{item.tradeCount}</td>
+                                <td data-label="Shares" className="fs-num">
+                                    <strong>{item.currentShares}</strong>
+                                </td>
+                                <td data-label="Net Break Even" className="fs-num">
+                                    {item.netBreakEven < 0 ? <span className="free-ride-badge">Free Ride</span> : formatCurrency(item.netBreakEven)}
+                                </td>
+                                <td data-label="Break Even Price" className="fs-num">{formatCurrency(item.breakEvenPrice)}</td>
+                                <td data-label="Target Sell" className="fs-num">
+                                    {item.netBreakEven < 0 ? <span className="free-ride-badge">Free Ride</span> : formatCurrency(item.breakEvenTarget)}
+                                </td>
+                                <td data-label="Price" className="fs-num">
+                                    {stMarketPrices[item._id?.stockCode] ? formatCurrency(stMarketPrices[item._id?.stockCode]) : '-'}
+                                </td>
+                                <td data-label="Total Now" className="total-value fs-num">
+                                    {formatCurrency(item.totalValueNow)}
+                                </td>
+                                <td data-label="Change" className="total-value fs-num">
+                                    <Delta
+                                        value={`${Math.abs(item.changeNow || 0)}%`}
+                                        tone={(item.changeNow || 0) > 0 ? 'positive' : (item.changeNow || 0) < 0 ? 'negative' : 'neutral'}
+                                        sign={(item.changeNow || 0) > 0 ? 'positive' : (item.changeNow || 0) < 0 ? 'negative' : 'none'}
+                                        label={(item.changeNow || 0) >= 0 ? 'Increase' : 'Decrease'}
+                                    />
+                                </td>
+                                <td data-label="Fees" className="fs-num">{formatCurrency(item.totalFees)}</td>
+                                <td data-label="Count" className="fs-num">{item.tradeCount}</td>
                                 <td data-label="Period">{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</td>
-
                             </tr>
                         ))}
                     </tbody>
@@ -331,90 +376,90 @@ const TradeSummaryPage = () => {
             </div>
 
             <div className="table-container">
-                <h2>Close Positions</h2>
+                <h2 className="section-title">Close Positions</h2>
                 <table className="styled-table">
                     <thead>
                         <tr>
                             <th
                                 onClick={() => handleCloseSort('stockCode')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Stock Code"
                             >
                                 Stock Code{getCloseSortIndicator('stockCode')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('tradingPL')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Trading P/L"
                             >
                                 Trading P/L{getCloseSortIndicator('tradingPL')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('dividendIncome')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Dividends"
                             >
                                 Dividends{getCloseSortIndicator('dividendIncome')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('realizedPL')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Total Return"
                             >
                                 Total Return{getCloseSortIndicator('realizedPL')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('profitPercentage')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Profit %"
                             >
                                 Profit %{getCloseSortIndicator('profitPercentage')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('sellPrice')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Sell Price"
                             >
                                 Sell Price{getCloseSortIndicator('sellPrice')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('totalSell')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Total Sell"
                             >
                                 Total Sell{getCloseSortIndicator('totalSell')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('totalBuy')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Total Buy"
                             >
                                 Total Buy{getCloseSortIndicator('totalBuy')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('totalFees')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Total Fees"
                             >
                                 Total Fees{getCloseSortIndicator('totalFees')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('tradeCount')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Trade Count"
                             >
                                 Trade Count{getCloseSortIndicator('tradeCount')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('dateRange')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Date Range"
                             >
                                 Date Range{getCloseSortIndicator('dateRange')}
                             </th>
                             <th
                                 onClick={() => handleCloseSort('days')}
-                                style={{ cursor: 'pointer', userSelect: 'none' }}
+                                className="sortable"
                                 title="Click to sort by Days"
                             >
                                 Days{getCloseSortIndicator('days')}
@@ -423,30 +468,49 @@ const TradeSummaryPage = () => {
                     </thead>
                     <tbody>
                         {sortedEndPosData.map((item, index) => (
-                            <tr key={index}>
+                            <tr key={index} className="trade-card">
                                 <td data-label="Code">
-                                    <p style={{ fontWeight: 'bold' }}>{item._id.stockCode}</p>
-                                    <p>{item._id.iteration || '0'}</p>
-                                    <p className="broker">{item._id.broker}</p>
+                                    <p className="stock-code-title"><strong>{item._id?.stockCode}</strong></p>
+                                    <p>{item._id?.iteration || '0'}</p>
+                                    <p className="broker">{item._id?.broker}</p>
                                 </td>
-                                <td data-label="Trading P/L" className="total-value" style={{ color: item.tradingPL >= 0 ? '#27ae60' : '#c0392b' }}>
-                                    {formatCurrency(item.tradingPL || 0)}
+                                <td data-label="Trading P/L" className="total-value fs-num">
+                                    <Delta
+                                        value={formatCurrency(Math.abs(item.tradingPL || 0))}
+                                        tone={(item.tradingPL || 0) > 0 ? 'positive' : (item.tradingPL || 0) < 0 ? 'negative' : 'neutral'}
+                                        sign={(item.tradingPL || 0) > 0 ? 'positive' : (item.tradingPL || 0) < 0 ? 'negative' : 'none'}
+                                        label={(item.tradingPL || 0) >= 0 ? 'Gain' : 'Loss'}
+                                    />
                                 </td>
-                                <td data-label="Dividends" className="total-value" style={{ color: '#2980b9' }}>
+                                <td data-label="Dividends" className="total-value fs-num">
                                     {formatCurrency(item.dividendIncome || 0)}
                                 </td>
-                                <td data-label="Total Return" className="total-value" style={{ color: item.totalRealizedReturn >= 0 ? '#27ae60' : '#c0392b' }}>
-                                    {formatCurrency(item.totalRealizedReturn)}
+                                <td data-label="Total Return" className="total-value fs-num">
+                                    <Delta
+                                        value={formatCurrency(Math.abs(item.totalRealizedReturn || 0))}
+                                        tone={(item.totalRealizedReturn || 0) > 0 ? 'positive' : (item.totalRealizedReturn || 0) < 0 ? 'negative' : 'neutral'}
+                                        sign={(item.totalRealizedReturn || 0) > 0 ? 'positive' : (item.totalRealizedReturn || 0) < 0 ? 'negative' : 'none'}
+                                        label={(item.totalRealizedReturn || 0) >= 0 ? 'Gain' : 'Loss'}
+                                    />
                                 </td>
-                                <td data-label="Profit" style={{ color: item.profitPercentage >= 0 ? '#27ae60' : '#c0392b' }}>{item.profitPercentage} %</td>
-                                <td data-label="Selling Price" style={{ color: item.sellingPrice > stMarketPrices[item._id.stockCode] ? '#27ae60' : '#c0392b' }}>{formatCurrency(item.sellingPrice || 0)}</td>
-                                <td data-label="Total Buy"> {formatCurrency(item.totalBuyValue)}</td>
-                                <td data-label="Total Sell"> {formatCurrency(item.totalSellValue)}</td>
-                                <td data-label="Fees">{formatCurrency(item.totalFees)}</td>
-                                <td data-label="Count">{item.tradeCount}</td>
+                                <td data-label="Profit" className="fs-num">
+                                    <Delta
+                                        value={`${Math.abs(item.profitPercentage || 0)}%`}
+                                        tone={(item.profitPercentage || 0) > 0 ? 'positive' : (item.profitPercentage || 0) < 0 ? 'negative' : 'neutral'}
+                                        sign={(item.profitPercentage || 0) > 0 ? 'positive' : (item.profitPercentage || 0) < 0 ? 'negative' : 'none'}
+                                        label={(item.profitPercentage || 0) >= 0 ? 'Gain' : 'Loss'}
+                                    />
+                                </td>
+                                <td data-label="Selling Price" className="fs-num">
+                                    {formatCurrency(item.sellingPrice || 0)}
+                                </td>
+                                <td data-label="Total Buy" className="fs-num">{formatCurrency(item.totalBuyValue)}</td>
+                                <td data-label="Total Sell" className="fs-num">{formatCurrency(item.totalSellValue)}</td>
+                                <td data-label="Fees" className="fs-num">{formatCurrency(item.totalFees)}</td>
+                                <td data-label="Count" className="fs-num">{item.tradeCount}</td>
                                 <td data-label="Period">{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</td>
-                                <td data-label="Days">
-                                    <span style={{ fontSize: '0.9em', color: '#888' }}>
+                                <td data-label="Days" className="fs-num">
+                                    <span>
                                         {daysBetween(item.firstTradeDate, item.lastTradeDate)} days
                                     </span>
                                 </td>

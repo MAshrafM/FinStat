@@ -179,7 +179,7 @@ td>p {
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
-  text-decoration: none !important;
+  text-decoration: none;
   border: 1px solid transparent;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
@@ -192,19 +192,19 @@ a.btn,
 a.btn:hover,
 a.btn:focus,
 a.btn:visited {
-  text-decoration: none !important;
+  text-decoration: none;
 }
 
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-primary {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #ffffff !important;
+  color: #ffffff;
   border-color: #1d4ed8;
   box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
 }
@@ -213,7 +213,7 @@ a.btn:visited {
   background: linear-gradient(135deg, #1d4ed8, #1e40af);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
   transform: translateY(-1px);
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 .btn-primary:active:not(:disabled) {
@@ -222,7 +222,7 @@ a.btn:visited {
 
 .btn-secondary {
   background: #ffffff;
-  color: #374151 !important;
+  color: #374151;
   border: 1px solid #d1d5db;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -230,7 +230,7 @@ a.btn:visited {
 .btn-secondary:hover:not(:disabled) {
   background: #f9fafb;
   border-color: #9ca3af;
-  color: #111827 !important;
+  color: #111827;
   transform: translateY(-1px);
 }
 
@@ -323,4 +323,426 @@ a.btn:visited {
 
 .action-button:hover {
   background-color: #007a63;
+}
+
+/* ==========================================================================
+   Phase 7A: Modern Dark Graphite Styles for Stock Trading Subsystem
+   Scoped under html[data-fs-theme] for allowlisted routes.
+   Strictly neutral tokens only: no tone/accent tokens (lint-tones.js clean).
+   ========================================================================== */
+
+/* Page Containers */
+html[data-fs-theme] .trade-log-page,
+html[data-fs-theme] .trade-form-page,
+html[data-fs-theme] .trade-summary-page {
+  background: var(--fs-bg);
+  color: var(--fs-text);
+  min-height: 100%;
+}
+
+/* Page Headers & Subtitles */
+html[data-fs-theme] .trade-log-page .page-header,
+html[data-fs-theme] .trade-form-page .page-header,
+html[data-fs-theme] .trade-summary-page .page-header {
+  border-bottom: 1px solid var(--fs-border);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+html[data-fs-theme] .trade-log-page .trade-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+html[data-fs-theme] .trade-log-page .trade-log-subtitle {
+  margin: 0;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .trade-log-page .trade-log-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Filter Controls */
+html[data-fs-theme] .trade-log-page .filter-controls {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+html[data-fs-theme] .trade-log-page .filter-controls button {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  color: var(--fs-text);
+  border-radius: var(--fs-radius-md);
+  padding: 0.45rem 0.85rem;
+  font-size: var(--fs-text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--fs-duration-fast), border-color var(--fs-duration-fast);
+}
+
+html[data-fs-theme] .trade-log-page .filter-controls button:hover {
+  background: var(--fs-surface-raised);
+  border-color: var(--fs-border-control);
+}
+
+html[data-fs-theme] .trade-log-page .filter-controls .search-input {
+  background: var(--fs-surface-sunken);
+  border: 1px solid var(--fs-border);
+  color: var(--fs-text);
+  border-radius: var(--fs-radius-md);
+  padding: 0.45rem 0.85rem;
+  font-size: var(--fs-text-sm);
+  min-width: 200px;
+}
+
+/* Reference Frame 01: Dense Tables */
+html[data-fs-theme] .trade-log-page .table-container,
+html[data-fs-theme] .trade-summary-page .table-container {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  overflow: hidden;
+  box-shadow: none;
+}
+
+html[data-fs-theme] .trade-log-page .styled-table,
+html[data-fs-theme] .trade-summary-page .styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .trade-log-page .styled-table th,
+html[data-fs-theme] .trade-summary-page .styled-table th {
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--fs-border);
+  text-align: left;
+  user-select: none;
+}
+
+html[data-fs-theme] .trade-log-page .styled-table th.sortable,
+html[data-fs-theme] .trade-summary-page .styled-table th.sortable {
+  cursor: pointer;
+  transition: color var(--fs-duration-fast);
+}
+
+html[data-fs-theme] .trade-log-page .styled-table th.sortable:hover,
+html[data-fs-theme] .trade-summary-page .styled-table th.sortable:hover {
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .trade-log-page .styled-table td,
+html[data-fs-theme] .trade-summary-page .styled-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--fs-border);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .trade-log-page .styled-table tbody tr,
+html[data-fs-theme] .trade-summary-page .styled-table tbody tr {
+  transition: background var(--fs-duration-fast);
+}
+
+html[data-fs-theme] .trade-log-page .styled-table tbody tr:hover,
+html[data-fs-theme] .trade-summary-page .styled-table tbody tr:hover {
+  background: var(--fs-surface-raised);
+}
+
+html[data-fs-theme] .trade-log-page .table-empty-cell,
+html[data-fs-theme] .trade-summary-page .table-empty-cell {
+  text-align: center;
+  padding: 2rem;
+  color: var(--fs-text-3);
+}
+
+html[data-fs-theme] .trade-log-page .page-header-actions .btn,
+html[data-fs-theme] .trade-log-page .page-header-actions .fs-btn {
+  min-height: 44px;
+}
+
+html[data-fs-theme] .trade-log-page .action-btn-delete {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: var(--fs-text-3);
+  border-radius: var(--fs-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  min-width: 32px;
+  transition: color var(--fs-duration-fast);
+}
+
+html[data-fs-theme] .trade-log-page .fs-btn:focus-visible,
+html[data-fs-theme] .trade-log-page .fs-btn-primary:focus-visible,
+html[data-fs-theme] .trade-log-page .page-header-actions .btn:focus-visible,
+html[data-fs-theme] .trade-log-page .filter-controls button:focus-visible,
+html[data-fs-theme] .trade-log-page .action-btn-delete:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+}
+
+html[data-fs-theme] .trade-log-page .action-btn-delete:hover {
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .trade-log-page .action-icon {
+  font-size: 1rem;
+}
+
+/* Reference Frame 02: Forms */
+html[data-fs-theme] .trade-form-page .standard-form {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 1.5rem;
+  box-shadow: none;
+  max-width: 680px;
+}
+
+html[data-fs-theme] .trade-form-page .form-group {
+  margin-bottom: 1rem;
+}
+
+html[data-fs-theme] .trade-form-page .form-group label {
+  display: block;
+  font-size: var(--fs-text-sm);
+  font-weight: 500;
+  color: var(--fs-text-3);
+  margin-bottom: 0.25rem;
+}
+
+html[data-fs-theme] .trade-form-page .form-group input,
+html[data-fs-theme] .trade-form-page .form-group select {
+  width: 100%;
+  background: var(--fs-surface-sunken);
+  border: 1px solid var(--fs-border);
+  color: var(--fs-text);
+  border-radius: var(--fs-radius-md);
+  padding: 0.55rem 0.75rem;
+  font-size: var(--fs-text-sm);
+  box-sizing: border-box;
+  transition: border-color var(--fs-duration-fast);
+}
+
+html[data-fs-theme] .trade-form-page .form-group input:focus,
+html[data-fs-theme] .trade-form-page .form-group select:focus {
+  outline: none;
+  border-color: var(--fs-border-control);
+}
+
+html[data-fs-theme] .trade-form-page .form-field-hint {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-4);
+  margin-top: 0.25rem;
+}
+
+html[data-fs-theme] .trade-form-page .trade-stock-info {
+  background: var(--fs-surface-raised);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+html[data-fs-theme] .trade-form-page .trade-stock-info p {
+  margin: 0.25rem 0;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .trade-form-page .action-button {
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: var(--fs-radius-md);
+  font-family: var(--fs-font-sans);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background var(--fs-duration-fast);
+}
+
+html[data-fs-theme] .trade-form-page .action-button:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: var(--fs-focus-offset);
+}
+
+/* Reference Frame 03: Dashboard / Summary Elements */
+html[data-fs-theme] .trade-summary-page .kpi-card {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 1rem;
+  box-shadow: none;
+}
+
+html[data-fs-theme] .trade-summary-page .kpi-card .fs-delta-label {
+  color: var(--fs-text-3);
+}
+
+html[data-fs-theme] .trade-summary-page .kpi-card-header {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+html[data-fs-theme] .trade-summary-page .kpi-card-value {
+  font-size: var(--fs-text-xl);
+  font-weight: 600;
+  color: var(--fs-text);
+  margin-bottom: 0.25rem;
+}
+
+html[data-fs-theme] .trade-summary-page .kpi-card-sub {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-4);
+}
+
+html[data-fs-theme] .trade-summary-page .broker-summaries {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+html[data-fs-theme] .trade-summary-page .summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+html[data-fs-theme] .trade-summary-page .section-title {
+  font-size: var(--fs-text-base);
+  font-weight: 600;
+  color: var(--fs-text);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+html[data-fs-theme] .trade-summary-page .broker-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+html[data-fs-theme] .trade-summary-page .overview-container {
+  margin-bottom: 1rem;
+}
+
+html[data-fs-theme] .trade-summary-page .stock-code-title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .trade-summary-page .broker {
+  margin: 0;
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+}
+
+/* Decision D19 Mobile Cards (<= 768px) */
+@media (max-width: 768px) {
+  html[data-fs-theme] .trade-log-page .table-container,
+  html[data-fs-theme] .trade-summary-page .table-container {
+    background: transparent;
+    border: none;
+  }
+
+  html[data-fs-theme] .trade-log-page .styled-table,
+  html[data-fs-theme] .trade-summary-page .styled-table {
+    display: block;
+    width: 100%;
+  }
+
+  html[data-fs-theme] .trade-log-page .styled-table thead,
+  html[data-fs-theme] .trade-summary-page .styled-table thead {
+    display: none;
+  }
+
+  html[data-fs-theme] .trade-log-page .styled-table tbody,
+  html[data-fs-theme] .trade-summary-page .styled-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  html[data-fs-theme] .trade-log-page .styled-table tbody tr.trade-card,
+  html[data-fs-theme] .trade-summary-page .styled-table tbody tr.trade-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--fs-surface);
+    border: 1px solid var(--fs-border);
+    border-radius: var(--fs-radius-lg);
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+
+  html[data-fs-theme] .trade-log-page .styled-table tbody tr.trade-card td,
+  html[data-fs-theme] .trade-summary-page .styled-table tbody tr.trade-card td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid var(--fs-border);
+    font-size: var(--fs-text-sm);
+  }
+
+  html[data-fs-theme] .trade-log-page .styled-table tbody tr.trade-card td:last-child,
+  html[data-fs-theme] .trade-summary-page .styled-table tbody tr.trade-card td:last-child {
+    border-bottom: none;
+    padding-top: 0.5rem;
+  }
+
+  html[data-fs-theme] .trade-log-page .styled-table tbody tr.trade-card td::before,
+  html[data-fs-theme] .trade-summary-page .styled-table tbody tr.trade-card td::before {
+    content: attr(data-label);
+    font-size: var(--fs-text-xs);
+    font-weight: 500;
+    color: var(--fs-text-3);
+    text-transform: uppercase;
+  }
+
+  html[data-fs-theme] .trade-log-page .action-btn-delete {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  html[data-fs-theme] .trade-card .trade-card-toggle {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.25rem 0.5rem;
+    background: var(--fs-surface-raised);
+    border: 1px solid var(--fs-border);
+    border-radius: var(--fs-radius-md);
+    color: var(--fs-text);
+    font-size: var(--fs-text-xs);
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

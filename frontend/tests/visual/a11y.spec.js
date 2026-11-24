@@ -13,12 +13,15 @@ const { setupPaycheckMocks } = require('./fixtures/paycheckMocks');
 const { setupPortfolioMocks } = require('./fixtures/portfolioMocks');
 const { setupRebalancingMocks } = require('./fixtures/rebalancingMocks');
 const { setupReportsMocks } = require('./fixtures/reportsMocks');
+const { setupTradesMocks } = require('./fixtures/tradesMocks');
 
 const AXE_SOURCE_PATH = require.resolve('axe-core/axe.min.js');
 
 test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
   for (const route of ROUTES) {
     test(`a11y check: ${route.slug}`, async ({ page }) => {
+      page.on('pageerror', err => console.log('PAGE ERROR on', route.slug, ':', err.message));
+      page.on('console', msg => console.log('PAGE CONSOLE on', route.slug, ':', msg.type(), msg.text()));
       await page.setViewportSize({ width: 1440, height: 900 });
       await setFixedClock(page);
 
@@ -35,6 +38,11 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
         await setupRebalancingMocks(page);
       } else if (route.slug === 'reports-financial') {
         await setupReportsMocks(page);
+      } else if (
+        route.slug.startsWith('trades') ||
+        route.slug === 'trade-summary'
+      ) {
+        await setupTradesMocks(page, route.slug);
       }
 
       await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });

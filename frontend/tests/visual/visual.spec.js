@@ -14,6 +14,7 @@ const { setupPaycheckMocks } = require('./fixtures/paycheckMocks');
 const { setupPortfolioMocks } = require('./fixtures/portfolioMocks');
 const { setupRebalancingMocks } = require('./fixtures/rebalancingMocks');
 const { setupReportsMocks } = require('./fixtures/reportsMocks');
+const { setupTradesMocks } = require('./fixtures/tradesMocks');
 
 const MANDATORY_QA_WIDTHS = [1440, 1024, 768, 480, 390];
 
@@ -68,6 +69,11 @@ test.describe('Visual Regression Suite', () => {
           await setupRebalancingMocks(page);
         } else if (route.slug === 'reports-financial') {
           await setupReportsMocks(page);
+        } else if (
+          route.slug.startsWith('trades') ||
+          route.slug === 'trade-summary'
+        ) {
+          await setupTradesMocks(page, route.slug);
         }
 
         // Navigate to route

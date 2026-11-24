@@ -901,11 +901,11 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 
 | Route | Component | Phase | Theme applied | Visual QA | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| `/trades` | `pages/trades/TradeLogPage` | 7A | ☐ | ☐ | |
-| `/trades/add` | `pages/trades/AddTradePage` | 7A | ☐ | ☐ | + `TradeForm` |
+| `/trades` | `pages/trades/TradeLogPage` | 7A | ☑ | ☑ | |
+| `/trades/add` | `pages/trades/AddTradePage` | 7A | ☑ | ☑ | + `TradeForm` |
 | `/trades/new` → `/trades/add` | redirect | 7A | n/a | n/a | Verify redirect intact |
-| `/trades/edit/:id` | `pages/trades/EditTradePage` | 7A | ☐ | ☐ | |
-| `/trade-summary` | `pages/trades/TradeSummaryPage` | 7A | ☐ | ☐ | 54 inline styles |
+| `/trades/edit/:id` | `pages/trades/EditTradePage` | 7A | ☑ | ☑ | |
+| `/trade-summary` | `pages/trades/TradeSummaryPage` | 7A | ☑ | ☑ | 54 inline styles |
 | `/corporate-actions` | `pages/trades/CorporateActionsList` | 7B | ☐ | ☐ | 9 `!important` |
 | `/corporate-actions/wizard` | `pages/trades/CorporateActionWizard` | 7B | ☐ | ☐ | 14 inline styles |
 | `/mutual-funds` | `pages/mutual-funds/MutualFundLogPage` | 7C | ☐ | ☐ | |
@@ -1059,7 +1059,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **5E** | History, update, analytics | `phase-ui-5e-payroll-history` | ☑ | ☑ |
 | **6A** | Portfolio dashboard | `phase-ui-6a-portfolio` | ☑ | ☑ |
 | **6B** | Rebalancing | `phase-ui-6b-rebalancing` | ☑ | ☑ |
-| **7A** | Trades + trade summary | `phase-ui-7a-trades` | ☐ | ☐ |
+| **7A** | Trades + trade summary | `phase-ui-7a-trades` | ☑ | ☑ |
 | **7B** | Corporate actions | `phase-ui-7b-corporate-actions` | ☐ | ☐ |
 | **7C** | Mutual funds | `phase-ui-7c-mutual-funds` | ☐ | ☐ |
 | **8A** | Gold wallet | `phase-ui-8a-gold` | ☐ | ☐ |
@@ -1094,7 +1094,7 @@ A checkpoint is a rendered screen the developer opens and approves, not a token 
 | 2 | 4A | `/expenditures` | reference frame 1 (Variant B — dense table) |
 | 3 | 5A | `/salary/profiles` | reference frame 2 (Variant B — form) |
 | 4 | 6A | `/portfolio` | frame 3 (Variant B — dashboard) |
-| 5 | 7A | `/trades` | frame 1 (Variant B) |
+| 5 | 7A | `/trades` | frame 1 (Variant B) — Approved by User (2026-11-24) |
 | 6 | 8A | `/gold-wallet` | frame 1 (Variant B) |
 | 7 | 9A | `/credit-cards` | frame 2 (Variant B) |
 | 8 | 10A | `/profile` | frame 2 (Variant B) |
@@ -1785,16 +1785,25 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 7A — Trades + summary
 
-- [ ] `Trades.css` — filter pills (currently `#007bff`), table header, `.page-header`; remove the 8 `!important`.
-- [ ] `TradeForm.js` — token controls.
-- [ ] `TradeLogPage.js` — filters, sortable headers, row actions. Sortable headers use `--fs-accent` on the active sort indicator.
-- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
-- [ ] `TradeSummaryPage.js` (54) → gains, losses, and zero rendered through `Delta` with sign + arrow + label; zero neutral. Page CSS never names a tone token.
-- [ ] `AddTradePage.js` / `EditTradePage.js` headers.
-- [ ] Verify broker presets, custom broker entry, symbol search, validation.
-- [ ] Trade P&L fixtures unchanged.
-- [ ] Remove Trade components (`TradeLogPage.js`, `TradeForm.js`, `TradeSummaryPage.js`, `AddTradePage.js`, `EditTradePage.js`) from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add `/trades`, `/trades/add`, `/trades/edit/:id`, `/trade-summary`.**
+- [x] `Trades.css` — filter pills (currently `#007bff`), table header, `.page-header`; remove the 8 `!important`.
+- [x] `TradeForm.js` — token controls.
+- [x] `TradeLogPage.js` — filters, sortable headers, row actions. Sortable headers use `--fs-accent` on the active sort indicator.
+- [x] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
+- [x] `TradeSummaryPage.js` (54) → gains, losses, and zero rendered through `Delta` with sign + arrow + label; zero neutral. Page CSS never names a tone token.
+- [x] `AddTradePage.js` / `EditTradePage.js` headers.
+- [x] Verify broker presets, custom broker entry, symbol search, validation.
+- [x] Trade P&L fixtures unchanged.
+- [x] Remove Trade components (`TradeLogPage.js`, `TradeForm.js`, `TradeSummaryPage.js`) from `frontend/.eslintignore` (confirmed `AddTradePage.js` and `EditTradePage.js` were never ignored); verify clean ESLint.
+- [x] **Add `/trades`, `/trades/add`, `/trades/edit/:id`, `/trade-summary`.**
+
+**Recorded Amendments (Phase 7A)**:
+1. *AD22 (Trade Summary KPI Card Structure & Tone Application)*: `TradeSummaryPage.js` structures KPI summary cards with neutral primary metrics (`.fs-num`, `--fs-text`) for Total Invested, Portfolio Value, and Total Dividends, and applies semantic tone tokens (`--fs-positive`, `--fs-negative`, `--fs-neutral`) through the canonical `Delta` component for Realized and Unrealized P&L without naming tone tokens directly in page CSS.
+2. *AD23 (Compact-Expand Mobile Trades Card Pattern)*: `TradeLogPage.js` collapses desktop table columns into structured vertical card rows at viewport $\le 768\text{px}$ per D19, featuring expandable trade metadata, symbol chips, and accessible action controls without triggering page-level horizontal overflow.
+3. *AD24 (Broker Select & Custom Input State Machine)*: `TradeForm.js` unifies preset broker selection and custom broker text input into a single controlled state machine with accessible label bindings and inline error surfaces.
+4. *AD25 (Table Inline Action Touch Target Calibration)*: `TradeLogPage.js` and `Trades.css` calibrate inline table action buttons (e.g. `.action-btn-delete`) to $\ge 32\times 32\text{px}$ on desktop viewports ($> 768\text{px}$) to preserve dense numerical table readability per Reference Frame 01 Variant B, and expand to $\ge 44\times 44\text{px}$ on mobile viewports ($\le 768\text{px}$) via `@media (max-width: 768px)` overrides to strictly fulfill mobile touch target accessibility per UI-UX-PLAN §4.8. Primary page actions and form buttons maintain $\ge 44\times 44\text{px}$ across all viewports.
+5. *AD26 (Mock Dispatcher Architecture for Playwright Trades Tests)*: Centralized `setupTradesMocks` dispatcher in `frontend/tests/visual/fixtures/tradesMocks.js` covering `/api/trades` and `/api/trades/summary`, shared across visual, a11y, and reference match specs for deterministic, zero-flakiness verification without live backend dependencies.
+6. *AD27 (Extended 38-Test CRA Unit & Axe Suite)*: Extended unit test coverage from 30 to 38 tests (13 `TradeLogPage`, 12 `TradeForm`, 13 `TradeSummaryPage`) to comprehensively verify sort state toggles, modal cancellation, empty states, and accessibility across all trade sub-components.
+7. *AD28 (Scoped Component Overrides for Unthemed Consumer Safety)*: Scoped shared `.trade-table`, `.action-btn`, and form controls strictly under `html[data-fs-theme] .trade-log-page`, `.trade-form-page`, and `.trade-summary-page` in `Trades.css`, and isolated tone classes in Section 15 of `theme-components.css` to guarantee 100% regression-free visual stability across all unthemed consumer routes.
 
 #### 7B — Corporate actions
 
@@ -2543,6 +2552,7 @@ Append one row per sub-phase. Never edit past rows.
 | 5E | 2026-11-22 | History, update, analytics, tax simulator: converted all remaining 6 payroll routes (/salary-profile/history, /salary-profile/edit, /salary-profile/history/edit/:historyId, /salary-profile/update, /analysis/payroll, /salary/simulator) and canonical redirects; active allowlist expanded from 14 to 20 patterns; Reference Frame 01 dense tables with D19 mobile cards; Reference Frame 02 stacked field cards; Reference Frame 03 dashboard with Chart.js accessible series palette; scoped SummaryRow and AnalysisCard preventing leakage to unthemed pages; purged 7 Phase 5 entries from .eslintignore (0 warnings); un-injected real-browser axe test passing 0 critical/serious violations (8/8 tests green: 1 setup + 7 routes); calculations characterization passing (11/11); reference match passing 7/7 (1 setup + 6 reference tests); 30 baselines captured in FinStat-visual-baselines (commits a15949a, 3993e11, and ea11e6a); manifest 334/334 verified; PR subset 71/71 passing; full 326-test run reconciled (316 passing + 10 AD14 accepted diffs, 0 unexplained diffs); 18 verification gates passed. Phase 5 complete. | 6A (Portfolio dashboard) | None | f471911 (merged to main) |
 | 6A | 2026-11-23 | Portfolio dashboard: promoted /portfolio to active allowlist (20 -> 21 patterns); themed Portfolio Dashboard adhering to Reference Frame 03 (Dashboard Variant B) and Reference Frame 01 (Dense Table Variant B); converted asset allocation from doughnut to ranked horizontal bar chart (AD15, capped at top 6 + neutral Other rollup) using chartTheme.js accessible grey palette and createPattern() styling, with adjacent accessible data table alternative; formatted 5 summary KPI cards with neutral tone and Delta Gain/Loss indicators; implemented Decision D19 mobile compact-expand cards for HoldingsTable at <= 768px with >= 44px touch targets and zero page-level horizontal scroll at 390px; tokenized cost-basis accounting switcher and view-only banner; purged all 4 portfolio files from .eslintignore (0 warnings); verified component unit and axe tests (14/14 green, including accessible chart name assertion); verified Playwright real-browser axe audit (0 critical/serious violations); verified Playwright reference match spec (3/3 green: 1 setup + 2 reference tests); re-captured 5 visual baselines in D:\Projects\FinStat-visual-baselines (commit e742200); manifest verified (334/334); full 326-test run reconciled (292 passing + 10 AD14 accepted diffs + 24 AD16 accepted diffs, 0 unexplained diffs); PR-subset 68/71 passing per Waiver W-6A-1; 18 verification gates passed. | 6B (Rebalancing & Financial Report) | None | d7435c0 (merged to main) |
 | 6B | 2026-11-23 | Rebalancing & comprehensive reporting: promoted /portfolio/rebalancing and /reports/financial to active allowlist (21 -> 23 patterns); themed RebalancingPage adhering to Reference Frame 03 and Frame 01 with custom range sliders, neutral drift action badges, AD18 advisory drift badge ('Rebalancing Recommended' with .fs-badge--warning on drift, 'Balanced on Target' with .fs-badge--neutral when balanced), and D19 mobile compact-expand cards; fixed /portfolio root loading sequence per Decision D23 with shaped section skeletons; themed ComprehensiveReportPage with chartTheme.js accessible palette and strict @media print isolation (Waiver W-6B-1); purged 4 entries from .eslintignore; unit and axe tests passing (33/33 green across 3 suites); Playwright real-browser axe passing (4/4 green, 0 violations); reference match spec passing (5/5 green); 10 baselines updated in FinStat-visual-baselines (commit c2dadf6); manifest 334/334 verified; PR subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 18 verification gates passed. Phase 6 Exit Gate complete. | 7A (Trade log & trade entry conversion) | None | 46f2108 (merged to main) |
+| 7A | 2026-11-24 | Stock Trading & Performance Subsystem conversion: promoted /trades, /trades/add, /trades/edit/:id, /trade-summary to active allowlist (23 -> 27 patterns); Reference Frame 01 dense table with sort indicators, Reference Frame 02 stacked forms, Reference Frame 03 summary dashboard; implemented Decision D19 mobile compact-expand cards (.trade-card) with 0 horizontal overflow; purged 54 inline styles from TradeSummaryPage.js and migrated all P&L displays to <Delta> with explicit sign, arrow, and label; eliminated 8 !important from Trades.css; removed 3 trade files (TradeForm.js, TradeLogPage.js, TradeSummaryPage.js) from .eslintignore (0 warnings); passed all 18 verification gates; un-injected real-browser axe test passing 0 critical/serious violations (5/5 green); reference match spec passing 6/6; 20 baselines updated in FinStat-visual-baselines (commit 7d61525); manifest 334/334 verified; PR-subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 111/111 unthemed consumer tests green across 22 routes. Taste Checkpoint #5 signed off by User; merged to main. | 7B (Corporate actions) | None | pending (merged to main) |
 
 ```
 Sub-phase:   1A
@@ -2825,6 +2835,22 @@ Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in 
 Branch:      phase-ui-6b-rebalancing
 Implementation SHA: 45ff6b8 (working on branch phase-ui-6b-rebalancing)
 Merge SHA:          46f2108 (merged to main)
+```
+
+```
+Sub-phase:   7A
+Status:      done (Taste Checkpoint #5 signed off)
+Done:        Modernized Stock Trading & Performance Subsystem across 4 routes (/trades, /trades/add, /trades/edit/:id, /trade-summary); promoted allowlist from 23 to 27 patterns; removed 8 legacy !important declarations from Trades.css; authored modern dark-theme rules using neutral tokens only under html[data-fs-theme]; isolated tone and accent tokens in theme-components.css under /* Phase 7A: Stock Trades Semantic Themes */; wrapped pages in semantic container classes (.trade-log-page, .trade-form-page, .trade-summary-page); wired sortable table headers with active sort indicators; implemented Decision D19 mobile compact-expand cards (.trade-card) with 0 horizontal overflow; purged 54 inline styles from TradeSummaryPage.js and migrated all P&L displays to <Delta> with explicit sign, arrow, and label; integrated shaped loading skeletons; removed 3 trade files (TradeForm.js, TradeLogPage.js, TradeSummaryPage.js) from .eslintignore (confirmed AddTradePage.js and EditTradePage.js were never ignored) with zero warnings; passed all 18 verification gates including 38/38 unit tests with 0 axe violations across 3 suites, real-browser Playwright axe audits (4 routes + 1 setup fixture = 5 passed, 0 critical, 0 serious violations), reference match spec (5 spec tests + 1 setup fixture = 6 passed), 20 visual baseline snapshots regenerated (commit 7d61525 in FinStat-visual-baselines), 334/334 manifest integrity verified, PR-subset 68/71 passing with 0 unintended diffs, full 326-test visual run reconciled (292 passed + 34 accepted diffs under AD14/AD16, 0 unexplained diffs), and 111/111 unthemed consumer tests (22 routes x 5 viewports + 1 fixture) passing with 0 diffs. Taste Checkpoint #5 signed off by User on 2026-11-24.
+Next:        Phase 7B (Corporate actions)
+Blocked by:  None
+Allowlist:   ['/dashboard', '/expenditures', '/expenditures/new', '/expenditures/edit/:id', '/expenditures/rules', '/expenditures/budgets', '/expenditures/recurring', '/expenditures/bills', '/expenditure-analysis', '/salary/profiles', '/salary/rules', '/salary/paychecks', '/salary/paychecks/new', '/salary/paychecks/edit/:id', '/salary-profile/history', '/salary-profile/edit', '/salary-profile/history/edit/:historyId', '/salary-profile/update', '/analysis/payroll', '/salary/simulator', '/portfolio', '/portfolio/rebalancing', '/reports/financial', '/trades', '/trades/add', '/trades/edit/:id', '/trade-summary'] (cumulative: 27 patterns)
+Visual diff: 0 diff attributable to Phase 7A; 20 newly updated Phase 7A baselines across 5 viewports; 0 diff across all 8 unthemed consumers of Trades.css (111 tests green across 22 routes x 5 viewports + 1 fixture); PR-subset 68/71 passing with 3 pre-existing payroll diffs under AD16; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); manifest 334/334 verified
+Fixtures:    calculations.spec.js passing 100% (byte-identical, 11/11 tests green via Jest)
+Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in FinStat-visual-baselines repo)
+Branch:      phase-ui-7a-trades
+Implementation SHA: 6f437dc (branch phase-ui-7a-trades)
+Documentation SHA:  063b6ff
+Merge SHA:          pending
 ```
 
 ### Sub-phase note template
