@@ -472,7 +472,8 @@ html[data-fs-theme] .trade-summary-page .table-empty-cell {
   color: var(--fs-text-3);
 }
 
-html[data-fs-theme] .trade-log-page .page-header-actions .btn {
+html[data-fs-theme] .trade-log-page .page-header-actions .btn,
+html[data-fs-theme] .trade-log-page .page-header-actions .fs-btn {
   min-height: 44px;
 }
 
@@ -492,16 +493,11 @@ html[data-fs-theme] .trade-log-page .action-btn-delete {
 }
 
 html[data-fs-theme] .trade-log-page .fs-btn:focus-visible,
-html[data-fs-theme] .trade-log-page .fs-btn:focus,
 html[data-fs-theme] .trade-log-page .fs-btn-primary:focus-visible,
-html[data-fs-theme] .trade-log-page .fs-btn-primary:focus,
 html[data-fs-theme] .trade-log-page .page-header-actions .btn:focus-visible,
-html[data-fs-theme] .trade-log-page .page-header-actions .btn:focus,
 html[data-fs-theme] .trade-log-page .filter-controls button:focus-visible,
-html[data-fs-theme] .trade-log-page .filter-controls button:focus,
-html[data-fs-theme] .trade-log-page .action-btn-delete:focus-visible,
-html[data-fs-theme] .trade-log-page .action-btn-delete:focus {
-  outline: 3px solid var(--fs-focus-ring-color);
+html[data-fs-theme] .trade-log-page .action-btn-delete:focus-visible {
+  outline: var(--fs-focus-ring);
   outline-offset: var(--fs-focus-offset);
 }
 
@@ -585,8 +581,7 @@ html[data-fs-theme] .trade-form-page .action-button {
   transition: background var(--fs-duration-fast);
 }
 
-html[data-fs-theme] .trade-form-page .action-button:focus-visible,
-html[data-fs-theme] .trade-form-page .action-button:focus {
+html[data-fs-theme] .trade-form-page .action-button:focus-visible {
   outline: var(--fs-focus-ring);
   outline-offset: var(--fs-focus-offset);
 }
@@ -728,6 +723,11 @@ html[data-fs-theme] .trade-summary-page .broker {
     font-weight: 500;
     color: var(--fs-text-3);
     text-transform: uppercase;
+  }
+
+  html[data-fs-theme] .trade-log-page .action-btn-delete {
+    min-height: 44px;
+    min-width: 44px;
   }
 
   html[data-fs-theme] .trade-card .trade-card-toggle {

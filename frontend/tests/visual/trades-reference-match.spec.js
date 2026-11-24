@@ -149,22 +149,39 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
     await page.goto('/trades', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(500);
 
-    // 1. Interactive CTA button touch target >= 44x44px
+    // 1. Interactive CTA button touch target >= 44x44px at desktop
     const addBtn = page.locator('.trade-log-page .fs-btn-primary');
     await expect(addBtn).toBeVisible();
     const box = await addBtn.boundingBox();
     expect(box.height).toBeGreaterThanOrEqual(44);
     expect(box.width).toBeGreaterThanOrEqual(44);
 
-    // 2. Inline action button touch target >= 32px (calibrated per Amendment AD25)
+    // 2. Desktop inline action button touch target >= 32px (calibrated per Amendment AD25)
     const deleteBtn = page.locator('.trade-log-page .action-btn-delete').first();
     await expect(deleteBtn).toBeVisible();
     const deleteBox = await deleteBtn.boundingBox();
     expect(deleteBox.height).toBeGreaterThanOrEqual(32);
     expect(deleteBox.width).toBeGreaterThanOrEqual(32);
 
-    // 3. Keyboard focus test with :focus-visible computed outline
-    await addBtn.focus();
+    // 3. Mobile touch target >= 44x44px at 390px (per UI-UX-PLAN §4.8)
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(300);
+    const mobileDeleteBtn = page.locator('.trade-log-page .action-btn-delete').first();
+    await expect(mobileDeleteBtn).toBeVisible();
+    const mobileDeleteBox = await mobileDeleteBtn.boundingBox();
+    expect(mobileDeleteBox.height).toBeGreaterThanOrEqual(44);
+    expect(mobileDeleteBox.width).toBeGreaterThanOrEqual(44);
+
+    // 4. Keyboard focus test with real Tab keypress triggering :focus-visible
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/trades', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(500);
+
+    const corpBtn = page.locator('.trade-log-page .trade-log-header-actions a[href="/corporate-actions"]');
+    await corpBtn.focus();
+    await page.keyboard.press('Tab');
+    await expect(addBtn).toBeFocused();
+
     const outlineInfo = await addBtn.evaluate((el) => {
       const style = window.getComputedStyle(el);
       return {
@@ -173,8 +190,8 @@ test.describe('Phase 7A: Stock Trades Reference Match Suite', () => {
         outlineColor: style.outlineColor,
       };
     });
-    expect(outlineInfo.outlineStyle).not.toBe('none');
-    expect(outlineInfo.outlineWidth).toBeGreaterThanOrEqual(1);
-    expect(['rgb(242, 243, 245)', '#f2f3f5', 'rgb(17, 18, 20)']).toContain(outlineInfo.outlineColor);
+    expect(outlineInfo.outlineStyle).toBe('solid');
+    expect(outlineInfo.outlineWidth).toBe(3);
+    expect(outlineInfo.outlineColor).toBe('rgb(242, 243, 245)');
   });
 });
