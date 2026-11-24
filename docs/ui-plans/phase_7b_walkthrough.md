@@ -8,7 +8,7 @@
 - **Date**: 2026-11-24
 - **Branch**: `phase-ui-7b-corporate-actions`
 - **Implementation SHA**: `510e6a8`
-- **Documentation SHA**: `ec43a72`
+- **Documentation SHA**: `e8455ed`
 - **Merge Base**: `dced18e`
 - **Baseline Repo Commit**: `cfaadb5` in `D:\Projects\FinStat-visual-baselines` (334/334 manifest verified)
 - **Status**: Complete & Fully Verified (Awaiting User Sign-Off)
