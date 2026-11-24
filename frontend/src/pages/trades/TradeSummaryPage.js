@@ -1,5 +1,5 @@
 // frontend/src/pages/trades/TradeSummaryPage.js
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useData } from '../../context/DataContext';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { sortData, getNextSortConfig } from '../../utils/helper';
@@ -24,6 +24,44 @@ const TradeSummaryPage = () => {
         key: null,
         direction: 'asc'
     });
+
+    const [expandedOpenCards, setExpandedOpenCards] = useState(new Set());
+    const [expandedCloseCards, setExpandedCloseCards] = useState(new Set());
+    const [isMobile, setIsMobile] = useState(
+        () => typeof window !== 'undefined' && window.innerWidth <= 768
+    );
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const toggleOpenCard = (key) => {
+        setExpandedOpenCards(prev => {
+            const next = new Set(prev);
+            if (next.has(key)) {
+                next.delete(key);
+            } else {
+                next.add(key);
+            }
+            return next;
+        });
+    };
+
+    const toggleCloseCard = (key) => {
+        setExpandedCloseCards(prev => {
+            const next = new Set(prev);
+            if (next.has(key)) {
+                next.delete(key);
+            } else {
+                next.add(key);
+            }
+            return next;
+        });
+    };
 
     const daysBetween = useCallback((date1, date2) => {
         if (!date1 || !date2) return '';
@@ -229,9 +267,119 @@ const TradeSummaryPage = () => {
                 </div>
             )}
 
-            <div className="table-container">
+            <div className="positions-section">
                 <h2 className="section-title">Open Positions</h2>
-                <table className="styled-table">
+
+                {isMobile ? (
+                    /* Mobile Compact-Expand Cards (<=768px, D19) */
+                    <div className="trades-mobile-cards" data-testid="open-positions-mobile-cards">
+                    {sortedOpenPosData.length === 0 ? (
+                        <div className="empty-trades-box">
+                            <p>No open positions found.</p>
+                        </div>
+                    ) : (
+                        sortedOpenPosData.map((item, index) => {
+                            const cardKey = `${item._id?.stockCode || 'pos'}-${item._id?.iteration || index}-${item._id?.broker || 'b'}`;
+                            const isExpanded = expandedOpenCards.has(cardKey);
+                            return (
+                                <article key={cardKey} className="trade-card trade-mobile-card">
+                                    <div className="trade-card-header">
+                                        <div className="trade-card-header-left">
+                                            <span className="stock-code-title"><strong>{item._id?.stockCode}</strong></span>
+                                            {item._id?.broker && <span className="trade-card-broker-chip">{item._id?.broker}</span>}
+                                            {item._id?.iteration && <span className="trade-card-sub-info">Iter: {item._id.iteration}</span>}
+                                        </div>
+                                        <div className="trade-card-header-right">
+                                            <div className="trade-card-total fs-num">{formatCurrency(item.totalValueNow)}</div>
+                                            <div className="trade-card-pnl fs-num">
+                                                <Delta
+                                                    value={formatCurrency(Math.abs(item.unrealizedPL || 0))}
+                                                    tone={(item.unrealizedPL || 0) > 0 ? 'positive' : (item.unrealizedPL || 0) < 0 ? 'negative' : 'neutral'}
+                                                    sign={(item.unrealizedPL || 0) > 0 ? 'positive' : (item.unrealizedPL || 0) < 0 ? 'negative' : 'none'}
+                                                    label={(item.unrealizedPL || 0) >= 0 ? 'Gain' : 'Loss'}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="trade-card-expander-btn"
+                                        aria-expanded={isExpanded}
+                                        onClick={() => toggleOpenCard(cardKey)}
+                                        aria-label={`${isExpanded ? 'Hide' : 'Show'} details for ${item._id?.stockCode}`}
+                                    >
+                                        {isExpanded ? 'Hide details ▲' : 'Show all fields ▼'}
+                                    </button>
+
+                                    {isExpanded && (
+                                        <div className="trade-card-drawer">
+                                            <div className="trade-card-grid">
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Current Shares</span>
+                                                    <span className="trade-card-val fs-num">{item.currentShares}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Market Price</span>
+                                                    <span className="trade-card-val fs-num">
+                                                        {stMarketPrices[item._id?.stockCode] ? formatCurrency(stMarketPrices[item._id?.stockCode]) : '-'}
+                                                    </span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Price Change</span>
+                                                    <span className="trade-card-val fs-num">
+                                                        <Delta
+                                                            value={`${Math.abs(item.changeNow || 0)}%`}
+                                                            tone={(item.changeNow || 0) > 0 ? 'positive' : (item.changeNow || 0) < 0 ? 'negative' : 'neutral'}
+                                                            sign={(item.changeNow || 0) > 0 ? 'positive' : (item.changeNow || 0) < 0 ? 'negative' : 'none'}
+                                                            label={(item.changeNow || 0) >= 0 ? 'Increase' : 'Decrease'}
+                                                        />
+                                                    </span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">All Deals Value</span>
+                                                    <span className="trade-card-val fs-num">{formatCurrency(item.totDeals)}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Break Even Price</span>
+                                                    <span className="trade-card-val fs-num">{formatCurrency(item.breakEvenPrice)}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Net Break Even</span>
+                                                    <span className="trade-card-val fs-num">
+                                                        {item.netBreakEven < 0 ? <span className="free-ride-badge">Free Ride</span> : formatCurrency(item.netBreakEven)}
+                                                    </span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Target Sell</span>
+                                                    <span className="trade-card-val fs-num">
+                                                        {item.netBreakEven < 0 ? <span className="free-ride-badge">Free Ride</span> : formatCurrency(item.breakEvenTarget)}
+                                                    </span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Total Fees</span>
+                                                    <span className="trade-card-val fs-num">{formatCurrency(item.totalFees)}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Trade Count</span>
+                                                    <span className="trade-card-val fs-num">{item.tradeCount}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Holding Period</span>
+                                                    <span className="trade-card-val">{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </article>
+                            );
+                        })
+                    )}
+                </div>
+                ) : (
+                /* Desktop Dense Table (>768px, Reference Frame 01) */
+                <div className="trades-desktop-table table-container">
+                    <table className="styled-table">
                     <thead>
                         <tr>
                             <th
@@ -374,10 +522,119 @@ const TradeSummaryPage = () => {
                     </tbody>
                 </table>
             </div>
+            )}
+            </div>
 
-            <div className="table-container">
+            <div className="positions-section">
                 <h2 className="section-title">Close Positions</h2>
-                <table className="styled-table">
+
+                {isMobile ? (
+                    /* Mobile Compact-Expand Cards (<=768px, D19) */
+                    <div className="trades-mobile-cards" data-testid="closed-positions-mobile-cards">
+                    {sortedEndPosData.length === 0 ? (
+                        <div className="empty-trades-box">
+                            <p>No closed positions found.</p>
+                        </div>
+                    ) : (
+                        sortedEndPosData.map((item, index) => {
+                            const cardKey = `closed-${item._id?.stockCode || 'pos'}-${item._id?.iteration || index}-${item._id?.broker || 'b'}`;
+                            const isExpanded = expandedCloseCards.has(cardKey);
+                            return (
+                                <article key={cardKey} className="trade-card trade-mobile-card">
+                                    <div className="trade-card-header">
+                                        <div className="trade-card-header-left">
+                                            <span className="stock-code-title"><strong>{item._id?.stockCode}</strong></span>
+                                            {item._id?.broker && <span className="trade-card-broker-chip">{item._id?.broker}</span>}
+                                            {item._id?.iteration && <span className="trade-card-sub-info">Iter: {item._id.iteration}</span>}
+                                        </div>
+                                        <div className="trade-card-header-right">
+                                            <div className="trade-card-pnl fs-num">
+                                                <Delta
+                                                    value={formatCurrency(Math.abs(item.tradingPL || 0))}
+                                                    tone={(item.tradingPL || 0) > 0 ? 'positive' : (item.tradingPL || 0) < 0 ? 'negative' : 'neutral'}
+                                                    sign={(item.tradingPL || 0) > 0 ? 'positive' : (item.tradingPL || 0) < 0 ? 'negative' : 'none'}
+                                                    label={(item.tradingPL || 0) >= 0 ? 'Gain' : 'Loss'}
+                                                />
+                                            </div>
+                                            <div className="trade-card-sub-info fs-num">
+                                                <Delta
+                                                    value={`${Math.abs(item.profitPercentage || 0)}%`}
+                                                    tone={(item.profitPercentage || 0) > 0 ? 'positive' : (item.profitPercentage || 0) < 0 ? 'negative' : 'neutral'}
+                                                    sign={(item.profitPercentage || 0) > 0 ? 'positive' : (item.profitPercentage || 0) < 0 ? 'negative' : 'none'}
+                                                    label={(item.profitPercentage || 0) >= 0 ? 'Gain' : 'Loss'}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="trade-card-expander-btn"
+                                        aria-expanded={isExpanded}
+                                        onClick={() => toggleCloseCard(cardKey)}
+                                        aria-label={`${isExpanded ? 'Hide' : 'Show'} details for closed position ${item._id?.stockCode}`}
+                                    >
+                                        {isExpanded ? 'Hide details ▲' : 'Show all fields ▼'}
+                                    </button>
+
+                                    {isExpanded && (
+                                        <div className="trade-card-drawer">
+                                            <div className="trade-card-grid">
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Total Realized Return</span>
+                                                    <span className="trade-card-val fs-num">
+                                                        <Delta
+                                                            value={formatCurrency(Math.abs(item.totalRealizedReturn || 0))}
+                                                            tone={(item.totalRealizedReturn || 0) > 0 ? 'positive' : (item.totalRealizedReturn || 0) < 0 ? 'negative' : 'neutral'}
+                                                            sign={(item.totalRealizedReturn || 0) > 0 ? 'positive' : (item.totalRealizedReturn || 0) < 0 ? 'negative' : 'none'}
+                                                            label={(item.totalRealizedReturn || 0) >= 0 ? 'Gain' : 'Loss'}
+                                                        />
+                                                    </span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Dividends</span>
+                                                    <span className="trade-card-val fs-num">{formatCurrency(item.dividendIncome || 0)}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Total Buy Value</span>
+                                                    <span className="trade-card-val fs-num">{formatCurrency(item.totalBuyValue)}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Total Sell Value</span>
+                                                    <span className="trade-card-val fs-num">{formatCurrency(item.totalSellValue)}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Selling Price</span>
+                                                    <span className="trade-card-val fs-num">{formatCurrency(item.sellingPrice || 0)}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Total Fees</span>
+                                                    <span className="trade-card-val fs-num">{formatCurrency(item.totalFees)}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Trade Count</span>
+                                                    <span className="trade-card-val fs-num">{item.tradeCount}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Holding Period</span>
+                                                    <span className="trade-card-val">{formatDate(item.firstTradeDate)} - {formatDate(item.lastTradeDate)}</span>
+                                                </div>
+                                                <div className="trade-card-field">
+                                                    <span className="trade-card-label">Days Held</span>
+                                                    <span className="trade-card-val fs-num">{daysBetween(item.firstTradeDate, item.lastTradeDate)} days</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </article>
+                            );
+                        })
+                    )}
+                </div>
+                ) : (
+                /* Desktop Dense Table (>768px, Reference Frame 01) */
+                <div className="trades-desktop-table table-container">
+                    <table className="styled-table">
                     <thead>
                         <tr>
                             <th
@@ -518,6 +775,8 @@ const TradeSummaryPage = () => {
                         ))}
                     </tbody>
                 </table>
+            </div>
+            )}
             </div>
         </div>
     );

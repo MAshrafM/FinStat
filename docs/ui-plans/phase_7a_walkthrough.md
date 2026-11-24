@@ -8,11 +8,11 @@
   - `/trades/edit/:id` (`EditTradePage.js` + `TradeForm.js` + `Trades.css` + `theme-components.css`)
   - `/trade-summary` (`TradeSummaryPage.js` + `Trades.css`)
   - `/trades/new` → `/trades/add` redirect preserved
-- **Working Branch**: `phase-ui-7a-trades`
-- **Implementation SHA**: `6f437dc` (code & test remediation commit)
+- **Working Branch**: `phase-ui-7a-mobile-fixes` (branched from `main` to address manual mobile verification findings)
+- **Implementation SHA**: `6f437dc` (initial Phase 7A implementation) + mobile fixes commit
 - **Documentation SHA**: `063b6ff` (walkthrough remediation & governance sync)
-- **Merge SHA**: `6650d5a` (merged to main)
-- **Baselines Commit**: `7d61525` (in `D:\Projects\FinStat-visual-baselines`)
+- **Merge SHA**: `6650d5a` (initial merge) + mobile fixes merge
+- **Baselines Commit**: `c89845e` (in `D:\Projects\FinStat-visual-baselines`)
 - **Merge Base**: `5c57915a3c65f4fe8e5047e59d968c3d6a1eaa7a` (`origin/main`)
 - **Date**: 2026-11-24
 - **Status**: Complete & Signed Off (Taste Checkpoint #5 Approved)
@@ -509,6 +509,10 @@ $env:CI="true"; cd frontend; npx playwright test tests/visual/visual.spec.js --p
    - `Trades.css` lines 1–327 contain legacy unscoped rules shared by 8 unthemed consumer subsystems (`/certificates`, `/credit-cards`, `/currency`, `/gold-wallet`, `/gold-wallet/summary`, `/mutual-funds`, `/mutual-funds/summary`, `/corporate-actions`). These rules include 78 grandfathered stylelint errors (`!important`, raw colors, unlisted radii). In accordance with Invariant I11, these legacy rules remain untouched, while all modern Phase 7A rules (lines 328–748) are scoped under `html[data-fs-theme]` and pass stylelint cleanly.
 9. **Waiver W-6A-1 Extension**:
    - The authoritative PR-subset visual regression pass criterion remains 68/71 per Waiver W-6A-1 (68 passed + 3 accepted pre-existing payroll failures under AD16; 0 diffs attributable to Phase 7A). Full 326-test run reconciled at 292 passing + 10 AD14 diffs + 24 AD16 diffs (0 unexplained / 0 unaccepted diffs).
+10. **AD29: Mobile Collapsible Cards (Decision D19) & Corporate Actions Button Remediation**:
+    - **Corporate Actions Secondary CTA Fix**: Remediated Corporate Actions navigation button on `/trades` (`TradeLogPage.js`) from legacy `className="btn btn-secondary"` (which rendered as a glaring white button `#ffffff` via legacy un-scoped `Trades.css`) to standard `className="fs-btn fs-btn-secondary"`. Adopts `--fs-surface-raised` background with `--fs-text` and `--fs-border-control` border.
+    - **Mobile Collapsible Cards (D19)**: On `/trades` (`TradeLogPage.js`) and `/trade-summary` (`TradeSummaryPage.js`), implemented canonical Decision D19 compact-expand card pattern (`.trades-mobile-cards`, `.trade-card`, `.trade-mobile-card`). On desktop (`> 768px`), renders desktop data table (`.trades-desktop-table`). On mobile viewports ($\le 768\text{px}$), renders compact vertical cards displaying exactly 3 primary visible fields in the header (Date/Code/Type/Value on `/trades`, Code/Value/Unrealized P&L on Open Positions, Code/Trading P&L/Profit % on Closed Positions) plus an expander toggle button (`.trade-card-expander-btn` with `aria-expanded` and touch target $\ge 44\times 44\text{px}$) revealing drawer fields (`.trade-card-drawer`) and action buttons. Dual rendering managed via `isMobile` state hook (following Phase 6A `PaycheckTable.js` precedent) to ensure 0 duplicate elements in jsdom tests and zero horizontal scroll at 390px.
+    - **External Baselines Update**: Regenerated 10 affected mobile baselines across `/trades` and `/trade-summary` in `D:\Projects\FinStat-visual-baselines` (commit `c89845e`); manifest integrity verified at 334/334 baselines. Visual regression suite passes 41/41 tests across all 5 viewports.
 
 ---
 
