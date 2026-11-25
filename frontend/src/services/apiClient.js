@@ -24,19 +24,20 @@ export class ApiError extends Error {
  */
 export const dispatchToast = (message, type = 'error') => {
   if (typeof window !== 'undefined') {
-    if (typeof window.__showToast === 'function') {
-      try {
-        window.__showToast(message, type);
-      } catch (e) {
-        // Fallback to event
-      }
-    }
     if (window.dispatchEvent) {
       window.dispatchEvent(
         new CustomEvent('app:toast', {
           detail: { message, type },
         })
       );
+      return;
+    }
+    if (typeof window.__showToast === 'function') {
+      try {
+        window.__showToast(message, type);
+      } catch (e) {
+        // Ignore fallback errors
+      }
     }
   }
 };

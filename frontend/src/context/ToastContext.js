@@ -1,26 +1,47 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import ToastContainer from '../components/common/ToastContainer';
 
 const ToastContext = createContext(null);
 
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
+  const timersRef = useRef(new Map());
 
   const removeToast = useCallback((id) => {
+    const existingTimer = timersRef.current.get(id);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      timersRef.current.delete(id);
+    }
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
   const showToast = useCallback((message, type = 'error', duration = 4500) => {
-    const id = Date.now() + Math.random().toString(36).substring(2, 9);
-    const newToast = { id, message, type, duration };
+    if (!message) return;
 
-    setToasts((prev) => [...prev, newToast]);
+    setToasts((prev) => {
+      const existing = prev.find((t) => t.message === message && t.type === type);
+      if (existing) {
+        if (duration > 0) {
+          const prevTimer = timersRef.current.get(existing.id);
+          if (prevTimer) clearTimeout(prevTimer);
+          timersRef.current.set(
+            existing.id,
+            setTimeout(() => removeToast(existing.id), duration)
+          );
+        }
+        return prev;
+      }
 
-    if (duration > 0) {
-      setTimeout(() => {
-        removeToast(id);
-      }, duration);
-    }
+      const id = Date.now() + Math.random().toString(36).substring(2, 9);
+      if (duration > 0) {
+        timersRef.current.set(
+          id,
+          setTimeout(() => removeToast(id), duration)
+        );
+      }
+      return [...prev, { id, message, type, duration }];
+    });
   }, [removeToast]);
 
   if (typeof window !== 'undefined') {
@@ -28,6 +49,7 @@ export const ToastProvider = ({ children }) => {
   }
 
   React.useEffect(() => {
+    const timers = timersRef.current;
     if (typeof window !== 'undefined') {
       window.__showToast = showToast;
     }
@@ -42,8 +64,14 @@ export const ToastProvider = ({ children }) => {
       window.addEventListener('app:toast', handleGlobalToast);
       return () => {
         window.removeEventListener('app:toast', handleGlobalToast);
+        timers.forEach((timerId) => clearTimeout(timerId));
+        timers.clear();
       };
     }
+    return () => {
+      timers.forEach((timerId) => clearTimeout(timerId));
+      timers.clear();
+    };
   }, [showToast]);
 
   return (
@@ -55,9 +83,9 @@ export const ToastProvider = ({ children }) => {
 };
 
 const fallbackToast = {
-  showToast: () => {},
-  addToast: () => {},
-  removeToast: () => {},
+  showToast: () => { },
+  addToast: () => { },
+  removeToast: () => { },
 };
 
 export const useToast = () => {
