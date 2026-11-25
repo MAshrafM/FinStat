@@ -208,14 +208,20 @@ const executeCorporateAction = async ({ userId, data, canModify }) => {
 };
 
 /**
- * Retrieves market prices from price service.
+ * Retrieves market prices from price service with liveness metadata.
  * @param {Object} [params]
  * @param {boolean} [params.forceRefresh]
  * @returns {Promise<Object>}
  */
 const getMarketPrices = async ({ forceRefresh = false } = {}) => {
   const result = await marketPriceService.getStockPrices({ forceRefresh });
-  return result.data;
+  return {
+    data: result.data,
+    isLive: Boolean(result.isLive),
+    isStale: Boolean(result.isStale),
+    source: result.source || null,
+    timestamp: result.timestamp || null,
+  };
 };
 
 /**

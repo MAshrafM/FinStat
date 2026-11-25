@@ -29,6 +29,26 @@ describe('MarketPriceService (Resilient Pricing & Multi-Tier Caching)', () => {
       expect(axios.get).toHaveBeenCalledTimes(1);
     });
 
+    it('should fall back to TradingView EGX scanner when Mubasher fails', async () => {
+      axios.get.mockRejectedValueOnce(new Error('Mubasher 401'));
+      axios.post.mockResolvedValueOnce({
+        data: {
+          data: [
+            { s: 'EGX:COMI', d: ['COMI', 126.42, -0.04, 917541] },
+          ],
+        },
+      });
+      MarketPriceCache.findOneAndUpdate.mockResolvedValueOnce({});
+
+      const result = await marketPriceService.getStockPrices();
+      expect(result.isLive).toBe(true);
+      expect(result.isStale).toBe(false);
+      expect(result.source).toBe('tradingview-live');
+      expect(result.data).toEqual([
+        { code: 'COMI', symbol: 'COMI', value: 126.42, price: 126.42, change: -0.04, volume: 917541 },
+      ]);
+    });
+
     it('should fall back to MongoDB cache when live API fails', async () => {
       const fallbackStocks = [{ symbol: 'COMI', price: 82.0 }];
       axios.get.mockRejectedValueOnce(new Error('Mubasher API Down'));

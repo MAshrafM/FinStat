@@ -24,8 +24,11 @@ export const getAllTrades = (options = {}) =>
 export const getTradeSummary = (options = {}) =>
   apiClient.get(`${API_URL}/summary`, options);
 
-export const getMarketData = (options = {}) =>
-  apiClient.get(`${API_URL}/market-prices`, options);
+export const getMarketData = (options = {}) => {
+  const { forceRefresh = false, ...rest } = options;
+  const url = forceRefresh ? `${API_URL}/market-prices?refresh=true` : `${API_URL}/market-prices`;
+  return apiClient.get(url, rest);
+};
 
 export const getTradeById = (id, options = {}) =>
   apiClient.get(`${API_URL}/${id}`, options);

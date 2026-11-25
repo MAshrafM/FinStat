@@ -1,7 +1,7 @@
 /* eslint-disable testing-library/no-node-access */
 // frontend/src/pages/trades/__tests__/TradeSummaryPage.test.js
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import TradeSummaryPage from '../TradeSummaryPage';
 import * as DataContext from '../../../context/DataContext';
@@ -188,5 +188,40 @@ describe('TradeSummaryPage', () => {
     expect(screen.getByText('Trade Position Summary')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Open Positions' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Close Positions' })).toBeInTheDocument();
+  });
+
+  test('14. displays stale price warning banner and badge when market price API is down', async () => {
+    const refreshMock = jest.fn().mockResolvedValue(undefined);
+    renderComponent({
+      stMarketPriceStatus: {
+        isLive: false,
+        isStale: true,
+        source: 'mongodb-cache',
+        timestamp: '2026-11-24T12:00:00Z',
+      },
+      refreshMarketPrices: refreshMock,
+    });
+    const banner = screen.getByTestId('market-price-stale-banner');
+    expect(banner).toBeInTheDocument();
+    expect(screen.getByText('Prices Not Live')).toBeInTheDocument();
+    expect(screen.getByText(/Live market price feed is currently unavailable/i)).toBeInTheDocument();
+    expect(screen.getByText('Cached / Not Live')).toBeInTheDocument();
+
+    const retryBtn = screen.getByRole('button', { name: /Retry Live Prices/i });
+    fireEvent.click(retryBtn);
+    await waitFor(() => expect(retryBtn).not.toBeDisabled());
+    expect(refreshMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('15. does not display stale price banner when market prices are live', () => {
+    renderComponent({
+      stMarketPriceStatus: {
+        isLive: true,
+        isStale: false,
+        source: 'live',
+      },
+    });
+    expect(screen.queryByTestId('market-price-stale-banner')).not.toBeInTheDocument();
+    expect(screen.queryByText('Prices Not Live')).not.toBeInTheDocument();
   });
 });

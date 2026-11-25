@@ -94,20 +94,70 @@ async function getStockPrices({ forceRefresh = false } = {}) {
     if (mem) return mem;
   }
 
+  // Tier 1: Mubasher EGX Live Prices
   try {
     const response = await axios.get('https://english.mubasher.info/api/1/stocks/prices?country=eg', {
       headers: HTTP_HEADERS,
       timeout: 8000,
     });
     const data = response.data;
+    const isValidPayload = Array.isArray(data)
+      ? data.length > 0
+      : Boolean(data && ((Array.isArray(data.prices) && data.prices.length > 0) || (Array.isArray(data.data) && data.data.length > 0)));
+    if (!isValidPayload) {
+      throw new Error('Invalid or empty stock price payload');
+    }
     await saveToCache(cacheKey, data, 'mubasher-live');
     return { data, isLive: true, isStale: false, source: 'live', timestamp: Date.now() };
   } catch (err) {
-    const fallback = await getDurableFallback(cacheKey);
-    if (fallback) return fallback;
-    // Default empty array if nothing cached
-    return { data: [], isLive: false, isStale: true, source: 'fallback-empty', timestamp: Date.now() };
+    // Try Tier 2: TradingView Egypt Scanner
   }
+
+  // Tier 2: TradingView Egypt Scanner (Open EGX endpoint)
+  try {
+    const tvRes = await axios.post(
+      'https://scanner.tradingview.com/egypt/scan',
+      {
+        filter: [{ left: 'exchange', operation: 'equal', right: 'EGX' }],
+        options: { lang: 'en' },
+        symbols: { query: { types: [] }, tickers: [] },
+        columns: ['name', 'close', 'change', 'volume'],
+        range: [0, 500],
+      },
+      {
+        headers: {
+          ...HTTP_HEADERS,
+          'Content-Type': 'application/json',
+        },
+        timeout: 8000,
+      }
+    );
+    const rows = tvRes?.data?.data;
+    if (Array.isArray(rows) && rows.length > 0) {
+      const normalized = rows
+        .filter((row) => row && Array.isArray(row.d) && row.d[0] && Number(row.d[1]) > 0)
+        .map((row) => ({
+          code: row.d[0],
+          symbol: row.d[0],
+          value: Number(row.d[1]),
+          price: Number(row.d[1]),
+          change: row.d[2] != null ? Number(row.d[2]) : 0,
+          volume: row.d[3] != null ? Number(row.d[3]) : 0,
+        }));
+      if (normalized.length > 0) {
+        await saveToCache(cacheKey, normalized, 'tradingview-live');
+        return { data: normalized, isLive: true, isStale: false, source: 'tradingview-live', timestamp: Date.now() };
+      }
+    }
+  } catch (err) {
+    // Try Tier 3: Durable fallback (stale memory / MongoDB cache)
+  }
+
+  // Tier 3: Durable fallback
+  const fallback = await getDurableFallback(cacheKey);
+  if (fallback) return fallback;
+  // Default empty array if nothing cached
+  return { data: [], isLive: false, isStale: true, source: 'fallback-empty', timestamp: Date.now() };
 }
 
 /**

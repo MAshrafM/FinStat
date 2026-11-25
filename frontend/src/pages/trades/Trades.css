@@ -858,3 +858,44 @@ html[data-fs-theme] .empty-trades-box {
     min-width: 44px;
   }
 }
+
+html[data-fs-theme] .trade-summary-page .market-price-status-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  background: var(--fs-surface-raised);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+}
+
+html[data-fs-theme] .trade-summary-page .market-price-status-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+html[data-fs-theme] .trade-summary-page .market-price-status-text {
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .trade-summary-page .market-price-refresh-btn {
+  min-height: 44px;
+}
+
+html[data-fs-theme] .trade-summary-page .section-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+html[data-fs-theme] .trade-summary-page .section-title-row .section-title {
+  margin-bottom: 0;
+}

@@ -169,9 +169,12 @@ describe('Sub-step 8A.1b: Trade Execution Service Unit Tests [AUD-ARCH-002]', ()
   });
 
   // Test 6: getMarketPrices fetches market prices via marketPriceService
-  test('6. getMarketPrices fetches market prices', async () => {
-    const prices = await tradeExecutionService.getMarketPrices({ forceRefresh: false });
-    expect(prices).toBeDefined();
+  test('6. getMarketPrices fetches market prices with liveness metadata', async () => {
+    const result = await tradeExecutionService.getMarketPrices({ forceRefresh: false });
+    expect(result).toBeDefined();
+    expect(result).toHaveProperty('data');
+    expect(typeof result.isLive).toBe('boolean');
+    expect(typeof result.isStale).toBe('boolean');
   });
 
   // Test 7: createTrade creates Buy trade with converted piastres and invalidates portfolio cache

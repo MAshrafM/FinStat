@@ -8,6 +8,8 @@ const defaultDataContext = {
     openPosData: [],
     endPosData: [],
     stMarketPrices: {},
+    stMarketPriceStatus: { isLive: true, isStale: false, source: null, timestamp: null },
+    refreshMarketPrices: null,
     summaryMetrics: {},
     tradesData: [],
     isLoading: false,
@@ -31,6 +33,12 @@ export const DataProvider = ({ children }) => {
     const [openPosData, setOpenPosData] = useState([]);
     const [endPosData, setEndPosData] = useState([]);
     const [stMarketPrices, setStMarketPrices] = useState({});
+    const [stMarketPriceStatus, setStMarketPriceStatus] = useState({
+        isLive: true,
+        isStale: false,
+        source: null,
+        timestamp: null,
+    });
     const [summaryMetrics, setSummaryMetrics] = useState({});
     const [tradesData, setTradesData] = useState([]);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -281,6 +289,56 @@ export const DataProvider = ({ children }) => {
         return computeSummaryData(stSummaryData, stMarketPrices, tradesData);
     }, [stSummaryData, stMarketPrices, tradesData, computeSummaryData]);
 
+    const parseMarketPricesPayload = useCallback((stMarketData) => {
+        const rawPrices = Array.isArray(stMarketData)
+            ? stMarketData
+            : (stMarketData?.prices || stMarketData?.data || []);
+
+        const marketMap = Array.isArray(rawPrices) && rawPrices.length > 0
+            ? rawPrices.reduce((acc, item) => {
+                if (!item) return acc;
+                const code = item.code || item.symbol || item.stockCode || item.ticker;
+                const price = Number(item.value ?? item.price ?? item.lastPrice ?? item.close) || 0;
+                if (code) {
+                    acc[code] = price;
+                }
+                return acc;
+            }, {})
+            : {};
+
+        const isArrayPayload = Array.isArray(stMarketData);
+        const isStale = isArrayPayload
+            ? false
+            : Boolean(stMarketData?.isStale === true || stMarketData?.isLive === false);
+        const status = {
+            isLive: !isStale,
+            isStale,
+            source: isArrayPayload ? 'live' : (stMarketData?.source || null),
+            timestamp: isArrayPayload ? null : (stMarketData?.timestamp || null),
+        };
+
+        return { marketMap, status };
+    }, []);
+
+    const refreshMarketPrices = useCallback(async () => {
+        try {
+            const stMarketData = await getMarketData({ forceRefresh: true });
+            const { marketMap, status } = parseMarketPricesPayload(stMarketData);
+            if (Object.keys(marketMap).length > 0) {
+                setStMarketPrices(marketMap);
+            }
+            setStMarketPriceStatus(status);
+        } catch (err) {
+            setStMarketPriceStatus((prev) => ({
+                ...prev,
+                isLive: false,
+                isStale: true,
+                source: 'api-error',
+                timestamp: prev.timestamp || Date.now(),
+            }));
+        }
+    }, [parseMarketPricesPayload]);
+
     useEffect(() => {
         const fetchAllData = async () => {
             try {
@@ -289,7 +347,13 @@ export const DataProvider = ({ children }) => {
                 setLoadingProgress(0);
                 const [stSummaryData, stMarketData, trades] = await Promise.all([
                     getTradeSummary(),
-                    getMarketData(),
+                    getMarketData().catch(() => ({
+                        data: [],
+                        isLive: false,
+                        isStale: true,
+                        source: 'api-error',
+                        timestamp: Date.now(),
+                    })),
                     getAllTrades(),
                 ]);
                 setLoadingProgress(30);
@@ -298,23 +362,11 @@ export const DataProvider = ({ children }) => {
                 setTradesData(trades);
                 setLoadingProgress(50);
 
-                let marketMap = {};
-                const rawPrices = Array.isArray(stMarketData)
-                    ? stMarketData
-                    : (stMarketData?.prices || stMarketData?.data || []);
-
-                if (Array.isArray(rawPrices) && rawPrices.length > 0) {
-                    marketMap = rawPrices.reduce((acc, item) => {
-                        if (!item) return acc;
-                        const code = item.code || item.symbol || item.stockCode || item.ticker;
-                        const price = Number(item.value ?? item.price ?? item.lastPrice ?? item.close) || 0;
-                        if (code) {
-                            acc[code] = price;
-                        }
-                        return acc;
-                    }, {});
+                const { marketMap, status } = parseMarketPricesPayload(stMarketData);
+                if (Object.keys(marketMap).length > 0) {
                     setStMarketPrices(marketMap);
                 }
+                setStMarketPriceStatus(status);
 
 
                 // Update derived state
@@ -339,7 +391,7 @@ export const DataProvider = ({ children }) => {
         };
 
         fetchAllData();
-    }, [computeSummaryData, calculateSummaryMetrics]);
+    }, [computeSummaryData, calculateSummaryMetrics, parseMarketPricesPayload]);
 
     useEffect(() => {
         // Update derived state when memoized data changes
@@ -365,6 +417,8 @@ export const DataProvider = ({ children }) => {
         openPosData,
         endPosData,
         stMarketPrices,
+        stMarketPriceStatus,
+        refreshMarketPrices,
         summaryMetrics,
         tradesData,
         isLoading,

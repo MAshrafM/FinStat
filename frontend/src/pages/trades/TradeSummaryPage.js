@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useData } from '../../context/DataContext';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { sortData, getNextSortConfig } from '../../utils/helper';
-import { Delta, Loading } from '../../components/ui';
+import { Delta, Loading, Badge } from '../../components/ui';
 import './Trades.css'; // Reuse the same CSS file
 import '../../components/SummaryRow.css'; // Reuse summary row styles
 import '../../components/Table.css'; // Reuse table styles
@@ -12,8 +12,12 @@ const TradeSummaryPage = () => {
     const { openPosData,
         endPosData,
         stMarketPrices = {},
+        stMarketPriceStatus = { isLive: true, isStale: false },
+        refreshMarketPrices,
         summaryMetrics,
         isLoading } = useData();
+
+    const [isRefreshingPrices, setIsRefreshingPrices] = useState(false);
 
     const [closeSortConfig, setCloseSortConfig] = useState({
         key: null,
@@ -150,6 +154,16 @@ const TradeSummaryPage = () => {
     const handleCloseSort = (key) => setCloseSortConfig(getNextSortConfig(closeSortConfig, key));
     const handleOpenSort = (key) => setOpenSortConfig(getNextSortConfig(openSortConfig, key));
 
+    const handleRefreshPrices = async () => {
+        if (!refreshMarketPrices || isRefreshingPrices) return;
+        setIsRefreshingPrices(true);
+        try {
+            await refreshMarketPrices();
+        } finally {
+            setIsRefreshingPrices(false);
+        }
+    };
+
     // Function to render sort indicator
     const getCloseSortIndicator = (columnKey) => {
         if (closeSortConfig.key !== columnKey) {
@@ -179,6 +193,34 @@ const TradeSummaryPage = () => {
                 <p className="trade-log-subtitle">Stock Trading &gt; Position Summary</p>
                 <h1>Trade Position Summary</h1>
             </div>
+
+            {stMarketPriceStatus?.isStale && (
+                <div
+                    className="market-price-status-banner"
+                    role="status"
+                    data-testid="market-price-stale-banner"
+                >
+                    <div className="market-price-status-content">
+                        <Badge tone="warning" label="Prices Not Live" />
+                        <span className="market-price-status-text">
+                            Live market price feed is currently unavailable.
+                            {Object.keys(stMarketPrices).length > 0
+                                ? ` Displaying last cached prices${stMarketPriceStatus.timestamp ? ` (${formatDate(stMarketPriceStatus.timestamp)})` : ''}.`
+                                : ' No cached market prices available.'}
+                        </span>
+                    </div>
+                    {refreshMarketPrices && (
+                        <button
+                            type="button"
+                            className="fs-btn fs-btn-secondary market-price-refresh-btn"
+                            onClick={handleRefreshPrices}
+                            disabled={isRefreshingPrices}
+                        >
+                            {isRefreshingPrices ? 'Refreshing...' : 'Retry Live Prices'}
+                        </button>
+                    )}
+                </div>
+            )}
 
             {summaryMetrics && summaryMetrics.brokerMetrics && (
                 <div className="broker-summaries-section">
@@ -268,7 +310,12 @@ const TradeSummaryPage = () => {
             )}
 
             <div className="positions-section">
-                <h2 className="section-title">Open Positions</h2>
+                <div className="section-title-row">
+                    <h2 className="section-title">Open Positions</h2>
+                    {stMarketPriceStatus?.isStale && (
+                        <Badge tone="warning" label="Cached / Not Live" />
+                    )}
+                </div>
 
                 {isMobile ? (
                     /* Mobile Compact-Expand Cards (<=768px, D19) */
