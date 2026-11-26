@@ -9,7 +9,7 @@
 > **Gate 13 Baseline Commit SHA**: `df94041` (`D:\Projects\FinStat-visual-baselines`, 20 MF recaptures)  
 > **Additional Baseline Commit**: `fb5e3bf` (`D:\Projects\FinStat-visual-baselines`, 3 trade-summary mobile recaptures for pre-existing b9ecafe staleness; manifest 334/334)  
 > **Implementation SHA**: `e1e1822` (local branch `phase-ui-7c-mutual-funds`; feature branch not pushed)  
-> **Documentation SHA**: Pending  
+> **Documentation SHA**: `ced2b42`  
 > **Merge SHA**: Pending (after sign-off)  
 > **Status**: Signed off by user 2026-11-26 — Gate 17 confirmed and Gate 19 in progress (Gates 1–18 passed; Gate 15 full visual reconciliation 326/326 passed; Gate 14 retains only the accepted 3 W-6A-1/AD16 diffs; governance sync complete; merge/push pending)
 

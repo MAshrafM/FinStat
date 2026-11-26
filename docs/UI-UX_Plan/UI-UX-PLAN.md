@@ -2882,7 +2882,7 @@ Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains; 
 Screenshots: None tracked per D5/D21; 20 MF baselines in FinStat-visual-baselines repo
 Branch:      phase-ui-7c-mutual-funds
 Implementation SHA: e1e1822
-Documentation SHA:  Pending merge
+Documentation SHA:  ced2b42
 Merge SHA:          Pending merge
 ```
 
