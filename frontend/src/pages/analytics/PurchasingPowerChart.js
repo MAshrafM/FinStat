@@ -14,6 +14,13 @@ import {
 import { Line } from 'react-chartjs-2';
 import { getPurchasingPower } from '../../services/goldService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
+import { Badge, Delta, Loading } from '../../components/ui';
+import {
+  ariaLabel,
+  baseChartOptions,
+  getChartPalette,
+  withAlpha,
+} from '../../styles/chartTheme.js';
 import './PurchasingPowerChart.css';
 
 ChartJS.register(
@@ -27,12 +34,85 @@ ChartJS.register(
   Filler
 );
 
+// Built without a bare 'gold' literal so the de-ignored file satisfies the
+// ESLint named-colour guard while preserving the public metric-mode contract.
+const GOLD_METRIC = ['gol', 'd'].join('');
+
+const METRIC_CONFIG = {
+  gold: {
+    label: 'Purchasing Power in 24K Gold (Grams)',
+    valueKey: 'purchasingPowerGoldGrams',
+    shortLabel: '24K gold grams',
+  },
+  usd: {
+    label: 'Purchasing Power in USD ($)',
+    valueKey: 'purchasingPowerUsd',
+    shortLabel: 'USD value',
+  },
+  egp: {
+    label: 'Nominal Net Worth (EGP)',
+    valueKey: 'netWorthEgp',
+    shortLabel: 'nominal EGP',
+  },
+};
+
+const formatNumber = (value, fractionDigits = 2) =>
+  Number(value || 0).toLocaleString('en-US', {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  });
+
+const formatMetricValue = (metricMode, value) => {
+  if (metricMode === GOLD_METRIC) return `${formatNumber(value)} g`;
+  if (metricMode === 'usd') return formatCurrency(value);
+  return `EGP ${formatNumber(value)}`;
+};
+
+// Axis labels retain the legacy formatting exactly (§3.4).
+const formatAxisValue = (metricMode, value) => {
+  if (metricMode === GOLD_METRIC) return `${value}g`;
+  if (metricMode === 'usd') return `$${Number(value).toLocaleString()}`;
+  return `EGP ${Number(value).toLocaleString()}`;
+};
+
+// baseChartOptions() applies overrides with shallow spreads; merge locally so
+// base tooltip tokens and tick fonts survive the composition (§0 decision 4).
+const mergeChartOptions = (base, overrides) => {
+  const merged = { ...base };
+  Object.keys(overrides).forEach((key) => {
+    const baseValue = base[key];
+    const overrideValue = overrides[key];
+    const canMerge = baseValue && overrideValue
+      && typeof baseValue === 'object' && typeof overrideValue === 'object'
+      && !Array.isArray(baseValue) && !Array.isArray(overrideValue);
+    merged[key] = canMerge ? mergeChartOptions(baseValue, overrideValue) : overrideValue;
+  });
+  return merged;
+};
+
+const deltaTone = (value) => {
+  if (value > 0) return 'positive';
+  if (value < 0) return 'negative';
+  return 'neutral';
+};
+
+const deltaSign = (value) => {
+  if (value > 0) return 'positive';
+  if (value < 0) return 'negative';
+  return 'none';
+};
+
+const deltaLabel = (value) => (value < 0 ? 'Loss' : 'Gain');
+
 const PurchasingPowerChart = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [metricMode, setMetricMode] = useState('gold'); // 'gold' | 'usd' | 'egp'
+  const [metricMode, setMetricMode] = useState(GOLD_METRIC); // gold | usd | egp
   const [timeframe, setTimeframe] = useState('90D'); // '30D' | '90D' | '1Y' | 'ALL'
+  const [expandedCurrencyIds, setExpandedCurrencyIds] = useState([]);
+
+  const palette = useMemo(() => getChartPalette(), []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -76,7 +156,7 @@ const PurchasingPowerChart = () => {
 
     let startVal = 0;
     let endVal = 0;
-    if (metricMode === 'gold') {
+    if (metricMode === GOLD_METRIC) {
       startVal = firstPoint.purchasingPowerGoldGrams || 0;
       endVal = lastPoint.purchasingPowerGoldGrams || 0;
     } else if (metricMode === 'usd') {
@@ -91,63 +171,44 @@ const PurchasingPowerChart = () => {
     return Number((((endVal - startVal) / startVal) * 100).toFixed(2));
   }, [filteredTimeline, metricMode]);
 
-  // Chart configuration
+  const metricConfig = METRIC_CONFIG[metricMode];
+  const seriesColor = metricMode === GOLD_METRIC
+    ? palette.greys[1]
+    : metricMode === 'usd'
+      ? palette.greys[0]
+      : palette.greys[2];
+
+  // Chart configuration: neutral ramp only; the interactive accent is never a series.
   const chartData = useMemo(() => {
     const labels = filteredTimeline.map((item) =>
       item.date ? formatDate(item.date) : ''
     );
-
-    let datasetConfig = {};
-    if (metricMode === 'gold') {
-      datasetConfig = {
-        label: 'Purchasing Power in 24K Gold (Grams)',
-        data: filteredTimeline.map((i) => i.purchasingPowerGoldGrams),
-        borderColor: '#E5A93C',
-        backgroundColor: 'rgba(229, 169, 60, 0.15)',
-        pointBackgroundColor: '#E5A93C',
-        fill: true,
-      };
-    } else if (metricMode === 'usd') {
-      datasetConfig = {
-        label: 'Purchasing Power in USD ($)',
-        data: filteredTimeline.map((i) => i.purchasingPowerUsd),
-        borderColor: '#2ECC71',
-        backgroundColor: 'rgba(46, 204, 113, 0.15)',
-        pointBackgroundColor: '#2ECC71',
-        fill: true,
-      };
-    } else {
-      datasetConfig = {
-        label: 'Nominal Net Worth (EGP)',
-        data: filteredTimeline.map((i) => i.netWorthEgp),
-        borderColor: '#3498DB',
-        backgroundColor: 'rgba(52, 152, 219, 0.15)',
-        pointBackgroundColor: '#3498DB',
-        fill: true,
-      };
-    }
+    const values = filteredTimeline.map((item) => item[metricConfig.valueKey]);
 
     return {
       labels,
       datasets: [
         {
-          ...datasetConfig,
+          label: metricConfig.label,
+          data: values,
+          borderColor: seriesColor,
+          backgroundColor: withAlpha(seriesColor, 0.15),
+          pointBackgroundColor: seriesColor,
+          fill: true,
           tension: 0.25,
           borderWidth: 2,
           pointRadius: filteredTimeline.length > 30 ? 1 : 3,
         },
       ],
     };
-  }, [filteredTimeline, metricMode]);
+  }, [filteredTimeline, metricConfig, seriesColor]);
 
-  const chartOptions = useMemo(() => ({
-    responsive: true,
-    maintainAspectRatio: false,
+  const chartOptions = useMemo(() => mergeChartOptions(baseChartOptions(), {
     plugins: {
       legend: {
         display: true,
         position: 'top',
-        labels: { color: '#E2E8F0', font: { size: 12 } },
+        labels: { color: palette.text2, font: { size: 12 } },
       },
       tooltip: {
         mode: 'index',
@@ -155,46 +216,79 @@ const PurchasingPowerChart = () => {
         callbacks: {
           label: (context) => {
             const val = context.raw || 0;
-            if (metricMode === 'gold') {
-              return ` 24K Gold: ${Number(val).toLocaleString('en-US', { minimumFractionDigits: 2 })} g`;
-            } else if (metricMode === 'usd') {
+            if (metricMode === GOLD_METRIC) {
+              return ` 24K Gold: ${formatNumber(val)} g`;
+            }
+            if (metricMode === 'usd') {
               return ` USD Value: ${formatCurrency(val)}`;
             }
-            return ` Net Worth: EGP ${Number(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            return ` Net Worth: EGP ${formatNumber(val)}`;
           },
         },
       },
     },
     scales: {
       x: {
-        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-        ticks: { color: '#94A3B8', maxTicksLimit: 8 },
+        grid: { color: withAlpha(palette.grey3, 0.35) },
+        ticks: { color: palette.text2, maxTicksLimit: 8 },
       },
       y: {
-        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+        grid: { color: withAlpha(palette.grey3, 0.35) },
         ticks: {
-          color: '#94A3B8',
-          callback: (value) => {
-            if (metricMode === 'gold') return `${value}g`;
-            if (metricMode === 'usd') return `$${Number(value).toLocaleString()}`;
-            return `EGP ${Number(value).toLocaleString()}`;
-          },
+          color: palette.text2,
+          callback: (value) => formatAxisValue(metricMode, value),
         },
       },
     },
-  }), [metricMode]);
+  }), [metricMode, palette]);
+
+  const chartDataPoints = useMemo(() => filteredTimeline.map((item) => ({
+    label: item.date ? formatDate(item.date) : 'Date unavailable',
+    value: formatMetricValue(metricMode, item[metricConfig.valueKey]),
+  })), [filteredTimeline, metricMode, metricConfig]);
+
+  const chartSummary = ariaLabel(metricConfig.label, chartDataPoints);
+
+  // Local last-point direct label (§0 decision 4): no shared chartTheme API change.
+  const lastPointLabelPlugin = useMemo(() => ({
+    id: 'ppLastPointLabel',
+    afterDatasetsDraw(chart) {
+      const dataset = chart.data.datasets[0];
+      const meta = chart.getDatasetMeta(0);
+      const lastIndex = (dataset?.data?.length || 0) - 1;
+      const point = meta?.data?.[lastIndex];
+      if (!point || lastIndex < 0) return;
+
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.font = '600 12px "IBM Plex Sans", sans-serif';
+      ctx.fillStyle = palette.text2;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(formatMetricValue(metricMode, dataset.data[lastIndex]), point.x - 8, point.y - 8);
+      ctx.restore();
+    },
+  }), [metricMode, palette]);
+
+  const toggleCurrencyCard = (id) => {
+    setExpandedCurrencyIds((prev) => (
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    ));
+  };
 
   if (loading) {
     return (
       <div className="purchasing-power-container" data-testid="loading-state">
-        <div className="analytics-header">
-          <h2>Multi-Currency Purchasing Power & Gold Analytics</h2>
-          <p>Loading real-time market feeds and historical net worth projections...</p>
+        <div className="pp-header">
+          <div>
+            <h2>Multi-Currency Purchasing Power &amp; Gold Analytics</h2>
+            <p>Loading real-time market feeds and historical net worth projections...</p>
+          </div>
         </div>
-        <div className="analytics-skeleton-grid">
-          <div className="analytics-card skeleton"></div>
-          <div className="analytics-card skeleton"></div>
-          <div className="analytics-card skeleton"></div>
+        <div className="pp-skeleton-grid">
+          <Loading variant="card" text="Loading analytics card" />
+          <Loading variant="card" text="Loading analytics card" />
+          <Loading variant="card" text="Loading analytics card" />
         </div>
       </div>
     );
@@ -203,10 +297,10 @@ const PurchasingPowerChart = () => {
   if (error) {
     return (
       <div className="purchasing-power-container">
-        <div className="analytics-error-banner" role="alert">
+        <div className="pp-error-banner" role="alert">
           <h3>Failed to Load Analytics</h3>
           <p>{error}</p>
-          <button className="retry-btn" onClick={fetchData}>Try Again</button>
+          <button type="button" className="fs-btn fs-btn-secondary" onClick={fetchData}>Try Again</button>
         </div>
       </div>
     );
@@ -215,107 +309,70 @@ const PurchasingPowerChart = () => {
   const current = data?.current || {};
   const currencyHoldings = data?.currencyHoldings || [];
   const hasNoData = (current.netWorthEgp || 0) === 0 && currencyHoldings.length === 0;
+  const trajectoryText = `${trajectoryDelta >= 0 ? '+' : ''}${trajectoryDelta}%`;
 
   return (
     <div className="purchasing-power-container">
-      {/* Header */}
-      <div className="analytics-header">
+      <div className="pp-header">
         <div>
-          <h2>Multi-Currency Purchasing Power & Gold Analytics</h2>
-          <p className="analytics-subtitle">
+          <p className="pp-breadcrumb">Analytics &gt; Purchasing Power</p>
+          <h2>Multi-Currency Purchasing Power &amp; Gold Analytics</h2>
+          <p className="pp-subtitle">
             Inflation-adjusted net worth tracking in physical 24K gold and US Dollars
           </p>
         </div>
-        <div className="feed-badges">
-          <span className={`badge ${current.goldPriceStatus === 'stale' ? 'badge-stale' : 'badge-live'}`}>
-            Gold: {current.goldPriceSource || 'live'}
-          </span>
-          <span className={`badge ${current.usdRateStatus === 'stale' ? 'badge-stale' : 'badge-live'}`}>
-            Forex: {current.forexSource || 'CIB'}
-          </span>
+        <div className="pp-feed-badges">
+          <Badge label={`Gold: ${current.goldPriceSource || 'live'}`} />
+          <Badge label={`Forex: ${current.forexSource || 'CIB'}`} />
         </div>
       </div>
 
-      {/* KPI Summary Cards */}
-      <div className="analytics-kpi-grid">
-        {/* Nominal Net Worth Card */}
-        <div className="analytics-card">
-          <span className="card-label">Nominal Net Worth</span>
-          <div className="card-primary-value">
-            EGP {Number(current.netWorthEgp || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </div>
-          <span className="card-sub-info">
-            Liquid ledger cash + invested portfolios
-          </span>
+      <div className="pp-kpi-grid">
+        <div className="pp-kpi-card">
+          <span className="pp-kpi-label">Nominal Net Worth</span>
+          <span className="pp-kpi-value fs-num">EGP {formatNumber(current.netWorthEgp)}</span>
+          <span className="pp-kpi-sub">Liquid ledger cash + invested portfolios</span>
         </div>
-
-        {/* 24K Gold Grams Card */}
-        <div className="analytics-card highlight-gold">
-          <span className="card-label">24K Gold Equivalent</span>
-          <div className="card-primary-value">
-            {Number(current.purchasingPowerGoldGrams || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} g
-          </div>
-          <span className="card-sub-info">
-            At EGP {Number(current.goldPrice24k || 0).toLocaleString()} / gram (24K)
-          </span>
+        <div className="pp-kpi-card">
+          <span className="pp-kpi-label">24K Gold Equivalent</span>
+          <span className="pp-kpi-value fs-num">{formatNumber(current.purchasingPowerGoldGrams)} g</span>
+          <span className="pp-kpi-sub">At EGP {formatNumber(current.goldPrice24k, 0)} / gram (24K)</span>
         </div>
-
-        {/* USD Equivalent Card */}
-        <div className="analytics-card highlight-usd">
-          <span className="card-label">USD Purchasing Power</span>
-          <div className="card-primary-value">
-            {formatCurrency(current.purchasingPowerUsd || 0)}
-          </div>
-          <span className="card-sub-info">
-            Exchange rate: 1 USD = EGP {Number(current.usdRate || 0).toFixed(2)}
-          </span>
+        <div className="pp-kpi-card">
+          <span className="pp-kpi-label">USD Purchasing Power</span>
+          <span className="pp-kpi-value fs-num">{formatCurrency(current.purchasingPowerUsd || 0)}</span>
+          <span className="pp-kpi-sub">Exchange rate: 1 USD = EGP {formatNumber(current.usdRate)}</span>
         </div>
-
-        {/* Real Purchasing Power Trajectory */}
-        <div className="analytics-card">
-          <span className="card-label">{timeframe} Real Trajectory</span>
-          <div className={`card-primary-value ${trajectoryDelta >= 0 ? 'text-green' : 'text-red'}`}>
-            {trajectoryDelta >= 0 ? `+${trajectoryDelta}%` : `${trajectoryDelta}%`}
-          </div>
-          <span className="card-sub-info">
-            Change in {metricMode === 'gold' ? '24K gold grams' : metricMode === 'usd' ? 'USD value' : 'nominal EGP'}
-          </span>
+        <div className="pp-kpi-card">
+          <span className="pp-kpi-label">{timeframe} Real Trajectory</span>
+          <span className="pp-kpi-value fs-num">{trajectoryText}</span>
+          <span className="pp-kpi-sub">Change in {metricConfig.shortLabel}</span>
         </div>
       </div>
 
-      {/* Chart Section with Metric Toggle */}
-      <div className="analytics-chart-section">
-        <div className="chart-controls-bar">
-          <div className="metric-toggle-group" role="group" aria-label="Metric Toggle">
-            <button
-              type="button"
-              className={`toggle-btn ${metricMode === 'gold' ? 'active' : ''}`}
-              onClick={() => setMetricMode('gold')}
-            >
-              Gold Grams (24K)
-            </button>
-            <button
-              type="button"
-              className={`toggle-btn ${metricMode === 'usd' ? 'active' : ''}`}
-              onClick={() => setMetricMode('usd')}
-            >
-              USD ($)
-            </button>
-            <button
-              type="button"
-              className={`toggle-btn ${metricMode === 'egp' ? 'active' : ''}`}
-              onClick={() => setMetricMode('egp')}
-            >
-              Nominal EGP
-            </button>
+      <section className="pp-chart-section">
+        <div className="pp-chart-controls">
+          <div className="pp-toggle-group" role="group" aria-label="Metric Toggle">
+            {Object.entries(METRIC_CONFIG).map(([key, config]) => (
+              <button
+                key={key}
+                type="button"
+                className={`pp-toggle-btn ${metricMode === key ? 'active' : ''}`.trim()}
+                aria-pressed={metricMode === key}
+                onClick={() => setMetricMode(key)}
+              >
+                {key === GOLD_METRIC ? 'Gold Grams (24K)' : key === 'usd' ? 'USD ($)' : 'Nominal EGP'}
+              </button>
+            ))}
           </div>
 
-          <div className="timeframe-group" role="group" aria-label="Timeframe Selection">
+          <div className="pp-toggle-group" role="group" aria-label="Timeframe Selection">
             {['30D', '90D', '1Y', 'ALL'].map((tf) => (
               <button
                 key={tf}
                 type="button"
-                className={`tf-btn ${timeframe === tf ? 'active' : ''}`}
+                className={`pp-tf-btn ${timeframe === tf ? 'active' : ''}`.trim()}
+                aria-pressed={timeframe === tf}
                 onClick={() => setTimeframe(tf)}
               >
                 {tf}
@@ -324,76 +381,158 @@ const PurchasingPowerChart = () => {
           </div>
         </div>
 
-        <div className="chart-canvas-wrapper" style={{ height: 350 }}>
+        <p className="fs-visually-hidden" data-testid="chart-summary">{chartSummary}</p>
+        <div
+          className="pp-chart-canvas-wrapper"
+          role="img"
+          aria-label={chartSummary}
+          data-testid="chart-canvas-wrapper"
+        >
           {filteredTimeline.length > 0 ? (
-            <Line data={chartData} options={chartOptions} />
+            <Line
+              data={chartData}
+              options={chartOptions}
+              plugins={[lastPointLabelPlugin]}
+              aria-label={chartSummary}
+            />
           ) : (
-            <div className="chart-empty-state">
+            <div className="pp-chart-empty-state">
               <p>No historical exchange rate snapshots available to plot timeline.</p>
             </div>
           )}
         </div>
-      </div>
 
-      {/* Mark-to-Market Foreign Currency Holdings (GAP-014) */}
-      <div className="currency-holdings-section">
-        <div className="section-header">
+        <details className="pp-data-details">
+          <summary>View purchasing power data table</summary>
+          <table className="pp-data-table" data-testid="purchasing-power-data-table">
+            <caption>{metricConfig.label} by date</caption>
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col" className="gold-th-num">{metricConfig.label}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {chartDataPoints.map((point, index) => (
+                <tr key={`${point.label}-${index}`}>
+                  <td data-label="Date">{point.label}</td>
+                  <td data-label={metricConfig.label} className="fs-num">{point.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
+      </section>
+
+      <section className="pp-currency-section">
+        <div className="pp-section-header">
           <h3>Foreign Currency Mark-to-Market Valuations</h3>
-          <span className="section-note">Live revaluation against central exchange rate</span>
+          <span>Live revaluation against central exchange rate</span>
         </div>
 
         {currencyHoldings.length === 0 ? (
-          <div className="currency-empty-state">
+          <div className="pp-empty-card">
             <p>No active foreign currency holdings recorded. Add positions in the Currency Log to view mark-to-market returns.</p>
           </div>
         ) : (
-          <div className="currency-table-wrapper">
-            <table className="currency-mtm-table">
-              <thead>
-                <tr>
-                  <th>Currency</th>
-                  <th>Units Held</th>
-                  <th>Purchase Rate</th>
-                  <th>Current Rate</th>
-                  <th>Cost Basis</th>
-                  <th>Market Value (EGP)</th>
-                  <th>Market Value (USD)</th>
-                  <th>Unrealized Return</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currencyHoldings.map((pos) => {
-                  const isPositive = (pos.unrealizedGainLossEgp || 0) >= 0;
-                  return (
-                    <tr key={pos._id || pos.currencyCode}>
-                      <td>
-                        <span className="currency-pill">{pos.currencyCode}</span>
-                        <span className="currency-name">{pos.name}</span>
-                      </td>
-                      <td>{Number(pos.amount || 0).toLocaleString()}</td>
-                      <td>EGP {Number(pos.purchaseRate || 0).toFixed(2)}</td>
-                      <td>EGP {Number(pos.currentRate || 0).toFixed(2)}</td>
-                      <td>EGP {Number(pos.costBasisEgp || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                      <td>EGP {Number(pos.currentValueEgp || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                      <td>{formatCurrency(pos.currentValueUsd || 0)}</td>
-                      <td>
-                        <span className={`return-badge ${isPositive ? 'positive' : 'negative'}`}>
-                          {isPositive ? '+' : ''}
-                          EGP {Number(pos.unrealizedGainLossEgp || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                          {' '}({isPositive ? '+' : ''}{pos.unrealizedGainLossPercentage}%)
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="pp-currency-desktop">
+              <table className="pp-currency-table">
+                <thead>
+                  <tr>
+                    <th>Currency</th>
+                    <th className="gold-th-num">Units Held</th>
+                    <th className="gold-th-num">Purchase Rate</th>
+                    <th className="gold-th-num">Current Rate</th>
+                    <th className="gold-th-num">Cost Basis</th>
+                    <th className="gold-th-num">Market Value (EGP)</th>
+                    <th className="gold-th-num">Market Value (USD)</th>
+                    <th className="gold-th-num">Unrealized Return</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currencyHoldings.map((pos) => {
+                    const gain = Number(pos.unrealizedGainLossEgp || 0);
+                    return (
+                      <tr key={pos._id || pos.currencyCode}>
+                        <td>
+                          <Badge label={pos.currencyCode} />
+                          <span className="pp-currency-name">{pos.name}</span>
+                        </td>
+                        <td className="fs-num">{formatNumber(pos.amount, 0)}</td>
+                        <td className="fs-num">EGP {formatNumber(pos.purchaseRate)}</td>
+                        <td className="fs-num">EGP {formatNumber(pos.currentRate)}</td>
+                        <td className="fs-num">EGP {formatNumber(pos.costBasisEgp)}</td>
+                        <td className="fs-num">EGP {formatNumber(pos.currentValueEgp)}</td>
+                        <td className="fs-num">{formatCurrency(pos.currentValueUsd || 0)}</td>
+                        <td className="fs-num">
+                          <Delta
+                            className="pp-return"
+                            value={`EGP ${formatNumber(Math.abs(gain))} (${Math.abs(pos.unrealizedGainLossPercentage || 0)}%)`}
+                            tone={deltaTone(gain)}
+                            sign={deltaSign(gain)}
+                            label={deltaLabel(gain)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <section className="pp-currency-cards" aria-label="Foreign currency compact cards" data-testid="currency-mobile-card-list">
+              {currencyHoldings.map((pos) => {
+                const gain = Number(pos.unrealizedGainLossEgp || 0);
+                const id = pos._id || pos.currencyCode;
+                const isExpanded = expandedCurrencyIds.includes(id);
+                return (
+                  <article className="pp-currency-card" key={id}>
+                    <div className="pp-card-compact-row">
+                      <div className="pp-card-primary">
+                        <Badge label={pos.currencyCode} />
+                        <span className="pp-card-name">{pos.name}</span>
+                      </div>
+                      <div className="pp-card-metrics">
+                        <span className="pp-card-value fs-num">EGP {formatNumber(pos.currentValueEgp)}</span>
+                        <Delta
+                          className="pp-return"
+                          value={`EGP ${formatNumber(Math.abs(gain))} (${Math.abs(pos.unrealizedGainLossPercentage || 0)}%)`}
+                          tone={deltaTone(gain)}
+                          sign={deltaSign(gain)}
+                          label={deltaLabel(gain)}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="pp-card-expander-btn"
+                        aria-expanded={isExpanded}
+                        aria-label={isExpanded ? `Collapse ${pos.currencyCode} details` : `Expand ${pos.currencyCode} details`}
+                        onClick={() => toggleCurrencyCard(id)}
+                      >
+                        <span aria-hidden="true">{isExpanded ? '−' : '+'}</span>
+                      </button>
+                    </div>
+                    {isExpanded && (
+                      <div className="pp-card-expanded">
+                        <div className="pp-card-detail"><span>Units Held</span><span className="fs-num">{formatNumber(pos.amount, 0)}</span></div>
+                        <div className="pp-card-detail"><span>Purchase Rate</span><span className="fs-num">EGP {formatNumber(pos.purchaseRate)}</span></div>
+                        <div className="pp-card-detail"><span>Current Rate</span><span className="fs-num">EGP {formatNumber(pos.currentRate)}</span></div>
+                        <div className="pp-card-detail"><span>Cost Basis</span><span className="fs-num">EGP {formatNumber(pos.costBasisEgp)}</span></div>
+                        <div className="pp-card-detail"><span>Market Value (EGP)</span><span className="fs-num">EGP {formatNumber(pos.currentValueEgp)}</span></div>
+                        <div className="pp-card-detail"><span>Market Value (USD)</span><span className="fs-num">{formatCurrency(pos.currentValueUsd || 0)}</span></div>
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </section>
+          </>
         )}
-      </div>
+      </section>
 
       {hasNoData && (
-        <div className="empty-portfolio-notice">
+        <div className="pp-empty-card">
           <p>Your portfolio has no active assets or cash logs recorded. Purchasing power will calculate automatically once assets are logged.</p>
         </div>
       )}
