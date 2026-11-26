@@ -2883,7 +2883,7 @@ Screenshots: None tracked per D5/D21; 20 MF baselines in FinStat-visual-baseline
 Branch:      phase-ui-7c-mutual-funds
 Implementation SHA: e1e1822
 Documentation SHA:  ced2b42
-Merge SHA:          Pending merge
+Merge SHA:          7aedf87 (merged to main; docs finalized in follow-up commit)
 ```
 
 ### Sub-phase note template

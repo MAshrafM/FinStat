@@ -10,8 +10,8 @@
 > **Additional Baseline Commit**: `fb5e3bf` (`D:\Projects\FinStat-visual-baselines`, 3 trade-summary mobile recaptures for pre-existing b9ecafe staleness; manifest 334/334)  
 > **Implementation SHA**: `e1e1822` (local branch `phase-ui-7c-mutual-funds`; feature branch not pushed)  
 > **Documentation SHA**: `ced2b42`  
-> **Merge SHA**: Pending (after sign-off)  
-> **Status**: Signed off by user 2026-11-26 — Gate 17 confirmed and Gate 19 in progress (Gates 1–18 passed; Gate 15 full visual reconciliation 326/326 passed; Gate 14 retains only the accepted 3 W-6A-1/AD16 diffs; governance sync complete; merge/push pending)
+> **Merge SHA**: `7aedf87` (merged to `main`)  
+> **Status**: Complete, verified & signed off 2026-11-26 — all 19 gates passed; governance sync complete; `main` pushed to `origin/main`
 
 ---
 
@@ -44,7 +44,7 @@ Visual diff: Gate 13 recaptured 20 MF snapshots (df94041). Gate 14 68/71 (3 know
 Fixtures:    calculations.spec.js passing 11/11 (byte-identical, 8 domains unchanged)
 Screenshots: 20 MF baseline snapshots recaptured (df94041); 3 trade-summary mobile recaptured (fb5e3bf); Gate 17 user-confirmed 2026-11-26
 Branch:      phase-ui-7c-mutual-funds
-Merge SHA:   Pending (after sign-off)
+Merge SHA:   7aedf87 (merged to main)
 ```
 
 ### §0 Plan Decisions (recorded for sign-off)
@@ -312,9 +312,9 @@ cd frontend; $env:CI='true'; npx playwright test --project=visual tests/visual/v
 
 ---
 
-## 5. Gate Execution Status (Gate 19 merge/push in progress)
+## 5. Gate Execution Status (all gates complete)
 
-> **Gate 17 confirmed:** The user reviewed the 20 MF snapshots and explicitly signed off Phase 7C on 2026-11-26. All gates 1–18 pass; the accepted W-6A-1/AD16 3-diff set is confined to the Gate 14 PR subset, while the Gate 15 full suite is 326/326 green. Only the merge/push boundary of Gate 19 remains.
+> **Gate 19 complete:** The user reviewed the 20 MF snapshots and explicitly signed off Phase 7C on 2026-11-26. All gates 1–18 pass; the accepted W-6A-1/AD16 3-diff set is confined to the Gate 14 PR subset, while the Gate 15 full suite is 326/326 green. The feature branch merged to `main` as `7aedf87`; only `main` was pushed to `origin/main`.
 
 | Gate | Status | Reason / Next Action |
 |---|---|---|
@@ -326,7 +326,7 @@ cd frontend; $env:CI='true'; npx playwright test --project=visual tests/visual/v
 | Gate 16 Touch targets & focus rings | PASS | `... -g "interactive touch targets"` → **2 passed** (1 setup + 1 filtered test). |
 | Gate 17 Reference frame conformance inspection | PASS (user-confirmed) | Automated sanity: 20 MF baselines present, 334/334 manifest verified, Gate 11 reference-match passed, Gate 10 axe passed. User visually confirmed the 20 recaptured snapshots across 1440/1024/768/480/390 against the §6.2 checklist on 2026-11-26. |
 | Gate 18 Unthemed consumer preservation | PASS | Legacy consumer subset grep command → **111/111 passed** (1 setup + 22 routes × 5 viewports). Noisy CORS console errors observed in output, but tests passed. |
-| Gate 19 Walkthrough sign-off/merge/push boundary | IN PROGRESS | User sign-off received 2026-11-26; governance sync complete. Merge to `main` and push `main` only remain; feature branch never pushed. |
+| Gate 19 Walkthrough sign-off/merge/push boundary | PASS | User sign-off received 2026-11-26; governance sync complete; merged to `main` as `7aedf87`; only `main` pushed to `origin/main`; feature branch never pushed. |
 
 ---
 
@@ -379,10 +379,10 @@ Direct image inspection was unavailable in the agent environment; the user confi
 - [x] Add `CHANGELOG.md` Phase 7C entry.
 - [x] Confirm `AGENTS.md` baseline count is 334 (corrected during review fix pass; no stale 325 reference remains).
 - [x] Record Gate 13 emitted baseline commit short SHA `df94041` (starting `cfaadb5`), implementation SHA `e1e1822`, doc SHA, and merge SHA in §10 and this walkthrough (doc/merge SHAs finalized in the sign-off commits).
-- [ ] Merge `phase-ui-7c-mutual-funds` into `main` and push only `main` (in progress).
+- [x] Merge `phase-ui-7c-mutual-funds` into `main` (`7aedf87`) and push only `main`.
 
 ## 8. Sign-Off
 
 - **User review**: Completed 2026-11-26 (20 MF baselines reviewed against §6.2 checklist)
 - **Explicit sign-off**: Granted 2026-11-26 ("Confirmed — sign off & finish")
-- **Merge/push**: In progress — feature branch local only; never pushed
+- **Merge/push**: Complete — merged to `main` as `7aedf87`; only `main` pushed to `origin/main`; feature branch never pushed
