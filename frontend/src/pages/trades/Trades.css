@@ -897,5 +897,6 @@ html[data-fs-theme] .trade-summary-page .section-title-row {
 }
 
 html[data-fs-theme] .trade-summary-page .section-title-row .section-title {
+  margin-top: 0;
   margin-bottom: 0;
 }

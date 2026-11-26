@@ -1,12 +1,116 @@
 // frontend/src/pages/mutual-funds/MutualFundForm.js
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { FaSearch, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { formatCurrency } from '../../utils/formatters';
 import { getMutualFundByCode, getAllMutualFundTrades } from '../../services/mutualFundService';
-import AccountSelector from '../../components/common/AccountSelector'; // Add these service functions
+import AccountSelector from '../../components/common/AccountSelector';
+
+const FIELD_LABELS = {
+  date: 'Date',
+  code: 'Fund Code',
+  name: 'Fund Name',
+  units: 'Units',
+  price: 'Price per Unit',
+};
+
+const requiredFieldsForType = (type) => {
+  if (type === 'Coupon') {
+    return ['date', 'code', 'name', 'price'];
+  }
+  return ['date', 'code', 'name', 'units', 'price'];
+};
+
+const validateField = (name, value, type) => {
+  if (!requiredFieldsForType(type).includes(name)) {
+    return '';
+  }
+
+  const normalized = typeof value === 'string' ? value.trim() : value;
+
+  if (name === 'code') {
+    if (!normalized) return 'Fund code is required.';
+    if (normalized.length < 2) return 'Fund code must be at least 2 characters.';
+    return '';
+  }
+
+  if (!normalized) {
+    if (name === 'price' && type === 'Coupon') {
+      return 'Coupon Amount is required.';
+    }
+    return `${FIELD_LABELS[name]} is required.`;
+  }
+
+  return '';
+};
 
 const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
-    const [formData, setFormData] = useState({
-        date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+  const [formData, setFormData] = useState({
+    date: initialData.date
+      ? new Date(initialData.date).toISOString().split('T')[0]
+      : new Date().toISOString().split('T')[0],
+    name: initialData.name || '',
+    code: initialData.code || '',
+    type: initialData.type || 'Buy',
+    units: initialData.units || '',
+    price: initialData.price || '',
+    fees: initialData.fees || '',
+    totalValue: initialData.totalValue || 0,
+    sourceAccount: initialData.sourceAccount || 'Bank',
+    destinationAccount: initialData.destinationAccount || 'Bank',
+    autoReinvest: initialData.autoReinvest || false,
+  });
+
+  const [codeSearching, setCodeSearching] = useState(false);
+  const [codeFound, setCodeFound] = useState(false);
+  const [unitsCalculating, setUnitsCalculating] = useState(false);
+  const [totalUnitsForCode, setTotalUnitsForCode] = useState(0);
+  const [formErrors, setFormErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
+
+  const calculateTotalUnits = useCallback(
+    async (code) => {
+      if (!code) return;
+
+      setUnitsCalculating(true);
+      try {
+        // Get all transactions for this fund code
+        const allTransactions = await getAllMutualFundTrades();
+        const codeTransactions = allTransactions.filter((t) => t.code === code);
+
+        // Calculate net units (Buy adds, Sell subtracts)
+        const totalUnits = codeTransactions.reduce((sum, transaction) => {
+          const units = parseFloat(transaction.units) || 0;
+          if (transaction.type === 'Buy') {
+            return sum + units;
+          } else if (transaction.type === 'Sell') {
+            return sum - units;
+          }
+          return sum; // Coupons don't affect unit count
+        }, 0);
+
+        setTotalUnitsForCode(totalUnits);
+
+        // Auto-fill units for coupon transaction
+        if (formData.type === 'Coupon') {
+          setFormData((prev) => ({
+            ...prev,
+            units: totalUnits.toString(),
+          }));
+        }
+      } catch (error) {
+        console.error('Error calculating total units:', error);
+        setTotalUnitsForCode(0);
+      }
+      setUnitsCalculating(false);
+    },
+    [formData.type]
+  );
+
+  useEffect(() => {
+    if (isEdit && initialData) {
+      setFormData({
+        date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : '',
         name: initialData.name || '',
         code: initialData.code || '',
         type: initialData.type || 'Buy',
@@ -17,382 +121,482 @@ const MutualFundForm = ({ initialData = {}, onFormSubmit, isEdit = false }) => {
         sourceAccount: initialData.sourceAccount || 'Bank',
         destinationAccount: initialData.destinationAccount || 'Bank',
         autoReinvest: initialData.autoReinvest || false,
+      });
+    }
+  }, [initialData, isEdit]);
+
+  // Effect to auto-calculate totalValue
+  useEffect(() => {
+    const type = formData.type;
+    const units = formData.units;
+    const price = formData.price;
+    const fees = formData.fees;
+    const numUnits = parseFloat(units) || 0;
+    const numPrice = parseFloat(price) || 0;
+    const numFees = parseFloat(fees) || 0;
+    let total = 0;
+
+    if (type === 'Buy') {
+      total = numUnits * numPrice + numFees;
+    } else if (type === 'Sell' || type === 'Coupon') {
+      total = numUnits * numPrice - numFees;
+    }
+
+    setFormData((prev) => ({ ...prev, totalValue: total }));
+  }, [formData.type, formData.units, formData.price, formData.fees]);
+
+  // Effect to lookup fund details when code changes
+  useEffect(() => {
+    const lookupFundByCode = async () => {
+      if (formData.code && formData.code.length >= 2) {
+        setCodeSearching(true);
+        try {
+          let fundData = await getMutualFundByCode(formData.code);
+          if (fundData) {
+            if (fundData.length > 0) {
+              setFormData((prev) => ({
+                ...prev,
+                name: fundData[0].name,
+              }));
+              setCodeFound(true);
+            }
+
+            // If it's a coupon transaction, calculate total units
+            if (formData.type === 'Coupon') {
+              await calculateTotalUnits(formData.code);
+            }
+          } else {
+            setCodeFound(false);
+            setTotalUnitsForCode(0);
+          }
+        } catch (error) {
+          console.error('Error looking up fund:', error);
+          setCodeFound(false);
+          setTotalUnitsForCode(0);
+        }
+        setCodeSearching(false);
+      } else {
+        setCodeFound(false);
+        setTotalUnitsForCode(0);
+      }
+    };
+
+    // Debounce the lookup to avoid too many API calls
+    const timeoutId = setTimeout(lookupFundByCode, 300);
+    return () => clearTimeout(timeoutId);
+  }, [formData.code, formData.type, calculateTotalUnits]);
+
+  // Effect to calculate units when transaction type changes to Coupon
+  useEffect(() => {
+    if (formData.type === 'Coupon' && formData.code && codeFound) {
+      calculateTotalUnits(formData.code);
+    } else if (formData.type !== 'Coupon') {
+      setTotalUnitsForCode(0);
+    }
+  }, [formData.type, formData.code, codeFound, calculateTotalUnits]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Reset code status when manually changing name
+    if (name === 'name') {
+      setCodeFound(false);
+    }
+
+    if (name === 'type') {
+      setFormErrors({});
+      setSubmitError('');
+    } else if (formErrors[name]) {
+      setFormErrors((prev) => ({
+        ...prev,
+        [name]: validateField(name, value, formData.type),
+      }));
+    }
+  };
+
+  const handleCodeChange = (e) => {
+    const { value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      code: value.toUpperCase(),
+      name: '', // Clear name when code changes
+    }));
+    setCodeFound(false);
+    if (formErrors.code) {
+      setFormErrors((prev) => ({
+        ...prev,
+        code: validateField('code', value.toUpperCase(), formData.type),
+      }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setFormErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, value, formData.type),
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const nextErrors = {};
+    requiredFieldsForType(formData.type).forEach((name) => {
+      const message = validateField(name, formData[name], formData.type);
+      if (message) {
+        nextErrors[name] = message;
+      }
     });
 
-    const [codeSearching, setCodeSearching] = useState(false);
-    const [codeFound, setCodeFound] = useState(false);
-    const [unitsCalculating, setUnitsCalculating] = useState(false);
-    const [totalUnitsForCode, setTotalUnitsForCode] = useState(0);
+    setFormErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      setSubmitError('Please correct the highlighted fields before submitting.');
+      return;
+    }
 
-    
-    const calculateTotalUnits = useCallback(async (code) => {
-        if (!code) return;
-        
-        setUnitsCalculating(true);
-        try {
-            // Get all transactions for this fund code
-            const allTransactions = await getAllMutualFundTrades();
-            const codeTransactions = allTransactions.filter(t => t.code === code);
-            
-            // Calculate net units (Buy adds, Sell subtracts)
-            const totalUnits = codeTransactions.reduce((sum, transaction) => {
-                const units = parseFloat(transaction.units) || 0;
-                if (transaction.type === 'Buy') {
-                    return sum + units;
-                } else if (transaction.type === 'Sell') {
-                    return sum - units;
-                }
-                return sum; // Coupons don't affect unit count
-            }, 0);
-            
-            setTotalUnitsForCode(totalUnits);
-            
-            // Auto-fill units for coupon transaction
-            if (formData.type === 'Coupon') {
-                setFormData(prev => ({
-                    ...prev,
-                    units: totalUnits.toString()
-                }));
-            }
-        } catch (error) {
-            console.error('Error calculating total units:', error);
-            setTotalUnitsForCode(0);
-        }
-        setUnitsCalculating(false);
-    }, [formData.type]);
+    setSubmitError('');
+    onFormSubmit({
+      ...formData,
+      units: parseFloat(formData.units) || 0,
+      price: parseFloat(formData.price) || 0,
+      fees: parseFloat(formData.fees) || 0,
+      totalValue: parseFloat(formData.totalValue) || 0,
+      sourceAccount: formData.sourceAccount || 'Bank',
+      destinationAccount: formData.destinationAccount || 'Bank',
+      autoReinvest: Boolean(formData.autoReinvest),
+    });
+  };
 
+  const isTrade = ['Buy', 'Sell'].includes(formData.type);
+  const isCoupon = formData.type === 'Coupon';
+  const showCodeNotFound =
+    formData.code.length >= 2 && !codeSearching && !codeFound;
 
-    useEffect(() => {
-        if (isEdit && initialData) {
-            setFormData({
-                date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : '',
-                name: initialData.name || '',
-                code: initialData.code || '',
-                type: initialData.type || 'Buy',
-                units: initialData.units || '',
-                price: initialData.price || '',
-                fees: initialData.fees || '',
-                totalValue: initialData.totalValue || 0,
-                sourceAccount: initialData.sourceAccount || 'Bank',
-                destinationAccount: initialData.destinationAccount || 'Bank',
-                autoReinvest: initialData.autoReinvest || false,
-            });
-        }
-    }, [initialData, isEdit]);
+  const describedBy = (name, hintId) =>
+    [formErrors[name] ? `mf-${name}-error` : null, hintId]
+      .filter(Boolean)
+      .join(' ') || undefined;
 
-    // Effect to auto-calculate totalValue
-    useEffect(() => {
-        const type = formData.type;
-        const units = formData.units;
-        const price = formData.price;
-        const fees = formData.fees;
-        const numUnits = parseFloat(units) || 0;
-        const numPrice = parseFloat(price) || 0;
-        const numFees = parseFloat(fees) || 0;
-        let total = 0;
+  const codeHintId = codeSearching || codeFound || showCodeNotFound ? 'mf-code-hint' : undefined;
 
-        if (type === 'Buy') {
-            total = (numUnits * numPrice) + numFees;
-        } else if (type === 'Sell' || type === 'Coupon') {
-            total = (numUnits * numPrice) - numFees;
-        }
+  const renderFieldError = (name) =>
+    formErrors[name] ? (
+      <p id={`mf-${name}-error`} className="form-error">
+        {formErrors[name]}
+      </p>
+    ) : null;
 
-        setFormData(prev => ({ ...prev, totalValue: total }));
-    }, [formData.type, formData.units, formData.price, formData.fees]);
+  return (
+    <div className="mf-form-container">
+      <form className="mf-form-card" onSubmit={handleSubmit} noValidate>
+        {submitError && (
+          <div className="form-error mf-form-error-summary" role="alert">
+            {submitError}
+          </div>
+        )}
 
-    // Effect to lookup fund details when code changes
-    useEffect(() => {
-        const lookupFundByCode = async () => {
-            if (formData.code && formData.code.length >= 2) {
-                setCodeSearching(true);
-                try {
-                    let fundData = await getMutualFundByCode(formData.code);
-                    if (fundData) {
-                        if (fundData.length > 0) {
-                            setFormData(prev => ({
-                                ...prev,
-                                name: fundData[0].name
-                            }));
-                            setCodeFound(true);
-                        }
-                        
-                        // If it's a coupon transaction, calculate total units
-                        if (formData.type === 'Coupon') {
-                            await calculateTotalUnits(formData.code);
-                        }
-                    } else {
-                        setCodeFound(false);
-                        setTotalUnitsForCode(0);
-                    }
-                } catch (error) {
-                    console.error('Error looking up fund:', error);
-                    setCodeFound(false);
-                    setTotalUnitsForCode(0);
-                }
-                setCodeSearching(false);
-            } else {
-                setCodeFound(false);
-                setTotalUnitsForCode(0);
-            }
-        };
-
-        // Debounce the lookup to avoid too many API calls
-        const timeoutId = setTimeout(lookupFundByCode, 300);
-        return () => clearTimeout(timeoutId);
-    }, [formData.code, formData.type, calculateTotalUnits]);
-
-    // Effect to calculate units when transaction type changes to Coupon
-    useEffect(() => {
-        if (formData.type === 'Coupon' && formData.code && codeFound) {
-            calculateTotalUnits(formData.code);
-        } else if (formData.type !== 'Coupon') {
-            setTotalUnitsForCode(0);
-        }
-    }, [formData.type, formData.code, codeFound, calculateTotalUnits]);
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-        
-        // Reset code status when manually changing name
-        if (name === 'name') {
-            setCodeFound(false);
-        }
-    };
-
-    const handleCodeChange = (e) => {
-        const { value } = e.target;
-        setFormData(prev => ({ 
-            ...prev, 
-            code: value.toUpperCase(),
-            name: '' // Clear name when code changes
-        }));
-        setCodeFound(false);
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onFormSubmit({
-            ...formData,
-            units: parseFloat(formData.units) || 0,
-            price: parseFloat(formData.price) || 0,
-            fees: parseFloat(formData.fees) || 0,
-            totalValue: parseFloat(formData.totalValue) || 0,
-            sourceAccount: formData.sourceAccount || 'Bank',
-            destinationAccount: formData.destinationAccount || 'Bank',
-            autoReinvest: Boolean(formData.autoReinvest),
-        });
-    };
-
-    const isTrade = ['Buy', 'Sell'].includes(formData.type);
-    const isCoupon = formData.type === 'Coupon';
-
-    return (
-        <div className="form-container">
-            <form onSubmit={handleSubmit} className="standard-form">
-                <div className="form-group">
-                    <label>Date</label>
-                    <input type="date" name="date" value={formData.date} onChange={handleChange} required />
-                </div>
-
-                <div className="form-group">
-                    <label>Fund Code</label>
-                    <div style={{ position: 'relative' }}>
-                        <input 
-                            type="text" 
-                            name="code" 
-                            placeholder="e.g., AZO" 
-                            value={formData.code} 
-                            onChange={handleCodeChange} 
-                            required 
-                            style={{
-                                paddingRight: '2.5rem',
-                                borderColor: codeFound ? '#10b981' : (formData.code && !codeSearching && !codeFound ? '#ef4444' : '#d1d5db')
-                            }}
-                        />
-                        <div style={{
-                            position: 'absolute',
-                            right: '0.5rem',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            fontSize: '1.2rem'
-                        }}>
-                            {codeSearching ? (
-                                <span style={{ color: '#6b7280' }}>🔍</span>
-                            ) : codeFound ? (
-                                <span style={{ color: '#10b981' }}>✅</span>
-                            ) : formData.code && !codeSearching ? (
-                                <span style={{ color: '#ef4444' }}>❌</span>
-                            ) : null}
-                        </div>
-                    </div>
-                    {codeSearching && (
-                        <small style={{ color: '#6b7280', fontSize: '0.8rem' }}>
-                            Looking up fund details...
-                        </small>
-                    )}
-                    {formData.code && !codeSearching && !codeFound && (
-                        <small style={{ color: '#ef4444', fontSize: '0.8rem' }}>
-                            Fund code not found. Please enter the fund name manually.
-                        </small>
-                    )}
-                </div>
-
-                <div className="form-group">
-                    <label>Fund Name</label>
-                    <input 
-                        type="text" 
-                        name="name" 
-                        placeholder={codeFound ? formData.name : "e.g., AZ Opportunity Fund"}
-                        value={formData.name} 
-                        onChange={handleChange} 
-                        required 
-                        readOnly={codeFound}
-                        style={{
-                            backgroundColor: codeFound ? '#f9fafb' : 'white',
-                            cursor: codeFound ? 'not-allowed' : 'text'
-                        }}
-                    />
-                    {codeFound && (
-                        <small style={{ color: '#10b981', fontSize: '0.8rem' }}>
-                            ✓ Auto-filled from database {formData.name}
-                        </small>
-                    )}
-                </div>
-
-                <div className="form-group">
-                    <label>Transaction Type</label>
-                    <select name="type" value={formData.type} onChange={handleChange}>
-                        <option value="Buy">Buy</option>
-                        <option value="Sell">Sell</option>
-                        <option value="Coupon">Cash Coupon</option>
-                    </select>
-                </div>
-
-                {isCoupon && (
-                    <>
-                        <div className="form-group">
-                            <label>Units (Auto-calculated)</label>
-                            <div style={{ position: 'relative' }}>
-                                <input 
-                                    type="number" 
-                                    step="any" 
-                                    name="units" 
-                                    value={formData.units} 
-                                    onChange={handleChange}
-                                    readOnly={codeFound && totalUnitsForCode > 0}
-                                    style={{
-                                        backgroundColor: (codeFound && totalUnitsForCode > 0) ? '#f0f9ff' : 'white',
-                                        cursor: (codeFound && totalUnitsForCode > 0) ? 'not-allowed' : 'text'
-                                    }}
-                                />
-                                {unitsCalculating && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        right: '0.5rem',
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        fontSize: '1rem',
-                                        color: '#6b7280'
-                                    }}>
-                                        ⏳
-                                    </div>
-                                )}
-                            </div>
-                            {codeFound && totalUnitsForCode > 0 && (
-                                <small style={{ color: '#0ea5e9', fontSize: '0.8rem' }}>
-                                    📊 Total units owned: {totalUnitsForCode.toFixed(4)} (auto-calculated)
-                                </small>
-                            )}
-                            {codeFound && totalUnitsForCode === 0 && (
-                                <small style={{ color: '#f59e0b', fontSize: '0.8rem' }}>
-                                    ⚠️ No units found for this fund code
-                                </small>
-                            )}
-                        </div>
-
-                        <div className="form-group">
-                            <label>Coupon Amount</label>
-                            <input 
-                                type="number" 
-                                step="0.01" 
-                                name="price" 
-                                placeholder="Enter total cash received"
-                                value={formData.price} 
-                                onChange={handleChange} 
-                                required 
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <AccountSelector
-                                direction="destination"
-                                value={formData.destinationAccount || 'Bank'}
-                                onChange={(val) => setFormData(prev => ({ ...prev, destinationAccount: val }))}
-                                label="Destination Account (Coupon Deposited)"
-                                disabled={Boolean(formData.autoReinvest)}
-                            />
-                        </div>
-
-                        <div className="form-group checkbox-group" style={{ margin: '1rem 0' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                                <input
-                                    type="checkbox"
-                                    name="autoReinvest"
-                                    checked={Boolean(formData.autoReinvest)}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, autoReinvest: e.target.checked }))}
-                                />
-                                <span>Auto-Reinvest Coupon (Compound Units)</span>
-                            </label>
-                            <small style={{ color: '#6b7280', display: 'block', marginTop: '0.25rem' }}>
-                                When enabled, coupon proceeds are reinvested into fund units rather than deposited to your liquid accounts.
-                            </small>
-                        </div>
-                    </>
-                )}
-
-                {formData.type === 'Buy' && (
-                    <div className="form-group">
-                        <AccountSelector
-                            direction="source"
-                            value={formData.sourceAccount || 'Bank'}
-                            onChange={(val) => setFormData(prev => ({ ...prev, sourceAccount: val }))}
-                            label="Source Account (Funds Withdrawn)"
-                        />
-                    </div>
-                )}
-
-                {isTrade && (
-                    <>
-                        <div className="form-group">
-                            <label>Units</label>
-                            <input type="number" step="any" name="units" value={formData.units} onChange={handleChange} required />
-                        </div>
-                        <div className="form-group">
-                            <label>Price per Unit</label>
-                            <input type="number" step="any" name="price" value={formData.price} onChange={handleChange} required />
-                        </div>
-                    </>
-                )}
-
-                <div className="form-group">
-                    <label>Fees</label>
-                    <input type="number" step="any" name="fees" value={formData.fees} onChange={handleChange} />
-                </div>
-
-                
-                    <div className="form-group">
-                        <label>Total Value</label>
-                        <input type="text" value={formatCurrency(formData.totalValue)} readOnly disabled className="total-display" />
-                    </div>
-                
-
-                <button type="submit" className="action-button">
-                    {isEdit ? 'Update' : 'Create'} Transaction
-                </button>
-            </form>
+        <div className="form-group">
+          <label htmlFor="mf-date">Date</label>
+          <input
+            id="mf-date"
+            className="fs-input"
+            type="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            aria-invalid={Boolean(formErrors.date)}
+            aria-describedby={describedBy('date')}
+            required
+          />
+          {renderFieldError('date')}
         </div>
-    );
+
+        <div className="form-group">
+          <label htmlFor="mf-code">Fund Code</label>
+          <div className="mf-code-wrap">
+            <input
+              id="mf-code"
+              className={`fs-input mf-code-input ${
+                codeFound
+                  ? 'mf-input-found'
+                  : showCodeNotFound
+                  ? 'mf-input-not-found'
+                  : ''
+              }`}
+              type="text"
+              name="code"
+              placeholder="e.g., AZO"
+              value={formData.code}
+              onChange={handleCodeChange}
+              onBlur={handleBlur}
+              aria-invalid={Boolean(formErrors.code)}
+              aria-describedby={describedBy('code', codeHintId)}
+              required
+            />
+            <span className="mf-code-status" aria-hidden="true">
+              {codeSearching ? (
+                <FaSearch />
+              ) : codeFound ? (
+                <FaCheckCircle />
+              ) : showCodeNotFound ? (
+                <FaTimesCircle />
+              ) : null}
+            </span>
+          </div>
+          {codeSearching && (
+            <p id="mf-code-hint" className="mf-field-hint" aria-live="polite">
+              <span className="mf-field-hint--icon" aria-hidden="true">
+                <FaSearch />
+              </span>
+              Looking up fund details...
+            </p>
+          )}
+          {showCodeNotFound && (
+            <p id="mf-code-hint" className="mf-field-hint" aria-live="polite">
+              <span className="mf-field-hint--icon" aria-hidden="true">
+                <FaTimesCircle />
+              </span>
+              Fund code not found. Please enter the fund name manually.
+            </p>
+          )}
+          {codeFound && (
+            <p id="mf-code-hint" className="mf-field-hint" aria-live="polite">
+              <span className="mf-field-hint--icon" aria-hidden="true">
+                <FaCheckCircle />
+              </span>
+              Fund found in database.
+            </p>
+          )}
+          {renderFieldError('code')}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="mf-name">Fund Name</label>
+          <input
+            id="mf-name"
+            className="fs-input"
+            type="text"
+            name="name"
+            placeholder={codeFound ? formData.name : 'e.g., AZ Opportunity Fund'}
+            value={formData.name}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            readOnly={codeFound}
+            aria-readonly={codeFound}
+            aria-invalid={Boolean(formErrors.name)}
+            aria-describedby={describedBy('name')}
+            required
+          />
+          {codeFound && (
+            <p className="mf-field-hint">
+              <span className="mf-field-hint--icon" aria-hidden="true">
+                <FaCheckCircle />
+              </span>
+              Auto-filled from database: {formData.name}
+            </p>
+          )}
+          {renderFieldError('name')}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="mf-type">Transaction Type</label>
+          <select
+            id="mf-type"
+            className="fs-input"
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+          >
+            <option value="Buy">Buy</option>
+            <option value="Sell">Sell</option>
+            <option value="Coupon">Cash Coupon</option>
+          </select>
+        </div>
+
+        {isCoupon && (
+          <>
+            <div className="form-group">
+              <label htmlFor="mf-units">Units (Auto-calculated)</label>
+              <div className="mf-code-wrap">
+                <input
+                  id="mf-units"
+                  className="fs-input"
+                  type="number"
+                  step="any"
+                  name="units"
+                  value={formData.units}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  readOnly={codeFound && totalUnitsForCode > 0}
+                  aria-readonly={codeFound && totalUnitsForCode > 0}
+                />
+                {unitsCalculating && (
+                  <span className="mf-code-status" aria-hidden="true">
+                    <FaSearch />
+                  </span>
+                )}
+              </div>
+              {codeFound && totalUnitsForCode > 0 && (
+                <p className="mf-field-hint" aria-live="polite">
+                  Total units owned: {totalUnitsForCode.toFixed(4)} (auto-calculated)
+                </p>
+              )}
+              {codeFound && totalUnitsForCode === 0 && (
+                <p className="mf-field-hint" aria-live="polite">
+                  No units found for this fund code
+                </p>
+              )}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="mf-coupon-amount">Coupon Amount</label>
+              <input
+                id="mf-coupon-amount"
+                className="fs-input"
+                type="number"
+                step="0.01"
+                name="price"
+                placeholder="Enter total cash received"
+                value={formData.price}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                aria-invalid={Boolean(formErrors.price)}
+                aria-describedby={describedBy('price')}
+                required
+              />
+              {renderFieldError('price')}
+            </div>
+
+            <div className="form-group">
+              <AccountSelector
+                direction="destination"
+                value={formData.destinationAccount || 'Bank'}
+                onChange={(val) =>
+                  setFormData((prev) => ({ ...prev, destinationAccount: val }))
+                }
+                label="Destination Account (Coupon Deposited)"
+                selectClassName="fs-input"
+                disabled={Boolean(formData.autoReinvest)}
+              />
+            </div>
+
+            <div className="form-group mf-checkbox-group">
+              <label className="fs-checkbox-label" htmlFor="mf-auto-reinvest">
+                <input
+                  id="mf-auto-reinvest"
+                  className="fs-checkbox-input"
+                  type="checkbox"
+                  name="autoReinvest"
+                  checked={Boolean(formData.autoReinvest)}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, autoReinvest: e.target.checked }))
+                  }
+                />
+                <span className="fs-checkbox-custom" aria-hidden="true" />
+                <span className="mf-checkbox-text">
+                  Auto-Reinvest Coupon (Compound Units)
+                </span>
+              </label>
+              <p className="mf-field-hint">
+                When enabled, coupon proceeds are reinvested into fund units rather than
+                deposited to your liquid accounts.
+              </p>
+            </div>
+          </>
+        )}
+
+        {formData.type === 'Buy' && (
+          <div className="form-group">
+            <AccountSelector
+              direction="source"
+              value={formData.sourceAccount || 'Bank'}
+              onChange={(val) =>
+                setFormData((prev) => ({ ...prev, sourceAccount: val }))
+              }
+              label="Source Account (Funds Withdrawn)"
+              selectClassName="fs-input"
+            />
+          </div>
+        )}
+
+        {isTrade && (
+          <>
+            <div className="form-group">
+              <label htmlFor="mf-units">Units</label>
+              <input
+                id="mf-units"
+                className="fs-input"
+                type="number"
+                step="any"
+                name="units"
+                value={formData.units}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                aria-invalid={Boolean(formErrors.units)}
+                aria-describedby={describedBy('units')}
+                required
+              />
+              {renderFieldError('units')}
+            </div>
+            <div className="form-group">
+              <label htmlFor="mf-price">Price per Unit</label>
+              <input
+                id="mf-price"
+                className="fs-input"
+                type="number"
+                step="any"
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                aria-invalid={Boolean(formErrors.price)}
+                aria-describedby={describedBy('price')}
+                required
+              />
+              {renderFieldError('price')}
+            </div>
+          </>
+        )}
+
+        <div className="form-group">
+          <label htmlFor="mf-fees">Fees</label>
+          <input
+            id="mf-fees"
+            className="fs-input"
+            type="number"
+            step="any"
+            name="fees"
+            value={formData.fees}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="mf-total-value">Total Value</label>
+          <input
+            id="mf-total-value"
+            className="fs-input mf-total-display"
+            type="text"
+            value={formatCurrency(formData.totalValue)}
+            readOnly
+            disabled
+          />
+        </div>
+
+        <div className="mf-form-actions">
+          <Link to="/mutual-funds" className="fs-btn fs-btn-secondary mf-cancel-link">
+            Cancel
+          </Link>
+          <button type="submit" className="fs-btn fs-btn-primary mf-submit-btn">
+            {isEdit ? 'Update' : 'Create'} Transaction
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 };
 
 export default MutualFundForm;
