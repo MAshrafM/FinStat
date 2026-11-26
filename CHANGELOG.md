@@ -466,6 +466,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created reference match spec `corporate-actions-reference-match.spec.js` (6/6 passed) verifying Reference Frames 01, 02, 03 design tokens, touch targets, and real Tab keyboard focus rings (`solid 3px rgb(242, 243, 245)`).
 - Re-captured 10 visual baselines in `D:\Projects\FinStat-visual-baselines` (commit `cfaadb5`), verified 334/334 manifest integrity, and confirmed PR-subset 68/71 and full 326-test run (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs).
 
+### Changed - UI Phase 7C: Mutual Funds Subsystem Modernization
+- Promoted `/mutual-funds`, `/mutual-funds/new`, `/mutual-funds/edit/:id`, and `/mutual-funds/summary` to active `THEMED_PATTERNS` allowlist in `ProtectedRoute.js` (29 -> 33 patterns) and removed the four Mutual Fund entries from `frontend/.eslintignore`.
+- Authored tokenized `MutualFunds.css` scoped under `html[data-fs-theme] .mf-page-container` with zero `!important`, and isolated accent/tone rules in Section 17 of `theme-components.css` under D22 attribute-existence selectors.
+- Decoupled the log and summary pages from `Trades.css` and `SummaryRow.css` without editing the shared files (apart from the targeted pre-existing b9ecafe `margin-top: 0` fix in `Trades.css`), leaving the 5 unthemed consumers / 6 import sites pixel-identical.
+- Purged all 30 legacy inline styles (18 `MutualFundForm.js`, 7 `MutualFundLogPage.js`, 5 `MutualFundSummaryPage.js`) and replaced colour-bearing styling with neutral tokens, accessible badges, and inline validation (`aria-describedby` / `aria-invalid`).
+- Enforced neutral-by-default semantics: `Buy`, `Sell`, `Coupon`, and `Price Unavailable` are neutral badges; P&L renders `<Delta>` with explicit sign, value, and `Gain`/`Loss` label, satisfying the user-facing acceptance criterion without colour-only signals.
+- Implemented D19 compact-expand mobile cards at <= 768px with >= 44px touch targets and zero page-level horizontal overflow at 390px; retained the 7A/7B desktop container-scroll waiver W-7C-1 for the 8/9-column tables.
+- Added loading, empty, error, validation, and disabled/read-only states using canonical `<Loading>` primitives and tokenized surfaces; preserved the shared `ConfirmModal` delete flow, all CRUD/filter/pagination/coupon behaviour, exact service payloads, and all calculations.
+- Created/expanded CRA + jest-axe suites `MutualFundLogPage.test.js` (12), `MutualFundForm.test.js` (14), and `MutualFundSummaryPage.test.js` (12), with 38/38 tests green and 6 I3 math assertions covering 5 named calculations; calculation fixtures remain byte-identical (11/11 green).
+- Registered deterministic `mutualFundsMocks.js` mocks and `mutual-funds-reference-match.spec.js` (9/9 with setup); real-browser axe passed 5/5 with 0 critical/serious violations.
+- Re-captured 20 MF baselines in `D:\Projects\FinStat-visual-baselines` (commit `df94041`; starting commit `cfaadb5`) plus 3 trade-summary mobile baselines for pre-existing b9ecafe staleness (`fb5e3bf`); manifest verified 334/334. Gate 14 68/71 (3 accepted W-6A-1/AD16 diffs), Gate 15 326/326, Gate 18 111/111; 0 diffs attributable to 7C. Signed off by user 2026-11-26.
+
 
 
 

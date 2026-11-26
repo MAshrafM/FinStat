@@ -2052,5 +2052,24 @@ html[data-fs-theme] .ca-modal-overlay .ca-btn-danger:hover:not(:disabled) {
   color: var(--fs-ink);
 }
 
+/* ----------------------------------------------------
+   Phase 7C: Mutual Funds Semantic Themes
+---------------------------------------------------- */
+html[data-fs-theme] .mf-filter-btn.is-active {
+  background: var(--fs-accent);
+  color: var(--fs-ink);
+  border-color: var(--fs-accent);
+}
+
+html[data-fs-theme] .mf-icon-btn-danger:hover:not(:disabled),
+html[data-fs-theme] .mf-icon-btn-danger:focus-visible:not(:disabled) {
+  color: var(--fs-negative);
+  border-color: var(--fs-negative);
+}
+
+html[data-fs-theme] .mf-error-card {
+  border-color: var(--fs-negative);
+}
+
 
 

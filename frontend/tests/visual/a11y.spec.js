@@ -15,6 +15,7 @@ const { setupRebalancingMocks } = require('./fixtures/rebalancingMocks');
 const { setupReportsMocks } = require('./fixtures/reportsMocks');
 const { setupTradesMocks } = require('./fixtures/tradesMocks');
 const { setupCorporateActionsMocks } = require('./fixtures/corporateActionsMocks');
+const { setupMutualFundMocks } = require('./fixtures/mutualFundsMocks');
 
 const AXE_SOURCE_PATH = require.resolve('axe-core/axe.min.js');
 
@@ -46,6 +47,8 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
         await setupTradesMocks(page, route.slug);
       } else if (route.slug.startsWith('corporate-actions')) {
         await setupCorporateActionsMocks(page);
+      } else if (route.slug.startsWith('mutual-funds')) {
+        await setupMutualFundMocks(page, route.slug);
       }
 
       await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });

@@ -47,10 +47,6 @@ src/pages/lending/LendingDashboardPage.js
 src/pages/lending/LoanDetailPage.js
 src/pages/lending/PersonCard.js
 src/pages/lending/PersonDetailPage.js
-src/pages/mutual-funds/MutualFundForm.js
-src/pages/mutual-funds/MutualFundLogPage.js
-src/pages/mutual-funds/MutualFundSummaryPage.js
-src/pages/mutual-funds/__tests__/MutualFundForm.test.js
 src/pages/profile/ProfilePage.js
 src/pages/profile/SettingsPage.js
 src/pages/profile/__tests__/RecycleBin.test.js

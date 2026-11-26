@@ -908,10 +908,10 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | `/trade-summary` | `pages/trades/TradeSummaryPage` | 7A | ☑ | ☑ | 54 inline styles |
 | `/corporate-actions` | `pages/trades/CorporateActionsList` | 7B | ☑ | ☑ | 9 `!important` |
 | `/corporate-actions/wizard` | `pages/trades/CorporateActionWizard` | 7B | ☑ | ☑ | 14 inline styles |
-| `/mutual-funds` | `pages/mutual-funds/MutualFundLogPage` | 7C | ☐ | ☐ | |
-| `/mutual-funds/new` | `pages/mutual-funds/AddMutualFundPage` | 7C | ☐ | ☐ | + `MutualFundForm` (15) |
-| `/mutual-funds/edit/:id` | `pages/mutual-funds/EditMutualFundPage` | 7C | ☐ | ☐ | |
-| `/mutual-funds/summary` | `pages/mutual-funds/MutualFundSummaryPage` | 7C | ☐ | ☐ | |
+| `/mutual-funds` | `pages/mutual-funds/MutualFundLogPage` | 7C | ☑ | ☑ | 7 inline styles purged; D19 mobile cards |
+| `/mutual-funds/new` | `pages/mutual-funds/AddMutualFundPage` | 7C | ☑ | ☑ | + `MutualFundForm` (18 inline styles purged) |
+| `/mutual-funds/edit/:id` | `pages/mutual-funds/EditMutualFundPage` | 7C | ☑ | ☑ | Loading `form-field`; shared form |
+| `/mutual-funds/summary` | `pages/mutual-funds/MutualFundSummaryPage` | 7C | ☑ | ☑ | 5 inline styles purged; neutral `Price Unavailable` |
 
 **Phase 7 count: 11 (10 rendering + 1 redirect).**
 
@@ -1061,7 +1061,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **6B** | Rebalancing | `phase-ui-6b-rebalancing` | ☑ | ☑ |
 | **7A** | Trades + trade summary | `phase-ui-7a-trades` | ☑ | ☑ |
 | **7B** | Corporate actions | `phase-ui-7b-corporate-actions` | ☑ | ☑ |
-| **7C** | Mutual funds | `phase-ui-7c-mutual-funds` | ☐ | ☐ |
+| **7C** | Mutual funds | `phase-ui-7c-mutual-funds` | ☑ | ☑ |
 | **8A** | Gold wallet | `phase-ui-8a-gold` | ☐ | ☐ |
 | **8B** | Certificates: log | `phase-ui-8b-certificates-log` | ☐ | ☐ |
 | **8C** | Certificates: detail + forms | `phase-ui-8c-certificates-detail` | ☐ | ☐ |
@@ -1816,15 +1816,15 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 7C — Mutual funds
 
-- [ ] `MutualFundForm.js` (15) → token form.
-- [ ] `MutualFundLogPage.js`, `MutualFundSummaryPage.js` → dark tables/cards.
-- [ ] Verify create/edit/summary consistency.
-- [ ] Remove Mutual Fund components (`MutualFundForm.js`, `MutualFundLogPage.js`, `MutualFundSummaryPage.js`) from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add the four mutual-fund patterns.**
+- [x] `MutualFundForm.js` (18 inline styles; 30-style 7C census: 18 form + 7 log + 5 summary) → token form.
+- [x] `MutualFundLogPage.js`, `MutualFundSummaryPage.js` → dark tables/cards.
+- [x] Verify create/edit/summary consistency.
+- [x] Remove Mutual Fund components (`MutualFundForm.js`, `MutualFundLogPage.js`, `MutualFundSummaryPage.js`) from `frontend/.eslintignore`; verify clean ESLint.
+- [x] **Add the four mutual-fund patterns.**
 
-**Exit gate Phase 7:** 11 entries; wizard stepper matches the dashboard pattern; build/tests/lint/axe/screenshots; zero diff on non-allowlisted routes.
+**Exit gate Phase 7:** 11 entries complete; 7B wizard stepper matches the dashboard pattern; build/tests/lint/axe/screenshots green (38/38 7C unit tests, 11/11 calculations, 0 critical/serious axe, 20 MF snapshots); zero diff attributable to 7C on non-allowlisted routes (Gate 14 68/71 with only 3 accepted W-6A-1/AD16 diffs, Gate 15 326/326, Gate 18 111/111).
 
-**User-facing acceptance criterion:** "A user can add a trade and confirm gains/losses without relying on colour alone."
+**User-facing acceptance criterion:** "A user can add a trade and confirm gains/losses without relying on colour alone." — demonstrated in 7C by `<Delta>` with explicit sign, value, and `Gain`/`Loss` label on the holdings summary and `% Profit` column.
 
 ---
 ### 6.12 Phase 8 — Assets
@@ -2019,7 +2019,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Confirm the 33 breakpoint values have been reduced to the token set or documented exceptions.
 - [ ] Search the repo for `backdrop-filter`, `gradient(`, and `background-clip: text` — all must be 0 outside the reference frames.
 - [ ] Search for `#14b8a6` — it must appear only in `tokens.json` and `tokens.css`, never in a page CSS file. Page CSS names `--fs-accent`, never the hex.
-- [ ] Search for `overflow-x: scroll` in page CSS — any remaining instance must be documented as a ≥ 12-column audit-log exception per I6.
+- [ ] Search for `overflow-x: scroll` in page CSS — any remaining instance must be documented as a ≥ 12-column audit-log exception per I6, or as waiver **W-7C-1** for `.mf-table-wrap` in `frontend/src/pages/mutual-funds/MutualFunds.css` (8-column MF log and 9-column MF holdings summary, per 7A `2624f2b` / 7B precedent; page-level overflow remains prohibited at 390px).
 - [ ] Audit every `border-radius`: nothing above 8 px except `var(--fs-radius-pill)` on status chips and avatars; literal `999px` and `50%` are banned.
 
 **Exit gate Phase 12:** every route themed; hex = 0; `!important` = 0; blur = 0; gradients = 0; radius ceiling holds; full-repo lint passes; build/tests/lint/axe/screenshots.
@@ -2099,7 +2099,7 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 - [ ] If the PR adds an allowlist pattern: the route it names is converted **in this PR**.
 - [ ] If the PR converts a cluster's first route: the screen matches its reference frame.
 - [ ] `grep -rn '#14b8a6' frontend/src --include='*.css'` returns only tokens.css:36.
-- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs and pre-existing TaxSimulator.css:277).
+- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs, pre-existing TaxSimulator.css:277/280, and waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`).
 - [ ] Loading consistency check: `git grep -nE "<div>Loading|className=\"loading-spinner\"|custom spinner SVG" frontend/src --include="*.js"` returns only loading primitive usages and test files.
 
 The legacy zero-diff gate is the proof that the allowlist works. A PR that changes a legacy page fails here, regardless of whether the change looks harmless.
@@ -2867,6 +2867,22 @@ Screenshots: None tracked per Architecture Decision D5/D21 (baselines stored in 
 Branch:      phase-ui-7b-corporate-actions
 Implementation SHA: 510e6a8
 Documentation SHA:  Pending merge
+Merge SHA:          Pending merge
+```
+
+```
+Sub-phase:   7C
+Status:      done (Signed off by User 2026-11-26)
+Done:        Modernized the Mutual Funds Subsystem across 4 routes (/mutual-funds, /mutual-funds/new, /mutual-funds/edit/:id, /mutual-funds/summary); authored scoped MutualFunds.css under html[data-fs-theme] .mf-page-container with zero !important; added Section 17 semantic themes in theme-components.css under attribute-existence selectors (D22); decoupled log/summary pages from Trades.css and SummaryRow.css without editing shared files (except the targeted b9ecafe margin-top fix in Trades.css); purged all 30 inline styles (18 MutualFundForm.js, 7 MutualFundLogPage.js, 5 MutualFundSummaryPage.js); neutral Buy/Sell/Coupon and Price Unavailable badges; Delta sign+value+Gain/Loss label for P&L; D19 compact-expand cards at <=768px with zero page-level scroll at 390px; loading/empty/error/validation/disabled states and accessible actions; shared ConfirmModal delete flow retained; expanded THEMED_PATTERNS 29->33; de-ignored 4 Mutual Fund entries from .eslintignore. Gates 1-16 and 18 passed: 38/38 unit tests (12 log + 14 form + 12 summary, 0 critical/serious axe), 9/9 App + 6/6 Dashboard tests, 11/11 calculation characterization tests across 8 unchanged domains, production build clean, real-browser axe 5/5, reference match 9/9, PR-subset 68/71 (3 accepted W-6A-1/AD16 diffs), full 326/326 visual reconciliation, 111/111 unthemed-consumer subset. Recorded decisions: D16 Plex Sans tabular .fs-num retained (mono for fund codes only); recorded Gain/Loss labels; implemented Delta sign+label and shared ConfirmModal h3 accepted without primitive changes; neutral category/missing-price/hint treatments; W-7C-1 desktop .mf-table-wrap overflow-x auto waiver; no-arrow Delta language superseded for 7C; calculation fixtures unchanged. Signed off by User on 2026-11-26.
+Next:        Phase 8A (Gold wallet)
+Blocked by:  None
+Allowlist:   ['/mutual-funds', '/mutual-funds/new', '/mutual-funds/edit/:id', '/mutual-funds/summary'] (cumulative: 33 patterns)
+Visual diff: Gate 13 recaptured 20 MF snapshots (baseline commit df94041; starting cfaadb5); 3 trade-summary mobile baselines recaptured for pre-existing b9ecafe staleness (fb5e3bf); manifest 334/334 verified; Gate 14 68/71 with only 3 accepted W-6A-1/AD16 diffs; Gate 15 326/326; Gate 18 111/111; 0 diffs attributable to 7C
+Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains; MF math characterized by 6 Gate 7 assertions
+Screenshots: None tracked per D5/D21; 20 MF baselines in FinStat-visual-baselines repo
+Branch:      phase-ui-7c-mutual-funds
+Implementation SHA: e1e1822
+Documentation SHA:  ced2b42
 Merge SHA:          Pending merge
 ```
 

@@ -1,0 +1,637 @@
+/* frontend/src/pages/mutual-funds/MutualFunds.css */
+/**
+ * Phase 7C: Mutual Funds subsystem layout and neutral surfaces.
+ *
+ * Scope: html[data-fs-theme] .mf-* only (D22 attribute-existence selectors).
+ * Tone/accent tokens live exclusively in theme-components.css Section 17.
+ * Waiver W-7C-1: .mf-table-wrap is the only horizontal-scroll container in this file.
+ */
+
+html[data-fs-theme] .mf-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  color: var(--fs-text);
+}
+
+/* ----------------------------------------------------
+   Header
+---------------------------------------------------- */
+html[data-fs-theme] .mf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--fs-border);
+}
+
+html[data-fs-theme] .mf-header-title-group {
+  min-width: 0;
+}
+
+html[data-fs-theme] .mf-header-title-group h1 {
+  margin: 0;
+  font-size: var(--fs-text-2xl);
+  font-weight: 700;
+  color: var(--fs-text);
+  letter-spacing: -0.02em;
+}
+
+html[data-fs-theme] .mf-breadcrumb {
+  margin: 0 0 4px 0;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+html[data-fs-theme] .mf-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+html[data-fs-theme] .mf-page-container .fs-btn {
+  min-height: 44px;
+}
+
+/* ----------------------------------------------------
+   Filter card (Reference Frame 01 Variant B)
+---------------------------------------------------- */
+html[data-fs-theme] .mf-filter-card {
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+html[data-fs-theme] .mf-filter-title {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+html[data-fs-theme] .mf-filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+html[data-fs-theme] .mf-filter-btn {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--fs-border-control);
+  border-radius: var(--fs-radius-md);
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-2);
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+  line-height: var(--fs-line-height-sm);
+  cursor: pointer;
+  transition: background-color var(--fs-duration-fast) var(--fs-ease-standard),
+    border-color var(--fs-duration-fast) var(--fs-ease-standard),
+    color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+html[data-fs-theme] .mf-filter-btn:hover:not(:disabled) {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .mf-filter-btn:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .mf-filter-btn:disabled {
+  opacity: var(--fs-disabled-opacity);
+  cursor: not-allowed;
+}
+
+html[data-fs-theme] .mf-filter-active-note {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--fs-surface-sunken);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+}
+
+/* ----------------------------------------------------
+   Loading, error, and empty states (D23)
+---------------------------------------------------- */
+html[data-fs-theme] .mf-loading-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 16px;
+}
+
+html[data-fs-theme] .mf-error-card,
+html[data-fs-theme] .mf-empty-card {
+  margin-top: 16px;
+  padding: 32px 24px;
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  text-align: center;
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .mf-error-card h2,
+html[data-fs-theme] .mf-empty-card h2 {
+  margin: 0 0 8px 0;
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: 600;
+}
+
+html[data-fs-theme] .mf-error-card p,
+html[data-fs-theme] .mf-empty-card p {
+  margin: 0;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  line-height: 1.5;
+}
+
+html[data-fs-theme] .mf-empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 12px;
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-pill);
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xl);
+}
+
+/* ----------------------------------------------------
+   Desktop / tablet dense table (W-7C-1)
+---------------------------------------------------- */
+html[data-fs-theme] .mf-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 16px;
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+}
+
+html[data-fs-theme] .mf-table-wrap:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .mf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .mf-table thead tr {
+  background: var(--fs-surface-sunken);
+  border-bottom: 1px solid var(--fs-border);
+}
+
+html[data-fs-theme] .mf-table th {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--fs-border);
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-semibold);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+html[data-fs-theme] .mf-table th.mf-th-num {
+  text-align: right;
+}
+
+html[data-fs-theme] .mf-table th.mf-th-actions {
+  text-align: right;
+}
+
+html[data-fs-theme] .mf-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--fs-border);
+  color: var(--fs-text-2);
+  white-space: nowrap;
+}
+
+html[data-fs-theme] .mf-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+html[data-fs-theme] .mf-table tbody tr:hover {
+  background: var(--fs-surface-raised);
+}
+
+html[data-fs-theme] .mf-fund-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+html[data-fs-theme] .mf-fund-name {
+  color: var(--fs-text);
+  font-weight: var(--fs-weight-medium);
+}
+
+html[data-fs-theme] .mf-fund-code {
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .mf-table td.mf-cell-actions {
+  text-align: right;
+}
+
+html[data-fs-theme] .mf-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-2);
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-medium);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--fs-duration-fast) var(--fs-ease-standard),
+    border-color var(--fs-duration-fast) var(--fs-ease-standard),
+    color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+html[data-fs-theme] .mf-icon-btn:hover:not(:disabled) {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .mf-icon-btn:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 1px;
+}
+
+html[data-fs-theme] .mf-icon-btn:disabled,
+html[data-fs-theme] .mf-icon-btn[aria-disabled="true"] {
+  opacity: var(--fs-disabled-opacity);
+  cursor: not-allowed;
+}
+
+html[data-fs-theme] .mf-cell-actions .mf-icon-btn + .mf-icon-btn,
+html[data-fs-theme] .mf-cell-actions .protected-action-wrapper + .protected-action-wrapper {
+  margin-left: 6px;
+}
+
+/* ----------------------------------------------------
+   Mobile compact-expand cards (D19, <=768px)
+---------------------------------------------------- */
+html[data-fs-theme] .mf-mobile-cards {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  html[data-fs-theme] .mf-desktop-table {
+    display: none;
+  }
+
+  html[data-fs-theme] .mf-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  html[data-fs-theme] .mf-mobile-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 12px 14px;
+    background: var(--fs-surface);
+    border: 1px solid var(--fs-border);
+    border-radius: var(--fs-radius-md);
+  }
+
+  html[data-fs-theme] .mf-card-compact-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  html[data-fs-theme] .mf-card-primary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  html[data-fs-theme] .mf-card-name {
+    color: var(--fs-text);
+    font-size: var(--fs-text-sm);
+    font-weight: var(--fs-weight-semibold);
+    overflow-wrap: anywhere;
+  }
+
+  html[data-fs-theme] .mf-card-metrics {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  html[data-fs-theme] .mf-card-value {
+    color: var(--fs-text);
+    font-size: var(--fs-text-sm);
+    font-weight: var(--fs-weight-semibold);
+  }
+
+  html[data-fs-theme] .mf-card-expander-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    flex-shrink: 0;
+    border: 1px solid var(--fs-border);
+    border-radius: var(--fs-radius-sm);
+    background: var(--fs-surface-sunken);
+    color: var(--fs-text-3);
+    cursor: pointer;
+  }
+
+  html[data-fs-theme] .mf-card-expander-btn:hover:not(:disabled) {
+    color: var(--fs-text);
+    background: var(--fs-surface-raised);
+  }
+
+  html[data-fs-theme] .mf-card-expander-btn:focus-visible {
+    outline: var(--fs-focus-ring);
+    outline-offset: 1px;
+  }
+
+  html[data-fs-theme] .mf-card-expanded {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--fs-border);
+  }
+
+  html[data-fs-theme] .mf-card-detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: var(--fs-text-sm);
+  }
+
+  html[data-fs-theme] .mf-card-detail-label {
+    color: var(--fs-text-3);
+    font-size: var(--fs-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  html[data-fs-theme] .mf-card-detail-val {
+    color: var(--fs-text);
+    font-weight: var(--fs-weight-medium);
+  }
+
+  html[data-fs-theme] .mf-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  html[data-fs-theme] .mf-card-actions .protected-action-wrapper {
+    flex: 1;
+  }
+
+  html[data-fs-theme] .mf-card-actions .mf-icon-btn,
+  html[data-fs-theme] .mf-card-actions .fs-btn {
+    flex: 1;
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+
+/* ----------------------------------------------------
+   Form pages (Reference Frame 02 Variant B)
+---------------------------------------------------- */
+html[data-fs-theme] .mf-form-page .mf-form-card {
+  max-width: 680px;
+  padding: 1.5rem;
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+}
+
+html[data-fs-theme] .mf-form-page .form-group {
+  margin-bottom: 1rem;
+}
+
+html[data-fs-theme] .mf-form-page .form-group label {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+}
+
+html[data-fs-theme] .mf-form-page .form-group input,
+html[data-fs-theme] .mf-form-page .form-group select {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  box-sizing: border-box;
+}
+
+html[data-fs-theme] .mf-form-page .form-group input[readonly] {
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-3);
+  cursor: default;
+}
+
+html[data-fs-theme] .mf-form-page .mf-total-display {
+  font-variant-numeric: tabular-nums;
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .mf-code-wrap {
+  position: relative;
+}
+
+html[data-fs-theme] .mf-form-page .mf-code-input {
+  padding-right: 2.5rem;
+}
+
+html[data-fs-theme] .mf-code-status {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  transform: translateY(-50%);
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-base);
+  pointer-events: none;
+}
+
+html[data-fs-theme] .mf-form-page .mf-input-found {
+  border-color: var(--fs-border-strong);
+}
+
+html[data-fs-theme] .mf-form-page .mf-input-not-found {
+  border-color: var(--fs-border-control);
+}
+
+html[data-fs-theme] .mf-field-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0 0;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  line-height: var(--fs-line-height-xs);
+}
+
+html[data-fs-theme] .mf-field-hint--icon {
+  display: inline-flex;
+  color: var(--fs-text-3);
+}
+
+html[data-fs-theme] .mf-form-page .form-error {
+  margin: 4px 0 0 0;
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-medium);
+}
+
+html[data-fs-theme] .mf-form-error-summary {
+  margin-bottom: 1rem;
+  padding: 10px 12px;
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-sm);
+  background: var(--fs-surface-sunken);
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .mf-checkbox-group .fs-checkbox-label {
+  gap: 0.5rem;
+}
+
+html[data-fs-theme] .mf-checkbox-text {
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .mf-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 1.25rem;
+}
+
+html[data-fs-theme] .mf-submit-btn,
+html[data-fs-theme] .mf-cancel-link {
+  min-height: 44px;
+}
+
+@media (max-width: 480px) {
+  html[data-fs-theme] .mf-form-page .mf-form-card {
+    padding: 1rem;
+  }
+
+  html[data-fs-theme] .mf-form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  html[data-fs-theme] .mf-form-actions .fs-btn {
+    width: 100%;
+  }
+}
+
+/* ----------------------------------------------------
+   Summary KPI grid (Reference Frame 03 Variant B)
+---------------------------------------------------- */
+html[data-fs-theme] .mf-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 20px 0 24px;
+}
+
+html[data-fs-theme] .mf-kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+}
+
+html[data-fs-theme] .mf-kpi-label {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+html[data-fs-theme] .mf-kpi-value {
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  text-align: left;
+}
+
+html[data-fs-theme] .mf-kpi-card .fs-delta {
+  align-self: flex-start;
+}
+
+@media (max-width: 480px) {
+  html[data-fs-theme] .mf-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  html[data-fs-theme] .mf-header {
+    align-items: flex-start;
+  }
+
+  html[data-fs-theme] .mf-header-actions {
+    width: 100%;
+  }
+
+  html[data-fs-theme] .mf-header-actions .fs-btn {
+    width: 100%;
+  }
+}
