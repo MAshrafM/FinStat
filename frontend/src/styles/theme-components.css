@@ -2071,5 +2071,64 @@ html[data-fs-theme] .mf-error-card {
   border-color: var(--fs-negative);
 }
 
+/* ----------------------------------------------------
+   Phase 8A: Gold Wallet Semantic Themes (§4.3, §6.12)
+   Interactive accent is expressed only through action tokens.
+   Neutral gold identity uses surface/text tokens; P&L tone is
+   delivered by the Delta primitive, never by gold page CSS.
+   ---------------------------------------------------- */
+html[data-fs-theme] .gold-filter-btn.is-active,
+html[data-fs-theme] .gold-toggle-btn.is-active {
+  background: var(--fs-action-bg);
+  color: var(--fs-action-text);
+  border-color: var(--fs-action-bg);
+}
 
+html[data-fs-theme] .gold-filter-btn.is-active:hover:not(:disabled),
+html[data-fs-theme] .gold-toggle-btn.is-active:hover:not(:disabled) {
+  background: var(--fs-action-hover);
+  border-color: var(--fs-action-hover);
+  color: var(--fs-action-text);
+}
+
+html[data-fs-theme] .gold-sort-th[aria-sort='ascending'],
+html[data-fs-theme] .gold-sort-th[aria-sort='descending'] {
+  background: var(--fs-surface-raised);
+}
+
+html[data-fs-theme] .gold-sort-th[aria-sort='ascending'] .gold-sort-btn,
+html[data-fs-theme] .gold-sort-th[aria-sort='descending'] .gold-sort-btn {
+  color: var(--fs-action-text);
+  background: var(--fs-action-bg);
+  border-color: var(--fs-action-bg);
+}
+
+html[data-fs-theme] .gold-icon-btn-danger:hover:not(:disabled),
+html[data-fs-theme] .gold-icon-btn-danger:focus-visible:not(:disabled) {
+  color: var(--fs-danger);
+  border-color: var(--fs-danger);
+}
+
+html[data-fs-theme] .gold-error-card,
+html[data-fs-theme] .gold-form-page .gold-form-error-summary {
+  border-color: var(--fs-danger);
+}
+
+html[data-fs-theme] .gold-form-page .form-error[aria-live] {
+  color: var(--fs-danger);
+}
+
+html[data-fs-theme] .pp-toggle-btn.active,
+html[data-fs-theme] .pp-tf-btn.active {
+  background: var(--fs-action-bg);
+  color: var(--fs-action-text);
+  border-color: var(--fs-action-bg);
+}
+
+html[data-fs-theme] .pp-toggle-btn.active:hover,
+html[data-fs-theme] .pp-tf-btn.active:hover {
+  background: var(--fs-action-hover);
+  color: var(--fs-action-text);
+  border-color: var(--fs-action-hover);
+}
 

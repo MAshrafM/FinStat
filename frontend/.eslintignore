@@ -20,8 +20,6 @@ src/pages/admin/AdminDashboard.js
 src/pages/admin/BackupPage.js
 src/pages/admin/InsuranceConfigModal.js
 src/pages/admin/TaxConfigModal.js
-src/pages/analytics/PurchasingPowerChart.js
-src/pages/analytics/__tests__/PurchasingPowerChart.test.js
 src/pages/certificates/CertificateDetailPage.js
 src/pages/certificates/CertificateForm.js
 src/pages/certificates/CertificateLogPage.js
@@ -39,9 +37,6 @@ src/pages/credit-cards/__tests__/AddTransactionModal.currency.test.js
 src/pages/currency/CurrencyDetailPage.js
 src/pages/currency/CurrencyForm.js
 src/pages/currency/CurrencyLogPage.js
-src/pages/gold/GoldForm.js
-src/pages/gold/GoldLogPage.js
-src/pages/gold/GoldSummaryPage.js
 src/pages/lending/AddTransactionForm.js
 src/pages/lending/LendingDashboardPage.js
 src/pages/lending/LoanDetailPage.js

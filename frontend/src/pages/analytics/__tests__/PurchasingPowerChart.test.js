@@ -1,17 +1,26 @@
+/* eslint-disable testing-library/no-container, testing-library/no-node-access */
 // frontend/src/pages/analytics/__tests__/PurchasingPowerChart.test.js
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import PurchasingPowerChart from '../PurchasingPowerChart';
 import * as goldService from '../../../services/goldService';
 import { AuthProvider } from '../../../context/AuthContext';
+import { getChartPalette } from '../../../styles/chartTheme.js';
 
 // Mock react-chartjs-2 to avoid canvas issues in jsdom
 jest.mock('react-chartjs-2', () => ({
-  Line: ({ data, options }) => (
-    <div data-testid="line-chart" data-options={JSON.stringify(options)}>
-      {JSON.stringify(data)}
-    </div>
-  ),
+  Line: ({ data, options, plugins = [] }) => {
+    global.__PP_PLUGINS__ = plugins;
+    return (
+      <div
+        data-testid="line-chart"
+        data-options={JSON.stringify(options)}
+        data-plugin-ids={JSON.stringify(plugins.map((plugin) => plugin.id))}
+      >
+        {JSON.stringify(data)}
+      </div>
+    );
+  },
 }));
 
 jest.mock('../../../services/goldService');
@@ -73,16 +82,18 @@ const mockAnalyticsData = {
 };
 
 const renderWithAuth = (ui, { role = 'manager' } = {}) => {
-  return render(
-    <AuthProvider initialUser={{ role, id: 'user_1', username: 'testuser' }}>
-      {ui}
-    </AuthProvider>
-  );
+  if (role) {
+    window.localStorage.setItem('token', 'chart-test-token');
+    window.localStorage.setItem('user', JSON.stringify({ role, id: 'user_1', username: 'testuser' }));
+  }
+  return render(<AuthProvider>{ui}</AuthProvider>);
 };
 
 describe('Sub-step 7D.1b: [FEAT-007, GAP-014] PurchasingPowerChart Component Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    global.__PP_PLUGINS__ = [];
+    window.localStorage.clear();
   });
 
   // Test 1: Renders KPI summary cards with net worth, gold grams, and USD values
@@ -95,7 +106,7 @@ describe('Sub-step 7D.1b: [FEAT-007, GAP-014] PurchasingPowerChart Component Tes
     expect(screen.getByText(/Multi-Currency Purchasing Power & Gold Analytics/i)).toBeInTheDocument();
     expect(screen.getByText(/1,250,000.50/i)).toBeInTheDocument();
     expect(screen.getByText(/24K Gold Equivalent/i)).toBeInTheDocument();
-    expect(screen.getByText(/297.62 g/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/297.62 g/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/USD Purchasing Power/i)).toBeInTheDocument();
   });
 
@@ -119,12 +130,10 @@ describe('Sub-step 7D.1b: [FEAT-007, GAP-014] PurchasingPowerChart Component Tes
     const chart = await screen.findByTestId('line-chart');
     expect(chart.textContent).toContain('Purchasing Power in 24K Gold (Grams)');
 
-    // Click USD toggle
     const usdToggle = screen.getByRole('button', { name: /USD \(\$\)/i });
     fireEvent.click(usdToggle);
     expect(chart.textContent).toContain('Purchasing Power in USD ($)');
 
-    // Click EGP toggle
     const egpToggle = screen.getByRole('button', { name: /Nominal EGP/i });
     fireEvent.click(egpToggle);
     expect(chart.textContent).toContain('Nominal Net Worth (EGP)');
@@ -151,12 +160,13 @@ describe('Sub-step 7D.1b: [FEAT-007, GAP-014] PurchasingPowerChart Component Tes
   test('5. Renders foreign currency mark-to-market table with unrealized gains/losses', async () => {
     goldService.getPurchasingPower.mockResolvedValueOnce(mockAnalyticsData);
 
-    renderWithAuth(<PurchasingPowerChart />);
+    const { container } = renderWithAuth(<PurchasingPowerChart />);
 
     expect(await screen.findByText(/Foreign Currency Mark-to-Market Valuations/i)).toBeInTheDocument();
-    expect(screen.getByText('USD')).toBeInTheDocument();
-    expect(screen.getByText('US Dollars')).toBeInTheDocument();
-    expect(screen.getByText('+EGP 40,750.00 (+20.12%)')).toBeInTheDocument();
+    const currencyTable = container.querySelector('.pp-currency-table');
+    expect(currencyTable).toHaveTextContent('USD');
+    expect(currencyTable).toHaveTextContent('US Dollars');
+    expect(currencyTable).toHaveTextContent('EGP 40,750.00 (20.12%)');
   });
 
   // Test 6: Renders empty state message when portfolio has no asset history
@@ -211,7 +221,6 @@ describe('Sub-step 7D.1b: [FEAT-007, GAP-014] PurchasingPowerChart Component Tes
 
     renderWithAuth(<PurchasingPowerChart />);
 
-    // USD purchasing power is formatted via formatCurrency ($25,693.74)
     expect(await screen.findByText('$25,693.74')).toBeInTheDocument();
   });
 
@@ -234,5 +243,95 @@ describe('Sub-step 7D.1b: [FEAT-007, GAP-014] PurchasingPowerChart Component Tes
 
     expect(await screen.findByText(/24K Gold Equivalent/i)).toBeInTheDocument();
     expect(screen.getByText(/Multi-Currency Purchasing Power & Gold Analytics/i)).toBeInTheDocument();
+  });
+
+  // Test 12: Series colours come from chartTheme; the interactive accent is never a series
+  test('12. uses the chartTheme neutral palette with no hardcoded series colour', async () => {
+    goldService.getPurchasingPower.mockResolvedValueOnce(mockAnalyticsData);
+
+    renderWithAuth(<PurchasingPowerChart />);
+    const chart = await screen.findByTestId('line-chart');
+    const series = JSON.parse(chart.textContent).datasets[0];
+    const options = JSON.parse(chart.getAttribute('data-options'));
+    const palette = getChartPalette();
+
+    expect(palette.greys).toContain(series.borderColor);
+    expect(series.backgroundColor).toMatch(/^rgba/);
+    expect(options.plugins.legend.labels.color).toBe(palette.text2);
+    expect(chart.getAttribute('data-plugin-ids')).toContain('ppLastPointLabel');
+  });
+
+  // Test 13: Canvas wrapper and adjacent summary both use ariaLabel()
+  test('13. exposes canvas aria-label and adjacent chart summary', async () => {
+    goldService.getPurchasingPower.mockResolvedValueOnce(mockAnalyticsData);
+
+    renderWithAuth(<PurchasingPowerChart />);
+    await screen.findByTestId('line-chart');
+
+    const summary = screen.getByTestId('chart-summary').textContent;
+    expect(summary).toContain('Purchasing Power in 24K Gold (Grams) chart showing:');
+    expect(summary).toContain('01/08/2026: 285.71 g');
+    expect(screen.getByTestId('chart-canvas-wrapper')).toHaveAttribute('aria-label', summary);
+  });
+
+  // Test 14: Adjacent data-table alternative is available to assistive technology
+  test('14. renders the adjacent data-table alternative', async () => {
+    goldService.getPurchasingPower.mockResolvedValueOnce(mockAnalyticsData);
+
+    renderWithAuth(<PurchasingPowerChart />);
+    await screen.findByTestId('line-chart');
+
+    const table = screen.getByTestId('purchasing-power-data-table');
+    expect(table).toHaveAccessibleName('Purchasing Power in 24K Gold (Grams) by date');
+    expect(table.querySelectorAll('tbody tr')).toHaveLength(3);
+    expect(table).toHaveTextContent('01/10/2026');
+    expect(table).toHaveTextContent('297.62 g');
+  });
+
+  // Test 15: Last-point direct label draws the formatted final metric value
+  test('15. draws a last-point direct label without changing chartTheme', async () => {
+    goldService.getPurchasingPower.mockResolvedValueOnce(mockAnalyticsData);
+
+    renderWithAuth(<PurchasingPowerChart />);
+    await screen.findByTestId('line-chart');
+
+    const plugin = global.__PP_PLUGINS__.find((item) => item.id === 'ppLastPointLabel');
+    expect(plugin).toBeDefined();
+
+    const ctx = {
+      save: jest.fn(),
+      restore: jest.fn(),
+      fillText: jest.fn(),
+      font: '',
+      fillStyle: '',
+      textAlign: '',
+      textBaseline: '',
+    };
+    plugin.afterDatasetsDraw({
+      ctx,
+      data: { datasets: [{ data: [285.71, 290, 297.62] }] },
+      getDatasetMeta: () => ({ data: [{ x: 10, y: 20 }, { x: 30, y: 40 }, { x: 50, y: 60 }] }),
+    });
+
+    expect(ctx.save).toHaveBeenCalledTimes(1);
+    expect(ctx.fillText).toHaveBeenCalledWith('297.62 g', 42, 52);
+    expect(ctx.restore).toHaveBeenCalledTimes(1);
+  });
+
+  // Test 16: Trajectory delta stays neutral, signed, and sign-only
+  test('16. renders trajectoryDelta as a neutral signed figure', async () => {
+    goldService.getPurchasingPower.mockResolvedValueOnce(mockAnalyticsData);
+
+    const { container } = renderWithAuth(<PurchasingPowerChart />);
+    await screen.findByTestId('line-chart');
+
+    const cards = Array.from(container.querySelectorAll('.pp-kpi-card'));
+    const trajectory = cards.find((card) => card.textContent.includes('90D Real Trajectory'));
+    expect(trajectory).toBeDefined();
+
+    const value = trajectory.querySelector('.pp-kpi-value.fs-num');
+    expect(value).toHaveTextContent('+4.17%');
+    expect(value.className).not.toContain('fs-delta');
+    expect(value.className).not.toMatch(/positive|negative|warning/);
   });
 });

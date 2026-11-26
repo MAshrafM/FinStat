@@ -185,12 +185,11 @@ jobs:
 
   # Note: Visual regression testing is walkthrough-evidenced per A5-Local (D21) & §7.1.
   # Baselines live in a dedicated local git repository on the workstation; no visual job runs in CI.
-  # needs: [backend-tests, frontend-build, frontend-tests, frontend-lint]
 
   deploy-production:
     name: Deploy to Production (Vercel)
     runs-on: ubuntu-latest
-    needs: [frontend-build, frontend-tests, frontend-lint]
+    needs: [backend-tests, frontend-build, frontend-tests, frontend-lint]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:

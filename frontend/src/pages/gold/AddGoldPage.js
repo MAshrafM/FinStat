@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createGoldLog } from '../../services/goldService';
 import GoldForm from './GoldForm';
+import './GoldWallet.css';
 
 const AddGoldPage = () => {
     const navigate = useNavigate();
@@ -11,8 +12,13 @@ const AddGoldPage = () => {
         navigate('/gold-wallet');
     };
     return (
-        <div className="page-container">
-            <div className="page-header"><h1>Add Gold Purchase</h1></div>
+        <div className="page-container gold-page-container gold-form-page">
+            <header className="gold-header">
+                <div className="gold-header-title-group">
+                    <p className="gold-breadcrumb">Gold &gt; New Transaction</p>
+                    <h1>Add Gold Purchase</h1>
+                </div>
+            </header>
             <GoldForm onFormSubmit={handleSubmit} />
         </div>
     );
