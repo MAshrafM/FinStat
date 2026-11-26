@@ -22,7 +22,6 @@ src/pages/admin/InsuranceConfigModal.js
 src/pages/admin/TaxConfigModal.js
 src/pages/certificates/CertificateDetailPage.js
 src/pages/certificates/CertificateForm.js
-src/pages/certificates/CertificateLogPage.js
 src/pages/credit-cards/AddCardModal.js
 src/pages/credit-cards/AddTransactionModal.js
 src/pages/credit-cards/CardInstallmentSchedule.js

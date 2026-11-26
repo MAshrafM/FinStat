@@ -17,6 +17,7 @@ const { setupTradesMocks } = require('./fixtures/tradesMocks');
 const { setupCorporateActionsMocks } = require('./fixtures/corporateActionsMocks');
 const { setupMutualFundMocks } = require('./fixtures/mutualFundsMocks');
 const { setupGoldMocks } = require('./fixtures/goldMocks');
+const { setupCertificatesMocks } = require('./fixtures/certificatesMocks');
 
 const AXE_SOURCE_PATH = require.resolve('axe-core/axe.min.js');
 
@@ -55,6 +56,8 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
         route.slug === 'analytics-purchasing-power'
       ) {
         await setupGoldMocks(page, route.slug);
+      } else if (route.slug === 'certificates') {
+        await setupCertificatesMocks(page);
       }
 
       await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });
