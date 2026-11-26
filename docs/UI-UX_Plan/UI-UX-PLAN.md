@@ -919,11 +919,11 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 
 | Route | Component | Phase | Theme applied | Visual QA | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| `/gold-wallet` | `pages/gold/GoldLogPage` | 8A | ☐ | ☐ | |
-| `/gold-wallet/new` | `pages/gold/AddGoldPage` | 8A | ☐ | ☐ | |
-| `/gold-wallet/edit/:id` | `pages/gold/EditGoldPage` | 8A | ☐ | ☐ | |
-| `/gold-wallet/summary` | `pages/gold/GoldSummaryPage` | 8A | ☐ | ☐ | 11 inline styles |
-| `/analytics/purchasing-power` | `pages/analytics/PurchasingPowerChart` | 8A | ☐ | ☐ | Sovereign gold purchasing power vs. inflation |
+| `/gold-wallet` | `pages/gold/GoldLogPage` | 8A | ☑ | ☑ | Frame 01 dense table + D19 cards |
+| `/gold-wallet/new` | `pages/gold/AddGoldPage` | 8A | ☑ | ☑ | Frame 02 stacked form |
+| `/gold-wallet/edit/:id` | `pages/gold/EditGoldPage` | 8A | ☑ | ☑ | Frame 02 stacked form |
+| `/gold-wallet/summary` | `pages/gold/GoldSummaryPage` | 8A | ☑ | ☑ | 11 inline styles purged; W-8A-1 summary overflow |
+| `/analytics/purchasing-power` | `pages/analytics/PurchasingPowerChart` | 8A | ☑ | ☑ | chartTheme palette + accessible data table |
 | `/certificates` | `pages/certificates/CertificateLogPage` | 8B | ☐ | ☐ | 66 inline styles |
 | `/certificates/:id` | `pages/certificates/CertificateDetailPage` | 8C | ☐ | ☐ | 58 inline styles; chart |
 | `/certificates/new` | `pages/certificates/AddCertificatePage` | 8C | ☐ | ☐ | + `CertificateForm` |
@@ -1062,7 +1062,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **7A** | Trades + trade summary | `phase-ui-7a-trades` | ☑ | ☑ |
 | **7B** | Corporate actions | `phase-ui-7b-corporate-actions` | ☑ | ☑ |
 | **7C** | Mutual funds | `phase-ui-7c-mutual-funds` | ☑ | ☑ |
-| **8A** | Gold wallet | `phase-ui-8a-gold` | ☐ | ☐ |
+| **8A** | Gold wallet | `phase-ui-8a-gold` | ☑ | ☑ |
 | **8B** | Certificates: log | `phase-ui-8b-certificates-log` | ☐ | ☐ |
 | **8C** | Certificates: detail + forms | `phase-ui-8c-certificates-detail` | ☐ | ☐ |
 | **8D** | Currency | `phase-ui-8d-currency` | ☐ | ☐ |
@@ -1095,7 +1095,7 @@ A checkpoint is a rendered screen the developer opens and approves, not a token 
 | 3 | 5A | `/salary/profiles` | reference frame 2 (Variant B — form) |
 | 4 | 6A | `/portfolio` | frame 3 (Variant B — dashboard) |
 | 5 | 7A | `/trades` | frame 1 (Variant B) — Approved by User (2026-11-24) |
-| 6 | 8A | `/gold-wallet` | frame 1 (Variant B) |
+| 6 | 8A | `/gold-wallet` | frame 1 (Variant B) — Approved by User (2026-11-26) |
 | 7 | 9A | `/credit-cards` | frame 2 (Variant B) |
 | 8 | 10A | `/profile` | frame 2 (Variant B) |
 | 9 | 11A | Landing / login | frame 2 (Variant B) |
@@ -1831,10 +1831,10 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 8A — Gold & purchasing power
 
-- [ ] `GoldLogPage.js` (9), `GoldSummaryPage.js` (11) → dark tables/cards. Gold is a **label, not a hue**: weight, price, and value are neutral; the warning tone is reserved for a threshold recorded in §4.3.1 and never stands in for identity (§4.3).
-- [ ] `PurchasingPowerChart.js` + `PurchasingPowerChart.css` — sovereign gold purchasing power vs. CPI inflation chart via `chartTheme`.
-- [ ] Verify weights, prices, and summary totals.
-- [ ] **Add the five gold patterns** (including `/analytics/purchasing-power`).
+- [x] `GoldLogPage.js` (11), `GoldSummaryPage.js` (11) → dark tables/cards. Gold is a **label, not a hue**: weight, price, and value are neutral; the warning tone is reserved for a threshold recorded in §4.3.1 and never stands in for identity (§4.3).
+- [x] `PurchasingPowerChart.js` + `PurchasingPowerChart.css` — sovereign gold purchasing power vs. CPI inflation chart via `chartTheme`.
+- [x] Verify weights, prices, and summary totals.
+- [x] **Add the five gold patterns** (including `/analytics/purchasing-power`).
 
 #### 8B — Certificates: log
 
@@ -1885,6 +1885,8 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Charts themed and accessible.
 - [ ] Build/tests/lint/axe/screenshots.
 - [ ] Zero diff on non-allowlisted routes.
+
+> Phase 8A signed off 2026-11-26: 5 of 16 routes themed; 8B–8E remain open.
 
 **User-facing acceptance criterion:** "A user can open a certificate or property on a phone and read maturity, yield, and cost figures without clipping."
 
@@ -2019,7 +2021,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Confirm the 33 breakpoint values have been reduced to the token set or documented exceptions.
 - [ ] Search the repo for `backdrop-filter`, `gradient(`, and `background-clip: text` — all must be 0 outside the reference frames.
 - [ ] Search for `#14b8a6` — it must appear only in `tokens.json` and `tokens.css`, never in a page CSS file. Page CSS names `--fs-accent`, never the hex.
-- [ ] Search for `overflow-x: scroll` in page CSS — any remaining instance must be documented as a ≥ 12-column audit-log exception per I6, or as waiver **W-7C-1** for `.mf-table-wrap` in `frontend/src/pages/mutual-funds/MutualFunds.css` (8-column MF log and 9-column MF holdings summary, per 7A `2624f2b` / 7B precedent; page-level overflow remains prohibited at 390px).
+- [ ] Search for `overflow-x: scroll` in page CSS — any remaining instance must be documented as a ≥ 12-column audit-log exception per I6, as waiver **W-7C-1** for `.mf-table-wrap` in `frontend/src/pages/mutual-funds/MutualFunds.css` (8-column MF log and 9-column MF holdings summary, per 7A `2624f2b` / 7B precedent), or as waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `frontend/src/pages/gold/GoldWallet.css` (8-column summary); `.gold-log-page .gold-table-wrap` uses the ≥12-column audit-log exception and `PurchasingPowerChart.css` has none. Page-level overflow remains prohibited at 390px.
 - [ ] Audit every `border-radius`: nothing above 8 px except `var(--fs-radius-pill)` on status chips and avatars; literal `999px` and `50%` are banned.
 
 **Exit gate Phase 12:** every route themed; hex = 0; `!important` = 0; blur = 0; gradients = 0; radius ceiling holds; full-repo lint passes; build/tests/lint/axe/screenshots.
@@ -2099,7 +2101,7 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 - [ ] If the PR adds an allowlist pattern: the route it names is converted **in this PR**.
 - [ ] If the PR converts a cluster's first route: the screen matches its reference frame.
 - [ ] `grep -rn '#14b8a6' frontend/src --include='*.css'` returns only tokens.css:36.
-- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs, pre-existing TaxSimulator.css:277/280, and waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`).
+- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, and waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`); `PurchasingPowerChart.css` has no `overflow-x`.
 - [ ] Loading consistency check: `git grep -nE "<div>Loading|className=\"loading-spinner\"|custom spinner SVG" frontend/src --include="*.js"` returns only loading primitive usages and test files.
 
 The legacy zero-diff gate is the proof that the allowlist works. A PR that changes a legacy page fails here, regardless of whether the change looks harmless.
@@ -2554,6 +2556,7 @@ Append one row per sub-phase. Never edit past rows.
 | 6B | 2026-11-23 | Rebalancing & comprehensive reporting: promoted /portfolio/rebalancing and /reports/financial to active allowlist (21 -> 23 patterns); themed RebalancingPage adhering to Reference Frame 03 and Frame 01 with custom range sliders, neutral drift action badges, AD18 advisory drift badge ('Rebalancing Recommended' with .fs-badge--warning on drift, 'Balanced on Target' with .fs-badge--neutral when balanced), and D19 mobile compact-expand cards; fixed /portfolio root loading sequence per Decision D23 with shaped section skeletons; themed ComprehensiveReportPage with chartTheme.js accessible palette and strict @media print isolation (Waiver W-6B-1); purged 4 entries from .eslintignore; unit and axe tests passing (33/33 green across 3 suites); Playwright real-browser axe passing (4/4 green, 0 violations); reference match spec passing (5/5 green); 10 baselines updated in FinStat-visual-baselines (commit c2dadf6); manifest 334/334 verified; PR subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 18 verification gates passed. Phase 6 Exit Gate complete. | 7A (Trade log & trade entry conversion) | None | 46f2108 (merged to main) |
 | 7A | 2026-11-24 | Stock Trading & Performance Subsystem conversion: promoted /trades, /trades/add, /trades/edit/:id, /trade-summary to active allowlist (23 -> 27 patterns); Reference Frame 01 dense table with sort indicators, Reference Frame 02 stacked forms, Reference Frame 03 summary dashboard; implemented Decision D19 mobile compact-expand cards (.trade-card) with 0 horizontal overflow; purged 54 inline styles from TradeSummaryPage.js and migrated all P&L displays to <Delta> with explicit sign, arrow, and label; eliminated 8 !important from Trades.css; removed 3 trade files (TradeForm.js, TradeLogPage.js, TradeSummaryPage.js) from .eslintignore (0 warnings); passed all 18 verification gates; un-injected real-browser axe test passing 0 critical/serious violations (5/5 green); reference match spec passing 6/6; 20 baselines updated in FinStat-visual-baselines (commit c89845e); manifest 334/334 verified; PR-subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 111/111 unthemed consumer tests green across 22 routes. Taste Checkpoint #5 signed off by User; mobile collapsible card remediation (D19), secondary Corporate Actions button fix, and desktop/tablet horizontal table scroll verified; merged to main. | 7B (Corporate actions) | None | 7e007a8 (merged to main) |
 | 7B | 2026-11-24 | Corporate Actions Subsystem conversion: promoted /corporate-actions and /corporate-actions/wizard to active allowlist (27 -> 29 patterns); Reference Frame 01 dense table with container horizontal scroll (overflow-x: auto; 2624f2b) and Decision D19 mobile compact-expand cards (.ca-mobile-card) with 0 page-level horizontal overflow at 390px; Reference Frame 02 stacked form and Reference Frame 03 segmented stepper with WCAG 2.1 AA compliant --fs-ink on --fs-accent (7.76:1 ratio); accessible WAI-ARIA APG delete confirmation modal with focus trap (modalRef, Tab/Shift+Tab cycling, Escape dismissal, focus return); eliminated all 14 inline styles from CorporateActionWizard.js and all 6 from CorporateActionsList.js; permanently dropped 16 legacy !important declarations (9 in CorporateActionsList.css, 7 in CorporateActionWizard.css); severed coupling to Trades.css and Table.css; removed both components from .eslintignore (0 errors across 10 touched JS/JSX files); passed all 18 verification gates; CRA unit tests 26/26 passed with 0 critical/serious axe violations; Playwright real-browser axe audit passing 3/3; reference match spec passing 5/5; 10 baselines updated in FinStat-visual-baselines (commit cfaadb5); manifest 334/334 verified; PR-subset 68/71 passing per Waiver W-6A-1; full 326-test run reconciled (292 passing + 34 accepted diffs under AD14/AD16, 0 unexplained diffs); 111/111 unthemed consumer tests green across 22 routes. Signed off by User on 2026-11-24; merged to main. | 7C (Mutual funds) | None | Merged to main |
+| 8A | 2026-11-26 | Gold wallet & purchasing power: promoted `/gold-wallet`, `/gold-wallet/new`, `/gold-wallet/edit/:id`, `/gold-wallet/summary`, `/analytics/purchasing-power` to active allowlist (33 -> 38); authored `GoldWallet.css` and rewrote `PurchasingPowerChart.css` with neutral gold identity and `chartTheme` palette (no accent series); purged 23 inline styles (11 log + 11 summary mixed, 1 chart layout-only; zero colour-bearing remain); `<Delta>` Gain/Loss for unrealised P&L only; D19 compact-expand cards and zero page-level overflow at 390px; W-8A-1 summary-table exception with distinct log wrapper; decoupled shared CSS (7 files / 8 import sites unchanged); reverted the CI skip in `d4c6f8e`; passed all 19 gates: 50/50 Jest + jest-axe, 15/15 route/dashboard, 11/11 calculation characterization unchanged, real-browser axe 6/6, reference match 9/9, production build clean, baseline commit `3f174fb` with 25 snapshots and 334/334 manifest, PR subset 68/71 with only 3 accepted W-6A-1/AD16 diffs, full 326 visual reconciliation (292 + 34 accepted AD14/AD16), touch targets 2/2, Gate 18 116/116 (final clean rerun), and 0 diffs attributable to 8A. Taste Checkpoint #6 approved by User 2026-11-26 for `/gold-wallet` at 1440/390 against Frame 01 Variant B; 8B authorized. | 8B (Certificates: log) | None | `d8c63bb` implementation / `7dcfcfd` + `f5e7676` docs / `d135611` (merged to main) |
 
 ```
 Sub-phase:   1A
@@ -2884,6 +2887,22 @@ Branch:      phase-ui-7c-mutual-funds
 Implementation SHA: e1e1822
 Documentation SHA:  ced2b42
 Merge SHA:          7aedf87 (merged to main; docs finalized in follow-up commit)
+```
+
+```
+Sub-phase:   8A
+Status:      done (Taste Checkpoint #6 approved by User 2026-11-26)
+Done:        Modernized the Gold Wallet & Purchasing Power subsystem across 5 routes (/gold-wallet, /gold-wallet/new, /gold-wallet/edit/:id, /gold-wallet/summary, /analytics/purchasing-power); authored GoldWallet.css under html[data-fs-theme] and rewrote PurchasingPowerChart.css with chartTheme.js accessible palette (no accent series); purged all 23 legacy inline styles (11 log + 11 summary mixed, 1 chart layout-only; zero colour-bearing); neutral gold identity with <Delta> Gain/Loss only for unrealised P&L; D19 compact-expand mobile cards with zero page-level overflow at 390px; W-8A-1 desktop summary-table overflow with distinct log wrapper; decoupled shared Trades.css/SummaryRow.css without editing them (7 files / 8 import sites unchanged); reverted the CI skip in d4c6f8e. Gates 1-19 passed: 50/50 Jest + jest-axe, 15/15 route/dashboard, 11/11 calculation characterization unchanged, real-browser axe 6/6, reference match 9/9, production build clean, baseline commit 3f174fb with 25 snapshots and 334/334 manifest, PR subset 68/71 (3 accepted W-6A-1/AD16 diffs), full 326 visual reconciliation (292 + 34 accepted AD14/AD16), touch targets 2/2, Gate 18 116/116 final clean rerun, and 0 diffs attributable to 8A. Signed off by User 2026-11-26; Phase 8B authorized.
+Next:        Phase 8B (Certificates: log)
+Blocked by:  None
+Allowlist:   ['/gold-wallet', '/gold-wallet/new', '/gold-wallet/edit/:id', '/gold-wallet/summary', '/analytics/purchasing-power'] (cumulative: 38 patterns)
+Visual diff: Gate 13 recaptured 25 gold snapshots (baseline commit 3f174fb); manifest 334/334 verified; Gate 14 68/71 with only 3 accepted W-6A-1/AD16 diffs; Gate 15 326 accounted (292 + 34 accepted AD14/AD16); Gate 18 116/116 final clean rerun; 0 diffs attributable to 8A. W-8A-1 active for the 8-column summary only; log wrapper uses the >=12-column exception; chart has no overflow-x. §7.1:2102 global `overflow-x` grep remains pre-existing governance-text drift (32 matches on `main`; `TaxSimulator.css:280`), not an 8A defect.
+Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains; gold math characterized by Gate 7 assertions
+Screenshots: None tracked per D5/D21; 25 gold baselines in FinStat-visual-baselines repo
+Branch:      phase-ui-8a-gold
+Implementation SHA: d8c63bb
+Documentation SHA:  7dcfcfd + f5e7676
+Merge SHA:          d135611 (merged to main; governance finalized in follow-up commit)
 ```
 
 ### Sub-phase note template

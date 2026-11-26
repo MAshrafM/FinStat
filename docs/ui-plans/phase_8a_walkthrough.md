@@ -1,7 +1,7 @@
 # Phase 8A Walkthrough — Gold Wallet & Purchasing Power
 
 - **Date**: 2026-11-26
-- **Branch**: `phase-ui-8a-gold` (signed off 2026-11-26; merge/push authorized)
+- **Branch**: `phase-ui-8a-gold` (signed off 2026-11-26; merged to `main` as `d135611`)
 - **Merge Base**: `main @ 5f1b0bb29a434cf7b7f09306c6910d1a8a83de2a`
 - **Branch Commits**: `781fa99` (docs plan), `d4c6f8e` (CI restore), `d8c63bb` (feat implementation), `7dcfcfd` (walkthrough evidence)
 - **Implementation HEAD**: `d8c63bb2f09997e01975fba8ea2f4c16e236bad0`
@@ -109,6 +109,7 @@ Active from plan approval for Gate 5: `.gold-summary-page .gold-table-wrap { ove
 - **Taste Checkpoint #6**: Approved by User for `/gold-wallet` at 1440px and 390px against Reference Frame 01 Variant B; Phase 8B is authorized to start.
 - **Walkthrough sign-off**: Explicit user sign-off received for `docs/ui-plans/phase_8a_walkthrough.md`.
 - **Authority granted**: Merge `phase-ui-8a-gold` into `main`, record SHAs, verify the restored full CI workflow, and push only `main` to `origin/main`.
+- **Merge record**: `phase-ui-8a-gold` merged into `main` with `--no-ff` as `d135611`; implementation `d8c63bb`, walkthrough `7dcfcfd` + `f5e7676`, baseline repo `3f174fb`. Governance updates are finalized in the follow-up commit on `main`; only `main` is pushed.
 
 - [x] Gate 14 reconciled at 68/71 (3 AD16/W-6A-1 only)
 - [x] Gate 15 reconciled at 326 accounted (292 + 34 AD14/AD16)
@@ -116,10 +117,10 @@ Active from plan approval for Gate 5: `.gold-summary-page .gold-table-wrap { ove
 - [x] Diagnostic harness cleaned up (`.auth.json`, production build, temporary servers, repo-root logs)
 - [x] Taste Checkpoint #6 explicitly approved by developer (`/gold-wallet` 1440/390 vs Frame 01 Variant B)
 - [x] User sign-off on this walkthrough (2026-11-26)
-- [ ] Merge `phase-ui-8a-gold` into `main`; record branch/merge/baseline SHAs in §10
-- [ ] Verify CI runs full workflow on `main`
-- [ ] Push only `main` to `origin/main` (§14)
-- [ ] Post-sign-off governance updates (§6.2 items 1-9)
+- [x] Merge `phase-ui-8a-gold` into `main` as `d135611`; record branch/merge/baseline SHAs in §10
+- [x] Verify restored full CI workflow on `main` (`backend-tests` job present; `git diff 5e92fa4 -- .github/workflows/ci.yml` clean)
+- [x] Push only `main` to `origin/main` (§14)
+- [x] Post-sign-off governance updates (§6.2 items 1-9)
 
 ## Post-Sign-Off Governance Checklist (§6.2)
 

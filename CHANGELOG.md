@@ -478,6 +478,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Registered deterministic `mutualFundsMocks.js` mocks and `mutual-funds-reference-match.spec.js` (9/9 with setup); real-browser axe passed 5/5 with 0 critical/serious violations.
 - Re-captured 20 MF baselines in `D:\Projects\FinStat-visual-baselines` (commit `df94041`; starting commit `cfaadb5`) plus 3 trade-summary mobile baselines for pre-existing b9ecafe staleness (`fb5e3bf`); manifest verified 334/334. Gate 14 68/71 (3 accepted W-6A-1/AD16 diffs), Gate 15 326/326, Gate 18 111/111; 0 diffs attributable to 7C. Signed off by user 2026-11-26.
 
+### Added - UI Phase 8A: Gold Wallet & Purchasing Power
+- Themed the gold wallet and purchasing-power analytics: `/gold-wallet` log, add, edit, summary, and `/analytics/purchasing-power` now use the dark graphite design system with dense tables, stacked forms, and accessible charts.
+- Kept gold identity neutral (weight, price, value, 24K, Hold/Sold, live/stale); unrealised P&L is the only `Gain`/`Loss` delta, always shown with explicit sign and label rather than colour alone.
+- Added a sovereign gold purchasing-power vs. inflation chart using `chartTheme` greys with an adjacent data-table alternative and no accent series.
+- Collapsed tables into compact-expand cards on phones with zero page-level horizontal scroll at 390px; documented the 8-column summary-table overflow exception W-8A-1 and kept the audit-log wrapper separately scoped.
+- Removed all 23 legacy inline styles from the gold and chart components and decoupled them from shared trade styles without changing the shared files.
+- Verified 19 gates: 50 unit/a11y tests, unchanged 11/11 calculation characterization, production build, 25 recaptured baselines with 334/334 manifest, PR subset 68/71 with only pre-existing accepted diffs, full 326-test reconciliation, and Gate 18 116/116. Taste Checkpoint #6 approved by the user on 2026-11-26.
+
 
 
 
