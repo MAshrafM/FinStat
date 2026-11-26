@@ -1,13 +1,13 @@
 # Phase 8A Walkthrough — Gold Wallet & Purchasing Power
 
 - **Date**: 2026-11-26
-- **Branch**: `phase-ui-8a-gold` (local only; no push before sign-off)
+- **Branch**: `phase-ui-8a-gold` (signed off 2026-11-26; merge/push authorized)
 - **Merge Base**: `main @ 5f1b0bb29a434cf7b7f09306c6910d1a8a83de2a`
-- **Branch Commits**: `781fa99` (docs plan), `d4c6f8e` (CI restore), `d8c63bb` (feat implementation), plus a local docs-only walkthrough commit
+- **Branch Commits**: `781fa99` (docs plan), `d4c6f8e` (CI restore), `d8c63bb` (feat implementation), `7dcfcfd` (walkthrough evidence)
 - **Implementation HEAD**: `d8c63bb2f09997e01975fba8ea2f4c16e236bad0`
 - **Baseline Repo Commit**: `3f174fb` in `D:\Projects\FinStat-visual-baselines` (`Phase 8A: recapture 25 gold snapshots`)
 - **Plan**: `docs/ui-plans/phase_8a_implementation_plan.md` (v4, draft, final review complete)
-- **Taste Checkpoint #6**: Developer inspection evidence captured for `/gold-wallet` at 1440/390 against Reference Frame 01 Variant B (§6.1.1). **Explicit user approval is requested in Gate 19 sign-off**; 8B must not start before that approval is recorded here and in §10.
+- **Taste Checkpoint #6**: **APPROVED by User on 2026-11-26** for `/gold-wallet` at 1440px and 390px against Reference Frame 01 Variant B (§6.1.1). Approval authorizes Phase 8B to start; recorded in Gate 17, Gate 19, and §10.
 
 ## Scope Delivered
 
@@ -49,8 +49,8 @@ Production/test/harness files per plan: `GoldWallet.css` (new), `PurchasingPower
 | 14 PR-subset visual | PASS (68/71 per W-6A-1) | Reconciled to **68 passed + 3 accepted W-6A-1/AD16 diffs** (`salary-profile-update @1440`, `analysis-payroll @1440`, `salary-rules @1440`). All other 1440px smoke routes and all five smoke-route 390px snapshots are 0-diff in the stable Gate 15 run. 0 diffs attributable to 8A. Earlier `ERR_CONNECTION_REFUSED`/browser-context failures were infrastructure-only (detached-server churn); the reconciled result comes from the stable batched run below, not from the production-URL local rerun, which is blocked by the CORS issue noted below. |
 | 15 Full 326 visual | PASS | Deviation from the single-command plan run: full suite executed in short batches against a deterministic local static build server (temporary config only, not committed) because the single run was unstable on the low-memory verification device: **326 accounted = 292 zero-diff passed + 34 accepted pre-existing AD14/AD16 diffs**. All 25 recaptured gold snapshots pass. 0 unexplained diffs, 0 diffs attributable to 8A. Accepted-diff register below. |
 | 16 Touch targets/focus | PASS | `gold-reference-match.spec.js -g "interactive touch targets"`: **2 passed** (1 setup + 1 filtered test), rerun after final edits. |
-| 17 Reference conformance / Taste Checkpoint #6 | INSPECTION COMPLETE / **APPROVAL PENDING** | All 25 snapshots were reconciled by Gate 15; Gate 11 verifies Frame 01/02/03 tokens, neutral tone, `.fs-num`, D19, W-8A-1, chart a11y. Additional computed-style inspection of `/gold-wallet` at 1440/390 is recorded below. Developer sign-off on Taste Checkpoint #6 is the Gate 19 user approval item. |
-| 18 Unthemed consumer preservation | PASS | Earlier targeted run of `corporate-actions|mutual-funds|gold-wallet|analytics-purchasing-power|certificates|currency|credit-cards` reconciled **116/116** (1 setup + 23 routes × 5 viewports). Gate 15 independently re-verified every one of those 23 routes at all five viewports with 0 8A-attributable diffs; shared CSS remains unchanged (7 files / 8 import sites). A later local-backend diagnostic failed 15 snapshots across `certificates`, `currency`, and `credit-cards` at all five viewports (populated live data differs from mock-captured baselines); this is pre-existing data-dependent environmental drift, not an 8A change. |
+| 17 Reference conformance / Taste Checkpoint #6 | PASS / **APPROVED** | All 25 snapshots were reconciled by Gate 15; Gate 11 verifies Frame 01/02/03 tokens, neutral tone, `.fs-num`, D19, W-8A-1, chart a11y. Additional computed-style inspection of `/gold-wallet` at 1440/390 is recorded below. Developer approval was recorded 2026-11-26; Phase 8B is authorized. |
+| 18 Unthemed consumer preservation | PASS | Earlier targeted run of `corporate-actions|mutual-funds|gold-wallet|analytics-purchasing-power|certificates|currency|credit-cards` reconciled **116/116** (1 setup + 23 routes × 5 viewports). Gate 15 independently re-verified every one of those 23 routes at all five viewports with 0 8A-attributable diffs; shared CSS remains unchanged (7 files / 8 import sites). A later local-backend diagnostic failed 15 snapshots across `certificates`, `currency`, and `credit-cards` at all five viewports (populated live data differs from mock-captured baselines); this is pre-existing data-dependent environmental drift, not an 8A change. Final clean Gate 18 rerun after cleanup: **116 passed** (1 setup + 23 routes × 5 viewports), 0 failures, 0 8A-attributable diffs. |
 
 ## Gate 15 Accepted Diff Register (34)
 
@@ -85,7 +85,7 @@ Computed-style inspection at 1440px and 390px, using deterministic gold mocks:
 | `.gold-mobile-card` nodes | rendered (hidden on desktop) | rendered/visible | D19 cards present at mobile |
 | Document horizontal overflow | `false` | `false` | zero page-level scroll at 390px |
 
-Coverage mapping for the full Gate 17 requirement: Frame 01 log/summary tables are asserted by Gate 11's `gold-reference-match.spec.js` (8 tests) and reconciled across all 25 snapshots in Gate 15; Frame 02 form and Frame 03 KPI-tile checks are covered by the same reference spec plus the 1440/390 computed-style sample above; loading/empty/fetch-failure states, inline validation, and disabled/read-only states are evidenced by Gate 7's 50 Jest/jest-axe tests and Gate 11. The 1440/390 rows above are the explicit developer-inspection sample for Taste Checkpoint #6; final approval is still pending.
+Coverage mapping for the full Gate 17 requirement: Frame 01 log/summary tables are asserted by Gate 11's `gold-reference-match.spec.js` (8 tests) and reconciled across all 25 snapshots in Gate 15; Frame 02 form and Frame 03 KPI-tile checks are covered by the same reference spec plus the 1440/390 computed-style sample above; loading/empty/fetch-failure states, inline validation, and disabled/read-only states are evidenced by Gate 7's 50 Jest/jest-axe tests and Gate 11. The 1440/390 rows above are the explicit developer-inspection sample for Taste Checkpoint #6; approval was recorded 2026-11-26.
 
 The rendered page class is `page-container gold-page-container gold-log-page`, with the distinct log wrapper scoped separately from the W-8A-1 summary wrapper.
 
@@ -102,14 +102,20 @@ Active from plan approval for Gate 5: `.gold-summary-page .gold-table-wrap { ove
 - **Deployed-backend CORS / local-backend diagnostic**: `https://finstat-backend.vercel.app/api` answers the browser preflight from `http://localhost:3000` without `Access-Control-Allow-Origin`, so production-URL local visual runs fail at fetch time. A diagnostic rerun against `http://localhost:5000/api` with a temporary valid harness JWT produced `44 passed / 27 failed`; the failures were live-data/content drift against mock-captured baselines (including the known salary/AD16 routes), not 8A CSS regressions. A follow-up Gate 18 local-backend diagnostic produced `1 passed (setup) + 15 failed` across `certificates`, `currency`, and `credit-cards` at all five viewports, again live-data drift. Neither diagnostic was used as Gate 14/15 evidence; the temporary JWT, local-API build, static servers, and repo-root logs have been cleaned up, so no production source or committed harness remains changed.
 - **Local verification hardware**: The verification device is older and has very limited memory. Repeated Playwright/test and local-build crashes on this machine — including the `4096` MB heap OOM — were caused by that resource constraint, not by application defects. The successful final build used `--max-old-space-size=2048`.
 
-## Gate 19 / Merge Boundary (BLOCKED)
+## Gate 19 / Merge Boundary (SIGNED OFF)
+
+### Sign-Off Record (2026-11-26)
+
+- **Taste Checkpoint #6**: Approved by User for `/gold-wallet` at 1440px and 390px against Reference Frame 01 Variant B; Phase 8B is authorized to start.
+- **Walkthrough sign-off**: Explicit user sign-off received for `docs/ui-plans/phase_8a_walkthrough.md`.
+- **Authority granted**: Merge `phase-ui-8a-gold` into `main`, record SHAs, verify the restored full CI workflow, and push only `main` to `origin/main`.
 
 - [x] Gate 14 reconciled at 68/71 (3 AD16/W-6A-1 only)
 - [x] Gate 15 reconciled at 326 accounted (292 + 34 AD14/AD16)
 - [x] Gate 17 developer inspection evidence captured (`/gold-wallet` 1440/390 vs Frame 01 Variant B)
 - [x] Diagnostic harness cleaned up (`.auth.json`, production build, temporary servers, repo-root logs)
-- [ ] Taste Checkpoint #6 explicitly approved by developer (`/gold-wallet` 1440/390 vs Frame 01 Variant B)
-- [ ] User sign-off on this walkthrough
+- [x] Taste Checkpoint #6 explicitly approved by developer (`/gold-wallet` 1440/390 vs Frame 01 Variant B)
+- [x] User sign-off on this walkthrough (2026-11-26)
 - [ ] Merge `phase-ui-8a-gold` into `main`; record branch/merge/baseline SHAs in §10
 - [ ] Verify CI runs full workflow on `main`
 - [ ] Push only `main` to `origin/main` (§14)
