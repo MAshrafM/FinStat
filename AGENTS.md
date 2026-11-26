@@ -63,7 +63,7 @@ The following anti-patterns are mechanically blocked by linters (`.stylelintrc.j
   cmd /c mklink /J frontend\tests\visual\baseline D:\Projects\FinStat-visual-baselines
   ```
 - **App Repo Untracked**: `frontend/tests/visual/baseline/` is `.gitignore`'d in the app repo. Zero baseline PNGs are tracked in `main`.
-- **Manifest Integrity**: `verify-baseline-manifest.js` enforces that all 325 images have $\ge 1000$ bytes, non-1x1 dimensions, and match SHA-256 hashes in `manifest.json`.
+- **Manifest Integrity**: `verify-baseline-manifest.js` enforces that all 334 images have $\ge 1000$ bytes, non-1x1 dimensions, and match SHA-256 hashes in `manifest.json`.
 
 ---
 
