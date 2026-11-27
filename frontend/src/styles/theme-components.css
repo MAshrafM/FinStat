@@ -2132,3 +2132,48 @@ html[data-fs-theme] .pp-tf-btn.active:hover {
   border-color: var(--fs-action-hover);
 }
 
+/* ----------------------------------------------------
+   Phase 8B: Certificates Log Semantic Themes (§4.3, §6.12)
+   All 5 certificate statuses and ordinary numeric figures stay neutral.
+   Accent is restricted to active filter, checked confirm box, and primary CTA;
+   danger is restricted to destructive delete/withdraw confirm and error surface.
+   ---------------------------------------------------- */
+html[data-fs-theme] .cert-filter-btn.is-active {
+  background: var(--fs-action-bg);
+  color: var(--fs-action-text);
+  border-color: var(--fs-action-bg);
+}
+
+html[data-fs-theme] .cert-filter-btn.is-active:hover:not(:disabled) {
+  background: var(--fs-action-hover);
+  border-color: var(--fs-action-hover);
+  color: var(--fs-action-text);
+}
+
+html[data-fs-theme] .cert-icon-btn-danger:hover:not(:disabled),
+html[data-fs-theme] .cert-icon-btn-danger:focus-visible:not(:disabled) {
+  color: var(--fs-danger);
+  border-color: var(--fs-danger);
+}
+
+html[data-fs-theme] .cert-withdraw-confirm-btn {
+  background: var(--fs-danger);
+  border-color: var(--fs-danger);
+  color: var(--fs-ink);
+}
+
+html[data-fs-theme] .cert-withdraw-confirm-btn:hover:not(:disabled) {
+  background: var(--fs-danger-hover);
+  border-color: var(--fs-danger-hover);
+  color: var(--fs-ink);
+}
+
+html[data-fs-theme] .cert-modal-checkbox:checked {
+  accent-color: var(--fs-accent);
+}
+
+html[data-fs-theme] .cert-error-card {
+  border-color: var(--fs-danger);
+}
+
+

@@ -1,0 +1,635 @@
+/* frontend/src/pages/certificates/Certificates.css */
+/**
+ * Phase 8B: Certificates of Deposit Log layout and neutral surfaces.
+ *
+ * Scope: html[data-fs-theme] .cert-page-container and its .cert-log-page sub-scope per D22.
+ * Accent/tone/danger rules live exclusively in theme-components.css Section 19.
+ *
+ * Documented horizontal-scroll wrapper:
+ * - .cert-log-page .cert-table-wrap: waiver W-8B-1, 9-column certificate log table (desktop/tablet only).
+ * At <=768px, D19 compact-expand cards replace the table with zero page-level overflow.
+ */
+
+html[data-fs-theme] .cert-page-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  color: var(--fs-text);
+  background: var(--fs-bg);
+  font-family: var(--fs-font-sans);
+}
+
+html[data-fs-theme] .cert-page-container *,
+html[data-fs-theme] .cert-page-container *::before,
+html[data-fs-theme] .cert-page-container *::after {
+  box-sizing: border-box;
+}
+
+html[data-fs-theme] .cert-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+html[data-fs-theme] .cert-header-title-group {
+  min-width: 0;
+}
+
+html[data-fs-theme] .cert-breadcrumb {
+  margin: 0 0 4px 0;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+html[data-fs-theme] .cert-header h1 {
+  margin: 0;
+  color: var(--fs-text);
+  font-size: var(--fs-text-2xl);
+  font-weight: var(--fs-weight-semibold);
+  line-height: var(--fs-line-height-2xl);
+  letter-spacing: -0.02em;
+}
+
+html[data-fs-theme] .cert-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+html[data-fs-theme] .cert-page-container .fs-btn {
+  min-height: 44px;
+}
+
+/* Reference Frame 03 Variant B — Portfolio Overview KPI Grid */
+html[data-fs-theme] .cert-overview-section {
+  margin-bottom: 20px;
+}
+
+html[data-fs-theme] .cert-section-heading {
+  margin: 0 0 12px 0;
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  line-height: var(--fs-line-height-lg);
+}
+
+html[data-fs-theme] .cert-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+html[data-fs-theme] .cert-kpi-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+}
+
+html[data-fs-theme] .cert-kpi-label {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+html[data-fs-theme] .cert-kpi-value {
+  color: var(--fs-text);
+  font-size: var(--fs-text-xl);
+  font-weight: var(--fs-weight-semibold);
+  line-height: var(--fs-line-height-xl);
+}
+
+html[data-fs-theme] .cert-kpi-sub {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+}
+
+html[data-fs-theme] .cert-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+html[data-fs-theme] .cert-breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-xs);
+}
+
+/* Filter Toolbar */
+html[data-fs-theme] .cert-filter-card,
+html[data-fs-theme] .cert-error-card,
+html[data-fs-theme] .cert-empty-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+}
+
+html[data-fs-theme] .cert-filter-card {
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+html[data-fs-theme] .cert-filter-title {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+html[data-fs-theme] .cert-filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+html[data-fs-theme] .cert-filter-btn,
+html[data-fs-theme] .cert-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-md);
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-2);
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+  line-height: var(--fs-line-height-sm);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--fs-duration-fast) var(--fs-ease-standard),
+    border-color var(--fs-duration-fast) var(--fs-ease-standard),
+    color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+html[data-fs-theme] .cert-icon-btn {
+  position: relative;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 6px 8px;
+}
+
+html[data-fs-theme] .cert-icon-btn--due {
+  border-color: var(--fs-border-strong);
+  color: var(--fs-text);
+  font-weight: var(--fs-weight-semibold);
+}
+
+html[data-fs-theme] .cert-filter-btn:hover:not(:disabled),
+html[data-fs-theme] .cert-icon-btn:hover:not(:disabled) {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .cert-filter-btn:focus-visible,
+html[data-fs-theme] .cert-icon-btn:focus-visible,
+html[data-fs-theme] .cert-card-expander-btn:focus-visible,
+html[data-fs-theme] .cert-name-link:focus-visible,
+html[data-fs-theme] .cert-modal-close:focus-visible,
+html[data-fs-theme] .cert-table-wrap:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .cert-filter-btn:disabled,
+html[data-fs-theme] .cert-icon-btn:disabled,
+html[data-fs-theme] .cert-icon-btn[aria-disabled='true'] {
+  opacity: var(--fs-disabled-opacity);
+  cursor: not-allowed;
+}
+
+/* Error & Empty Cards */
+html[data-fs-theme] .cert-error-card,
+html[data-fs-theme] .cert-empty-card {
+  margin-top: 16px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+html[data-fs-theme] .cert-error-card h2,
+html[data-fs-theme] .cert-empty-card h2 {
+  margin: 0 0 8px 0;
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+}
+
+html[data-fs-theme] .cert-error-card p,
+html[data-fs-theme] .cert-empty-card p {
+  margin: 0;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  line-height: 1.5;
+}
+
+html[data-fs-theme] .cert-error-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Desktop & Tablet 9-column Table (Reference Frame 01 Variant B; W-8B-1) */
+html[data-fs-theme] .cert-log-page .cert-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 16px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+}
+
+html[data-fs-theme] .cert-table {
+  width: 100%;
+  min-width: max-content;
+  border-collapse: collapse;
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .cert-table thead tr {
+  background: var(--fs-surface-sunken);
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+html[data-fs-theme] .cert-table th {
+  padding: 10px 10px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-semibold);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+html[data-fs-theme] .cert-table td {
+  padding: 11px 10px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-2);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+html[data-fs-theme] .cert-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+html[data-fs-theme] .cert-table tbody tr:hover {
+  background: var(--fs-surface-raised);
+}
+
+html[data-fs-theme] .cert-table tbody tr.cert-row--withdrawn {
+  opacity: 0.75;
+}
+
+html[data-fs-theme] .cert-table th.cert-th-num,
+html[data-fs-theme] .cert-table td.fs-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-fs-theme] .cert-table th.cert-th-actions,
+html[data-fs-theme] .cert-table td.cert-th-actions {
+  text-align: right;
+}
+
+html[data-fs-theme] .cert-name-link {
+  color: var(--fs-text);
+  font-weight: var(--fs-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+html[data-fs-theme] .cert-name-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+html[data-fs-theme] .cert-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+html[data-fs-theme] .cert-muted-note {
+  color: var(--fs-text-3);
+  font-style: italic;
+}
+
+html[data-fs-theme] .cert-actions,
+html[data-fs-theme] .cert-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+html[data-fs-theme] .cert-actions {
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+/* Custom Tokenized Dark Modals (Withdraw & Payout) */
+html[data-fs-theme] .cert-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--fs-scrim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--fs-z-modal);
+  padding: 20px;
+}
+
+html[data-fs-theme] .cert-modal {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  padding: 24px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: var(--fs-shadow);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .cert-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+html[data-fs-theme] .cert-modal-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  line-height: var(--fs-line-height-lg);
+}
+
+html[data-fs-theme] .cert-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 4px;
+  background: transparent;
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-2);
+  cursor: pointer;
+}
+
+html[data-fs-theme] .cert-modal-close:hover:not(:disabled) {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .cert-modal-desc {
+  margin: 0 0 16px 0;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  line-height: 1.5;
+}
+
+html[data-fs-theme] .cert-modal-summary {
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+html[data-fs-theme] .cert-modal-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .cert-modal-summary-total {
+  padding-top: 8px;
+  border-top: var(--fs-border-width) solid var(--fs-border);
+  font-size: var(--fs-text-base);
+  font-weight: var(--fs-weight-semibold);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .cert-modal-summary-amount {
+  color: var(--fs-text);
+  font-size: var(--fs-text-xl);
+  font-weight: var(--fs-weight-semibold);
+}
+
+html[data-fs-theme] .cert-modal-summary-meta {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+}
+
+html[data-fs-theme] .cert-modal-field {
+  margin-bottom: 16px;
+}
+
+html[data-fs-theme] .cert-modal-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+html[data-fs-theme] .cert-modal-checkbox {
+  margin-top: 2px;
+  min-width: 16px;
+  min-height: 16px;
+}
+
+html[data-fs-theme] .cert-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* D19 compact-expand mobile cards */
+html[data-fs-theme] .cert-mobile-cards {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  html[data-fs-theme] .cert-desktop-table,
+  html[data-fs-theme] .cert-log-page .cert-table-wrap {
+    display: none;
+  }
+
+  html[data-fs-theme] .cert-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  html[data-fs-theme] .cert-mobile-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 12px 14px;
+    background: var(--fs-surface);
+    border: var(--fs-border-width) solid var(--fs-border);
+    border-radius: var(--fs-radius-md);
+  }
+
+  html[data-fs-theme] .cert-mobile-card--withdrawn {
+    opacity: 0.75;
+  }
+
+  html[data-fs-theme] .cert-card-compact-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  html[data-fs-theme] .cert-card-primary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  html[data-fs-theme] .cert-card-metrics {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  html[data-fs-theme] .cert-card-value {
+    color: var(--fs-text);
+    font-size: var(--fs-text-sm);
+    font-weight: var(--fs-weight-semibold);
+    font-variant-numeric: tabular-nums;
+  }
+
+  html[data-fs-theme] .cert-card-expander-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    flex-shrink: 0;
+    border: var(--fs-border-width) solid var(--fs-border);
+    border-radius: var(--fs-radius-sm);
+    background: var(--fs-surface-sunken);
+    color: var(--fs-text-3);
+    cursor: pointer;
+  }
+
+  html[data-fs-theme] .cert-card-expanded {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: var(--fs-border-width) solid var(--fs-border);
+  }
+
+  html[data-fs-theme] .cert-card-detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+    font-size: var(--fs-text-sm);
+  }
+
+  html[data-fs-theme] .cert-card-detail-label {
+    color: var(--fs-text-3);
+    font-size: var(--fs-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  html[data-fs-theme] .cert-card-detail-val {
+    min-width: 0;
+    color: var(--fs-text);
+    font-weight: var(--fs-weight-medium);
+    overflow-wrap: anywhere;
+  }
+
+  html[data-fs-theme] .cert-card-actions {
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  html[data-fs-theme] .cert-card-actions .protected-action-wrapper,
+  html[data-fs-theme] .cert-card-actions .cert-icon-btn,
+  html[data-fs-theme] .cert-card-actions .fs-btn {
+    flex: 1 1 auto;
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  html[data-fs-theme] .cert-page-container .cert-header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  html[data-fs-theme] .cert-page-container .cert-header-actions .fs-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  html[data-fs-theme] .cert-modal {
+    padding: 18px;
+  }
+}
