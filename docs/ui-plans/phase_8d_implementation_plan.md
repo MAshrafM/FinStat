@@ -3,7 +3,7 @@
 - **Date**: 2026-11-27
 - **Revision Date**: 2026-11-27
 - **Revision**: **v5** — resolves all R1–R5 required corrections, all 6 medium findings, and all 9 low findings from `docs/ui-plans/phase_8d_implementation_plan_v4_review.md` *(following v1–v4 review cycles)*
-- **Status**: Approved & In Execution (2026-11-27; Option A, CertificateDetail.css conversion, W-8D-1, Gate 12/15 local deviations, and inherited $ formatter approved by user)
+- **Status**: Approved & Executed — Awaiting Gate 19 User Sign-Off (2026-11-27; Gate 0 SHA `de0a888`; Impl SHA `79e5afb`; Baseline SHA `d86155f`)
 - **Merge Base**: `main` @ `af39772` *(pre-execution tag `ui-phase-8d-start` omitted per Phase 7A–8C process precedent; merge base SHA + baseline SHA provide full traceability)*
 - **Starting Baseline Commit**: `39fb1b0` in `D:\Projects\FinStat-visual-baselines` (`334/334` manifest verified)
 - **Branch**: `phase-ui-8d-currency` *(local branch policy per §14/§10 process precedent; only `main` is pushed after Gate 19 sign-off)*
