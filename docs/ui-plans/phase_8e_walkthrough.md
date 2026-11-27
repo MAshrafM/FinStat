@@ -47,11 +47,11 @@ Allowlist:   ['/real-estate', '/real-estate/new', '/real-estate/edit/:id'] (cumu
 Visual diff: Gate 13 replaced 15 real-estate snapshots in place (7460ca7); manifest 334/334 verified; Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 326 accounted (292 + 34 AD14/AD16); Gate 18 86/86; 0 diffs attributable to 8E. W-8E-1 active for desktop/tablet .re-log-page .re-table-wrap only.
 Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (Domain 8 Real Estate ROI & Yields unchanged)
 Screenshots: None tracked per D5/D21; 15 real-estate baselines in FinStat-visual-baselines repo (7460ca7)
-Branch:      phase-ui-8e-real-estate
+Branch:      phase-ui-8e-real-estate (Gov SHA: a5f8bb0)
 Plan SHA:    7435fda
 Impl SHA:    e7a7c4e
-Walkthrough SHAs: Pending commit on phase-ui-8e-real-estate
-Merge SHA:   Pending Gate 19 sign-off
+Walkthrough SHAs: 44c402f
+Merge SHA:   7f6a4a2 (merged to main; governance finalized in follow-up commit)
 ```
 
 ---
@@ -205,15 +205,15 @@ Unassigned: 0
 
 ## 6. Post-Sign-Off Checklist (Execute ONLY After Gate 19 User Sign-Off)
 
-- [ ] Receive explicit Gate 19 user sign-off on `phase_8e_walkthrough.md`.
-- [ ] Sync governance in `docs/UI-UX_Plan/UI-UX-PLAN.md`:
+- [x] Receive explicit Gate 19 user sign-off on `phase_8e_walkthrough.md` (2026-11-27).
+- [x] Sync governance in `docs/UI-UX_Plan/UI-UX-PLAN.md`:
   - `§5.7 (:935–939)`: Mark `/real-estate`, `/real-estate/new`, `/real-estate/edit/:id` `☑ | ☑`.
   - `§6.1 (:1069)`: Mark Phase `8E` `☑ | ☑`.
   - `§6.12 (:1871–1889)`: Check all 8 `8E` items, check all 5 **Phase 8 Exit Gate** items (`:1883–1887`), and update `:1889` to **`16 of 16 routes themed; Phase 8 exit gate closed`**.
   - `§8.1 (:2183)` & `§8.2 (:2209)`: Acknowledge `64` on-disk CSS files (`RealEstate.css` rewritten in place) and update `RealEstateLogPage.js` to `34 *(purged to 0 in 8E)*`.
-  - `§10`: Finalize Phase 8E progress log entry with final Walkthrough SHAs and Merge SHA.
-- [ ] Update `docs/ui-plans/phase_8e_implementation_plan.md` (`- **Status**: Complete`) and `docs/ui-plans/phase_8e_walkthrough.md` (sign-off date + final SHAs).
-- [ ] Verify `docs/ui-plans/` contains zero `*review*.md` files.
-- [ ] Update `CHANGELOG.md` (announcing **AD13** allowlist expansion `46 -> 49` per `§7.2:2132` and **Phase 8 Cluster Exit Gate closure `16 of 16`**).
-- [ ] Merge `phase-ui-8e-real-estate` into `main` with `--no-ff`, finalize SHA closure commit on `main`, and `git push origin main` *(keep `phase-ui-8e-real-estate` local)*.
+  - `§10`: Finalize Phase 8E progress log entry with final Walkthrough SHAs and Merge SHA (`7f6a4a2`).
+- [x] Update `docs/ui-plans/phase_8e_implementation_plan.md` (`- **Status**: Complete`) and `docs/ui-plans/phase_8e_walkthrough.md` (sign-off date + final SHAs).
+- [x] Verify `docs/ui-plans/` contains zero `*review*.md` files.
+- [x] Update `CHANGELOG.md` (announcing **AD13** allowlist expansion `46 -> 49` per `§7.2:2132` and **Phase 8 Cluster Exit Gate closure `16 of 16`**).
+- [x] Merge `phase-ui-8e-real-estate` into `main` with `--no-ff` (`7f6a4a2`), finalize SHA closure commit on `main`, and `git push origin main` *(keep `phase-ui-8e-real-estate` local)*.
 - [ ] Confirm authoritative GitHub Actions CI run passes on `main` post-merge (closing local proxy notes on Gates 9 & 12).

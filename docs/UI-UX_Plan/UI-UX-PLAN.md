@@ -2954,7 +2954,7 @@ Merge SHA:   0991448 (merged to main; governance finalized in follow-up commit)
 
 ```
 Sub-phase:   8E (Finalized — Gate 19 Signed Off; Phase 8 Cluster Exit Gate Closed 16/16)
-Status:      done (Signed off by User 2026-11-27; merging to main)
+Status:      done (Signed off by User 2026-11-27; merged to main as 7f6a4a2)
 Done:        Modernized /real-estate, /real-estate/new, and /real-estate/edit/:id into the FinStat dark graphite design system (`RealEstate.css` rewritten in place under D22 `html[data-fs-theme] .re-page-container` + `theme-components.css` Section 22), closing Cluster 8 (`13 -> 16 of 16`). Purged all 47 verified inline styles (`34` log + `7` form + `2` add + `4` edit), 2 icon `color` props, 37 hex and 8 rgba literals, 11 gradients, 6 blurs, 12 pixel box-shadows, `.main-content.full-bleed`, and all 6 emojis. Applied approved Option B′ strict-literal neutrality (zero `<Delta>` tones, zero realised-loss computation, zero `§4.3`/`§4.3.1` amendment; Sold-loss fixture `realizedGain: -300000` is data-only with `currentValuation - purchasePrice` preserved per `I3`), neutral `<Badge>` type/status chips, accessible neutral `<progress>` appreciation meter (`aria-label` + signed `aria-valuetext`), approved Option A scoped `I4` defensive `useCanModify()` destructuring fix (`RealEstateLogPage.js`) with viewer-role Jest coverage, Waiver `W-8E-1` (`§7.1:2104`) on desktop/tablet `.re-log-page .re-table-wrap` with D19 `<=768px` compact-expand mobile cards (`0px` overflow at `390px`), Reference Frame 02 stacked forms with 11 `id`/`htmlFor` pairings and client-only conditional `Sold` validation, `<Loading>` primitives, and `.re-error-card` Retry states. Retained inherited `$` formatter per `I3`, de-ignored lines 42–45 in `.eslintignore` (preserving `realEstateService.test.js`), expanded `THEMED_PATTERNS` `46 -> 49`, added 26 Jest + jest-axe tests (`2/2` suites) and 8-spec Playwright reference-match suite (`9/9` with setup). Gates 0–18 passed: Gate 1 49 patterns / 75 routes / 0 unassigned, Gate 2 0 drift, Gate 3 0 deletions, Gate 4 0 violations (`61` page / `64` total CSS), Gate 5 `0` regressions across `63` CSS / stylelint clean / `0` loading bypasses, Gate 6 ESLint `0` warnings, Gate 7 `26/26`, Gate 8 `15/15` (`DashboardSummary.js` `96` lines), Gate 9 `11/11`, Gate 10 `4/4`, Gate 11 `9/9`, Gate 12 `2048`MB build clean, Gate 13 `16/16` (`7460ca7`; `d86155f -> 7460ca7`; `334/334` manifest), Gate 14 `68/71` (`3` W-6A-1/AD16 only), Gate 15 `326` (`292 + 34` AD14/AD16; authorized §15.5 local run + §7.1 HTML-report precedent + §7.4 state-screenshot deviation), Gate 16 `2/2`, Gate 17 15/15 PNGs inspected & polished, Gate 18 `86/86` (all 16 Phase 8 routes + Credit Cards).
 Next:        Phase 9A (Credit Cards, modals, installments)
 Blocked by:  None
@@ -2962,8 +2962,8 @@ Allowlist:   ['/real-estate', '/real-estate/new', '/real-estate/edit/:id'] (cumu
 Visual diff: Gate 13 replaced 15 real-estate snapshots in place (7460ca7); manifest 334/334 verified; Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 326 accounted (292 + 34 AD14/AD16); Gate 18 86/86; 0 diffs attributable to 8E. W-8E-1 active for desktop/tablet .re-log-page .re-table-wrap only.
 Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (Domain 8 Real Estate ROI & Yields unchanged)
 Screenshots: None tracked per D5/D21; 15 real-estate baselines in FinStat-visual-baselines repo (7460ca7)
-Branch:      phase-ui-8e-real-estate (Gate 0 Plan SHA: 7435fda; Impl SHA: e7a7c4e; Walkthrough SHA: 44c402f)
-Merge SHA:   Pending merge commit on main
+Branch:      phase-ui-8e-real-estate (Gate 0 Plan SHA: 7435fda; Impl SHA: e7a7c4e; Walkthrough SHA: 44c402f; Gov SHA: a5f8bb0)
+Merge SHA:   7f6a4a2 (merged to main; governance finalized in follow-up commit)
 ```
 
 ### Sub-phase note template
