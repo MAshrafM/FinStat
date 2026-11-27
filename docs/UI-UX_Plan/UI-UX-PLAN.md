@@ -924,7 +924,7 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | `/gold-wallet/edit/:id` | `pages/gold/EditGoldPage` | 8A | ☑ | ☑ | Frame 02 stacked form |
 | `/gold-wallet/summary` | `pages/gold/GoldSummaryPage` | 8A | ☑ | ☑ | 11 inline styles purged; W-8A-1 summary overflow |
 | `/analytics/purchasing-power` | `pages/analytics/PurchasingPowerChart` | 8A | ☑ | ☑ | chartTheme palette + accessible data table |
-| `/certificates` | `pages/certificates/CertificateLogPage` | 8B | ☐ | ☐ | 66 inline styles |
+| `/certificates` | `pages/certificates/CertificateLogPage` | 8B | ☑ | ☑ | 89 inline styles purged (57 colour-bearing + 32 layout/typographic); Frame 01/03 dark table + D19 cards; W-8B-1 |
 | `/certificates/:id` | `pages/certificates/CertificateDetailPage` | 8C | ☐ | ☐ | 58 inline styles; chart |
 | `/certificates/new` | `pages/certificates/AddCertificatePage` | 8C | ☐ | ☐ | + `CertificateForm` |
 | `/certificates/edit/:id` | `pages/certificates/EditCertificatePage` | 8C | ☐ | ☐ | |
@@ -1063,7 +1063,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **7B** | Corporate actions | `phase-ui-7b-corporate-actions` | ☑ | ☑ |
 | **7C** | Mutual funds | `phase-ui-7c-mutual-funds` | ☑ | ☑ |
 | **8A** | Gold wallet | `phase-ui-8a-gold` | ☑ | ☑ |
-| **8B** | Certificates: log | `phase-ui-8b-certificates-log` | ☐ | ☐ |
+| **8B** | Certificates: log | `phase-ui-8b-certificates-log` | ☑ | ☑ |
 | **8C** | Certificates: detail + forms | `phase-ui-8c-certificates-detail` | ☐ | ☐ |
 | **8D** | Currency | `phase-ui-8d-currency` | ☐ | ☐ |
 | **8E** | Real estate (all three routes) | `phase-ui-8e-real-estate` | ☐ | ☐ |
@@ -1838,12 +1838,12 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 8B — Certificates: log
 
-- [ ] `CertificateLogPage.js` (66) → classes.
-- [ ] Status (active/matured/redeemed) → text label + icon; tone only through `.fs-badge` where §4.3.1 records a warning condition (pending/overdue).
-- [ ] Cards at ≤ 768px; status badge stays neutral chip unless §4.3.1 records a warning condition.
-- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
-- [ ] Verify sorting, filters, and row actions.
-- [ ] **Add `/certificates` only.** The detail and form routes stay legacy until 8C.
+- [x] `CertificateLogPage.js` (89: 57 colour-bearing + 32 layout/typographic) → classes.
+- [x] Status (`active`, `maturing_soon`, `future`, `matured`, `withdrawn`) → neutral `<Badge tone="neutral">` wrapping existing `react-icons/fa` icon (`aria-hidden`) + clean text label per §4.3.1 (no recorded certificate warning condition).
+- [x] Cards at ≤ 768px; status badge stays neutral chip unless §4.3.1 records a warning condition.
+- [x] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll (desktop/tablet `.cert-log-page .cert-table-wrap` covered by W-8B-1).
+- [x] Verify existing 6 status filters and all row actions (no sortable columns exist in `CertificateLogPage.js`).
+- [x] **Add `/certificates` only.** The detail and form routes stay legacy until 8C.
 
 #### 8C — Certificates: detail + forms
 
@@ -1886,7 +1886,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Build/tests/lint/axe/screenshots.
 - [ ] Zero diff on non-allowlisted routes.
 
-> Phase 8A signed off 2026-11-26: 5 of 16 routes themed; 8B–8E remain open.
+> Phase 8B signed off 2026-11-27: 6 of 16 routes themed; 8C–8E remain open.
 
 **User-facing acceptance criterion:** "A user can open a certificate or property on a phone and read maturity, yield, and cost figures without clipping."
 
@@ -2101,7 +2101,7 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 - [ ] If the PR adds an allowlist pattern: the route it names is converted **in this PR**.
 - [ ] If the PR converts a cluster's first route: the screen matches its reference frame.
 - [ ] `grep -rn '#14b8a6' frontend/src --include='*.css'` returns only tokens.css:36.
-- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, and waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`); `PurchasingPowerChart.css` has no `overflow-x`.
+- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`, and waiver **W-8B-1** for `.cert-log-page .cert-table-wrap` in `Certificates.css`); `PurchasingPowerChart.css` has no `overflow-x`.
 - [ ] Loading consistency check: `git grep -nE "<div>Loading|className=\"loading-spinner\"|custom spinner SVG" frontend/src --include="*.js"` returns only loading primitive usages and test files.
 
 The legacy zero-diff gate is the proof that the allowlist works. A PR that changes a legacy page fails here, regardless of whether the change looks harmless.
@@ -2195,7 +2195,7 @@ Metric: number of `style={{` props per file. Counts include layout-only styles; 
 | Component | `style={{` | Sub-phase |
 | :--- | ---: | :---: |
 | `pages/salary/PaycheckFormPage.js` | 77 | 5C → 5D |
-| `pages/certificates/CertificateLogPage.js` | 66 | 8B |
+| `pages/certificates/CertificateLogPage.js` | 89 *(purged to 0 in 8B; originally audited 66)* | 8B |
 | `pages/certificates/CertificateDetailPage.js` | 61 | 8C |
 | `pages/trades/TradeSummaryPage.js` | 54 | 7A |
 | `pages/expenditure/BudgetsPage.js` | 53 | 4C |
@@ -2903,6 +2903,23 @@ Branch:      phase-ui-8a-gold
 Implementation SHA: d8c63bb
 Documentation SHA:  7dcfcfd + f5e7676
 Merge SHA:          d135611 (merged to main; governance finalized in follow-up commit)
+```
+
+```
+Sub-phase:   8B
+Status:      done (Signed off by User 2026-11-27)
+Done:        Modernized /certificates (CertificateLogPage.js) into the FinStat dark graphite design system; authored scoped Certificates.css (html[data-fs-theme] .cert-page-container / .cert-log-page per D22) and theme-components.css Section 19; decoupled Trades.css without editing shared CSS (all 5 remaining Trades.css import sites unchanged); purged all 89 inline styles (57 colour-bearing + 32 layout/typographic); replaced purple linear-gradient banner with Reference Frame 03 Variant B graphite KPI tiles; converted all 5 domain statuses (active, maturing_soon, future, matured, withdrawn) to neutral <Badge tone="neutral"> chips with existing react-icons/fa icons (aria-hidden) + clean text labels per §4.3.1; enforced Single Primary CTA (Add Certificate), underlined .cert-name-link, neutral .fs-num tabular figures, and strengthened non-colour isPayoutDue discoverability; preserved shared ConfirmModal for delete and rebuilt Withdraw & Payout modals as tokenized accessible dark dialogs (focus trap, Escape, focus restore, preserved payloads); added D19 mobile cards at <=768px with zero 390px overflow; documented Waiver W-8B-1 (.cert-log-page .cert-table-wrap desktop/tablet 9-col table only); added error-state card (role="alert" + Retry keeping header visible); recorded no sortable columns exist in CertificateLogPage.js (verified 6 status filters and all row actions); de-ignored CertificateLogPage.js from .eslintignore; expanded THEMED_PATTERNS 38 -> 39; added 15 Jest + jest-axe tests, certificatesMocks.js, and 7-test Playwright reference-match spec. Gates 1-19 executed: 15/15 unit/axe + 15/15 route/dashboard = 30/30, 11/11 calculations unchanged, local CI=true build clean (2048 heap; authoritative CI runs on main), real-browser axe 2/2, reference match 8/8, touch targets 2/2, Gate 13 baseline 19d34c8 (5 PNGs replaced in place; starting 3f174fb; manifest 334/334), PR subset 68/71 (3 accepted W-6A-1/AD16 diffs), Gate 15 full 326 reconciliation (292 passed + 34 accepted AD14/AD16 matching 7A/8A; local §15.5 deviation), Gate 18 81/81, and 0 diffs attributable to 8B.
+Next:        Phase 8C (Certificates: detail + forms)
+Blocked by:  None
+Allowlist:   ['/certificates'] (cumulative: 39 patterns)
+Visual diff: Gate 13 recaptured 5 /certificates snapshots (19d34c8); manifest 334/334 verified; Gate 14 68/71 (3 AD16/W-6A-1 only); Gate 15 326 accounted (292 + 34 AD14/AD16); Gate 18 81/81; 0 diffs attributable to 8B. W-8B-1 active for desktop/tablet .cert-log-page .cert-table-wrap only.
+Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (Domain 5 Certificates unchanged)
+Screenshots: None tracked per D5/D21; 5 /certificates baselines in FinStat-visual-baselines repo (19d34c8)
+Branch:      phase-ui-8b-certificates-log
+Plan SHA:           6f31d1b
+Implementation SHA: 23f65bf
+Documentation SHA:  92c0747 + 6d7f772
+Merge SHA:          71fe3e2 (merged to main; governance finalized in follow-up commit)
 ```
 
 ### Sub-phase note template

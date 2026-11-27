@@ -486,6 +486,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed all 23 legacy inline styles from the gold and chart components and decoupled them from shared trade styles without changing the shared files.
 - Verified 19 gates: 50 unit/a11y tests, unchanged 11/11 calculation characterization, production build, 25 recaptured baselines with 334/334 manifest, PR subset 68/71 with only pre-existing accepted diffs, full 326-test reconciliation, and Gate 18 116/116. Taste Checkpoint #6 approved by the user on 2026-11-26.
 
+### Added - UI Phase 8B: Certificates of Deposit Log
+- Promoted `/certificates` (`CertificateLogPage.js`) to the active `THEMED_PATTERNS` allowlist (`38 -> 39`) and removed it from `frontend/.eslintignore` while keeping `/certificates/:id`, `/certificates/new`, and `/certificates/edit/:id` legacy until Phase 8C.
+- Authored scoped `Certificates.css` (`html[data-fs-theme] .cert-page-container` / `.cert-log-page`) and isolated accent/danger rules in Section 19 of `theme-components.css` per D22; decoupled from `Trades.css` without modifying `Trades.css`.
+- Purged all 89 inline styles (57 colour-bearing + 32 layout/typographic), replaced the gradient overview banner with Reference Frame 03 Variant B graphite KPI tiles, standardized all 5 certificate statuses (`active`, `maturing_soon`, `future`, `matured`, `withdrawn`) as neutral icon+text `<Badge>` chips per §4.3.1, enforced a single primary CTA (`Add Certificate`), underlined `.cert-name-link`, and preserved non-colour `isPayoutDue` accessible discoverability.
+- Converted `<FaTrash>` into an accessible button paired with the shared `ConfirmModal`, rebuilt the Withdraw and Payout overlays as tokenized dark dialogs (`role="dialog"`, focus trap, Escape close, focus restoration, preserved service payloads), added error-state Retry handling, added D19 compact-expand mobile cards at <= 768px with zero page overflow at 390px, and documented desktop/tablet 9-column table container scroll under Waiver W-8B-1.
+- Added 15 CRA Jest + jest-axe tests (`CertificateLogPage.test.js`), deterministic Playwright mocks (`certificatesMocks.js`), and 7-test reference-match suite (`certificates-reference-match.spec.js`), passing Gates 1–18 with 5 recaptured baselines (`19d34c8`, `334/334` manifest), PR subset `68/71`, full `326` reconciliation (`292 + 34` accepted AD14/AD16 diffs), and Gate 18 `81/81`. Signed off by user 2026-11-27 (`71fe3e2`).
+
 
 
 

@@ -3,17 +3,17 @@
 > **Sub-phase**: UI Phase 8B — Certificates: log  
 > **Target Route**: `/certificates` (`CertificateLogPage.js`)  
 > **Date**: 2026-11-26 (implemented & verified Gates 1–18); 2026-11-27 (walkthrough revised per review)  
-> **Branch**: `phase-ui-8b-certificates-log` *(local only — awaiting Gate 19 user sign-off before merge & push per §14)*  
+- **Branch**: `phase-ui-8b-certificates-log` *(signed off 2026-11-27; merged to `main` as `71fe3e2`)*  
 > **Merge Base**: `main @ 237700a`  
 > **Starting Baseline Commit**: `3f174fb` in `D:\Projects\FinStat-visual-baselines` (`334/334` manifest verified)  
 > **Gate 13 Baseline Commit SHA**: `19d34c8` in `D:\Projects\FinStat-visual-baselines` (`Phase 8B: recapture 5 certificates log snapshots`; `334/334` manifest verified)  
 > **Plan Commit SHA**: `6f31d1b` (`docs(ui-phase-8b): add implementation plan`)  
 > **Implementation HEAD SHA**: `23f65bf` (`feat(ui-phase-8b): theme certificates log`)  
-> **Walkthrough Commit SHAs**: `92c0747` (initial Gate 19 walkthrough); follow-up review-fix commit recorded on `phase-ui-8b-certificates-log` alongside reconciled plan status  
-> **Merge SHA**: `[Pending Gate 19 user sign-off & merge to main]`  
+> **Walkthrough Commit SHAs**: `92c0747` + `6d7f772`  
+> **Merge SHA**: `71fe3e2` (merged to `main` via `--no-ff`; governance finalized in follow-up commit)  
 > **Plan & Approval Evidence**: `docs/ui-plans/phase_8b_implementation_plan.md` (v3, explicitly approved by user `"approved. proceed"` on 2026-11-26 after `docs/ui-plans/phase_8b_implementation_plan_review.md`; plan `- **Status**:` line reconciled)  
 > **Taste Checkpoint**: N/A (Cluster 8 Taste Checkpoint #6 was delivered and signed off in Phase 8A)  
-> **Status**: Ready for Gate 19 Review / Awaiting User Sign-Off
+> **Status**: Signed off & merged 2026-11-27 (`71fe3e2`); governance sync complete; `main` pushed to `origin/main`
 
 ---
 
@@ -21,7 +21,7 @@
 
 ```text
 Sub-phase:   UI Phase 8B — Certificates: log
-Status:      READY FOR GATE 19 SIGN-OFF — Gates 1–18 verified; post-sign-off governance sync & merge pending
+Status:      DONE (Signed off 2026-11-27; merged to main as 71fe3e2; governance sync complete)
 Done:        Migrated /certificates (CertificateLogPage.js) into the FinStat dark graphite design system.
              Decoupled Trades.css without editing Trades.css; authored scoped Certificates.css
              (html[data-fs-theme] .cert-page-container / .cert-log-page per D22) and theme-components.css
@@ -37,15 +37,15 @@ Done:        Migrated /certificates (CertificateLogPage.js) into the FinStat dar
              (.cert-log-page .cert-table-wrap desktop/tablet only), added error state with Retry, removed
              CertificateLogPage.js from .eslintignore, expanded THEMED_PATTERNS 38 -> 39, added 15 Jest +
              jest-axe tests, deterministic certificatesMocks.js, and 7-test Playwright reference-match spec.
-Next:        Post-sign-off governance sync (UI-UX-PLAN.md + CHANGELOG.md), merge to main, push main only, then Phase 8C
-Blocked by:  Gate 19 user sign-off
+Next:        Phase 8C (Certificates: detail + forms)
+Blocked by:  None
 Allowlist:   THEMED_PATTERNS expanded 38 -> 39 (+1: /certificates only; /certificates/:id, /new, /edit/:id stay legacy)
 Visual diff: Gate 13 replaced 5 /certificates PNGs (19d34c8); Gate 14 68/71 (3 AD16/W-6A-1 only); Gate 15 326
              accounted (292 passed + 34 accepted AD14/AD16, matching 7A/8A; local §15.5 deviation); Gate 18 81/81
 Fixtures:    calculations.spec.js 11/11 passed (byte-identical across 8 domains including Domain 5 Certificates)
 Screenshots: 5 recaptures across 1440, 1024, 768, 480, 390px (19d34c8); 334/334 manifest verified
-Branch:      phase-ui-8b-certificates-log (local commits: 6f31d1b, 23f65bf, 92c0747, + review-fix doc commit)
-Merge SHA:   [Pending user sign-off & merge to main]
+Branch:      phase-ui-8b-certificates-log (local commits: 6f31d1b, 23f65bf, 92c0747, 6d7f772)
+Merge SHA:   71fe3e2
 ```
 
 ### §0 Plan Decisions Carried Into Sign-Off
@@ -184,7 +184,9 @@ Manifest generated for 334 baselines at D:\Projects\FinStat\frontend\tests\visua
 - [x] Gates 1–18 completed & reconciled (`Trades.css`, services, context, `App.js`, `calculations.spec.js`, `package.json`, and 8C routes untouched)
 - [x] Plan `- **Status**:` line reconciled with recorded `"approved. proceed"` approval (2026-11-26)
 - [x] `.auth.json` restored; temporary `test-results` / `playwright-report` cleaned
-- [ ] **User sign-off on this Phase 8B walkthrough**
+- [x] **User sign-off on this Phase 8B walkthrough (2026-11-27)**
+- [x] Governance sync & review cleanup complete (`UI-UX-PLAN.md`, `CHANGELOG.md`, review files removed)
+- [x] Merged `phase-ui-8b-certificates-log` into `main` as `71fe3e2` and pushed only `main` (§14)
 
 ### Post-Sign-Off Governance Synchronization Checklist (Executed After Approval, Before / Upon Merge to `main`)
 1. `docs/ui-plans/phase_8b_walkthrough.md`: Record Gate 19 sign-off date and final merge SHA.
