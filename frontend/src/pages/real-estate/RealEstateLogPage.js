@@ -21,33 +21,64 @@ import {
   FaRulerCombined,
   FaCalendarAlt,
   FaChartLine,
+  FaChevronDown,
+  FaChevronUp,
 } from 'react-icons/fa';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import ConfirmModal from '../../components/common/ConfirmModal';
+import Loading from '../../components/ui/Loading';
+import Badge from '../../components/ui/Badge';
 import { useToast } from '../../context/ToastContext';
 import { useCanModify } from '../../context/AuthContext';
 import './RealEstate.css';
 
 const PROPERTY_TYPES = ['all', 'Residential', 'Commercial', 'Villa', 'Land', 'Other'];
+const STATUS_FILTERS = ['all', 'Owned', 'Sold'];
+
+const renderPropertyIcon = (type) => {
+  switch (type) {
+    case 'Commercial':
+      return <FaBuilding aria-hidden="true" />;
+    case 'Land':
+      return <FaMapMarkerAlt aria-hidden="true" />;
+    default:
+      return <FaHome aria-hidden="true" />;
+  }
+};
+
+const formatSignedCurrency = (amount) => {
+  const num = Number(amount) || 0;
+  if (num > 0) return `+${formatCurrency(num)}`;
+  return formatCurrency(num);
+};
+
+const formatSignedPercent = (pct, decimals = 2) => {
+  const num = Number(pct) || 0;
+  return `${num >= 0 ? '+' : ''}${num.toFixed(decimals)}%`;
+};
 
 const RealEstateLogPage = () => {
   const navigate = useNavigate();
-  const canModify = useCanModify();
+  const { canModify } = useCanModify();
   const { showToast, addToast } = useToast();
   const notify = showToast || addToast;
+
   const [propertyToDelete, setPropertyToDelete] = useState(null);
   const [properties, setProperties] = useState([]);
   const [summary, setSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
   const [sortBy, setSortBy] = useState('valuation'); // 'valuation' | 'gain' | 'date' | 'name'
+  const [expandedIds, setExpandedIds] = useState(() => new Set());
 
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
+      setFetchError(null);
       const [propsData, summaryData] = await Promise.all([
         getRealEstates({ status: selectedStatus, type: selectedType, search: searchTerm }),
         getRealEstateSummary(),
@@ -56,6 +87,7 @@ const RealEstateLogPage = () => {
       setSummary(summaryData || null);
     } catch (err) {
       console.error('Failed to load real estate properties:', err);
+      setFetchError(err.message || 'Failed to load real estate portfolio. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +97,7 @@ const RealEstateLogPage = () => {
     fetchData();
   }, [fetchData]);
 
-    const handleDelete = (id, name) => {
+  const handleDelete = (id, name) => {
     if (!canModify) return;
     setPropertyToDelete({ id, name });
   };
@@ -83,40 +115,20 @@ const RealEstateLogPage = () => {
     }
   };
 
-  const getBadgeClass = (type) => {
-    switch (type) {
-      case 'Residential':
-        return 'residential';
-      case 'Commercial':
-        return 'commercial';
-      case 'Villa':
-        return 'villa';
-      case 'Land':
-        return 'land';
-      default:
-        return 'other';
-    }
+  const toggleMobileExpand = (id) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
-  const getPropertyIcon = (type) => {
-    switch (type) {
-      case 'Residential':
-        return '🏠';
-      case 'Commercial':
-        return '🏢';
-      case 'Villa':
-        return '🏰';
-      case 'Land':
-        return '🏞️';
-      default:
-        return '🏘️';
-    }
-  };
-
-  // Filtered & Sorted properties
   const processedProperties = useMemo(() => {
-    let list = [...properties];
-
+    const list = [...properties];
     list.sort((a, b) => {
       if (sortBy === 'valuation') {
         return (b.currentValuation || 0) - (a.currentValuation || 0);
@@ -134,420 +146,510 @@ const RealEstateLogPage = () => {
       }
       return 0;
     });
-
     return list;
   }, [properties, sortBy]);
 
-  if (isLoading && properties.length === 0) {
+  if (isLoading && properties.length === 0 && !fetchError) {
     return (
-      <div className="real-estate-page-wrapper">
-        <div className="real-estate-container">
-          <div className="empty-holdings-box" style={{ paddingTop: '100px' }}>
-            <div className="spinner" style={{ margin: '0 auto 20px' }}></div>
-            <h2>Loading Real Estate Portfolio...</h2>
-            <p>Fetching properties, locations, and market valuations.</p>
-          </div>
-        </div>
+      <div className="page-container re-page-container re-log-page">
+        <Loading variant="card" text="Loading real estate portfolio..." />
       </div>
     );
   }
 
+  const ownedSummary = summary?.owned || {};
+  const hasActiveFilters = Boolean(searchTerm || selectedType !== 'all' || selectedStatus !== 'all');
+
   return (
-    <div className="real-estate-page-wrapper">
-      <div className="real-estate-container">
+    <div className="page-container re-page-container re-log-page">
       {/* 1. Header Section */}
-      <div className="real-estate-header">
-        <div className="real-estate-header-left">
+      <nav className="re-breadcrumb" aria-label="Breadcrumb">
+        <span>Assets</span>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Real Estate</span>
+      </nav>
+
+      <header className="re-header">
+        <div className="re-header-left">
           <h1>Real Estate Portfolio</h1>
-          <p>Comprehensive property registry, capital cost basis, market appreciation, and rental/resale tracking.</p>
+          <p className="re-header-subtitle">
+            Comprehensive property registry, capital cost basis, market appreciation, and rental/resale tracking.
+          </p>
         </div>
 
-        <div className="header-actions-group">
-          <button className="btn-refresh" onClick={fetchData} disabled={isLoading} title="Refresh real estate data">
-            <FaSyncAlt className={isLoading ? 'fa-spin' : ''} /> {isLoading ? 'Refreshing...' : 'Refresh'}
+        <div className="re-header-actions">
+          <button
+            type="button"
+            className="fs-btn fs-btn-secondary"
+            onClick={fetchData}
+            disabled={isLoading}
+            title="Refresh real estate data"
+          >
+            <FaSyncAlt className={isLoading ? 're-spin' : ''} aria-hidden="true" />{' '}
+            {isLoading ? 'Refreshing...' : 'Refresh'}
           </button>
           <ProtectedAction tooltip="View-only access">
-            <Link to="/real-estate/new" className="btn-primary-add">
-              <FaPlus /> Add Property
+            <Link to="/real-estate/new" className="fs-btn fs-btn-primary">
+              <FaPlus aria-hidden="true" /> Add Property
             </Link>
           </ProtectedAction>
         </div>
-      </div>
+      </header>
 
-      {/* 2. Top KPI Summary Cards */}
-      {summary && (
-        <div className="re-kpi-grid">
-          {/* Total Invested */}
-          <div className="re-kpi-card">
-            <div className="re-kpi-glow" style={{ background: '#ec4899' }}></div>
-            <div className="re-kpi-header">
-              <span className="re-kpi-title">Capital Invested</span>
-              <div className="re-kpi-icon-wrap" style={{ background: 'rgba(236, 72, 153, 0.15)', color: '#ec4899' }}>
-                <FaHome />
-              </div>
-            </div>
-            <div className="re-kpi-value">{formatCurrency(summary.owned?.totalPaid || 0)}</div>
-            <div className="re-kpi-sub">
-              <span>Across <strong>{summary.owned?.count || 0}</strong> owned positions</span>
-            </div>
-          </div>
-
-          {/* Current Valuation */}
-          <div className="re-kpi-card">
-            <div className="re-kpi-glow" style={{ background: '#a855f7' }}></div>
-            <div className="re-kpi-header">
-              <span className="re-kpi-title">Current Portfolio Value</span>
-              <div className="re-kpi-icon-wrap" style={{ background: 'rgba(168, 85, 247, 0.15)', color: '#a855f7' }}>
-                <FaBuilding />
-              </div>
-            </div>
-            <div className="re-kpi-value">{formatCurrency(summary.owned?.totalValuation || 0)}</div>
-            <div className="re-kpi-sub">
-              <span className="status-pill manual">
-                <span className="status-dot manual"></span> User Valuation
-              </span>
-            </div>
-          </div>
-
-          {/* Unrealized Gain */}
-          <div className="re-kpi-card">
-            <div className="re-kpi-glow" style={{ background: '#22c55e' }}></div>
-            <div className="re-kpi-header">
-              <span className="re-kpi-title">Unrealized Capital Gain</span>
-              <div className="re-kpi-icon-wrap" style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#4ade80' }}>
-                <FaChartLine />
-              </div>
-            </div>
-            <div
-              className="re-kpi-value"
-              style={{ color: (summary.owned?.unrealizedGain || 0) >= 0 ? '#4ade80' : '#f87171' }}
-            >
-              {(summary.owned?.unrealizedGain || 0) >= 0 ? '+' : ''}
-              {formatCurrency(summary.owned?.unrealizedGain || 0)}
-            </div>
-            <div className="re-kpi-sub">
-              <span
-                className={`re-trend-pill ${(summary.owned?.unrealizedGain || 0) >= 0 ? 'positive' : 'negative'}`}
-              >
-                {(summary.owned?.unrealizedGain || 0) >= 0 ? '+' : ''}
-                {(summary.owned?.gainPercentage || 0).toFixed(2)}% Overall Appreciation
-              </span>
-            </div>
-          </div>
+      {/* Fetch Error State */}
+      {fetchError && (
+        <div className="re-error-card" role="alert">
+          <h2>Unable to Load Real Estate Portfolio</h2>
+          <p>{fetchError}</p>
+          <button type="button" className="fs-btn fs-btn-secondary" onClick={fetchData}>
+            Retry
+          </button>
         </div>
       )}
 
-      {/* 3. Toolbar: Search, Filters & View Toggle */}
-      <div className="re-controls-wrapper">
-        <div className="re-controls-top">
-          {/* Search Box */}
-          <div className="re-search-input-wrap">
-            <FaSearch className="re-search-icon" />
-            <input
-              type="text"
-              className="re-search-input"
-              placeholder="Search properties by name, location..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-            {/* Sort Selector */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 600 }}>Sort By:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="form-select"
-                style={{ padding: '6px 12px', fontSize: '0.86rem', width: 'auto' }}
-              >
-                <option value="valuation">Highest Valuation</option>
-                <option value="gain">Highest Profit</option>
-                <option value="date">Newest Acquired</option>
-                <option value="name">Property Name</option>
-              </select>
-            </div>
-
-            {/* View Switcher */}
-            <div className="re-view-switcher">
-              <button
-                className={`re-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                onClick={() => setViewMode('grid')}
-                title="Grid Card View"
-              >
-                <FaThLarge /> Cards
-              </button>
-              <button
-                className={`re-view-btn ${viewMode === 'table' ? 'active' : ''}`}
-                onClick={() => setViewMode('table')}
-                title="Dense Table View"
-              >
-                <FaList /> Table
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Filter Pills Row */}
-        <div className="re-filter-pills-row">
-          <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>Status:</span>
-          {['all', 'Owned', 'Sold'].map((st) => (
-            <button
-              key={st}
-              className={`re-pill ${selectedStatus === st ? 'active' : ''}`}
-              onClick={() => setSelectedStatus(st)}
-            >
-              {st === 'all' ? 'All' : st}
-            </button>
-          ))}
-
-          <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600, marginLeft: '12px' }}>Type:</span>
-          {PROPERTY_TYPES.map((t) => (
-            <button
-              key={t}
-              className={`re-pill ${selectedType === t ? 'active' : ''}`}
-              onClick={() => setSelectedType(t)}
-            >
-              {t === 'all' ? 'All Types' : t}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 4. Main Content: Grid vs Table View */}
-      {processedProperties.length > 0 ? (
-        viewMode === 'grid' ? (
-          /* --- Grid Cards View --- */
-          <div className="re-properties-grid">
-            {processedProperties.map((p) => {
-              const gain = p.currentValuation - p.purchasePrice;
-              const gainPct = p.purchasePrice > 0 ? (gain / p.purchasePrice) * 100 : 0;
-              const isProfit = gain >= 0;
-              const maxVal = Math.max(p.purchasePrice, p.currentValuation, 1);
-              const barPercent = Math.min(100, Math.max(10, (p.currentValuation / maxVal) * 100));
-
-              return (
-                <div key={p._id} className="prop-card">
-                  <div className="prop-card-banner">
-                    <div className="prop-icon-badge">{getPropertyIcon(p.type)}</div>
-                    <div className="prop-card-badges">
-                      <span className={`prop-badge ${getBadgeClass(p.type)}`}>{p.type}</span>
-                      <span className={`status-pill ${p.status === 'Owned' ? 'live' : 'stale'}`}>
-                        <span className={`status-dot ${p.status === 'Owned' ? 'live' : 'stale'}`}></span>
-                        {p.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  <h3 className="prop-name">{p.name}</h3>
-
-                  <div className="prop-location">
-                    {p.location ? (
-                      <>
-                        <FaMapMarkerAlt color="#ec4899" /> <span>{p.location}</span>
-                      </>
-                    ) : (
-                      <span>No location specified</span>
-                    )}
-                    {p.area > 0 && (
-                      <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <FaRulerCombined size={12} color="#38bdf8" /> {p.area} m²
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Appreciation Bar */}
-                  <div className="appreciation-box">
-                    <div className="appreciation-header">
-                      <span>Valuation Growth</span>
-                      <span style={{ color: isProfit ? '#4ade80' : '#f87171', fontWeight: 700 }}>
-                        {isProfit ? '+' : ''}
-                        {gainPct.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="appreciation-bar-bg">
-                      <div className="appreciation-bar-fill" style={{ width: `${barPercent}%` }}></div>
-                    </div>
-                  </div>
-
-                  {/* Financial Metrics */}
-                  <div className="prop-metrics-grid">
-                    <div className="prop-metric-cell">
-                      <div className="prop-metric-label">Purchase Price</div>
-                      <div className="prop-metric-val">{formatCurrency(p.purchasePrice)}</div>
-                    </div>
-                    <div className="prop-metric-cell">
-                      <div className="prop-metric-label">Current Valuation</div>
-                      <div className="prop-metric-val" style={{ color: '#38bdf8' }}>
-                        {formatCurrency(p.currentValuation)}
-                      </div>
-                    </div>
-                    <div className="prop-metric-cell" style={{ gridColumn: '1 / -1' }}>
-                      <div className="prop-metric-label">Net Capital Gain</div>
-                      <div
-                        className="prop-metric-val"
-                        style={{ color: isProfit ? '#4ade80' : '#f87171' }}
-                      >
-                        {isProfit ? '+' : ''}
-                        {formatCurrency(gain)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {p.notes && (
-                    <div style={{ fontSize: '0.83rem', color: '#94a3b8', fontStyle: 'italic', marginBottom: '14px', lineHeight: 1.4 }}>
-                      "{p.notes}"
-                    </div>
-                  )}
-
-                  {/* Footer */}
-                  <div className="prop-card-footer">
-                    <div className="prop-date-tag">
-                      <FaCalendarAlt style={{ marginRight: '5px' }} />
-                      Acquired {formatDate(p.purchaseDate)}
-                    </div>
-
-                    <div className="prop-card-actions">
-                      <ProtectedAction tooltip="View-only access">
-                        <button
-                          onClick={() => navigate(`/real-estate/edit/${p._id}`)}
-                          className="btn-icon-action"
-                          title="Edit property"
-                        >
-                          <FaEdit />
-                        </button>
-                      </ProtectedAction>
-                      <ProtectedAction tooltip="View-only access">
-                        <button
-                          onClick={() => handleDelete(p._id, p.name)}
-                          className="btn-icon-action delete"
-                          title="Delete property"
-                        >
-                          <FaTrash />
-                        </button>
-                      </ProtectedAction>
-                    </div>
-                  </div>
+      {!fetchError && (
+        <>
+          {/* 2. Top KPI Summary Tiles (Frame 03 — Strictly Neutral per Option B') */}
+          {summary && (
+            <section className="re-kpi-grid" aria-label="Real estate portfolio summary">
+              <div className="re-kpi-tile">
+                <div className="re-kpi-header">
+                  <span className="re-kpi-title">Capital Invested</span>
+                  <FaHome className="re-kpi-icon" aria-hidden="true" />
                 </div>
-              );
-            })}
-          </div>
-        ) : (
-          /* --- Dense Table View --- */
-          <div className="holdings-section">
-            <div className="table-responsive">
-              <table className="portfolio-table">
-                <thead>
-                  <tr>
-                    <th>Property Name</th>
-                    <th>Type</th>
-                    <th>Area</th>
-                    <th>Purchase Price</th>
-                    <th>Current Valuation</th>
-                    <th>Capital Gain</th>
-                    <th>Acquisition Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
+                <div className="re-kpi-value fs-num">{formatCurrency(ownedSummary.totalPaid || 0)}</div>
+                <div className="re-kpi-sub">
+                  <span>
+                    Across <strong className="fs-num">{ownedSummary.count || 0}</strong> owned positions
+                  </span>
+                </div>
+              </div>
+
+              <div className="re-kpi-tile">
+                <div className="re-kpi-header">
+                  <span className="re-kpi-title">Current Portfolio Value</span>
+                  <FaBuilding className="re-kpi-icon" aria-hidden="true" />
+                </div>
+                <div className="re-kpi-value fs-num">{formatCurrency(ownedSummary.totalValuation || 0)}</div>
+                <div className="re-kpi-sub">
+                  <Badge tone="neutral">User Valuation</Badge>
+                </div>
+              </div>
+
+              <div className="re-kpi-tile">
+                <div className="re-kpi-header">
+                  <span className="re-kpi-title">Unrealized Capital Gain</span>
+                  <FaChartLine className="re-kpi-icon" aria-hidden="true" />
+                </div>
+                <div className="re-kpi-value fs-num">
+                  {formatSignedCurrency(ownedSummary.unrealizedGain || 0)}
+                </div>
+                <div className="re-kpi-sub">
+                  <span className="fs-num">
+                    {formatSignedPercent(ownedSummary.gainPercentage || 0, 2)} Overall Appreciation
+                  </span>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* 3. Toolbar: Search, Sort, View Switcher & Filter Pills */}
+          <section className="re-controls-card" aria-label="Property filters and view controls">
+            <div className="re-controls-top">
+              <div className="re-search-wrap">
+                <label className="re-sr-only" htmlFor="re-search">
+                  Search properties
+                </label>
+                <FaSearch className="re-search-icon" aria-hidden="true" />
+                <input
+                  id="re-search"
+                  type="text"
+                  className="re-search-input"
+                  placeholder="Search properties by name, location..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <div className="re-controls-right">
+                <div className="re-sort-group">
+                  <label className="re-control-label" htmlFor="re-sort">
+                    Sort By:
+                  </label>
+                  <select
+                    id="re-sort"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="re-sort-select"
+                  >
+                    <option value="valuation">Highest Valuation</option>
+                    <option value="gain">Highest Profit</option>
+                    <option value="date">Newest Acquired</option>
+                    <option value="name">Property Name</option>
+                  </select>
+                </div>
+
+                <div className="re-view-switcher" role="group" aria-label="Property view mode">
+                  <button
+                    type="button"
+                    className="re-view-btn"
+                    aria-pressed={viewMode === 'grid'}
+                    onClick={() => setViewMode('grid')}
+                    title="Grid Card View"
+                  >
+                    <FaThLarge aria-hidden="true" /> Cards
+                  </button>
+                  <button
+                    type="button"
+                    className="re-view-btn"
+                    aria-pressed={viewMode === 'table'}
+                    onClick={() => setViewMode('table')}
+                    title="Dense Table View"
+                  >
+                    <FaList aria-hidden="true" /> Table
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="re-filters-row">
+              <div className="re-filter-group" role="group" aria-label="Filter by property status">
+                <span className="re-control-label">Status:</span>
+                {STATUS_FILTERS.map((st) => (
+                  <button
+                    key={st}
+                    type="button"
+                    className="re-pill"
+                    aria-pressed={selectedStatus === st}
+                    onClick={() => setSelectedStatus(st)}
+                  >
+                    {st === 'all' ? 'All' : st}
+                  </button>
+                ))}
+              </div>
+
+              <div className="re-filter-group" role="group" aria-label="Filter by property type">
+                <span className="re-control-label">Type:</span>
+                {PROPERTY_TYPES.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className="re-pill"
+                    aria-pressed={selectedType === t}
+                    onClick={() => setSelectedType(t)}
+                  >
+                    {t === 'all' ? 'All Types' : t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* 4. Main Content: Cards vs Table View */}
+          {processedProperties.length > 0 ? (
+            viewMode === 'grid' ? (
+              <div className="re-properties-grid">
+                {processedProperties.map((p) => {
+                  const gain = p.currentValuation - p.purchasePrice;
+                  const gainPct = p.purchasePrice > 0 ? (gain / p.purchasePrice) * 100 : 0;
+                  const maxVal = Math.max(p.purchasePrice, p.currentValuation, 1);
+                  const barPercent = Math.min(100, Math.max(10, (p.currentValuation / maxVal) * 100));
+
+                  return (
+                    <article key={p._id} className="re-prop-card">
+                      <div className="re-prop-card-top">
+                        <div className="re-prop-icon-box">{renderPropertyIcon(p.type)}</div>
+                        <div className="re-prop-badges">
+                          <Badge tone="neutral">{p.type}</Badge>
+                          <Badge tone="neutral">{p.status}</Badge>
+                        </div>
+                      </div>
+
+                      <div className="re-prop-title-block">
+                        <h2 className="re-prop-name">{p.name}</h2>
+                        <div className="re-prop-meta">
+                          <span className="re-meta-item">
+                            <FaMapMarkerAlt aria-hidden="true" />
+                            <span>{p.location || 'No location specified'}</span>
+                          </span>
+                          {p.area > 0 && (
+                            <span className="re-meta-item fs-num">
+                              <FaRulerCombined aria-hidden="true" /> {p.area} m²
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="re-appreciation-box">
+                        <div className="re-appreciation-header">
+                          <span>Valuation Change</span>
+                          <span className="re-appreciation-pct fs-num">
+                            {formatSignedPercent(gainPct, 1)}
+                          </span>
+                        </div>
+                        <progress
+                          className="re-appreciation-progress"
+                          aria-label={`Valuation change for ${p.name}`}
+                          aria-valuetext={formatSignedPercent(gainPct, 1)}
+                          value={Math.round(barPercent)}
+                          max={100}
+                        />
+                      </div>
+
+                      <div className="re-metrics-grid">
+                        <div className="re-metric-cell">
+                          <span className="re-metric-label">Purchase Price</span>
+                          <span className="re-metric-val fs-num">{formatCurrency(p.purchasePrice)}</span>
+                        </div>
+                        <div className="re-metric-cell">
+                          <span className="re-metric-label">Current Valuation</span>
+                          <span className="re-metric-val fs-num">{formatCurrency(p.currentValuation)}</span>
+                        </div>
+                        <div className="re-metric-cell re-metric-cell-full">
+                          <span className="re-metric-label">Net Capital Gain</span>
+                          <span className="re-metric-val fs-num">{formatSignedCurrency(gain)}</span>
+                        </div>
+                      </div>
+
+                      {p.notes && <p className="re-prop-notes">&ldquo;{p.notes}&rdquo;</p>}
+
+                      <div className="re-prop-footer">
+                        <span className="re-date-tag">
+                          <FaCalendarAlt aria-hidden="true" />
+                          Acquired {formatDate(p.purchaseDate)}
+                        </span>
+
+                        <div className="re-card-actions">
+                          <ProtectedAction tooltip="View-only access">
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/real-estate/edit/${p._id}`)}
+                              className="re-icon-btn"
+                              aria-label={`Edit ${p.name}`}
+                              title="Edit property"
+                            >
+                              <FaEdit aria-hidden="true" />
+                            </button>
+                          </ProtectedAction>
+                          <ProtectedAction tooltip="View-only access">
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(p._id, p.name)}
+                              className="re-icon-btn re-icon-btn-danger"
+                              aria-label={`Delete ${p.name}`}
+                              title="Delete property"
+                            >
+                              <FaTrash aria-hidden="true" />
+                            </button>
+                          </ProtectedAction>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <>
+                {/* Desktop / Tablet Dense Table View (Waiver W-8E-1, > 768px) */}
+                <div className="re-table-wrap">
+                  <table className="re-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Property Name</th>
+                        <th scope="col">Type</th>
+                        <th scope="col" className="re-th-num">Area</th>
+                        <th scope="col" className="re-th-num">Purchase Price</th>
+                        <th scope="col" className="re-th-num">Current Valuation</th>
+                        <th scope="col" className="re-th-num">Capital Gain</th>
+                        <th scope="col">Acquisition Date</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {processedProperties.map((p) => {
+                        const gain = p.currentValuation - p.purchasePrice;
+                        const gainPct = p.purchasePrice > 0 ? (gain / p.purchasePrice) * 100 : 0;
+
+                        return (
+                          <tr key={p._id}>
+                            <td>
+                              <div className="re-cell-name">{p.name}</div>
+                              {p.location && (
+                                <div className="re-cell-sub">
+                                  <FaMapMarkerAlt aria-hidden="true" /> {p.location}
+                                </div>
+                              )}
+                            </td>
+                            <td>
+                              <Badge tone="neutral">{p.type}</Badge>
+                            </td>
+                            <td className="re-td-num fs-num">{p.area > 0 ? `${p.area} m²` : '—'}</td>
+                            <td className="re-td-num fs-num">{formatCurrency(p.purchasePrice)}</td>
+                            <td className="re-td-num fs-num">{formatCurrency(p.currentValuation)}</td>
+                            <td className="re-td-num fs-num">
+                              <div>{formatSignedCurrency(gain)}</div>
+                              <div className="re-gain-sub">{formatSignedPercent(gainPct, 2)}</div>
+                            </td>
+                            <td>{formatDate(p.purchaseDate)}</td>
+                            <td>
+                              <Badge tone="neutral">{p.status}</Badge>
+                            </td>
+                            <td>
+                              <div className="re-card-actions">
+                                <ProtectedAction tooltip="View-only access">
+                                  <button
+                                    type="button"
+                                    onClick={() => navigate(`/real-estate/edit/${p._id}`)}
+                                    className="re-icon-btn"
+                                    aria-label={`Edit ${p.name}`}
+                                    title="Edit property"
+                                  >
+                                    <FaEdit aria-hidden="true" />
+                                  </button>
+                                </ProtectedAction>
+                                <ProtectedAction tooltip="View-only access">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDelete(p._id, p.name)}
+                                    className="re-icon-btn re-icon-btn-danger"
+                                    aria-label={`Delete ${p.name}`}
+                                    title="Delete property"
+                                  >
+                                    <FaTrash aria-hidden="true" />
+                                  </button>
+                                </ProtectedAction>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile D19 Compact-Expand Cards (<= 768px) */}
+                <div className="re-mobile-cards" data-testid="real-estate-mobile-cards">
                   {processedProperties.map((p) => {
                     const gain = p.currentValuation - p.purchasePrice;
                     const gainPct = p.purchasePrice > 0 ? (gain / p.purchasePrice) * 100 : 0;
-                    const isProfit = gain >= 0;
+                    const isExpanded = expandedIds.has(p._id);
 
                     return (
-                      <tr key={p._id}>
-                        <td>
-                          <div style={{ fontWeight: 600, color: '#f8fafc' }}>{p.name}</div>
-                          {p.location && (
-                            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>📍 {p.location}</div>
-                          )}
-                        </td>
-                        <td>
-                          <span className={`prop-badge ${getBadgeClass(p.type)}`}>{p.type}</span>
-                        </td>
-                        <td>{p.area > 0 ? `${p.area} m²` : '—'}</td>
-                        <td>{formatCurrency(p.purchasePrice)}</td>
-                        <td style={{ fontWeight: 700, color: '#38bdf8' }}>
-                          {formatCurrency(p.currentValuation)}
-                        </td>
-                        <td>
-                          <div style={{ color: isProfit ? '#4ade80' : '#f87171', fontWeight: 700 }}>
-                            {isProfit ? '+' : ''}
-                            {formatCurrency(gain)}
+                      <article key={p._id} className="re-mobile-card">
+                        <div className="re-mobile-card-summary">
+                          <div className="re-mobile-card-main">
+                            <span className="re-cell-name">{p.name}</span>
+                            <div className="re-prop-badges">
+                              <Badge tone="neutral">{p.type}</Badge>
+                              <Badge tone="neutral">{p.status}</Badge>
+                            </div>
                           </div>
-                          <div style={{ fontSize: '0.8rem', color: isProfit ? '#4ade80' : '#f87171' }}>
-                            {isProfit ? '+' : ''}
-                            {gainPct.toFixed(2)}%
+                          <div className="re-mobile-card-val">
+                            <div className="re-cell-name fs-num">{formatCurrency(p.currentValuation)}</div>
+                            <div className="re-gain-sub fs-num">
+                              {formatSignedCurrency(gain)} ({formatSignedPercent(gainPct, 1)})
+                            </div>
                           </div>
-                        </td>
-                        <td>{formatDate(p.purchaseDate)}</td>
-                        <td>
-                          <span className={`status-pill ${p.status === 'Owned' ? 'live' : 'stale'}`}>
-                            <span className={`status-dot ${p.status === 'Owned' ? 'live' : 'stale'}`}></span>
-                            {p.status}
-                          </span>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <ProtectedAction tooltip="View-only access">
-                              <button
-                                onClick={() => navigate(`/real-estate/edit/${p._id}`)}
-                                className="holding-link-btn"
-                                title="Edit property"
-                              >
-                                <FaEdit />
-                              </button>
-                            </ProtectedAction>
-                            <ProtectedAction tooltip="View-only access">
-                              <button
-                                onClick={() => handleDelete(p._id, p.name)}
-                                className="holding-link-btn"
-                                style={{ color: '#f87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}
-                                title="Delete property"
-                              >
-                                <FaTrash />
-                              </button>
-                            </ProtectedAction>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="re-mobile-expand-btn"
+                          aria-expanded={isExpanded}
+                          aria-label={`${isExpanded ? 'Hide' : 'Show'} details for ${p.name}`}
+                          onClick={() => toggleMobileExpand(p._id)}
+                        >
+                          <span>{isExpanded ? 'Hide details' : 'Show details'}</span>
+                          {isExpanded ? <FaChevronUp aria-hidden="true" /> : <FaChevronDown aria-hidden="true" />}
+                        </button>
+
+                        {isExpanded && (
+                          <div className="re-mobile-details">
+                            <div className="re-mobile-detail-item">
+                              <span className="re-mobile-detail-label">Purchase Price</span>
+                              <span className="re-mobile-detail-value fs-num">
+                                {formatCurrency(p.purchasePrice)}
+                              </span>
+                            </div>
+                            <div className="re-mobile-detail-item">
+                              <span className="re-mobile-detail-label">Area</span>
+                              <span className="re-mobile-detail-value fs-num">
+                                {p.area > 0 ? `${p.area} m²` : '—'}
+                              </span>
+                            </div>
+                            <div className="re-mobile-detail-item">
+                              <span className="re-mobile-detail-label">Location</span>
+                              <span className="re-mobile-detail-value">
+                                {p.location || 'No location specified'}
+                              </span>
+                            </div>
+                            <div className="re-mobile-detail-item">
+                              <span className="re-mobile-detail-label">Acquisition Date</span>
+                              <span className="re-mobile-detail-value">{formatDate(p.purchaseDate)}</span>
+                            </div>
+                            <div className="re-card-actions">
+                              <ProtectedAction tooltip="View-only access">
+                                <button
+                                  type="button"
+                                  onClick={() => navigate(`/real-estate/edit/${p._id}`)}
+                                  className="re-icon-btn"
+                                  aria-label={`Edit ${p.name}`}
+                                  title="Edit property"
+                                >
+                                  <FaEdit aria-hidden="true" />
+                                </button>
+                              </ProtectedAction>
+                              <ProtectedAction tooltip="View-only access">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelete(p._id, p.name)}
+                                  className="re-icon-btn re-icon-btn-danger"
+                                  aria-label={`Delete ${p.name}`}
+                                  title="Delete property"
+                                >
+                                  <FaTrash aria-hidden="true" />
+                                </button>
+                              </ProtectedAction>
+                            </div>
                           </div>
-                        </td>
-                      </tr>
+                        )}
+                      </article>
                     );
                   })}
-                </tbody>
-              </table>
+                </div>
+              </>
+            )
+          ) : (
+            <div className="re-empty-card">
+              <div className="re-state-icon">
+                <FaBuilding aria-hidden="true" />
+              </div>
+              <h2>No Real Estate Properties Found</h2>
+              <p>
+                {hasActiveFilters
+                  ? 'No property records match your current filters. Try resetting the filters or search term.'
+                  : 'You have not recorded any real estate properties yet. Start tracking your properties, market valuations, and capital gains.'}
+              </p>
+              <ProtectedAction tooltip="View-only access">
+                <Link to="/real-estate/new" className="fs-btn fs-btn-primary">
+                  <FaPlus aria-hidden="true" /> Add Your First Property
+                </Link>
+              </ProtectedAction>
             </div>
-          </div>
-        )
-      ) : (
-        /* Empty State */
-        <div className="empty-holdings-box" style={{ padding: '60px 20px', background: 'rgba(15, 23, 42, 0.6)', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-          <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>🏘️</div>
-          <h3 style={{ fontSize: '1.4rem', color: '#f8fafc', marginBottom: '8px' }}>No Real Estate Properties Found</h3>
-          <p style={{ maxWidth: '480px', margin: '0 auto 24px', color: '#94a3b8', lineHeight: 1.5 }}>
-            {searchTerm || selectedType !== 'all' || selectedStatus !== 'all'
-              ? 'No property records match your current filters. Try resetting the filters or search term.'
-              : 'You have not recorded any real estate properties yet. Start tracking your properties, market valuations, and capital gains.'}
-          </p>
-          <ProtectedAction tooltip="View-only access">
-            <Link to="/real-estate/new" className="btn-primary-add">
-              <FaPlus /> Add Your First Property
-            </Link>
-          </ProtectedAction>
-        </div>
+          )}
+        </>
       )}
-              <ConfirmModal
-          isOpen={Boolean(propertyToDelete)}
-          title="Delete Real Estate Property"
-          message={`Are you sure you want to delete "${propertyToDelete?.name || ''}"?`}
-          confirmText="Delete"
-          variant="danger"
-          onConfirm={handleConfirmDelete}
-          onCancel={() => setPropertyToDelete(null)}
-        />
-      </div>
+
+      <ConfirmModal
+        isOpen={Boolean(propertyToDelete)}
+        title="Delete Real Estate Property"
+        message={`Are you sure you want to delete "${propertyToDelete?.name || ''}"?`}
+        confirmText="Delete"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setPropertyToDelete(null)}
+      />
     </div>
   );
 };
