@@ -39,10 +39,6 @@ src/pages/lending/PersonDetailPage.js
 src/pages/profile/ProfilePage.js
 src/pages/profile/SettingsPage.js
 src/pages/profile/__tests__/RecycleBin.test.js
-src/pages/real-estate/AddRealEstatePage.js
-src/pages/real-estate/EditRealEstatePage.js
-src/pages/real-estate/RealEstateForm.js
-src/pages/real-estate/RealEstateLogPage.js
 src/pages/security/SecuritySettingsPage.js
 src/services/apiClient.test.js
 src/services/portfolioService.test.js

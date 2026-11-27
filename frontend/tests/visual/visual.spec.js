@@ -20,6 +20,7 @@ const { setupMutualFundMocks } = require('./fixtures/mutualFundsMocks');
 const { setupGoldMocks } = require('./fixtures/goldMocks');
 const { setupCertificatesMocks } = require('./fixtures/certificatesMocks');
 const { setupCurrencyMocks } = require('./fixtures/currencyMocks');
+const { setupRealEstateMocks } = require('./fixtures/realEstateMocks');
 
 const MANDATORY_QA_WIDTHS = [1440, 1024, 768, 480, 390];
 
@@ -92,6 +93,8 @@ test.describe('Visual Regression Suite', () => {
           await setupCertificatesMocks(page);
         } else if (route.slug.startsWith('currency')) {
           await setupCurrencyMocks(page);
+        } else if (route.slug.startsWith('real-estate')) {
+          await setupRealEstateMocks(page);
         }
 
         // Navigate to route

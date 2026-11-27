@@ -19,6 +19,7 @@ const { setupMutualFundMocks } = require('./fixtures/mutualFundsMocks');
 const { setupGoldMocks } = require('./fixtures/goldMocks');
 const { setupCertificatesMocks } = require('./fixtures/certificatesMocks');
 const { setupCurrencyMocks } = require('./fixtures/currencyMocks');
+const { setupRealEstateMocks } = require('./fixtures/realEstateMocks');
 
 const AXE_SOURCE_PATH = require.resolve('axe-core/axe.min.js');
 
@@ -61,6 +62,8 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
         await setupCertificatesMocks(page);
       } else if (route.slug.startsWith('currency')) {
         await setupCurrencyMocks(page);
+      } else if (route.slug.startsWith('real-estate')) {
+        await setupRealEstateMocks(page);
       }
 
       await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });

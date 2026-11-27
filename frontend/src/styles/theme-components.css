@@ -2229,4 +2229,33 @@ html[data-fs-theme] .curr-form-page .curr-field-error {
   color: var(--fs-danger);
 }
 
+/* ----------------------------------------------------
+   Phase 8E: Real Estate Semantic & Interactive Themes (§4.3, §4.4, §4.10)
+   Danger styling pairs with role="alert" + explicit text cues or ConfirmModal.
+   ---------------------------------------------------- */
+html[data-fs-theme] .re-log-page .re-pill[aria-pressed='true'],
+html[data-fs-theme] .re-log-page .re-view-btn[aria-pressed='true'] {
+  border-color: var(--fs-accent);
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .re-log-page .re-icon-btn-danger:hover:not(:disabled),
+html[data-fs-theme] .re-log-page .re-icon-btn-danger:focus-visible:not(:disabled) {
+  color: var(--fs-danger);
+  border-color: var(--fs-danger);
+}
+
+html[data-fs-theme] .re-page-container .re-error-card,
+html[data-fs-theme] .re-form-page .re-form-error-summary,
+html[data-fs-theme] .re-form-page .re-submit-error {
+  border-color: var(--fs-danger);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .re-form-page .re-field-error {
+  color: var(--fs-danger);
+}
+
+
 

@@ -1,6 +1,7 @@
 // frontend/src/pages/real-estate/AddRealEstatePage.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaArrowLeft } from 'react-icons/fa';
 import { createRealEstate } from '../../services/realEstateService';
 import RealEstateForm from './RealEstateForm';
 import './RealEstate.css';
@@ -25,23 +26,35 @@ const AddRealEstatePage = () => {
   };
 
   return (
-    <div className="real-estate-page-wrapper">
-      <div className="real-estate-container">
-        <div className="real-estate-header" style={{ marginBottom: '20px' }}>
-          <div className="real-estate-header-left">
-            <h1>Add Real Estate Property</h1>
-            <p>Record a new property with purchase cost and estimated valuation.</p>
-          </div>
+    <div className="page-container re-page-container re-form-page">
+      <nav className="re-breadcrumb" aria-label="Breadcrumb">
+        <span>Assets</span>
+        <span aria-hidden="true">/</span>
+        <Link to="/real-estate">Real Estate</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">New</span>
+      </nav>
+
+      <Link to="/real-estate" className="re-back-link">
+        <FaArrowLeft aria-hidden="true" /> Back to Real Estate
+      </Link>
+
+      <header className="re-header">
+        <div className="re-header-left">
+          <h1>Add Real Estate Property</h1>
+          <p className="re-header-subtitle">
+            Record a new property with purchase cost and estimated valuation.
+          </p>
         </div>
+      </header>
 
-        {error && (
-          <div style={{ color: '#f87171', background: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: '8px', marginBottom: '20px', maxWidth: '720px', margin: '0 auto 20px' }}>
-            {error}
-          </div>
-        )}
+      {error && (
+        <div className="re-submit-error" role="alert">
+          {error}
+        </div>
+      )}
 
-        <RealEstateForm onSubmit={handleSubmit} isSubmitting={isSubmitting} isEditing={false} />
-      </div>
+      <RealEstateForm onSubmit={handleSubmit} isSubmitting={isSubmitting} isEditing={false} />
     </div>
   );
 };
