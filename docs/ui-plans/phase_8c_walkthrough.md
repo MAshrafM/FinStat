@@ -7,10 +7,10 @@
 > **Merge Base**: `main @ 942e165`  
 > **Starting Baseline Commit**: `19d34c8` in `D:\Projects\FinStat-visual-baselines` (`334/334` manifest verified)  
 > **Gate 13 Baseline Commit SHA**: `39fb1b0` in `D:\Projects\FinStat-visual-baselines` (`Phase 8C: recapture 15 certificates detail and form snapshots`; `334/334` manifest verified)  
-> **Implementation & Plan Commit SHA**: `8826a99` (`feat(ui-phase-8c): theme certificates detail & forms`)  
-> **Walkthrough Commit SHAs**: `34cdc8c` *(initial)* + revision commit on `phase-ui-8c-certificates-detail`  
+> **Implementation & Plan Commit SHA**: `8826a99` (`feat(ui-phase-8c): theme certificates detail & forms`; plan status reconciled pre-sign-off)  
+> **Walkthrough Commit SHAs**: `34cdc8c` *(initial)* + `ad20b22` *(v1 review revision)* + pre-sign-off R1–R6 cleanup commit  
 > **Merge SHA**: `pending` *(upon post-sign-off `--no-ff` merge to `main`)*  
-> **Plan & Approval Evidence**: `docs/ui-plans/phase_8c_implementation_plan.md` (v3, explicitly approved by user `"approved. begin execution"` on 2026-11-27 after `phase_8c_implementation_plan_review.md` & `phase_8c_implementation_plan_v2_review.md`; plan `- **Status**:` reconciliation queued in §6 Governance Checklist)  
+> **Plan & Approval Evidence**: `docs/ui-plans/phase_8c_implementation_plan.md` (v3, explicitly approved by user `"approved. begin execution"` on 2026-11-27 after `phase_8c_implementation_plan_review.md` & `phase_8c_implementation_plan_v2_review.md`; plan `- **Status**:` line reconciled pre-sign-off)  
 > **Taste Checkpoint**: N/A (Cluster 8 Taste Checkpoint #6 was delivered and signed off in Phase 8A)  
 > **Status**: Verification Gates 1–18 Complete; Walkthrough Committed on Local Branch — **Awaiting Explicit User Sign-Off**
 
@@ -20,29 +20,29 @@
 
 ```text
 Sub-phase:   UI Phase 8C — Certificates: detail + forms
-Status:      AWAITING SIGN-OFF (Gates 1–18 complete on phase-ui-8c-certificates-detail @ 8826a99)
+Status:      AWAITING SIGN-OFF (Gates 1–18 complete on phase-ui-8c-certificates-detail; plan reconciled; walkthrough revised after ad20b22)
 Done:        Migrated /certificates/:id, /certificates/new, and /certificates/edit/:id into the FinStat
              dark graphite design system while leaving CertificateDetail.css (imported by Phase 8D
              CurrencyDetailPage.js) and Phase 8B CertificateLogPage.js strictly untouched.
              Extended Certificates.css (.cert-detail-page, .cert-form-page) and appended
-             theme-components.css Section 20. Purged all 90 verified inline styles (88 in
-             CertificateDetailPage.js [62 colour-bearing + 26 layout/typographic] + 2 in
-             CertificateForm.js [2 colour-bearing]; Add/Edit wrappers had 0), plus 84 hex and 10 rgba
-             literals across the 4 JSX files. Replaced purple linear-gradient hero, green payout-due
-             banner, and coloured metric tiles with flat Reference Frame 03 Variant B dark surfaces,
-             neutral <Badge tone="neutral"> status/remaining chips (icon aria-hidden + text, zero
-             emojis), un-underlined .cert-back-link, and neutral .fs-num tabular figures. Enforced
-             §4.4 section/dialog CTA scoping (Disburse Payout Now primary when banner shown, else
-             top-bar Add Interest Payout primary; Withdraw uses --fs-danger/--fs-ink confirm). Migrated
-             the dual-series accrual Line chart to existing chartTheme.js exports (grey4 solid + grey1
-             dashed, zero #14b8a6 accent series) with local certLastPointLabelPlugin (direct endpoints
-             for both series), y-scale headroom preventing <=768px legend overlap, accessible aria-label +
-             summary, 8A <details>/<table data-testid="cert-trajectory-table">, and D19 <=768px
-             compact-expand mobile cards with zero new overflow-x. Converted Withdraw/Payout dialogs
-             to accessible dark modals (initial closeBtn focus, Tab trap, Escape, exact trigger restore,
-             preserved 'Deposit Proceeds To:' / 'Destination Account' labels). Converted forms to
-             Reference Frame 02 Variant B stacked layout with id/htmlFor pairing, preserved
-             account-selector-sourceAccount, on-blur+submit validation, valid-blur clearing &
+             theme-components.css Section 20 under D22 html[data-fs-theme] attribute-existence selectors.
+             Purged all 90 verified inline styles (88 in CertificateDetailPage.js [62 colour-bearing + 26
+             layout/typographic] + 2 in CertificateForm.js [2 colour-bearing]; Add/Edit wrappers had 0),
+             plus 84 hex and 10 rgba literals across the 4 JSX files. Replaced purple linear-gradient
+             hero, green payout-due banner, and coloured metric tiles with flat Reference Frame 03
+             Variant B dark surfaces, neutral <Badge tone="neutral"> status/remaining chips (icon
+             aria-hidden + text, zero emojis), un-underlined .cert-back-link, and neutral .fs-num
+             tabular figures. Enforced §4.4 section/dialog CTA scoping (Disburse Payout Now primary when
+             banner shown, else top-bar Add Interest Payout primary; Withdraw uses --fs-danger/--fs-ink
+             confirm). Migrated the dual-series accrual Line chart to existing chartTheme.js exports
+             (grey4 solid + grey1 dashed, zero #14b8a6 accent series) with local certLastPointLabelPlugin
+             (direct endpoints for both series), y-scale headroom preventing <=768px legend overlap,
+             accessible aria-label + summary, 8A <details>/<table data-testid="cert-trajectory-table">,
+             and D19 <=768px compact-expand mobile cards with zero new overflow-x. Converted
+             Withdraw/Payout dialogs to accessible dark modals (initial closeBtn focus, Tab trap, Escape,
+             exact trigger restore, preserved 'Deposit Proceeds To:' / 'Destination Account' labels).
+             Converted forms to Reference Frame 02 Variant B stacked layout with id/htmlFor pairing,
+             preserved account-selector-sourceAccount, on-blur+submit validation, valid-blur clearing &
              aria-describedby reset, startDate edit revalidation, distinct inline #cert-last-payout-error
              vs .cert-form-error-summary vs wrapper .cert-submit-error, and loading/error/empty surfaces.
              Removed lines 23–24 (CertificateDetailPage.js, CertificateForm.js) from .eslintignore (0
@@ -50,9 +50,8 @@ Done:        Migrated /certificates/:id, /certificates/new, and /certificates/ed
              jest-axe tests (43/43 certificate suite total), extended certificatesMocks.js with ordered
              detail/accrual matching (keeping MOCK_CERTIFICATES byte-identical to 8B), and added 8-test
              Playwright reference-match spec (9/9 passed with setup).
-Next:        Post-sign-off governance sync (including AD13 changelog note & §10 Phase 8D deferral note),
-             cleanup of review files, merge to main (--no-ff), and push main
-Blocked by:  Awaiting explicit user sign-off on this walkthrough
+Next:        Phase 8D (Currency)
+Blocked by:  Awaiting explicit user sign-off on this walkthrough before §6 governance sync, merge (--no-ff), and push main
 Allowlist:   THEMED_PATTERNS expanded 39 -> 42 (+3: '/certificates/:id', '/certificates/new', '/certificates/edit/:id')
 Visual diff: Gate 13 replaced 15 PNGs in place (39fb1b0); Gate 14 68/71 (3 accepted W-6A-1/AD16 only);
              Gate 15 326 accounted (292 passed + 34 accepted AD14/AD16, matching 7A/8A/8B; 7C recorded
@@ -60,13 +59,13 @@ Visual diff: Gate 13 replaced 15 PNGs in place (39fb1b0); Gate 14 68/71 (3 accep
              Gate 18 41/41 across all Certificates + Currency routes
 Fixtures:    calculations.spec.js 11/11 passed (byte-identical across 8 domains including Domain 5 Certificates)
 Screenshots: 15 recaptures across 1440, 1024, 768, 480, 390px (39fb1b0); 334/334 manifest verified
-Branch:      phase-ui-8c-certificates-detail (plan+impl SHA: 8826a99; walkthrough SHA: 34cdc8c + revision)
+Branch:      phase-ui-8c-certificates-detail (plan+impl SHA: 8826a99; walkthrough SHAs: 34cdc8c, ad20b22)
 Merge SHA:   pending (upon post-sign-off --no-ff merge to main)
 ```
 
 ### §0 Plan Decisions Realized
 
-1. **Shared CSS decoupling (`CertificateDetail.css` & `CertificateLogPage.js` untouched; Phase 8D deferral)**: Dropped `import './CertificateDetail.css'` from `CertificateDetailPage.js` in favor of `./Certificates.css`. `git diff 942e165` on both `CertificateDetail.css` and `CertificateLogPage.js` is empty; Gate 18 verified **41/41** across all 8 routes (`certificates`, `certificates-detail`, `certificates-new`, `certificates-edit`, `currency`, `currency-detail`, `currency-new`, `currency-edit`). Conversion of `CertificateDetail.css` (`UI-UX-PLAN.md:1850`) and currency-log D19 cards (`:1854`) is explicitly deferred to Phase 8D (`CurrencyDetailPage.js` / `CurrencyLogPage.js`) per Plan Decisions 1 & 9, and recorded in the §10 amendment queued in §6.
+1. **Shared CSS decoupling (`CertificateDetail.css` & `CertificateLogPage.js` untouched; Phase 8D deferral)**: Dropped `import './CertificateDetail.css'` from `CertificateDetailPage.js` in favor of `./Certificates.css`. `git diff 942e165` on both `CertificateDetail.css` and `CertificateLogPage.js` is empty; Gate 18 verified **41/41** across all 8 routes (`certificates`, `certificates-detail`, `certificates-new`, `certificates-edit`, `currency`, `currency-detail`, `currency-new`, `currency-edit`). Conversion of `CertificateDetail.css` (`UI-UX-PLAN.md:1850`) and currency-log D19 cards (`:1854`) is explicitly deferred to Phase 8D (`CurrencyDetailPage.js` / `CurrencyLogPage.js`) per Plan Decisions 1 & 9, and recorded in the §10 amendment queued in §6. All new selectors for `.cert-detail-page`, `.cert-form-page`, and Section 20 use `html[data-fs-theme]` attribute-existence selectors (D22), with zero `[data-fs-theme="dark"]` selectors added outside `tokens.css` and zero changes to `chartTheme.js`.
 2. **Verified inline-style census (`58`/`61` → `88` detail + `2` form = `90` total)**: All **90** `style={{` attributes across the newline-terminated source files (`789` / `152` / `20` / `37` lines) plus `84` hex literals and `10` `rgba` literals were purged. Jest Test 15 (`CertificateDetailPage.test.js`) and Test 11 (`CertificateForm.test.js`) assert zero `[style]` elements across rendered pages and opened dialogs.
 3. **Neutral 5-status chips, un-underlined `.cert-back-link`, & flat graphite tiles**: All 5 domain statuses and the days-remaining chip use `<Badge tone="neutral">` with `aria-hidden` icons + text (zero emojis; `<Badge>` uses children pattern avoiding `Badge.js` string-label warning). `.cert-back-link` uses `text-decoration: none` per §4.4 navigation exclusion, keeping `.cert-name-link` exclusively for `CertificateLogPage.js`.
 4. **Section/Dialog CTA Scoping & `--fs-danger` Reconciliation (§4.4, §4.10)**: On `/certificates/:id`, when Payout Due notice is visible (`showPayoutDueBanner`), `Disburse Payout Now` is the sole visible `.fs-btn-primary` and top-bar `Add Interest Payout` (`data-testid="add-payout-btn"`) drops to `.fs-btn-secondary`. When absent, `Add Interest Payout` is `.fs-btn-primary`. Inside modals, `Confirm Payout` uses `.fs-btn-primary` and `Confirm Withdrawal` uses `.cert-withdraw-confirm-btn` (`--fs-danger`/`--fs-ink`). Extending `--fs-danger` border/text styling in `theme-components.css` Section 20 to error surfaces (`.cert-error-card`, `.cert-form-error-summary`, `.cert-submit-error`, `#cert-last-payout-error`, each paired with `role="alert"` and explicit text cues per §4.10) follows Phase 8B Section 19 (`theme-components.css:2175`) and reconciles with §4.4 (`:409`). On forms, `{Create|Update} Certificate` is the sole `.fs-btn-primary` paired with neutral Cancel `.fs-btn-secondary`.
@@ -103,7 +102,7 @@ Merge SHA:   pending (upon post-sign-off --no-ff merge to main)
 Per §7.1 (`UI-UX-PLAN.md:2099`), Gate 13, Gate 14, Gate 15, and Gate 18 were executed against `D:\Projects\FinStat-visual-baselines` (served locally from the Gate 12 `CI=true` static production build).
 
 > [!NOTE]
-> **§15.5 Deliberate Deviation Disclosure**: `UI-UX-PLAN.md §15.5` (`:3129–3133`) states *"Do not run the full visual suite locally; use the PR subset and let CI run the full matrix."* Running the full 326-test `--project=visual` suite locally in Gate 15 was **explicitly authorized by approved `phase_8c_implementation_plan.md` Gate 15** (and Phase 8A/8B precedent) under the local `2048`MB build heap hardware context in order to satisfy §9.5 / D21 full-suite visual reconciliation prior to sign-off, rather than leaving reconciliation exclusively to post-merge CI (acknowledging the documented internal tension between §15.5 and §9.5/D21 while keeping committed harness config unchanged). Additionally, matching Phase 8A/8B git-hygiene precedent, the generated `frontend/playwright-report/` folder was removed alongside `frontend/test-results/` after Gate 15 completed rather than left untracked in the working tree; all route comparison counts and diff totals are preserved in this report.
+> **§15.5 Deliberate Deviation Disclosure**: `UI-UX-PLAN.md §15.5` (`:3129–3133`) states *"Do not run the full visual suite locally; use the PR subset and let CI run the full matrix."* Running the full 326-test `--project=visual` suite locally in Gate 15 was **explicitly authorized by approved `phase_8c_implementation_plan.md` Gate 15** (and Phase 8A/8B precedent) under the local `2048`MB build heap hardware context in order to satisfy §9.5 / D21 full-suite visual reconciliation prior to sign-off, rather than leaving reconciliation exclusively to post-merge CI (acknowledging the documented internal tension between §15.5 and §9.5/D21 while keeping committed harness config unchanged). Additionally, matching Phase 8A/8B git-hygiene precedent, the generated `frontend/playwright-report/` folder was removed alongside `frontend/test-results/` after Gate 15 completed rather than left untracked in the working tree; §7.1 HTML-report attachment is treated as satisfied by the in-walkthrough diff summary and accepted-diff register, per 8A/8B cleanup precedent.
 
 ### Diff Summary (Gate 15 Full Visual Suite & Gate 14 PR-Subset)
 
@@ -144,7 +143,7 @@ Manifest generated for 334 baselines at D:\Projects\FinStat\frontend\tests\visua
 | **2. Token Drift Guard** | PASS | `node frontend/scripts/tokens.js --check --tables` → `0 drift`. |
 | **3. Test ID & ARIA Guard** | PASS | `node frontend/scripts/testid-guard.js` → `0` deletions vs `942e165` (`add-payout-btn` preserved). |
 | **4. Semantic Tone Guard** | PASS | `node frontend/scripts/lint-tones.js` → `0` violations across `60` page CSS files; `0` undefined tokens across `63` total CSS files checked against `tokens.json` *(vs §8.1's `57` disk files, the extra files reflect shared/test stylesheets included by the verification globs)*. |
-| **5. Stylelint, Ratchet, Overflow & Loading Checks** | PASS | `lint-ratchet.js`: `0` regressions across `62` CSS files (excluding generated `tokens.css`); `stylelint`: `0` errors on `Certificates.css` + `theme-components.css`; `#14b8a6` only in `tokens.css:36`; loading consistency grep (`git grep -nE '<div>Loading\|className="loading-spinner"\|custom spinner SVG'`) → `0` legacy bypasses (`CertificateDetailPage.js` uses `<Loading variant="card" />`, `EditCertificatePage.js` uses `<Loading variant="form-field" />`); scoped `overflow-x` audit shows only 8B `.cert-log-page .cert-table-wrap` (`Certificates.css:267`, W-8B-1 — shifted 1 line from Plan Gate 5's pre-edit `:266` estimate due to Phase 8C header comment addition); `git diff 942e165 -- frontend/src` adds `0` `overflow-x` lines; `CertificateDetail.css` & `CertificateLogPage.js` diffs empty. |
+| **5. Stylelint, Ratchet, Overflow & Loading Checks** | PASS | `lint-ratchet.js`: `0` regressions across `62` CSS files (excluding generated `tokens.css`); `stylelint`: `0` errors on `Certificates.css` + `theme-components.css`; `#14b8a6` only in `tokens.css:36`; D22 compliance: `.cert-detail-page`/`.cert-form-page` (`Certificates.css`) and Section 20 (`theme-components.css`) use `html[data-fs-theme]` attribute-existence selectors with zero `[data-fs-theme="dark"]` selectors outside `tokens.css` and zero changes to `chartTheme.js`; loading consistency grep (`git grep -nE '<div>Loading\|className="loading-spinner"\|custom spinner SVG'`) → `0` legacy bypasses (`CertificateDetailPage.js` uses `<Loading variant="card" />`, `EditCertificatePage.js` uses `<Loading variant="form-field" />`); scoped `overflow-x` audit shows only 8B `.cert-log-page .cert-table-wrap` (`Certificates.css:267`, W-8B-1 — shifted 1 line from Plan Gate 5's pre-edit `:266` estimate due to Phase 8C header comment addition); `git diff 942e165 -- frontend/src` adds `0` `overflow-x` lines; `CertificateDetail.css` & `CertificateLogPage.js` diffs empty. |
 | **6. ESLint & De-Ignore** | PASS | `npx eslint ... --max-warnings=0` → `0` errors, `0` warnings across all 12 touched JS files; `git grep -in "certificates" .eslintignore` → `0` matches. |
 | **7. CRA Jest & jest-axe** | PASS | `CertificateDetailPage.test.js` (**16/16**) + `CertificateForm.test.js` (**12/12**) + `CertificateLogPage.test.js` (**15/15**) = **43/43** passed; `0` critical/serious jest-axe violations. |
 | **8. Route Guard & Dashboard Coordinator** | PASS | `App.test.js` (9/9) + `DashboardSummary.test.js` (6/6) = **15/15** passed; `DashboardSummary.js` = `96` lines (`<= 120`). |
@@ -201,14 +200,15 @@ All 15 recaptured snapshots in `frontend/tests/visual/baseline/` (tracked in `D:
 ### Pre-Sign-Off Status
 - [x] Gates 1–18 completed & reconciled (`CertificateDetail.css`, `CertificateLogPage.js`, `certificateService.js`, `CertContext.js`, `App.js`, `calculations.spec.js`, `package.json` untouched)
 - [x] Temporary `test-results` / `playwright-report` cleaned; `.auth.json` clean
-- [x] Plan & implementation (`8826a99`) and walkthrough (`34cdc8c` + review revision) committed on local `phase-ui-8c-certificates-detail`
+- [x] Plan & implementation (`8826a99`) and walkthrough (`34cdc8c` + `ad20b22` + v2 review reconciliation) committed on local `phase-ui-8c-certificates-detail`
+- [x] Plan status reconciliation (`phase_8c_implementation_plan.md`) completed prior to sign-off
 - [ ] **User sign-off on this Phase 8C walkthrough**
-- [ ] Plan status reconciliation (`phase_8c_implementation_plan.md`), governance sync (`UI-UX-PLAN.md`, `CHANGELOG.md`), & review cleanup
+- [ ] Governance sync (`UI-UX-PLAN.md`, `CHANGELOG.md`) & review-file cleanup (`*review*.md`)
 - [ ] Merge `phase-ui-8c-certificates-detail` into `main` (`--no-ff`) and push only `main` (§14)
 
 ### Post-Sign-Off Governance Synchronization Checklist (Execute Only After Approval)
-1. `docs/ui-plans/phase_8c_implementation_plan.md`: Reconcile `- **Status**:` line (`:6`) from `"Revised Draft — v3 ..."` → `"Approved & Executed (2026-11-27; merged to main as <merge-sha>)"`, matching `phase_8b_walkthrough.md:185`.
-2. `docs/ui-plans/phase_8c_walkthrough.md`: Record Gate 19 sign-off date, final walkthrough revision SHA, and final `main` merge SHA.
+1. `docs/ui-plans/phase_8c_implementation_plan.md`: Update `- **Status**:` (`:6`) with the final `main` merge SHA (`merged to main as <merge-sha>`).
+2. `docs/ui-plans/phase_8c_walkthrough.md`: Record Gate 19 sign-off date and final `main` merge SHA.
 3. Delete all `*review*.md` files from `docs/ui-plans/`.
 4. `docs/UI-UX_Plan/UI-UX-PLAN.md` **§5.7 (`:928–930`)**: Mark `/certificates/:id`, `/certificates/new`, `/certificates/edit/:id` themed & QA'd (`☑ | ☑`); update `58 inline styles; chart` → `88 inline styles purged (62 colour + 26 layout; 789 lines); chartTheme dual-series + local certLastPointLabelPlugin + data table`.
 5. `docs/UI-UX_Plan/UI-UX-PLAN.md` **§6.1 (`:1067`)**: Mark Phase 8C complete (`☑ | ☑`).
