@@ -928,10 +928,10 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | `/certificates/:id` | `pages/certificates/CertificateDetailPage` | 8C | ☑ | ☑ | 88 inline styles purged (62 colour + 26 layout; 789 lines); chartTheme dual-series + local certLastPointLabelPlugin + data table |
 | `/certificates/new` | `pages/certificates/AddCertificatePage` | 8C | ☑ | ☑ | + `CertificateForm` (2 inline styles purged; Frame 02 stacked form) |
 | `/certificates/edit/:id` | `pages/certificates/EditCertificatePage` | 8C | ☑ | ☑ | Frame 02 stacked form; shared `CertificateForm` |
-| `/currency` | `pages/currency/CurrencyLogPage` | 8D | ☐ | ☐ | 36 inline styles |
-| `/currency/:id` | `pages/currency/CurrencyDetailPage` | 8D | ☐ | ☐ | 36 inline styles; chart |
-| `/currency/new` | `pages/currency/AddCurrencyPage` | 8D | ☐ | ☐ | |
-| `/currency/edit/:id` | `pages/currency/EditCurrencyPage` | 8D | ☐ | ☐ | |
+| `/currency` | `pages/currency/CurrencyLogPage` | 8D | ☑ | ☑ | 36 inline styles purged to 0 (25 colour-bearing + 11 layout); Frame 01/03 dark table + D19 cards; neutral `<Badge>` feed chips; `<Delta>` FX P&L (Option A); `W-8D-1` |
+| `/currency/:id` | `pages/currency/CurrencyDetailPage` | 8D | ☑ | ☑ | 36 inline styles purged to 0 (26 colour-bearing + 10 layout); flat hero & 6 tiles; `chartTheme` + local `currLastPointLabelPlugin` + `<details>`/`<table>` + D19 cards (`CertificateDetail.css` converted) |
+| `/currency/new` | `pages/currency/AddCurrencyPage` | 8D | ☑ | ☑ | + `CurrencyForm` (0 inline styles; Frame 02 stacked form, live Implied Rate preview, blur/submit validation) |
+| `/currency/edit/:id` | `pages/currency/EditCurrencyPage` | 8D | ☑ | ☑ | Frame 02 stacked form; shared `CurrencyForm`; synchronous `initialData` state hydration |
 | `/real-estate` | `pages/real-estate/RealEstateLogPage` | 8E | ☐ | ☐ | 34 inline styles |
 | `/real-estate/new` | `pages/real-estate/AddRealEstatePage` | 8E | ☐ | ☐ | + `RealEstateForm` |
 | `/real-estate/edit/:id` | `pages/real-estate/EditRealEstatePage` | 8E | ☐ | ☐ | |
@@ -1065,7 +1065,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **8A** | Gold wallet | `phase-ui-8a-gold` | ☑ | ☑ |
 | **8B** | Certificates: log | `phase-ui-8b-certificates-log` | ☑ | ☑ |
 | **8C** | Certificates: detail + forms | `phase-ui-8c-certificates-detail` | ☑ | ☑ |
-| **8D** | Currency | `phase-ui-8d-currency` | ☐ | ☐ |
+| **8D** | Currency | `phase-ui-8d-currency` | ☑ | ☑ |
 | **8E** | Real estate (all three routes) | `phase-ui-8e-real-estate` | ☐ | ☐ |
 | **9A** | Credit cards, modals, installments | `phase-ui-9a-credit-cards` | ☐ | ☐ |
 | **9B** | Statements, debt payoff, reconciliation | `phase-ui-9b-statements-debt` | ☐ | ☐ |
@@ -1847,11 +1847,11 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 8C — Certificates: detail + forms
 
-- [ ] `pages/certificates/CertificateDetail.css` — light → graphite. *(Explicitly deferred to Phase 8D per Plan Decision 1 & §10 scope amendment because unthemed `CurrencyDetailPage.js` still imports `../certificates/CertificateDetail.css`; `CertificateDetailPage.js` decoupled cleanly to `Certificates.css` `.cert-detail-page`/`.cert-form-page`.)*
+- [x] `pages/certificates/CertificateDetail.css` — light → graphite. *(Phase 8C deferred item closed in Phase 8D: `CurrencyDetailPage.js` decoupled to `Currency.css` leaving zero active consumers, and `CertificateDetail.css` converted in-place to D22 `html[data-fs-theme]` dark graphite tokens with 0 stylelint/ratchet violations; unused-file removal remains deferred to Phase 12A.)*
 - [x] `CertificateDetailPage.js` (88 purged to 0 across 789 lines; 90 total with `CertificateForm`) → classes in `Certificates.css` + Section 20; dual-series chart via existing `chartTheme.js` exports + local `certLastPointLabelPlugin` + accessible `<details>`/`<table>`; certificate statuses render via neutral `<Badge tone="neutral">` labels (`react-icons/fa` `aria-hidden` + text per §4.3.1).
 - [x] `CertificateForm.js` (2 purged to 0) → Reference Frame 02 Variant B stacked form with blur + submit validation and accessible error surfaces.
 - [x] `AddCertificatePage.js` / `EditCertificatePage.js` headers & `.cert-form-page` wrappers (`0` inline styles).
-- [ ] Card list at ≤ 768px for certificate and currency logs; real-estate property cards already follow this shape. *(Certificate log D19 cards delivered in 8B & certificate detail trajectory D19 cards delivered in 8C; currency-log portion explicitly deferred to Phase 8D per Plan Decision 9 & §10 scope amendment.)*
+- [x] Card list at ≤ 768px for certificate and currency logs; real-estate property cards already follow this shape. *(Certificate log D19 cards delivered in 8B & certificate detail trajectory D19 cards in 8C; currency log & currency detail rate-history D19 cards delivered in 8D with 0px overflow at 390px.)*
 - [x] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll (`0` new `overflow-x` added).
 - [x] Verify maturity display, interest schedule table, status transitions, Withdraw/Payout accessible dialogs, and viewer `ProtectedAction` gating.
 - [x] Certificate maturity and interest fixtures unchanged (`calculations.spec.js` 11/11).
@@ -1859,14 +1859,14 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 8D — Currency
 
-- [ ] `CurrencyLogPage.js` (36) → dark table.
-- [ ] `CurrencyDetailPage.js` (36) → classes; chart via `chartTheme`.
-- [ ] `AddCurrencyPage.js` / `EditCurrencyPage.js` headers.
-- [ ] Rate/valuation figures use proportional `tabular-nums`, right-aligned.
-- [ ] Verify FX fetch display, conversions, validation.
-- [ ] FX conversion fixtures unchanged.
-- [ ] Remove Currency components from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add the four currency patterns.**
+- [x] `CurrencyLogPage.js` (36 purged to 0: 25 colour-bearing + 11 layout/typographic) → dark table (`Currency.css` + Section 21; `Trades.css` untouched); neutral `<Badge>` health chips (`Live`, `Stale`, `Manual`); Option A `<Delta>` FX P&L (`Gain`/`Loss`/`No change`); D19 `<=768px` cards; Waiver `W-8D-1`; scoped `I4` defensive `useCanModify()` handler-guard fix.
+- [x] `CurrencyDetailPage.js` (36 purged to 0: 26 colour-bearing + 10 layout/typographic) → flat Frame 03 hero & 6 tiles; chart via existing `chartTheme.js` exports + local `currLastPointLabelPlugin` + rounded `toFixed(2) EGP` Y-axis ticks + `<details>`/`<table>` + D19 rate cards (`CertificateDetail.css` converted).
+- [x] `AddCurrencyPage.js` / `EditCurrencyPage.js` / `CurrencyForm.js` (`0` inline styles; Frame 02 Variant B stacked forms, synchronous `initialData` hydration, live Implied Purchase Rate preview, on-blur & submit validation).
+- [x] Rate/valuation figures use proportional `tabular-nums`, right-aligned (`.curr-th-num`/`.curr-td-num.fs-num`).
+- [x] Verify FX fetch display, conversions, validation (38/38 Jest + jest-axe; 10/10 Playwright reference match; 5/5 browser axe).
+- [x] FX conversion fixtures unchanged (`calculations.spec.js` 11/11 across 8 domains; inherited `$` formatter retained per `I3`).
+- [x] Remove Currency components from `frontend/.eslintignore` (lines 34–36 removed, keeping Phase 9A `AddTransactionModal.currency.test.js`); verify clean ESLint (`--max-warnings=0`).
+- [x] **Add the four currency patterns.** (`THEMED_PATTERNS` 42 → 46: `'/currency'`, `'/currency/:id'`, `'/currency/new'`, `'/currency/edit/:id'`.)
 
 #### 8E — Real estate, all routes
 
@@ -1886,7 +1886,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Build/tests/lint/axe/screenshots.
 - [ ] Zero diff on non-allowlisted routes.
 
-> Phase 8C signed off 2026-11-27: 9 of 16 routes themed; 8D–8E remain open.
+> Phase 8D signed off 2026-11-27: 13 of 16 routes themed; 8E (Real Estate) remains open.
 
 **User-facing acceptance criterion:** "A user can open a certificate or property on a phone and read maturity, yield, and cost figures without clipping."
 
@@ -2180,7 +2180,7 @@ The legacy zero-diff gate is the proof that the allowlist works. A PR that chang
 | 5A–5E | `salary/SalaryProfile.css`, `salary/PaycheckFormPage.css`, `taxes/TaxesPage.css`, `salary/TaxSimulator.css`, `analytics/PurchasingPowerChart.css` + **delete** `salary/SalaryProfilePage.css`, `salary/PaycheckListPage.css` |
 | 6A–6B | `portfolio/Portfolio.css`, `portfolio/RebalancingPage.css`, `reports/ComprehensiveReport.css` (Phase 6B / print styles) |
 | 7A–7C | `trades/Trades.css`, `trades/CorporateActionsList.css`, `trades/CorporateActionWizard.css` |
-| 8A–8E | `certificates/CertificateDetail.css`, `real-estate/RealEstate.css` |
+| 8A–8E | `certificates/CertificateDetail.css` *(converted to D22 dark tokens in 8D)*, `real-estate/RealEstate.css` *(plus post-8.1 phase additions `gold/GoldWallet.css`, `analytics/PurchasingPowerChart.css`, `certificates/Certificates.css`, `currency/Currency.css`; on-disk total: 63 pre-8D / 64 post-8D vs §8.1's historic 57-file snapshot including `PaycheckLog.css`, `PayrollAnalyticsPage.css`, `MutualFunds.css`)* |
 | 9A–9C | `credit-cards/CreditCardPage.css`, `credit-cards/StatementCyclePage.css`, `credit-cards/DebtPayoffPage.css`, `credit-cards/ReconciliationPage.css`, `credit-cards/UtilizationWidget.css`, `credit-cards/CreditCardSubNav.css`, `lending/Lending.css` |
 | 10A–10C | `profile/ProfilePage.css`, `profile/SettingsPage.css`, `profile/RecycleBin.css`, `security/SecuritySettingsPage.css`, `admin/AdminDashboard.css`, `admin/TaxConfigPage.css`, `admin/InsuranceConfigPage.css`, `admin/BackupPage.css` |
 | 11A | `LandingPage.css` |
@@ -2203,8 +2203,8 @@ Metric: number of `style={{` props per file. Counts include layout-only styles; 
 | `pages/security/SecuritySettingsPage.js` | 42 | 10B |
 | `pages/admin/AdminDashboard.js` | 41 | 10C |
 | `pages/salary/UpdateSalary.js` | 38 | 5E |
-| `pages/currency/CurrencyDetailPage.js` | 36 | 8D |
-| `pages/currency/CurrencyLogPage.js` | 36 | 8D |
+| `pages/currency/CurrencyDetailPage.js` | 36 *(purged to 0 in 8D)* | 8D |
+| `pages/currency/CurrencyLogPage.js` | 36 *(purged to 0 in 8D)* | 8D |
 | `pages/paycheck/PaycheckLog.js` | 34 | 5B |
 | `pages/real-estate/RealEstateLogPage.js` | 34 | 8E |
 | `pages/expenditure/ExpenditureAnalysisPage.js` | 32 | 4C |
@@ -2939,11 +2939,16 @@ Merge SHA:          fa9b36e (merged to main; governance finalized in follow-up c
 ```
 
 ```
-Sub-phase:   8D — Pre-Gate Amendment Record (Gate 0)
-Status:      in progress (Branch: phase-ui-8d-currency @ af39772; Plan: docs/ui-plans/phase_8d_implementation_plan.md v5)
-Done:        Recorded user-approved Option A FX Unrealised P&L amendment (§4.3 & §4.3.1: <Delta> with Gain / Loss / No change accessible labels and matching Jest/Playwright test assertions in CurrencyLogPage.js and CurrencyDetailPage.js) plus Waiver W-8D-1 (§7.1: desktop/tablet 9-column .curr-log-page .curr-table-wrap horizontal scroll only; D19 cards at <=768px) prior to Gates 4–18.
-Next:        Execute Phase 8D implementation & verification Gates 1–18
+Sub-phase:   8D (Finalized — Gate 19 Signed Off)
+Status:      done (Signed off by User 2026-11-27; merged to main)
+Done:        Modernized /currency, /currency/:id, /currency/new, and /currency/edit/:id into the FinStat dark graphite design system (`Currency.css` scoped under `html[data-fs-theme] .curr-page-container` + `theme-components.css` Section 21) while leaving shared `Trades.css` and `chartTheme.js` strictly untouched. Closed Phase 8C deferrals (`UI-UX-PLAN.md:1850`, `:1854`) by converting orphaned `CertificateDetail.css` to D22 dark graphite tokens and delivering D19 `<=768px` compact-expand mobile cards on both Currency Log and Currency Detail history tables (`0px` overflow at `390px`). Purged all 72 verified inline styles (`36` in `CurrencyLogPage.js` [25 colour-bearing + 11 layout] + `36` in `CurrencyDetailPage.js` [26 colour-bearing + 10 layout]; Add/Edit wrappers & form had `0`), plus `67` hex and `8` rgba literals. Applied Option A FX Unrealized P&L via `<Delta>` (`Gain`/`Loss`/`No change`) per Gate 0 `§4.3:328`/`§4.3.1:366,:369` amendments, neutral `<Badge>` feed chips (`Live`/`Stale`/`Manual`), right-aligned `.fs-num` tabular figures, Waiver `W-8D-1` (`§7.1:2104`) on desktop/tablet `.curr-log-page .curr-table-wrap`, flat Frame 03 hero & 6 metric tiles, Line chart via existing `chartTheme.js` exports + local `currLastPointLabelPlugin` + rounded `toFixed(2) EGP` Y-axis (`maxTicksLimit: 7`) + trailing-window `localMinY` clearance + `<details>`/`<table>`, Frame 02 Variant B stacked form with synchronous `initialData` state hydration, live `nowrap` Implied Purchase Rate preview, on-blur & submit validation, and distinct error surfaces. Retained inherited `$` formatter per `I3`, de-ignored lines 34–36 in `.eslintignore` (preserving Phase 9A `AddTransactionModal.currency.test.js`), expanded `THEMED_PATTERNS` `42 -> 46`, added `38` CRA Jest + jest-axe tests (`3/3` suites passed) and a 9-test Playwright reference-match spec (`10/10` with setup). **Approved Deviations Confirmed at Gate 19**: (1) scoped `I4` defensive handler-guard fix `const { canModify } = useCanModify()` in `CurrencyLogPage.js` (`:67`, `:86`) with zero role or `ProtectedAction` behavior changes; (2) Gate 12 standalone `1536`MB hardware fallback after authorized `2048`MB hit a Windows V8 semi-space commit failure (`Compiled successfully.`); (3) §15.5 local Gate 15 326-test visual reconciliation (`292 passed + 34 accepted AD14/AD16 diffs`, `0` unexplained) with §7.1 HTML-report attachment satisfied via walkthrough `(a)-(d)` register and §7.4 state-screenshot verification via Gate 7 Jest + baselines. Gates 1–18 passed: Gate 1 46 patterns / 75 routes / 0 unassigned, Gate 2 0 drift, Gate 3 0 deletions, Gate 4 0 violations (`61` page / `64` total CSS), Gate 5 `0` regressions across `63` CSS / stylelint clean / `0` loading bypasses, Gate 6 ESLint 0 warnings, Gate 7 `38/38`, Gate 8 `15/15` (`DashboardSummary.js` `96` lines), Gate 9 `11/11`, Gate 10 `5/5`, Gate 11 `10/10`, Gate 12 `1536`MB build clean, Gate 13 `21/21` (`d86155f`; `39fb1b0 -> d86155f`; `334/334` manifest), Gate 14 `68/71`, Gate 15 `326` (`292 + 34` AD14/AD16), Gate 16 `2/2`, Gate 17 20/20 PNGs inspected & polished, Gate 18 `66/66`.
+Next:        Phase 8E (Real Estate)
 Blocked by:  None
+Allowlist:   ['/currency', '/currency/:id', '/currency/new', '/currency/edit/:id'] (cumulative: 46 patterns)
+Visual diff: Gate 13 replaced 20 currency snapshots in place (d86155f); manifest 334/334 verified; Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 326 accounted (292 + 34 AD14/AD16); Gate 18 66/66; 0 diffs attributable to 8D. W-8D-1 active for desktop/tablet .curr-log-page .curr-table-wrap only.
+Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (Domain 6 Multi-Currency unchanged)
+Screenshots: None tracked per D5/D21; 20 currency baselines in FinStat-visual-baselines repo (d86155f)
+Branch:      phase-ui-8d-currency (Gate 0 Plan SHA: de0a888; Impl SHA: 79e5afb; Walkthrough SHAs: 653fb25, 89cdacf, ba338a0; closed on main in follow-up governance commit)
 ```
 
 ### Sub-phase note template
