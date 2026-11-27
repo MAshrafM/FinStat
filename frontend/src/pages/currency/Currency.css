@@ -1,0 +1,929 @@
+/* frontend/src/pages/currency/Currency.css */
+/**
+ * Phase 8D: Foreign Currency Log, Detail, and Form layouts and neutral surfaces.
+ *
+ * Scope: html[data-fs-theme] .curr-page-container and its .curr-log-page, .curr-detail-page,
+ * and .curr-form-page sub-scopes per D22.
+ * Accent/tone/danger rules live exclusively in theme-components.css Section 21.
+ *
+ * Documented horizontal-scroll wrapper:
+ * - .curr-log-page .curr-table-wrap: Waiver W-8D-1, 9-column currency holdings table (desktop/tablet only).
+ * At <=768px, D19 compact-expand cards replace tables with zero page-level overflow.
+ */
+
+html[data-fs-theme] .curr-page-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  color: var(--fs-text);
+  background: var(--fs-bg);
+  font-family: var(--fs-font-sans);
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-page-container *,
+html[data-fs-theme] .curr-page-container *::before,
+html[data-fs-theme] .curr-page-container *::after {
+  box-sizing: border-box;
+}
+
+/* Shared Page Header, Navigation Back Link & Feedback Surfaces */
+html[data-fs-theme] .curr-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+html[data-fs-theme] .curr-header-title-group {
+  min-width: 0;
+}
+
+html[data-fs-theme] .curr-breadcrumb {
+  margin: 0 0 4px 0;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-header h1 {
+  margin: 0;
+  color: var(--fs-text);
+  font-size: var(--fs-text-2xl);
+  font-weight: var(--fs-weight-semibold);
+  line-height: var(--fs-line-height-2xl);
+  letter-spacing: -0.02em;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+html[data-fs-theme] .curr-page-container .fs-btn {
+  min-height: 44px;
+}
+
+html[data-fs-theme] .curr-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 4px;
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+  text-decoration: none;
+  transition: color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+html[data-fs-theme] .curr-back-link:hover {
+  color: var(--fs-text);
+  text-decoration: none;
+}
+
+html[data-fs-theme] .curr-back-link:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .curr-error-card,
+html[data-fs-theme] .curr-empty-card {
+  margin-top: 16px;
+  padding: 28px 24px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+  text-align: center;
+}
+
+html[data-fs-theme] .curr-error-card h2,
+html[data-fs-theme] .curr-empty-card h2 {
+  margin: 0 0 8px 0;
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+}
+
+html[data-fs-theme] .curr-error-card p,
+html[data-fs-theme] .curr-empty-card p {
+  margin: 0;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  line-height: 1.5;
+}
+
+html[data-fs-theme] .curr-error-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+@keyframes curr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+html[data-fs-theme] .curr-spin {
+  animation: curr-spin 0.9s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-fs-theme] .curr-spin {
+    animation: none;
+  }
+}
+
+/* Reference Frame 03 Variant B — Forex Portfolio Overview KPI Grid */
+html[data-fs-theme] .curr-overview-section {
+  margin-bottom: 20px;
+}
+
+html[data-fs-theme] .curr-section-heading {
+  margin: 0 0 12px 0;
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  line-height: var(--fs-line-height-lg);
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+html[data-fs-theme] .curr-kpi-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-kpi-label {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-kpi-value {
+  color: var(--fs-text);
+  font-size: var(--fs-text-xl);
+  font-weight: var(--fs-weight-semibold);
+  line-height: var(--fs-line-height-xl);
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-kpi-sub {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  line-height: 1.4;
+  text-align: left;
+}
+
+/* Desktop & Tablet 9-column Holdings Table (Reference Frame 01 Variant B; Waiver W-8D-1) */
+html[data-fs-theme] .curr-log-page .curr-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 16px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+}
+
+html[data-fs-theme] .curr-table {
+  width: 100%;
+  min-width: max-content;
+  border-collapse: collapse;
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .curr-table thead tr {
+  background: var(--fs-surface-sunken);
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+html[data-fs-theme] .curr-table th {
+  padding: 10px 12px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-semibold);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+html[data-fs-theme] .curr-table td {
+  padding: 11px 12px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-2);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+html[data-fs-theme] .curr-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+html[data-fs-theme] .curr-table tbody tr:hover {
+  background: var(--fs-surface-raised);
+}
+
+html[data-fs-theme] .curr-table th.curr-th-num,
+html[data-fs-theme] .curr-table td.curr-td-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-fs-theme] .curr-table th.curr-th-actions,
+html[data-fs-theme] .curr-table td.curr-th-actions {
+  text-align: right;
+}
+
+html[data-fs-theme] .curr-name-link {
+  color: var(--fs-text);
+  font-weight: var(--fs-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+html[data-fs-theme] .curr-name-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+html[data-fs-theme] .curr-name-link:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .curr-health-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+html[data-fs-theme] .curr-actions,
+html[data-fs-theme] .curr-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+html[data-fs-theme] .curr-actions {
+  justify-content: flex-end;
+}
+
+html[data-fs-theme] .curr-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 6px;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-2);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+html[data-fs-theme] .curr-icon-btn:hover:not(:disabled) {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .curr-icon-btn:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .curr-icon-btn:disabled {
+  opacity: var(--fs-disabled-opacity);
+  cursor: not-allowed;
+}
+
+html[data-fs-theme] .curr-mobile-cards {
+  display: none;
+}
+
+/* ==========================================================================
+   Phase 8D: Currency Detail View (.curr-detail-page)
+   ========================================================================== */
+
+html[data-fs-theme] .curr-detail-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+html[data-fs-theme] .curr-detail-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+html[data-fs-theme] .curr-detail-hero {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+  padding: 24px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-detail-hero-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+html[data-fs-theme] .curr-detail-hero-title-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+html[data-fs-theme] .curr-detail-hero h1 {
+  margin: 0;
+  color: var(--fs-text);
+  font-size: var(--fs-text-2xl);
+  font-weight: var(--fs-weight-semibold);
+  line-height: var(--fs-line-height-2xl);
+  letter-spacing: -0.02em;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-detail-hero-meta {
+  margin: 0;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  line-height: 1.5;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-detail-hero-reval {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-detail-reval-label {
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+html[data-fs-theme] .curr-detail-reval-date {
+  color: var(--fs-text);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-semibold);
+}
+
+html[data-fs-theme] .curr-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 600px) {
+  html[data-fs-theme] .curr-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  html[data-fs-theme] .curr-metrics-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+html[data-fs-theme] .curr-metric-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-metric-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .curr-metric-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-chart-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+html[data-fs-theme] .curr-chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-chart-title {
+  margin: 0 0 4px 0;
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  line-height: var(--fs-line-height-lg);
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-chart-subtitle {
+  margin: 0;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  line-height: 1.5;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-timeframe-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+html[data-fs-theme] .curr-timeframe-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 6px 12px;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-2);
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-semibold);
+  cursor: pointer;
+}
+
+html[data-fs-theme] .curr-timeframe-btn:hover {
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .curr-timeframe-btn:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .curr-chart-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 320px;
+}
+
+html[data-fs-theme] .curr-chart-summary {
+  margin: 12px 0 0 0;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  line-height: 1.5;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-history-details {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: var(--fs-border-width) solid var(--fs-border);
+}
+
+html[data-fs-theme] .curr-history-details summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+  cursor: pointer;
+}
+
+html[data-fs-theme] .curr-history-details summary:hover {
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .curr-history-details summary:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .curr-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .curr-history-table caption {
+  margin-bottom: 8px;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-history-table thead tr {
+  background: var(--fs-surface-sunken);
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+html[data-fs-theme] .curr-history-table th {
+  padding: 10px 12px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-semibold);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+html[data-fs-theme] .curr-history-table td {
+  padding: 10px 12px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .curr-history-table th.curr-th-num,
+html[data-fs-theme] .curr-history-table td.curr-td-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-fs-theme] .curr-history-mobile-cards {
+  display: none;
+}
+
+/* ==========================================================================
+   Phase 8D: Currency Forms (.curr-form-page, Reference Frame 02 Variant B)
+   ========================================================================== */
+
+html[data-fs-theme] .curr-form-card {
+  max-width: 640px;
+  padding: 24px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+html[data-fs-theme] .curr-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+html[data-fs-theme] .curr-form-page label {
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-form-page .curr-form-group input,
+html[data-fs-theme] .curr-form-page .curr-form-group select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-md);
+  color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  line-height: 1.4;
+}
+
+html[data-fs-theme] .curr-form-page .curr-form-group input:focus-visible,
+html[data-fs-theme] .curr-form-page .curr-form-group select:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .curr-implied-rate-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .curr-implied-rate-label {
+  color: var(--fs-text-2);
+  font-weight: var(--fs-weight-medium);
+}
+
+html[data-fs-theme] .curr-implied-rate-val {
+  color: var(--fs-text);
+  font-weight: var(--fs-weight-semibold);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+html[data-fs-theme] .curr-field-help {
+  margin: 0;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  line-height: 1.45;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-field-error {
+  margin: 2px 0 0 0;
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-medium);
+  line-height: 1.4;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-form-error-summary,
+html[data-fs-theme] .curr-submit-error {
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  font-size: var(--fs-text-sm);
+  line-height: 1.5;
+  text-align: left;
+}
+
+html[data-fs-theme] .curr-form-error-summary-list {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}
+
+html[data-fs-theme] .curr-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: var(--fs-border-width) solid var(--fs-border);
+}
+
+/* ==========================================================================
+   D19 Responsive Mobile Breakpoints (<=768px & <=600px)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  html[data-fs-theme] .curr-log-page .curr-table-wrap,
+  html[data-fs-theme] .curr-history-details {
+    display: none;
+  }
+
+  html[data-fs-theme] .curr-mobile-cards,
+  html[data-fs-theme] .curr-history-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  html[data-fs-theme] .curr-mobile-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 12px 14px;
+    background: var(--fs-surface);
+    border: var(--fs-border-width) solid var(--fs-border);
+    border-radius: var(--fs-radius-md);
+  }
+
+  html[data-fs-theme] .curr-card-compact-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  html[data-fs-theme] .curr-card-primary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+    text-align: left;
+  }
+
+  html[data-fs-theme] .curr-card-metrics {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  html[data-fs-theme] .curr-card-val-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  html[data-fs-theme] .curr-card-value {
+    color: var(--fs-text);
+    font-size: var(--fs-text-sm);
+    font-weight: var(--fs-weight-semibold);
+    font-variant-numeric: tabular-nums;
+  }
+
+  html[data-fs-theme] .curr-card-expander {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 10px;
+    flex-shrink: 0;
+    border: var(--fs-border-width) solid var(--fs-border);
+    border-radius: var(--fs-radius-sm);
+    background: var(--fs-surface-sunken);
+    color: var(--fs-text-2);
+    font-size: var(--fs-text-xs);
+    font-weight: var(--fs-weight-medium);
+    cursor: pointer;
+  }
+
+  html[data-fs-theme] .curr-card-expander:focus-visible {
+    outline: var(--fs-focus-ring);
+    outline-offset: 2px;
+  }
+
+  html[data-fs-theme] .curr-card-expanded {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: var(--fs-border-width) solid var(--fs-border);
+  }
+
+  html[data-fs-theme] .curr-card-detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+    font-size: var(--fs-text-sm);
+  }
+
+  html[data-fs-theme] .curr-card-detail-label {
+    color: var(--fs-text-3);
+    font-size: var(--fs-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  html[data-fs-theme] .curr-card-detail-val {
+    min-width: 0;
+    color: var(--fs-text);
+    font-weight: var(--fs-weight-medium);
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-fs-theme] .curr-card-actions {
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  html[data-fs-theme] .curr-card-actions .protected-action-wrapper,
+  html[data-fs-theme] .curr-card-actions .curr-icon-btn,
+  html[data-fs-theme] .curr-card-actions .fs-btn {
+    flex: 1 1 auto;
+    min-height: 44px;
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  html[data-fs-theme] .curr-header-actions,
+  html[data-fs-theme] .curr-detail-top-bar,
+  html[data-fs-theme] .curr-detail-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  html[data-fs-theme] .curr-back-link {
+    min-height: 44px;
+  }
+
+  html[data-fs-theme] .curr-header-actions .fs-btn,
+  html[data-fs-theme] .curr-detail-actions .fs-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  html[data-fs-theme] .curr-timeframe-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  html[data-fs-theme] .curr-chart-card {
+    padding: 16px;
+  }
+
+  html[data-fs-theme] .curr-form-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  html[data-fs-theme] .curr-form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  html[data-fs-theme] .curr-form-actions .fs-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

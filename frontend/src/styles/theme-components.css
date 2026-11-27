@@ -2200,4 +2200,33 @@ html[data-fs-theme] .cert-form-page .cert-checkbox-input:checked {
   accent-color: var(--fs-accent);
 }
 
+/* ----------------------------------------------------
+   Phase 8D: Currency Log, Detail & Forms Semantic Themes (§4.3, §4.4, §4.10)
+   Danger styling pairs with role="alert" + explicit text cues or ConfirmModal.
+   ---------------------------------------------------- */
+html[data-fs-theme] .curr-icon-btn-danger:hover:not(:disabled),
+html[data-fs-theme] .curr-icon-btn-danger:focus-visible:not(:disabled),
+html[data-fs-theme] .curr-btn-danger-outline:hover:not(:disabled),
+html[data-fs-theme] .curr-btn-danger-outline:focus-visible:not(:disabled) {
+  color: var(--fs-danger);
+  border-color: var(--fs-danger);
+}
+
+html[data-fs-theme] .curr-timeframe-btn[aria-pressed='true'] {
+  border-color: var(--fs-accent);
+  background: var(--fs-surface-raised);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .curr-error-card,
+html[data-fs-theme] .curr-form-page .curr-form-error-summary,
+html[data-fs-theme] .curr-form-page .curr-submit-error {
+  border-color: var(--fs-danger);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .curr-form-page .curr-field-error {
+  color: var(--fs-danger);
+}
+
 

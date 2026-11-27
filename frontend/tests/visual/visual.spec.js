@@ -19,6 +19,7 @@ const { setupCorporateActionsMocks } = require('./fixtures/corporateActionsMocks
 const { setupMutualFundMocks } = require('./fixtures/mutualFundsMocks');
 const { setupGoldMocks } = require('./fixtures/goldMocks');
 const { setupCertificatesMocks } = require('./fixtures/certificatesMocks');
+const { setupCurrencyMocks } = require('./fixtures/currencyMocks');
 
 const MANDATORY_QA_WIDTHS = [1440, 1024, 768, 480, 390];
 
@@ -89,6 +90,8 @@ test.describe('Visual Regression Suite', () => {
           await setupGoldMocks(page, route.slug);
         } else if (route.slug.startsWith('certificates')) {
           await setupCertificatesMocks(page);
+        } else if (route.slug.startsWith('currency')) {
+          await setupCurrencyMocks(page);
         }
 
         // Navigate to route
