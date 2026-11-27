@@ -14,7 +14,7 @@ import { BankProvider } from '../context/BankContext';
 import { CreditProvider } from '../context/CreditContext';
 import { Loading } from './ui';
 
-// Themed routes allowlist (Phase 3A: '/dashboard', Phase 4A: '/expenditures', Phase 4B: forms, Phase 4C: cluster, Phase 5A: payroll profiles and rules, Phase 5B: paycheck log, Phase 6A: portfolio, Phase 6B: rebalancing & financial reports, Phase 7A: trades, Phase 7B: corporate actions, Phase 7C: mutual funds, Phase 8A: gold wallet and purchasing power, Phase 8B: certificates log, Phase 8C: certificates detail & forms)
+// Themed routes allowlist (Phase 3A: '/dashboard', Phase 4A: '/expenditures', Phase 4B: forms, Phase 4C: cluster, Phase 5A: payroll profiles and rules, Phase 5B: paycheck log, Phase 6A: portfolio, Phase 6B: rebalancing & financial reports, Phase 7A: trades, Phase 7B: corporate actions, Phase 7C: mutual funds, Phase 8A: gold wallet and purchasing power, Phase 8B: certificates log, Phase 8C: certificates detail & forms, Phase 8D: currency)
 export const THEMED_PATTERNS = [
   '/dashboard',
   '/expenditures',
@@ -58,6 +58,10 @@ export const THEMED_PATTERNS = [
   '/certificates/:id',
   '/certificates/new',
   '/certificates/edit/:id',
+  '/currency',
+  '/currency/:id',
+  '/currency/new',
+  '/currency/edit/:id',
 ];
 
 export const isThemedRoute = (pathname) => {

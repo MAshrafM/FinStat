@@ -31,9 +31,6 @@ src/pages/credit-cards/PartialPaymentModal.js
 src/pages/credit-cards/ReconciliationPage.js
 src/pages/credit-cards/StatementCyclePage.js
 src/pages/credit-cards/__tests__/AddTransactionModal.currency.test.js
-src/pages/currency/CurrencyDetailPage.js
-src/pages/currency/CurrencyForm.js
-src/pages/currency/CurrencyLogPage.js
 src/pages/lending/AddTransactionForm.js
 src/pages/lending/LendingDashboardPage.js
 src/pages/lending/LoanDetailPage.js
