@@ -325,7 +325,7 @@ That is the complete tone set. There is no six-tone palette, no category colour,
 | Expense amount | **the amount** | — | — | — |
 | Budget progress | under 80%, no label | — | 80–100%, `Warning` label | over 100%, `Over budget` label |
 | Realised P&L (trades, portfolio, certificates) | zero | gain | — | loss |
-| Unrealised P&L (portfolio, gold) | zero | gain | — | loss |
+| Unrealised P&L (portfolio, gold, currency) | zero (`No change` in 8D) | gain (`Gain`) | — | loss (`Loss`) |
 | Income and paychecks | **gross, net, deductions** | — | — | — |
 | Debt and card balance | **the balance** | — | payment due within 7 days | overdue |
 | Card utilization | **under 30%, no label** | — | 30–70%, `Elevated` label | over 70%, `High` label |
@@ -363,10 +363,10 @@ Every conditional tone above is audited in 1A before a page implements it. The a
 | Card utilization | 30–70% | `Elevated` | `pages/credit-cards/CreditCardPage.js` (`utilizationRate >= 30`) | Neutral, no label |
 | Card utilization | over 70% | `High` | `pages/credit-cards/CreditCardPage.js` (`utilizationRate >= 70`) | Neutral, no label |
 | Yield and ROI | delta against a stated target | target label | *(Audit confirmed no comparative target constant in code)* | Neutral, no delta, no label |
-| FX change | positive / negative | sign only | `pages/currency/CurrencyLogPage.js` & `pages/currency/CurrencyDetailPage.js` (`change > 0` / `< 0`) | Sign and arrow only |
+| FX change (unrealised P&L) | positive / negative / zero | `Gain` / `Loss` / `No change` *(8D Option A amendment)* | `pages/currency/CurrencyLogPage.js` & `pages/currency/CurrencyDetailPage.js` (`change > 0` / `< 0` / `0`) | Sign and arrow only |
 | Rebalancing drift | at or above the rebalance threshold | `Rebalance` | `pages/portfolio/RebalancingPage.js` (target allocation drift threshold) | Neutral, no label |
 | Account balance / net worth change | positive / negative | sign only | `pages/dashboard/NetWorthHero.js` & `pages/dashboard/DashboardKpiStrip.js` (period delta sign) | Sign and arrow only |
-| Realised / unrealised P&L | gain or loss | `Gain` / `Loss` | `pages/trades/TradeSummaryPage.js`, `components/portfolio/HoldingsTable.js`, `components/portfolio/SummaryCards.js` | Sign and arrow only |
+| Realised / unrealised P&L | gain, loss, or zero | `Gain` / `Loss` *(+ `No change` for currency)* | `pages/trades/TradeSummaryPage.js`, `components/portfolio/HoldingsTable.js`, `components/portfolio/SummaryCards.js`, `pages/currency/CurrencyLogPage.js`, `pages/currency/CurrencyDetailPage.js` | Sign and arrow only |
 
 1A leaves the source empty when the code has none. An empty source means the row is **neutral and unlabeled**: no target, threshold, figure, or label is computed in the component. Reusing an existing label is allowed; adding a new label requires a recorded decision in §10 and updates to the tests and accessible names (I5).
 
@@ -2101,7 +2101,7 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 - [ ] If the PR adds an allowlist pattern: the route it names is converted **in this PR**.
 - [ ] If the PR converts a cluster's first route: the screen matches its reference frame.
 - [ ] `grep -rn '#14b8a6' frontend/src --include='*.css'` returns only tokens.css:36.
-- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`, and waiver **W-8B-1** for `.cert-log-page .cert-table-wrap` in `Certificates.css`); `PurchasingPowerChart.css` has no `overflow-x`.
+- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`, waiver **W-8B-1** for `.cert-log-page .cert-table-wrap` in `Certificates.css`, and waiver **W-8D-1** for `.curr-log-page .curr-table-wrap` in `Currency.css`); `PurchasingPowerChart.css` has no `overflow-x`.
 - [ ] Loading consistency check: `git grep -nE "<div>Loading|className=\"loading-spinner\"|custom spinner SVG" frontend/src --include="*.js"` returns only loading primitive usages and test files.
 
 The legacy zero-diff gate is the proof that the allowlist works. A PR that changes a legacy page fails here, regardless of whether the change looks harmless.
@@ -2936,6 +2936,14 @@ Branch:      phase-ui-8c-certificates-detail
 Plan+Impl SHA:      8826a99
 Walkthrough SHAs:   34cdc8c + ad20b22 + 2eaee46
 Merge SHA:          fa9b36e (merged to main; governance finalized in follow-up commit)
+```
+
+```
+Sub-phase:   8D — Pre-Gate Amendment Record (Gate 0)
+Status:      in progress (Branch: phase-ui-8d-currency @ af39772; Plan: docs/ui-plans/phase_8d_implementation_plan.md v5)
+Done:        Recorded user-approved Option A FX Unrealised P&L amendment (§4.3 & §4.3.1: <Delta> with Gain / Loss / No change accessible labels and matching Jest/Playwright test assertions in CurrencyLogPage.js and CurrencyDetailPage.js) plus Waiver W-8D-1 (§7.1: desktop/tablet 9-column .curr-log-page .curr-table-wrap horizontal scroll only; D19 cards at <=768px) prior to Gates 4–18.
+Next:        Execute Phase 8D implementation & verification Gates 1–18
+Blocked by:  None
 ```
 
 ### Sub-phase note template
