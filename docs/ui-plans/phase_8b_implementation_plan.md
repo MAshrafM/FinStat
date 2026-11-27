@@ -3,7 +3,7 @@
 - **Date**: 2026-11-26 (original draft)
 - **Revision Date**: 2026-11-26
 - **Revision**: **v3** — resolves all 5 minor clarifications (§4.1–§4.5) on top of v2's resolution of all 5 blocking findings in `docs/ui-plans/phase_8b_implementation_plan_review.md`
-- **Status**: Revised Draft — v3 (Awaiting User Approval; no gates executed and no production files changed)
+- **Status**: Approved 2026-11-26 (user approval recorded in session after v3 review; implemented on local branch `phase-ui-8b-certificates-log` @ `23f65bf`, awaiting Gate 19 walkthrough sign-off)
 - **Merge Base**: `main` @ `237700a`
 - **Starting Baseline Commit**: `3f174fb` in `D:\Projects\FinStat-visual-baselines` (334/334 manifest verified)
 - **Branch**: `phase-ui-8b-certificates-log` (local only until walkthrough sign-off)
