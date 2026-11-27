@@ -9,11 +9,11 @@
 > **Starting Baseline Commit**: `39fb1b0` in `D:\Projects\FinStat-visual-baselines` (`334/334` manifest verified)  
 > **Gate 13 Baseline Commit SHA**: `d86155f` in `D:\Projects\FinStat-visual-baselines` (`Phase 8D: recapture 20 currency route snapshots`; `334/334` manifest verified)  
 > **Implementation Commit SHA**: `79e5afb` (`feat(ui-phase-8d): theme currency log, detail & forms`)  
-> **Walkthrough SHAs**: `653fb25` *(initial)*, `89cdacf` *(v1 review reconciliation)*, `ba338a0` *(v2 review N1–N4 reconciliation)*  
-> **Merge SHA**: *Stamping in follow-up governance commit after `--no-ff` merge to `main`*  
-> **Plan & Approval Evidence**: `docs/ui-plans/phase_8d_implementation_plan.md` (v5; Option A, `CertificateDetail.css` conversion, Waiver `W-8D-1`, Gates 12/15 local deviations, and inherited `$` formatter approved by user; Gate 19 signed off 2026-11-27 including Gate 12 `1536`MB fallback & scoped `I4` `useCanModify()` fix)  
+> **Walkthrough SHAs**: `653fb25` *(initial)*, `89cdacf` *(v1 review)*, `ba338a0` *(v2 review N1–N4)*, `4afe5cc` *(governance sync)*  
+> **Merge SHA**: `0991448` *(merged to `main`; governance finalized in follow-up commit)*  
+> **Plan & Approval Evidence**: `docs/ui-plans/phase_8d_implementation_plan.md` (v5; Option A, `CertificateDetail.css` conversion, Waiver `W-8D-1`, Gates 12/15 local deviations, and inherited `$` formatter approved by user; Gate 19 signed off 2026-11-27 including Gate 12 `1536`MB fallback & scoped `I4` `useCanModify()` fix; merged to `main` as `0991448`)  
 > **Taste Checkpoint**: N/A *(Cluster 8 Taste Checkpoint #6 was delivered and signed off in Phase 8A)*  
-> **Status**: Signed Off & Merging to `main` *(Gate 19 User Approval 2026-11-27)*
+> **Status**: Complete & Signed Off *(Gate 19 User Approval 2026-11-27; merged to `main` as `0991448`)*
 
 ---
 
@@ -52,8 +52,8 @@ Screenshots:     20 recaptures across 1440, 1024, 768, 480, 390px (d86155f); 334
 Branch:          phase-ui-8d-currency
 Plan SHA:        de0a888
 Implementation:  79e5afb
-Walkthrough:     653fb25 (initial), 89cdacf (v1 review), ba338a0 (v2 review N1-N4)
-Merge SHA:       Stamping on main follow-up governance commit
+Walkthrough:     653fb25 (initial), 89cdacf (v1 review), ba338a0 (v2 review N1-N4), 4afe5cc (gov sync)
+Merge SHA:       0991448 (merged to main; governance finalized in follow-up commit)
 ```
 
 ### §0 Plan Decisions Realized
@@ -237,9 +237,9 @@ All 20 recaptured snapshots in `frontend/tests/visual/baseline/` (tracked in `D:
 ### Current Sign-Off Status (`phase-ui-8d-currency`)
 - [x] Gate 0 (`de0a888`) + Gates 1–18 completed & reconciled (`Trades.css`, `chartTheme.js`, `currencyService.js`, `CurrContext.js`, `App.js`, `formatters.js`, `calculations.spec.js`, `package.json` untouched)
 - [x] Temporary `frontend/test-results/` & `frontend/playwright-report/` cleaned; `frontend/tests/visual/fixtures/.auth.json` clean
-- [x] Implementation (`79e5afb`) + walkthrough (`653fb25`, `89cdacf`, `ba338a0`) committed on local `phase-ui-8d-currency`
+- [x] Implementation (`79e5afb`) + walkthrough (`653fb25`, `89cdacf`, `ba338a0`) + governance (`4afe5cc`) committed on local `phase-ui-8d-currency`
 - [x] **Gate 19 User Sign-Off** (approved 2026-11-27, confirming Gate 12 `1536`MB fallback [H6] and scoped `I4` defensive `useCanModify()` handler-guard fix [N1] alongside Gates 1–18 evidence)
-- [x] Post-sign-off governance sync, review cleanup, `--no-ff` merge to `main`, and push `main` *(Merge SHA & CI status finalized on `main`)*
+- [x] Post-sign-off governance sync, review cleanup, `--no-ff` merge to `main` (`0991448`), and push only `main` (`origin/main`)
 
 ### Post-Sign-Off Governance Checklist (Executed 2026-11-27)
 1. [x] `docs/UI-UX_Plan/UI-UX-PLAN.md` **§5.7 (`:931–934`)**: Marked `/currency`, `/currency/:id`, `/currency/new`, `/currency/edit/:id` themed & QA'd (`☑ | ☑`; recorded `36 + 36 = 72` inline styles purged to `0`, D19 cards, `W-8D-1`, `chartTheme` + local `currLastPointLabelPlugin` + `<details>`/`<table>`).
@@ -249,4 +249,4 @@ All 20 recaptured snapshots in `frontend/tests/visual/baseline/` (tracked in `D:
 5. [x] `docs/UI-UX_Plan/UI-UX-PLAN.md` **§8.2 (`:2206–2207`)**: Updated `CurrencyDetailPage.js` (`36`) and `CurrencyLogPage.js` (`36`) to `36 *(purged to 0 in 8D)*`.
 6. [x] `docs/UI-UX_Plan/UI-UX-PLAN.md` **§10**: Finalized Phase 8D progress log entry with all template SHAs (`de0a888`, `79e5afb`, `653fb25`, `89cdacf`, `ba338a0`, `39fb1b0 -> d86155f`), `THEMED_PATTERNS = 46`, H6 Gate 12 `1536`MB fallback, and N1 scoped `I4` defensive `useCanModify()` handler-guard fix.
 7. [x] `CHANGELOG.md`: Added Phase 8D entry announcing `AD13` allowlist expansion `42 -> 46` (`/currency`, `/currency/:id`, `/currency/new`, `/currency/edit/:id`), Waiver `W-8D-1`, Gate 0 `§4.3`/`§4.3.1` Option A `<Delta>` amendment, and `CertificateDetail.css` D22 conversion.
-8. [ ] Update final `--no-ff` Merge SHA in `docs/ui-plans/phase_8d_implementation_plan.md`, `docs/ui-plans/phase_8d_walkthrough.md`, and `UI-UX-PLAN.md §10`, push only `main` (`git push origin main`), and confirm authoritative CI workflow passes on `main`.
+8. [x] Updated `- **Status**:` and Merge SHA (`0991448`) in `docs/ui-plans/phase_8d_implementation_plan.md`, `docs/ui-plans/phase_8d_walkthrough.md`, and `UI-UX-PLAN.md §10`, deleted all `*review*.md` files from `docs/ui-plans/`, merged `phase-ui-8d-currency` into `main` (`--no-ff` `0991448`), and pushed only `main` (authoritative CI tracked on `origin/main`).
