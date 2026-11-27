@@ -1,7 +1,7 @@
 // frontend/tests/visual/fixtures/certificatesMocks.js
 /**
- * Deterministic API mock fixtures for the Certificates of Deposit Log.
- * Phase 8B: /certificates only (8C routes remain untouched until 8C).
+ * Deterministic Playwright network mocks for Phase 8B (/certificates) & Phase 8C (/certificates/:id, /new, /edit/:id).
+ * Keeps GET /api/certificates (MOCK_CERTIFICATES) byte-identical for Phase 8B while supporting detail & accrual routes.
  */
 
 const MOCK_CERTIFICATES = [
@@ -85,6 +85,42 @@ const MOCK_CERTIFICATES = [
   },
 ];
 
+const MOCK_CERTIFICATE_DETAIL = {
+  _id: '1',
+  name: 'NBE Platinum 20%',
+  amount: 100000,
+  interest: 20,
+  period: 12,
+  payoutInterval: 'monthly',
+  startDate: '2025-07-15T00:00:00.000Z',
+  lastPayoutDate: '2025-12-15T00:00:00.000Z',
+  maturityDate: '2026-07-15T00:00:00.000Z',
+  daysRemaining: 181,
+  daysElapsed: 184,
+  displayStatus: 'active',
+  status: 'active',
+  accruedInterest: 10000,
+  totalInterestEarned: 15000,
+  periodicInterest: 1666.67,
+  isPayoutDue: true,
+  nextDuePayoutDate: '2026-01-15T00:00:00.000Z',
+  nextPayoutDate: '2026-02-15T00:00:00.000Z',
+  sourceAccount: 'Bank',
+  autoReinvest: false,
+  trajectory: {
+    labels: ['Aug 2025', 'Sep 2025', 'Oct 2025', 'Nov 2025', 'Dec 2025', 'Jul 2026'],
+    actualSeries: [1667, 3333, 5000, 6667, 10000, null],
+    projectedSeries: [1667, 3333, 5000, 6667, 8333, 20000],
+  },
+};
+
+const MOCK_CERTIFICATE_ACCRUED = {
+  accruedInterest: 10000,
+  daysElapsed: 184,
+  nextPayoutDate: '2026-02-15T00:00:00.000Z',
+  totalEarned: 15000,
+};
+
 /**
  * Intercept and fulfill /api/certificates API calls deterministically.
  * @param {import('@playwright/test').Page} page
@@ -138,11 +174,22 @@ async function setupCertificatesMocks(page) {
       return fulfillJson(200, { success: true });
     }
 
+    // Explicit GET ordering: /accrued-interest -> exact /:id detail -> exact /api/certificates list
+    if (method === 'GET' && url.includes('/accrued-interest')) {
+      return fulfillJson(200, MOCK_CERTIFICATE_ACCRUED);
+    }
+
+    if (method === 'GET' && /\/api\/certificates\/[^/?]+(?:\?.*)?$/.test(url)) {
+      return fulfillJson(200, MOCK_CERTIFICATE_DETAIL);
+    }
+
     return fulfillJson(200, MOCK_CERTIFICATES);
   });
 }
 
 module.exports = {
   MOCK_CERTIFICATES,
+  MOCK_CERTIFICATE_DETAIL,
+  MOCK_CERTIFICATE_ACCRUED,
   setupCertificatesMocks,
 };

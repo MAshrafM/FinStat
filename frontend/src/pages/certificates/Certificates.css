@@ -1,13 +1,14 @@
 /* frontend/src/pages/certificates/Certificates.css */
 /**
- * Phase 8B: Certificates of Deposit Log layout and neutral surfaces.
+ * Phases 8B & 8C: Certificates of Deposit Log, Detail, and Form layouts and neutral surfaces.
  *
- * Scope: html[data-fs-theme] .cert-page-container and its .cert-log-page sub-scope per D22.
- * Accent/tone/danger rules live exclusively in theme-components.css Section 19.
+ * Scope: html[data-fs-theme] .cert-page-container and its .cert-log-page, .cert-detail-page,
+ * and .cert-form-page sub-scopes per D22.
+ * Accent/tone/danger rules live exclusively in theme-components.css Sections 19 & 20.
  *
  * Documented horizontal-scroll wrapper:
  * - .cert-log-page .cert-table-wrap: waiver W-8B-1, 9-column certificate log table (desktop/tablet only).
- * At <=768px, D19 compact-expand cards replace the table with zero page-level overflow.
+ * At <=768px, D19 compact-expand cards replace tables with zero page-level overflow.
  */
 
 html[data-fs-theme] .cert-page-container {
@@ -631,5 +632,506 @@ html[data-fs-theme] .cert-mobile-cards {
 
   html[data-fs-theme] .cert-modal {
     padding: 18px;
+  }
+}
+
+/* ==========================================================================
+   Phase 8C: Certificate Detail (.cert-detail-page) & Forms (.cert-form-page)
+   ========================================================================== */
+
+html[data-fs-theme] .cert-detail-page,
+html[data-fs-theme] .cert-form-page {
+  text-align: left;
+}
+
+html[data-fs-theme] .cert-detail-hero h1,
+html[data-fs-theme] .cert-detail-hero-meta,
+html[data-fs-theme] .cert-payout-due-info,
+html[data-fs-theme] .cert-metric-body,
+html[data-fs-theme] .cert-metric-body .cert-kpi-label,
+html[data-fs-theme] .cert-metric-body .cert-kpi-value,
+html[data-fs-theme] .cert-metric-body .cert-kpi-sub,
+html[data-fs-theme] .cert-chart-header,
+html[data-fs-theme] .cert-chart-title,
+html[data-fs-theme] .cert-chart-subtitle,
+html[data-fs-theme] .cert-chart-summary,
+html[data-fs-theme] .cert-form-page .form-group label,
+html[data-fs-theme] .cert-form-page .cert-field-help,
+html[data-fs-theme] .cert-form-page .cert-field-error {
+  text-align: left;
+}
+
+html[data-fs-theme] .cert-detail-page .cert-error-card,
+html[data-fs-theme] .cert-detail-page .cert-empty-card,
+html[data-fs-theme] .cert-form-page .cert-error-card,
+html[data-fs-theme] .cert-form-page .cert-empty-card {
+  text-align: center;
+}
+
+html[data-fs-theme] .cert-detail-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+html[data-fs-theme] .cert-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 4px;
+  border-radius: var(--fs-radius-sm);
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+  text-decoration: none;
+  transition: color var(--fs-duration-fast) var(--fs-ease-standard);
+}
+
+html[data-fs-theme] .cert-back-link:hover {
+  color: var(--fs-text);
+  text-decoration: none;
+}
+
+html[data-fs-theme] .cert-back-link:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .cert-detail-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+html[data-fs-theme] .cert-detail-hero {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+html[data-fs-theme] .cert-detail-hero-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+html[data-fs-theme] .cert-detail-hero h1 {
+  margin: 0 0 6px 0;
+  color: var(--fs-text);
+  font-size: var(--fs-text-2xl);
+  font-weight: var(--fs-weight-semibold);
+  line-height: var(--fs-line-height-2xl);
+  letter-spacing: -0.02em;
+}
+
+html[data-fs-theme] .cert-detail-hero-meta {
+  margin: 0;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  line-height: 1.5;
+}
+
+html[data-fs-theme] .cert-detail-hero-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+html[data-fs-theme] .cert-payout-due-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border-strong);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+}
+
+html[data-fs-theme] .cert-payout-due-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+html[data-fs-theme] .cert-payout-due-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-base);
+}
+
+html[data-fs-theme] .cert-payout-due-title {
+  color: var(--fs-text);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-semibold);
+  line-height: 1.4;
+}
+
+html[data-fs-theme] .cert-payout-due-sub {
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-xs);
+  line-height: 1.4;
+}
+
+html[data-fs-theme] .cert-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 960px) {
+  html[data-fs-theme] .cert-metrics-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+html[data-fs-theme] .cert-metric-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+html[data-fs-theme] .cert-metric-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .cert-metric-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+html[data-fs-theme] .cert-metric-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+@keyframes cert-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+html[data-fs-theme] .cert-spin {
+  animation: cert-spin 0.9s linear infinite;
+}
+
+html[data-fs-theme] .cert-chart-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+html[data-fs-theme] .cert-chart-header {
+  margin-bottom: 16px;
+}
+
+html[data-fs-theme] .cert-chart-title {
+  margin: 0 0 4px 0;
+  color: var(--fs-text);
+  font-size: var(--fs-text-lg);
+  font-weight: var(--fs-weight-semibold);
+  line-height: var(--fs-line-height-lg);
+}
+
+html[data-fs-theme] .cert-chart-subtitle {
+  margin: 0;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  line-height: 1.5;
+}
+
+html[data-fs-theme] .cert-chart-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 320px;
+}
+
+html[data-fs-theme] .cert-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .cert-chart-summary {
+  margin: 12px 0 0 0;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  line-height: 1.5;
+}
+
+html[data-fs-theme] .cert-trajectory-details {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: var(--fs-border-width) solid var(--fs-border);
+}
+
+html[data-fs-theme] .cert-trajectory-details summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+  cursor: pointer;
+}
+
+html[data-fs-theme] .cert-trajectory-details summary:hover {
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .cert-trajectory-details summary:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .cert-trajectory-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .cert-trajectory-table caption {
+  margin-bottom: 8px;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  text-align: left;
+}
+
+html[data-fs-theme] .cert-trajectory-table thead tr {
+  background: var(--fs-surface-sunken);
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+html[data-fs-theme] .cert-trajectory-table th {
+  padding: 10px 12px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-semibold);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+html[data-fs-theme] .cert-trajectory-table td {
+  padding: 10px 12px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .cert-trajectory-table th.cert-th-num,
+html[data-fs-theme] .cert-trajectory-table td.fs-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-fs-theme] .cert-trajectory-mobile-cards {
+  display: none;
+}
+
+/* Phase 8C Forms (Reference Frame 02 Variant B) */
+html[data-fs-theme] .cert-form-card {
+  max-width: 680px;
+  padding: 24px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  box-shadow: none;
+}
+
+html[data-fs-theme] .cert-form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+html[data-fs-theme] .cert-form-page .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+html[data-fs-theme] .cert-form-page .form-group label {
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-medium);
+}
+
+html[data-fs-theme] .cert-form-page .form-group input:not([type='checkbox']),
+html[data-fs-theme] .cert-form-page .form-group select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-md);
+  color: var(--fs-text);
+  font-family: var(--fs-font-sans);
+  font-size: var(--fs-text-sm);
+  line-height: 1.4;
+}
+
+html[data-fs-theme] .cert-form-page .form-group input:not([type='checkbox']):focus-visible,
+html[data-fs-theme] .cert-form-page .form-group select:focus-visible,
+html[data-fs-theme] .cert-checkbox-input:focus-visible {
+  outline: var(--fs-focus-ring);
+  outline-offset: 2px;
+}
+
+html[data-fs-theme] .cert-field-help {
+  margin: 0;
+  color: var(--fs-text-3);
+  font-size: var(--fs-text-xs);
+  line-height: 1.45;
+}
+
+html[data-fs-theme] .cert-field-error {
+  margin: 2px 0 0 0;
+  font-size: var(--fs-text-xs);
+  font-weight: var(--fs-weight-medium);
+  line-height: 1.4;
+}
+
+html[data-fs-theme] .cert-form-error-summary,
+html[data-fs-theme] .cert-submit-error {
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  font-size: var(--fs-text-sm);
+  line-height: 1.5;
+}
+
+html[data-fs-theme] .cert-form-error-summary-list {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}
+
+html[data-fs-theme] .cert-checkbox-group {
+  padding-top: 4px;
+}
+
+html[data-fs-theme] .cert-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  font-weight: var(--fs-weight-regular);
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+html[data-fs-theme] .cert-checkbox-input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+html[data-fs-theme] .cert-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: var(--fs-border-width) solid var(--fs-border);
+}
+
+@media (max-width: 768px) {
+  html[data-fs-theme] .cert-trajectory-details {
+    display: none;
+  }
+
+  html[data-fs-theme] .cert-trajectory-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  html[data-fs-theme] .cert-detail-top-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  html[data-fs-theme] .cert-back-link {
+    min-height: 44px;
+  }
+
+  html[data-fs-theme] .cert-detail-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  html[data-fs-theme] .cert-detail-actions .protected-action-wrapper,
+  html[data-fs-theme] .cert-detail-actions .fs-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  html[data-fs-theme] .cert-form-card {
+    padding: 18px;
+  }
+
+  html[data-fs-theme] .cert-form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  html[data-fs-theme] .cert-form-actions .fs-btn {
+    width: 100%;
+    justify-content: center;
   }
 }

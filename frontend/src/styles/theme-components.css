@@ -2176,4 +2176,28 @@ html[data-fs-theme] .cert-error-card {
   border-color: var(--fs-danger);
 }
 
+/* ----------------------------------------------------
+   Phase 8C: Certificates Detail & Forms Semantic Themes (§4.3, §4.10, §6.12)
+   Danger styling is always paired with role="alert" and explicit text cues.
+   ---------------------------------------------------- */
+html[data-fs-theme] .cert-btn-danger-outline:hover:not(:disabled),
+html[data-fs-theme] .cert-btn-danger-outline:focus-visible:not(:disabled) {
+  color: var(--fs-danger);
+  border-color: var(--fs-danger);
+}
+
+html[data-fs-theme] .cert-form-page .cert-form-error-summary,
+html[data-fs-theme] .cert-form-page .cert-submit-error {
+  border-color: var(--fs-danger);
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .cert-form-page .cert-field-error {
+  color: var(--fs-danger);
+}
+
+html[data-fs-theme] .cert-form-page .cert-checkbox-input:checked {
+  accent-color: var(--fs-accent);
+}
+
 
