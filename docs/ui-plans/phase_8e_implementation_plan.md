@@ -2,7 +2,7 @@
 
 - **Date**: 2026-11-27
 - **Revision**: **v4** — incorporates final review correction: neutral `<progress>` accessible name and signed value text; retains all v3 corrections (neutral `aria-valuetext`, accurate I4 bug-fix scope, explicit realised-loss non-rendering note, `User Review Required` placement) and all v2 corrections (coherent capital-gain options, schema-parity clarification, deterministic reference-spec setup, expanded Cluster 8 Gate 18, explicit Gate 0 / invariant map / governance section, and strengthened gate exit checks)
-- **Status**: Approved — Executing on `phase-ui-8e-real-estate` (v5: Gate 5 loading & `overflow-x` greps, Gate 14/15 accepted-diff exit handling, explicit `area >= 0` form validation, artifact synced; user approved Review Items #1 `Option B′`, #2 `Option A`, #3 `W-8E-1`, #4 local Gates 12 & 15, #5 retained `$` formatter)
+- **Status**: Complete — Gate 19 Signed Off 2026-11-27 (Phase 8 Cluster Exit Gate Closed `16 of 16`)
 - **Merge Base**: `main` @ `fea6d8f` *(pre-execution tag omitted per Phase 7A–8D precedent; merge base SHA + baseline SHA provide full traceability)*
 - **Starting Baseline Commit**: `d86155f` in `D:\Projects\FinStat-visual-baselines` (`334/334` manifest verified)
 - **Branch**: `phase-ui-8e-real-estate` *(local branch policy per §14/§10; only `main` is pushed after Gate 19 user sign-off)*

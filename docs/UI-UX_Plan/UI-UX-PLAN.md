@@ -932,9 +932,9 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | `/currency/:id` | `pages/currency/CurrencyDetailPage` | 8D | ☑ | ☑ | 36 inline styles purged to 0 (26 colour-bearing + 10 layout); flat hero & 6 tiles; `chartTheme` + local `currLastPointLabelPlugin` + `<details>`/`<table>` + D19 cards (`CertificateDetail.css` converted) |
 | `/currency/new` | `pages/currency/AddCurrencyPage` | 8D | ☑ | ☑ | + `CurrencyForm` (0 inline styles; Frame 02 stacked form, live Implied Rate preview, blur/submit validation) |
 | `/currency/edit/:id` | `pages/currency/EditCurrencyPage` | 8D | ☑ | ☑ | Frame 02 stacked form; shared `CurrencyForm`; synchronous `initialData` state hydration |
-| `/real-estate` | `pages/real-estate/RealEstateLogPage` | 8E | ☐ | ☐ | 34 inline styles |
-| `/real-estate/new` | `pages/real-estate/AddRealEstatePage` | 8E | ☐ | ☐ | + `RealEstateForm` |
-| `/real-estate/edit/:id` | `pages/real-estate/EditRealEstatePage` | 8E | ☐ | ☐ | |
+| `/real-estate` | `pages/real-estate/RealEstateLogPage` | 8E | ☑ | ☑ | 34 inline styles purged to 0 (47 total across 8E); Frame 01/03 dark graphite cards & table + D19 mobile cards; neutral `<Badge>` & `<progress>` (zero emojis); Option B′ strict-literal neutral capital gains; Option A scoped `useCanModify()` fix; `W-8E-1` |
+| `/real-estate/new` | `pages/real-estate/AddRealEstatePage` | 8E | ☑ | ☑ | + `RealEstateForm` (2 + 7 inline styles purged to 0; Frame 02 stacked form, 11 `id`/`htmlFor` pairings, blur/submit & client-only `Sold` validation) |
+| `/real-estate/edit/:id` | `pages/real-estate/EditRealEstatePage` | 8E | ☑ | ☑ | 4 inline styles purged to 0; Frame 02 stacked form; shared `RealEstateForm`; synchronous `initialData` hydration; `<Loading variant="form-field" />`; Retry/not-found cards |
 
 **Phase 8 count: 16. All RealEstate routes live in one sub-phase (8E).**
 
@@ -1066,7 +1066,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **8B** | Certificates: log | `phase-ui-8b-certificates-log` | ☑ | ☑ |
 | **8C** | Certificates: detail + forms | `phase-ui-8c-certificates-detail` | ☑ | ☑ |
 | **8D** | Currency | `phase-ui-8d-currency` | ☑ | ☑ |
-| **8E** | Real estate (all three routes) | `phase-ui-8e-real-estate` | ☐ | ☐ |
+| **8E** | Real estate (all three routes) | `phase-ui-8e-real-estate` | ☑ | ☑ |
 | **9A** | Credit cards, modals, installments | `phase-ui-9a-credit-cards` | ☐ | ☐ |
 | **9B** | Statements, debt payoff, reconciliation | `phase-ui-9b-statements-debt` | ☐ | ☐ |
 | **9C** | Peer-to-peer lending (Module 23) | `phase-ui-9c-lending` | ☐ | ☐ |
@@ -1870,23 +1870,23 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 8E — Real estate, all routes
 
-- [ ] `pages/real-estate/RealEstate.css` — replace the pink radial glows with flat `--fs-bg`; cost figures are neutral, because pink is not a cost signal; the negative tone is applied only through `Badge` or `Delta` for a realised loss or an overdue state; remove the local `full-bleed` duplication risk.
-- [ ] `RealEstateLogPage.js` (34) → classes.
-- [ ] `RealEstateForm.js` → token form.
-- [ ] `AddRealEstatePage.js` / `EditRealEstatePage.js` header + container alignment.
-- [ ] Verify property cards, yield, and ROI figures are neutral; a yield or ROI takes a tone only on a delta against the target recorded in §4.3.1, and stays neutral when no target exists.
-- [ ] Real-estate yield/ROI fixtures unchanged.
-- [ ] Remove Real Estate components from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add all three real-estate patterns in this branch.** Never theme `/real-estate` before its forms are converted.
+- [x] `pages/real-estate/RealEstate.css` — replaced pink/purple radial glows, 11 gradients, 6 blurs, 12 shadows, and `.main-content.full-bleed` with flat `--fs-bg` under D22 `html[data-fs-theme] .re-page-container`; all cost, valuation, appreciation, and capital-gain figures strictly neutral per Option B′ (zero realised-loss tone introduced).
+- [x] `RealEstateLogPage.js` (34) → classes (`0` inline styles, `0` emojis, neutral `<Badge>` & `<progress>`).
+- [x] `RealEstateForm.js` (7) → token Frame 02 stacked form (`11` `id`/`htmlFor` pairings, blur/submit + client-only `Sold` validation, byte-identical payload).
+- [x] `AddRealEstatePage.js` (2) / `EditRealEstatePage.js` (4) header + container alignment (`0` inline styles, `<Loading variant="form-field" />`, Retry & not-found cards).
+- [x] Verified property cards, yield, and ROI figures are strictly neutral (Option B′; Sold-loss fixture verified neutral in Jest & Playwright).
+- [x] Real-estate yield/ROI fixtures unchanged (`calculations.spec.js` `11/11` across 8 domains including Domain 8; inherited `$` formatter retained per `I3`).
+- [x] Removed Real Estate components from `frontend/.eslintignore` (lines 42–45 removed, preserving `realEstateService.test.js`); verified clean ESLint (`--max-warnings=0`).
+- [x] **Added all three real-estate patterns in this branch.** (`THEMED_PATTERNS` 46 → 49: `'/real-estate'`, `'/real-estate/new'`, `'/real-estate/edit/:id'`.)
 
 **Exit gate Phase 8:**
-- [ ] 16 routes themed.
-- [ ] No pink or violet page identity remains.
-- [ ] Charts themed and accessible.
-- [ ] Build/tests/lint/axe/screenshots.
-- [ ] Zero diff on non-allowlisted routes.
+- [x] 16 routes themed.
+- [x] No pink or violet page identity remains.
+- [x] Charts themed and accessible.
+- [x] Build/tests/lint/axe/screenshots.
+- [x] Zero diff on non-allowlisted routes.
 
-> Phase 8D signed off 2026-11-27: 13 of 16 routes themed; 8E (Real Estate) remains open.
+> Phase 8E signed off 2026-11-27: 16 of 16 routes themed; Phase 8 exit gate closed.
 
 **User-facing acceptance criterion:** "A user can open a certificate or property on a phone and read maturity, yield, and cost figures without clipping."
 
@@ -2180,7 +2180,7 @@ The legacy zero-diff gate is the proof that the allowlist works. A PR that chang
 | 5A–5E | `salary/SalaryProfile.css`, `salary/PaycheckFormPage.css`, `taxes/TaxesPage.css`, `salary/TaxSimulator.css`, `analytics/PurchasingPowerChart.css` + **delete** `salary/SalaryProfilePage.css`, `salary/PaycheckListPage.css` |
 | 6A–6B | `portfolio/Portfolio.css`, `portfolio/RebalancingPage.css`, `reports/ComprehensiveReport.css` (Phase 6B / print styles) |
 | 7A–7C | `trades/Trades.css`, `trades/CorporateActionsList.css`, `trades/CorporateActionWizard.css` |
-| 8A–8E | `certificates/CertificateDetail.css` *(converted to D22 dark tokens in 8D)*, `real-estate/RealEstate.css` *(plus post-8.1 phase additions `gold/GoldWallet.css`, `analytics/PurchasingPowerChart.css`, `certificates/Certificates.css`, `currency/Currency.css`; on-disk total: 63 pre-8D / 64 post-8D vs §8.1's historic 57-file snapshot including `PaycheckLog.css`, `PayrollAnalyticsPage.css`, `MutualFunds.css`)* |
+| 8A–8E | `certificates/CertificateDetail.css` *(converted to D22 dark tokens in 8D)*, `real-estate/RealEstate.css` *(rewritten in place to D22 dark tokens in 8E; no net new CSS file)* *(plus post-8.1 phase additions `gold/GoldWallet.css`, `analytics/PurchasingPowerChart.css`, `certificates/Certificates.css`, `currency/Currency.css`; on-disk total remains 64 post-8E vs §8.1's historic 57-file snapshot including `PaycheckLog.css`, `PayrollAnalyticsPage.css`, `MutualFunds.css`)* |
 | 9A–9C | `credit-cards/CreditCardPage.css`, `credit-cards/StatementCyclePage.css`, `credit-cards/DebtPayoffPage.css`, `credit-cards/ReconciliationPage.css`, `credit-cards/UtilizationWidget.css`, `credit-cards/CreditCardSubNav.css`, `lending/Lending.css` |
 | 10A–10C | `profile/ProfilePage.css`, `profile/SettingsPage.css`, `profile/RecycleBin.css`, `security/SecuritySettingsPage.css`, `admin/AdminDashboard.css`, `admin/TaxConfigPage.css`, `admin/InsuranceConfigPage.css`, `admin/BackupPage.css` |
 | 11A | `LandingPage.css` |
@@ -2206,7 +2206,7 @@ Metric: number of `style={{` props per file. Counts include layout-only styles; 
 | `pages/currency/CurrencyDetailPage.js` | 36 *(purged to 0 in 8D)* | 8D |
 | `pages/currency/CurrencyLogPage.js` | 36 *(purged to 0 in 8D)* | 8D |
 | `pages/paycheck/PaycheckLog.js` | 34 | 5B |
-| `pages/real-estate/RealEstateLogPage.js` | 34 | 8E |
+| `pages/real-estate/RealEstateLogPage.js` | 34 *(purged to 0 in 8E; `RealEstateForm.js` 7, `AddRealEstatePage.js` 2, `EditRealEstatePage.js` 4 also purged to 0)* | 8E |
 | `pages/expenditure/ExpenditureAnalysisPage.js` | 32 | 4C |
 | `pages/credit-cards/CardInstallmentSchedule.js` | 28 | 9A |
 | `pages/salary/SalaryProfilePage.js` | 26 | 5A |
@@ -2953,17 +2953,17 @@ Merge SHA:   0991448 (merged to main; governance finalized in follow-up commit)
 ```
 
 ```
-Sub-phase:   8E (Gate 0 — Approved Plan & Pre-Execution Governance)
-Status:      in progress (Executing on local branch phase-ui-8e-real-estate from main @ fea6d8f)
-Done:        Gate 0 approved plan (`docs/ui-plans/phase_8e_implementation_plan.md` v5) and pre-execution governance recorded: (1) Review Item #1 Option B′ (strict literal §6.12:1873/:1877 neutrality — all capital-gain, appreciation, cost, and valuation figures remain neutral signed `.fs-num` text; zero `<Delta>` tones, zero realised-loss computation, zero §4.3/§4.3.1 amendment); (2) Review Item #2 Option A (authorized scoped `I4` defensive handler-guard fix `const { canModify } = useCanModify();` at `RealEstateLogPage.js:35` with direct viewer-role Jest test, zero visible `ProtectedAction` wrapper changes); (3) Waiver `W-8E-1` recorded in §7.1:2104 for desktop/tablet `.re-log-page .re-table-wrap` (`>768px` Table view only; D19 cards at `<=768px` with `0px` page overflow); (4) §15.3/§15.5 local Gate 12 (`2048`MB / `1536`MB fallback) and full 326-test Gate 15 authorized; (5) inherited `$` `formatCurrency()` retained per `I3`.
-Next:        Implement Phase 8E Real Estate (3 routes) and run Gates 1–19
+Sub-phase:   8E (Finalized — Gate 19 Signed Off; Phase 8 Cluster Exit Gate Closed 16/16)
+Status:      done (Signed off by User 2026-11-27; merging to main)
+Done:        Modernized /real-estate, /real-estate/new, and /real-estate/edit/:id into the FinStat dark graphite design system (`RealEstate.css` rewritten in place under D22 `html[data-fs-theme] .re-page-container` + `theme-components.css` Section 22), closing Cluster 8 (`13 -> 16 of 16`). Purged all 47 verified inline styles (`34` log + `7` form + `2` add + `4` edit), 2 icon `color` props, 37 hex and 8 rgba literals, 11 gradients, 6 blurs, 12 pixel box-shadows, `.main-content.full-bleed`, and all 6 emojis. Applied approved Option B′ strict-literal neutrality (zero `<Delta>` tones, zero realised-loss computation, zero `§4.3`/`§4.3.1` amendment; Sold-loss fixture `realizedGain: -300000` is data-only with `currentValuation - purchasePrice` preserved per `I3`), neutral `<Badge>` type/status chips, accessible neutral `<progress>` appreciation meter (`aria-label` + signed `aria-valuetext`), approved Option A scoped `I4` defensive `useCanModify()` destructuring fix (`RealEstateLogPage.js`) with viewer-role Jest coverage, Waiver `W-8E-1` (`§7.1:2104`) on desktop/tablet `.re-log-page .re-table-wrap` with D19 `<=768px` compact-expand mobile cards (`0px` overflow at `390px`), Reference Frame 02 stacked forms with 11 `id`/`htmlFor` pairings and client-only conditional `Sold` validation, `<Loading>` primitives, and `.re-error-card` Retry states. Retained inherited `$` formatter per `I3`, de-ignored lines 42–45 in `.eslintignore` (preserving `realEstateService.test.js`), expanded `THEMED_PATTERNS` `46 -> 49`, added 26 Jest + jest-axe tests (`2/2` suites) and 8-spec Playwright reference-match suite (`9/9` with setup). Gates 0–18 passed: Gate 1 49 patterns / 75 routes / 0 unassigned, Gate 2 0 drift, Gate 3 0 deletions, Gate 4 0 violations (`61` page / `64` total CSS), Gate 5 `0` regressions across `63` CSS / stylelint clean / `0` loading bypasses, Gate 6 ESLint `0` warnings, Gate 7 `26/26`, Gate 8 `15/15` (`DashboardSummary.js` `96` lines), Gate 9 `11/11`, Gate 10 `4/4`, Gate 11 `9/9`, Gate 12 `2048`MB build clean, Gate 13 `16/16` (`7460ca7`; `d86155f -> 7460ca7`; `334/334` manifest), Gate 14 `68/71` (`3` W-6A-1/AD16 only), Gate 15 `326` (`292 + 34` AD14/AD16; authorized §15.5 local run + §7.1 HTML-report precedent + §7.4 state-screenshot deviation), Gate 16 `2/2`, Gate 17 15/15 PNGs inspected & polished, Gate 18 `86/86` (all 16 Phase 8 routes + Credit Cards).
+Next:        Phase 9A (Credit Cards, modals, installments)
 Blocked by:  None
-Allowlist:   Pending (`/real-estate`, `/real-estate/new`, `/real-estate/edit/:id`; 46 -> 49)
-Visual diff: Pending (starting baseline d86155f, 334/334 manifest verified)
-Fixtures:    Pending (`calculations.spec.js` untouched)
-Screenshots: Pending (15 Real Estate baselines in FinStat-visual-baselines repo)
-Branch:      phase-ui-8e-real-estate
-Merge SHA:   Pending Gate 19 user sign-off
+Allowlist:   ['/real-estate', '/real-estate/new', '/real-estate/edit/:id'] (cumulative: 49 patterns)
+Visual diff: Gate 13 replaced 15 real-estate snapshots in place (7460ca7); manifest 334/334 verified; Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 326 accounted (292 + 34 AD14/AD16); Gate 18 86/86; 0 diffs attributable to 8E. W-8E-1 active for desktop/tablet .re-log-page .re-table-wrap only.
+Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (Domain 8 Real Estate ROI & Yields unchanged)
+Screenshots: None tracked per D5/D21; 15 real-estate baselines in FinStat-visual-baselines repo (7460ca7)
+Branch:      phase-ui-8e-real-estate (Gate 0 Plan SHA: 7435fda; Impl SHA: e7a7c4e; Walkthrough SHA: 44c402f)
+Merge SHA:   Pending merge commit on main
 ```
 
 ### Sub-phase note template

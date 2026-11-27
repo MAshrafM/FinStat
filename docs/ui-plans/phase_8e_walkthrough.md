@@ -1,11 +1,12 @@
 # UI Phase 8E Walkthrough — Real Estate (Cluster 8 Final Sub-Phase)
 
 - **Date**: 2026-11-27
-- **Status**: Complete (Gates 0–18 Passed) — **Awaiting Gate 19 User Sign-Off**
+- **Status**: Complete — **Gate 19 Signed Off by User (2026-11-27)**
 - **Branch**: `phase-ui-8e-real-estate` *(local only; only `main` is pushed after Gate 19 sign-off)*
 - **Merge Base**: `main` @ `fea6d8f`
 - **Gate 0 Plan & Governance SHA**: `7435fda`
 - **Implementation SHA**: `e7a7c4e`
+- **Walkthrough SHA**: `44c402f`
 - **Starting Baseline Commit**: `d86155f` (`D:\Projects\FinStat-visual-baselines`, `334/334` manifest verified)
 - **Gate 13 Baseline Commit**: `7460ca7` (`D:\Projects\FinStat-visual-baselines`, `334/334` manifest verified; `15` Real Estate PNGs replaced in place, `0` net new entries)
 - **Target Routes (3 routes — closes Cluster 8 `13 -> 16 of 16`)**:
