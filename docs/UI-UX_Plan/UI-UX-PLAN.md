@@ -2101,7 +2101,7 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 - [ ] If the PR adds an allowlist pattern: the route it names is converted **in this PR**.
 - [ ] If the PR converts a cluster's first route: the screen matches its reference frame.
 - [ ] `grep -rn '#14b8a6' frontend/src --include='*.css'` returns only tokens.css:36.
-- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`, waiver **W-8B-1** for `.cert-log-page .cert-table-wrap` in `Certificates.css`, and waiver **W-8D-1** for `.curr-log-page .curr-table-wrap` in `Currency.css`); `PurchasingPowerChart.css` has no `overflow-x`.
+- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`, waiver **W-8B-1** for `.cert-log-page .cert-table-wrap` in `Certificates.css`, waiver **W-8D-1** for `.curr-log-page .curr-table-wrap` in `Currency.css`, and waiver **W-8E-1** for `.re-log-page .re-table-wrap` in `RealEstate.css`); `PurchasingPowerChart.css` has no `overflow-x`.
 - [ ] Loading consistency check: `git grep -nE "<div>Loading|className=\"loading-spinner\"|custom spinner SVG" frontend/src --include="*.js"` returns only loading primitive usages and test files.
 
 The legacy zero-diff gate is the proof that the allowlist works. A PR that changes a legacy page fails here, regardless of whether the change looks harmless.
@@ -2950,6 +2950,20 @@ Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (
 Screenshots: None tracked per D5/D21; 20 currency baselines in FinStat-visual-baselines repo (d86155f)
 Branch:      phase-ui-8d-currency (Gate 0 Plan SHA: de0a888; Impl SHA: 79e5afb; Walkthrough SHAs: 653fb25, 89cdacf, ba338a0; Gov SHA: 4afe5cc)
 Merge SHA:   0991448 (merged to main; governance finalized in follow-up commit)
+```
+
+```
+Sub-phase:   8E (Gate 0 — Approved Plan & Pre-Execution Governance)
+Status:      in progress (Executing on local branch phase-ui-8e-real-estate from main @ fea6d8f)
+Done:        Gate 0 approved plan (`docs/ui-plans/phase_8e_implementation_plan.md` v5) and pre-execution governance recorded: (1) Review Item #1 Option B′ (strict literal §6.12:1873/:1877 neutrality — all capital-gain, appreciation, cost, and valuation figures remain neutral signed `.fs-num` text; zero `<Delta>` tones, zero realised-loss computation, zero §4.3/§4.3.1 amendment); (2) Review Item #2 Option A (authorized scoped `I4` defensive handler-guard fix `const { canModify } = useCanModify();` at `RealEstateLogPage.js:35` with direct viewer-role Jest test, zero visible `ProtectedAction` wrapper changes); (3) Waiver `W-8E-1` recorded in §7.1:2104 for desktop/tablet `.re-log-page .re-table-wrap` (`>768px` Table view only; D19 cards at `<=768px` with `0px` page overflow); (4) §15.3/§15.5 local Gate 12 (`2048`MB / `1536`MB fallback) and full 326-test Gate 15 authorized; (5) inherited `$` `formatCurrency()` retained per `I3`.
+Next:        Implement Phase 8E Real Estate (3 routes) and run Gates 1–19
+Blocked by:  None
+Allowlist:   Pending (`/real-estate`, `/real-estate/new`, `/real-estate/edit/:id`; 46 -> 49)
+Visual diff: Pending (starting baseline d86155f, 334/334 manifest verified)
+Fixtures:    Pending (`calculations.spec.js` untouched)
+Screenshots: Pending (15 Real Estate baselines in FinStat-visual-baselines repo)
+Branch:      phase-ui-8e-real-estate
+Merge SHA:   Pending Gate 19 user sign-off
 ```
 
 ### Sub-phase note template
