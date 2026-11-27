@@ -1,11 +1,24 @@
 // frontend/src/pages/certificates/CertificateDetailPage.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getCertificateById, getAccruedInterest, withdrawCertificate, deleteCertificate, processCertificatePayout } from '../../services/certificateService';
+import {
+  getCertificateById,
+  getAccruedInterest,
+  withdrawCertificate,
+  deleteCertificate,
+  processCertificatePayout,
+} from '../../services/certificateService';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
 import ConfirmModal from '../../components/common/ConfirmModal';
+import { Loading, Badge } from '../../components/ui';
+import {
+  getChartPalette,
+  withAlpha,
+  baseChartOptions,
+  ariaLabel,
+} from '../../styles/chartTheme';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -31,8 +44,13 @@ import {
   FaTimes,
   FaExclamationTriangle,
   FaSync,
+  FaCheckCircle,
+  FaBan,
+  FaHourglassHalf,
+  FaChevronDown,
+  FaChevronUp,
 } from 'react-icons/fa';
-import './CertificateDetail.css';
+import './Certificates.css';
 
 ChartJS.register(
   CategoryScale,
@@ -45,6 +63,78 @@ ChartJS.register(
   Filler
 );
 
+const getStatusBadgeMeta = (displayStatus) => {
+  switch (displayStatus) {
+    case 'withdrawn':
+      return { label: 'Withdrawn', Icon: FaBan };
+    case 'matured':
+      return { label: 'Matured', Icon: FaCheckCircle };
+    case 'maturing_soon':
+      return { label: 'Maturing Soon', Icon: FaClock };
+    case 'future':
+      return { label: 'Future', Icon: FaHourglassHalf };
+    case 'active':
+    default:
+      return { label: 'Active', Icon: FaCheckCircle };
+  }
+};
+
+const useDialogAccessibility = (isOpen, isBusy, onClose, dialogRef, closeBtnRef, triggerRef) => {
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const fallbackPrevious = document.activeElement;
+    const focusTimer = setTimeout(() => {
+      if (closeBtnRef.current) {
+        closeBtnRef.current.focus();
+      } else if (dialogRef.current) {
+        dialogRef.current.focus();
+      }
+    }, 0);
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (!isBusy && onClose) {
+          e.preventDefault();
+          onClose();
+        }
+        return;
+      }
+
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first || !dialogRef.current.contains(document.activeElement)) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else if (document.activeElement === last || !dialogRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+      const restoreTarget = triggerRef.current || fallbackPrevious;
+      triggerRef.current = null;
+      if (restoreTarget && typeof restoreTarget.focus === 'function') {
+        restoreTarget.focus();
+      }
+    };
+  }, [isOpen, isBusy, onClose, dialogRef, closeBtnRef, triggerRef]);
+};
+
 const CertificateDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -53,26 +143,39 @@ const CertificateDetailPage = () => {
   const [cert, setCert] = useState(null);
   const [liveAccrual, setLiveAccrual] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const [refreshingAccrual, setRefreshingAccrual] = useState(false);
+  const [expandedTrajectoryRows, setExpandedTrajectoryRows] = useState({});
 
   // Withdraw Modal State
-    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [withdrawalReason, setWithdrawalReason] = useState('');
+  const [withdrawalReason, setWithdrawalReason] = useState('');
   const [destinationAccount, setDestinationAccount] = useState('Bank');
   const [confirmedCheckbox, setConfirmedCheckbox] = useState(false);
   const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
+
+  // Payout Modal State
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [payoutDate, setPayoutDate] = useState('');
   const [payoutAccount, setPayoutAccount] = useState('Bank');
   const [isSubmittingPayout, setIsSubmittingPayout] = useState(false);
 
+  const withdrawDialogRef = useRef(null);
+  const withdrawCloseBtnRef = useRef(null);
+  const withdrawTriggerRef = useRef(null);
+
+  const payoutDialogRef = useRef(null);
+  const payoutCloseBtnRef = useRef(null);
+  const payoutTriggerRef = useRef(null);
+
   const fetchCertDetails = useCallback(async () => {
     try {
       setLoading(true);
+      setFetchError('');
       const data = await getCertificateById(id);
       setCert(data);
-      if (data.accruedInterest !== undefined) {
+      if (data && data.accruedInterest !== undefined) {
         setLiveAccrual({
           accruedInterest: data.accruedInterest,
           accruedInterestInPiastres: data.accruedInterestInPiastres,
@@ -83,7 +186,9 @@ const CertificateDetailPage = () => {
       }
     } catch (err) {
       console.error('Failed to load certificate:', err);
-      showToast(err.response?.data?.message || 'Certificate not found', 'error');
+      const message = err.response?.data?.message || err.message || 'Certificate not found';
+      setFetchError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -113,7 +218,33 @@ const CertificateDetailPage = () => {
     return () => clearInterval(interval);
   }, [refreshAccrualOnly]);
 
-    const handleDelete = () => {
+  const handleCloseWithdrawModal = useCallback(() => {
+    setShowWithdrawModal(false);
+  }, []);
+
+  const handleClosePayoutModal = useCallback(() => {
+    setShowPayoutModal(false);
+  }, []);
+
+  useDialogAccessibility(
+    showWithdrawModal,
+    isSubmittingWithdraw,
+    handleCloseWithdrawModal,
+    withdrawDialogRef,
+    withdrawCloseBtnRef,
+    withdrawTriggerRef
+  );
+
+  useDialogAccessibility(
+    showPayoutModal,
+    isSubmittingPayout,
+    handleClosePayoutModal,
+    payoutDialogRef,
+    payoutCloseBtnRef,
+    payoutTriggerRef
+  );
+
+  const handleDelete = () => {
     setShowDeleteModal(true);
   };
 
@@ -128,12 +259,17 @@ const CertificateDetailPage = () => {
     }
   };
 
+  const handleOpenWithdrawModal = (e) => {
+    withdrawTriggerRef.current = e?.currentTarget || document.activeElement;
+    setShowWithdrawModal(true);
+  };
+
   const handleConfirmWithdraw = async () => {
     if (!confirmedCheckbox) return;
 
     try {
       setIsSubmittingWithdraw(true);
-            await withdrawCertificate(id, {
+      await withdrawCertificate(id, {
         withdrawalDate: new Date().toISOString(),
         withdrawalReason: withdrawalReason.trim() || undefined,
         confirmWithdrawal: true,
@@ -149,7 +285,8 @@ const CertificateDetailPage = () => {
     }
   };
 
-  const handleOpenPayoutModal = () => {
+  const handleOpenPayoutModal = (e) => {
+    payoutTriggerRef.current = e?.currentTarget || document.activeElement;
     const defaultDate = cert?.nextDuePayoutDate
       ? new Date(cert.nextDuePayoutDate).toISOString().split('T')[0]
       : (cert?.nextPayoutDate ? new Date(cert.nextPayoutDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
@@ -176,295 +313,399 @@ const CertificateDetailPage = () => {
     }
   };
 
+  const toggleTrajectoryRow = (index) => {
+    setExpandedTrajectoryRows((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  const palette = getChartPalette();
+  const trajectory = useMemo(
+    () => cert?.trajectory || { labels: [], actualSeries: [], projectedSeries: [] },
+    [cert]
+  );
+
+  const chartData = useMemo(() => ({
+    labels: trajectory.labels || [],
+    datasets: [
+      {
+        label: 'Actual Accrued (Solid)',
+        data: trajectory.actualSeries || [],
+        borderColor: palette.grey4,
+        backgroundColor: withAlpha(palette.grey4, 0.12),
+        borderWidth: 3,
+        tension: 0.2,
+        fill: true,
+        pointRadius: 4,
+        pointBackgroundColor: palette.grey4,
+      },
+      {
+        label: 'Projected Accrual (Dashed)',
+        data: trajectory.projectedSeries || [],
+        borderColor: palette.grey1,
+        borderDash: [6, 6],
+        backgroundColor: withAlpha(palette.grey1, 0.06),
+        borderWidth: 2,
+        tension: 0.2,
+        fill: false,
+        pointRadius: 3,
+        pointBackgroundColor: palette.grey1,
+      },
+    ],
+  }), [trajectory, palette]);
+
+  const chartOptions = useMemo(() => {
+    const base = baseChartOptions();
+    return {
+      ...base,
+      layout: {
+        padding: { top: 24, right: 16 },
+      },
+      plugins: {
+        ...base.plugins,
+        legend: {
+          ...base.plugins?.legend,
+          display: true,
+          position: 'top',
+          labels: {
+            ...base.plugins?.legend?.labels,
+            color: palette.text2,
+            font: {
+              family: 'IBM Plex Sans, -apple-system, sans-serif',
+              weight: '600',
+              size: 12,
+            },
+          },
+        },
+        tooltip: {
+          ...base.plugins?.tooltip,
+          callbacks: {
+            label: (context) => `${context.dataset?.label || 'Accrued'}: ${formatCurrency(context.parsed.y)}`,
+          },
+        },
+      },
+      scales: {
+        ...base.scales,
+        y: {
+          ...base.scales?.y,
+          beginAtZero: true,
+          grace: '25%',
+          ticks: {
+            ...base.scales?.y?.ticks,
+            callback: (value) => `${value} EGP`,
+          },
+        },
+        x: {
+          ...base.scales?.x,
+          grid: { display: false },
+        },
+      },
+    };
+  }, [palette]);
+
+  // Local last-point direct label plugin for both series (§4.12; zero shared chartTheme changes)
+  const certLastPointLabelPlugin = useMemo(() => ({
+    id: 'certLastPointLabelPlugin',
+    afterDatasetsDraw(chart) {
+      const datasets = chart?.data?.datasets || [];
+      if (!datasets.length) return;
+
+      const ctx = chart.ctx;
+      const drawnYPositions = [];
+      ctx.save();
+      ctx.font = '600 12px "IBM Plex Sans", sans-serif';
+      ctx.fillStyle = palette.text2;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+
+      datasets.forEach((dataset, datasetIndex) => {
+        const seriesData = Array.isArray(dataset?.data) ? dataset.data : [];
+        let lastIndex = -1;
+        for (let i = seriesData.length - 1; i >= 0; i -= 1) {
+          if (seriesData[i] !== null && seriesData[i] !== undefined && Number.isFinite(Number(seriesData[i]))) {
+            lastIndex = i;
+            break;
+          }
+        }
+        if (lastIndex < 0) return;
+
+        const meta = chart.getDatasetMeta(datasetIndex);
+        const point = meta?.data?.[lastIndex];
+        if (!point) return;
+
+        const shortName = datasetIndex === 0 ? 'Actual' : 'Projected';
+        const nearTopEdge = chart?.chartArea ? (point.y - 22 < chart.chartArea.top) : false;
+        ctx.textBaseline = nearTopEdge ? 'top' : 'bottom';
+        let labelY = nearTopEdge ? point.y + 8 : point.y - 8;
+        drawnYPositions.forEach((prevY) => {
+          if (Math.abs(labelY - prevY) < 16) {
+            labelY = nearTopEdge ? prevY + 18 : prevY - 18;
+          }
+        });
+        drawnYPositions.push(labelY);
+
+        ctx.fillText(
+          `${shortName}: ${formatCurrency(Number(seriesData[lastIndex]))}`,
+          point.x - 8,
+          labelY
+        );
+      });
+
+      ctx.restore();
+    },
+  }), [palette]);
+
+  const trajectoryRows = useMemo(() => {
+    const labels = trajectory.labels || [];
+    const actuals = trajectory.actualSeries || [];
+    const projected = trajectory.projectedSeries || [];
+    return labels.map((label, idx) => ({
+      label,
+      actual: actuals[idx],
+      projected: projected[idx],
+    }));
+  }, [trajectory]);
+
+  const chartSummaryPoints = useMemo(
+    () => trajectoryRows.map((row) => ({
+      label: row.label,
+      value: row.actual !== null && row.actual !== undefined
+        ? formatCurrency(row.actual)
+        : formatCurrency(row.projected || 0),
+    })),
+    [trajectoryRows]
+  );
+
+  const chartAriaLabel = useMemo(
+    () => ariaLabel('Interest Accrual Trajectory (Dual Series)', chartSummaryPoints),
+    [chartSummaryPoints]
+  );
+
   if (loading) {
     return (
-      <div className="page-container">
-        <p>Loading certificate details...</p>
+      <div className="page-container cert-page-container cert-detail-page">
+        <Loading variant="card" text="Loading certificate details..." />
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="page-container cert-page-container cert-detail-page">
+        <div className="cert-detail-top-bar">
+          <Link to="/certificates" className="cert-back-link">
+            <FaArrowLeft aria-hidden="true" /> Back to Certificates
+          </Link>
+        </div>
+        <div className="cert-error-card" role="alert">
+          <h2>Failed to Load Certificate</h2>
+          <p>{fetchError}</p>
+          <div className="cert-error-actions">
+            <button type="button" className="fs-btn fs-btn-secondary" onClick={fetchCertDetails}>
+              Retry
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!cert) {
     return (
-      <div className="page-container">
-        <h2>Certificate Not Found</h2>
-        <Link to="/certificates" className="action-button">Return to Certificates</Link>
+      <div className="page-container cert-page-container cert-detail-page">
+        <div className="cert-empty-card">
+          <h2>Certificate Not Found</h2>
+          <p>The requested certificate could not be found or is no longer available.</p>
+          <div className="cert-error-actions">
+            <Link to="/certificates" className="fs-btn fs-btn-secondary">Return to Certificates</Link>
+          </div>
+        </div>
       </div>
     );
   }
 
   const isWithdrawn = cert.status === 'withdrawn';
   const displayStatus = cert.displayStatus || cert.status || 'active';
-
-  // Status Badge Helper
-  const getBadgeDetails = () => {
-    switch (displayStatus) {
-      case 'withdrawn':
-        return { label: '⚪ Withdrawn', bg: '#64748b' };
-      case 'matured':
-        return { label: '🔴 Matured', bg: '#ef4444' };
-      case 'maturing_soon':
-        return { label: '🟡 Maturing Soon', bg: '#f59e0b' };
-      case 'future':
-        return { label: '⏳ Future', bg: '#8b5cf6' };
-      case 'active':
-      default:
-        return { label: '🟢 Active', bg: '#10b981' };
-    }
-  };
-
-  const badge = getBadgeDetails();
-
-  // Dual-Series Trajectory Chart Data
-  const trajectory = cert.trajectory || { labels: [], actualSeries: [], projectedSeries: [] };
-  const chartData = {
-    labels: trajectory.labels,
-    datasets: [
-      {
-        label: 'Actual Accrued (Solid)',
-        data: trajectory.actualSeries,
-        borderColor: '#4f46e5',
-        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-        borderWidth: 3,
-        tension: 0.2,
-        fill: true,
-        pointRadius: 4,
-        pointBackgroundColor: '#4f46e5',
-      },
-      {
-        label: 'Projected Accrual (Dashed)',
-        data: trajectory.projectedSeries,
-        borderColor: '#93c5fd',
-        borderDash: [6, 6],
-        backgroundColor: 'rgba(147, 197, 253, 0.05)',
-        borderWidth: 2,
-        tension: 0.2,
-        fill: false,
-        pointRadius: 3,
-        pointBackgroundColor: '#93c5fd',
-      },
-    ],
-  };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          font: { weight: '600', size: 12 },
-          color: '#374151',
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: (context) => `Accrued: ${formatCurrency(context.parsed.y)}`,
-        },
-      },
-    },
-    scales: {
-      y: {
-        ticks: {
-          callback: (value) => `${value} EGP`,
-        },
-        grid: { color: '#f3f4f6' },
-      },
-      x: {
-        grid: { display: false },
-      },
-    },
-  };
+  const statusMeta = getStatusBadgeMeta(displayStatus);
+  const StatusIcon = statusMeta.Icon;
+  const showPayoutDueBanner = !isWithdrawn && !cert.autoReinvest && Boolean(cert.isPayoutDue);
+  const currentAccrued = liveAccrual?.accruedInterest ?? cert.accruedInterest ?? 0;
+  const dailyYieldPct = (((cert.interest || 0) / 100) / 365 * 100).toFixed(4);
+  const nextPayoutFormatted = liveAccrual?.nextPayoutDate
+    ? formatDate(liveAccrual.nextPayoutDate)
+    : (cert.nextPayoutDate ? formatDate(cert.nextPayoutDate) : 'Completed');
+  const totalLifetimeYield = liveAccrual?.totalEarned ?? cert.totalInterestEarned ?? 0;
 
   return (
-    <div className="page-container">
+    <div className="page-container cert-page-container cert-detail-page">
       {/* Top Navigation */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-        <Link to="/certificates" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#4f46e5', textDecoration: 'none', fontWeight: '600' }}>
-          <FaArrowLeft /> Back to Certificates
+      <div className="cert-detail-top-bar">
+        <Link to="/certificates" className="cert-back-link">
+          <FaArrowLeft aria-hidden="true" /> Back to Certificates
         </Link>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="cert-detail-actions">
           <Link
             to={`/certificates/edit/${cert._id}`}
-            className="action-button"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#3b82f6', color: 'white', padding: '6px 14px', borderRadius: '6px', textDecoration: 'none', fontWeight: '600' }}
+            className="fs-btn fs-btn-secondary"
           >
-            <FaEdit /> Edit
+            <FaEdit aria-hidden="true" /> Edit
           </Link>
           {!isWithdrawn && !cert.autoReinvest && (
             <ProtectedAction tooltip="View-only access">
               <button
+                type="button"
                 onClick={handleOpenPayoutModal}
                 data-testid="add-payout-btn"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#10b981', color: 'white', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: '600' }}
+                className={showPayoutDueBanner ? 'fs-btn fs-btn-secondary' : 'fs-btn fs-btn-primary'}
               >
-                <FaCoins /> Add Interest Payout
+                <FaCoins aria-hidden="true" /> Add Interest Payout
               </button>
             </ProtectedAction>
           )}
           {!isWithdrawn && (
             <button
-              onClick={() => setShowWithdrawModal(true)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f59e0b', color: 'white', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: '600' }}
+              type="button"
+              onClick={handleOpenWithdrawModal}
+              className="fs-btn fs-btn-secondary"
             >
-              <FaHandHoldingUsd /> Withdraw
+              <FaHandHoldingUsd aria-hidden="true" /> Withdraw
             </button>
           )}
           <button
+            type="button"
             onClick={handleDelete}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#ef4444', color: 'white', padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: '600' }}
+            className="fs-btn fs-btn-secondary cert-btn-danger-outline"
           >
-            <FaTrash /> Delete
+            <FaTrash aria-hidden="true" /> Delete
           </button>
         </div>
       </div>
 
       {/* Hero Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
-        borderRadius: '16px',
-        padding: '24px',
-        color: 'white',
-        marginBottom: '24px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '12px' }}>
+      <section className="cert-detail-hero">
+        <div className="cert-detail-hero-row">
           <div>
-            <h1 style={{ margin: '0 0 6px 0', fontSize: '28px', color: '#ffffff' }}>{cert.name}</h1>
-            <p style={{ margin: 0, opacity: 0.85, fontSize: '14px' }}>
-              Issued on <strong>{formatDate(cert.startDate)}</strong> • Duration: <strong>{cert.period} months</strong> ({cert.payoutInterval || 'monthly'} payouts)
+            <h1>{cert.name}</h1>
+            <p className="cert-detail-hero-meta">
+              Issued on <strong>{formatDate(cert.startDate)}</strong> &bull; Duration:{' '}
+              <strong className="fs-num">{cert.period} months</strong> ({cert.payoutInterval || 'monthly'} payouts)
             </p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ backgroundColor: badge.bg, color: 'white', padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '13px' }}>
-              {badge.label}
-            </span>
-            <span style={{ backgroundColor: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: '20px', fontSize: '13px' }}>
-              ⏳ {cert.daysRemaining || 0} days remaining
-            </span>
+          <div className="cert-detail-hero-badges">
+            <Badge tone="neutral" className="cert-status-badge">
+              <StatusIcon aria-hidden="true" />
+              <span>{statusMeta.label}</span>
+            </Badge>
+            <Badge tone="neutral" className="cert-status-badge">
+              <FaClock aria-hidden="true" />
+              <span className="fs-num">{cert.daysRemaining || 0} days remaining</span>
+            </Badge>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Payout Due Notice Banner */}
-      {!isWithdrawn && !cert.autoReinvest && cert.isPayoutDue && (
-        <div style={{
-          background: '#ecfdf5',
-          border: '1px solid #a7f3d0',
-          borderRadius: '12px',
-          padding: '16px 20px',
-          marginBottom: '20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '12px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+      {showPayoutDueBanner && (
+        <section className="cert-payout-due-banner" aria-label="Scheduled Interest Payout Due">
+          <div className="cert-payout-due-info">
+            <div className="cert-payout-due-icon" aria-hidden="true">
               <FaCoins />
             </div>
             <div>
-              <div style={{ fontWeight: '700', color: '#065f46', fontSize: '15px' }}>
-                Interest Payout Due ({formatCurrency(cert.periodicInterest || 0)})
+              <div className="cert-payout-due-title">
+                Interest Payout Due (<span className="fs-num">{formatCurrency(cert.periodicInterest || 0)}</span>)
               </div>
-              <div style={{ color: '#047857', fontSize: '13px' }}>
+              <div className="cert-payout-due-sub">
                 A scheduled periodic interest disbursement was due on {formatDate(cert.nextDuePayoutDate || cert.nextPayoutDate)}.
               </div>
             </div>
           </div>
           <ProtectedAction tooltip="View-only access">
             <button
+              type="button"
               onClick={handleOpenPayoutModal}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#059669',
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: '700',
-                fontSize: '13px',
-              }}
+              className="fs-btn fs-btn-primary"
             >
-              <FaCoins /> Disburse Payout Now
+              <FaCoins aria-hidden="true" /> Disburse Payout Now
             </button>
           </ProtectedAction>
-        </div>
+        </section>
       )}
 
       {/* Payout Modal */}
       {showPayoutModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '20px'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            maxWidth: '480px',
-            width: '100%',
-            padding: '24px',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, color: '#111827', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FaCoins style={{ color: '#10b981' }} /> Add Interest Payout
-              </h3>
+        <div
+          className="cert-modal-backdrop"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isSubmittingPayout) {
+              handleClosePayoutModal();
+            }
+          }}
+        >
+          <div
+            ref={payoutDialogRef}
+            className="cert-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="detail-payout-modal-title"
+            tabIndex={-1}
+          >
+            <div className="cert-modal-header">
+              <h2 id="detail-payout-modal-title" className="cert-modal-title">
+                <FaCoins aria-hidden="true" /> Add Interest Payout
+              </h2>
               <button
-                onClick={() => setShowPayoutModal(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0 }}
+                ref={payoutCloseBtnRef}
+                type="button"
+                className="cert-modal-close"
+                aria-label="Close payout modal"
+                onClick={handleClosePayoutModal}
+                disabled={isSubmittingPayout}
               >
-                <FaTimes size={18} />
+                <FaTimes aria-hidden="true" />
               </button>
             </div>
 
-            <p style={{ color: '#4b5563', fontSize: '14px', lineHeight: '1.5', marginBottom: '18px' }}>
+            <p className="cert-modal-desc">
               Disburse the scheduled periodic interest for <strong>{cert.name}</strong>. A Top-up deposit will be recorded in your ledger.
             </p>
 
-            <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '12px', color: '#166534', fontWeight: '600' }}>Disbursement Amount</div>
-              <div style={{ fontSize: '22px', fontWeight: '800', color: '#15803d' }}>
-                {formatCurrency(cert.periodicInterest || 0)}
+            <div className="cert-modal-summary">
+              <div className="cert-modal-summary-row">
+                <span>Disbursement Amount</span>
+                <span className="cert-modal-summary-amount fs-num">
+                  {formatCurrency(cert.periodicInterest || 0)}
+                </span>
               </div>
-              <div style={{ fontSize: '11px', color: '#16a34a', marginTop: '2px' }}>
-                Rate: {cert.interest}% • {cert.payoutInterval || 'monthly'} frequency
+              <div className="cert-modal-summary-meta">
+                Rate: <span className="fs-num">{cert.interest}%</span> &bull; {cert.payoutInterval || 'monthly'} frequency
               </div>
             </div>
 
-            <div style={{ marginBottom: '14px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
+            <div className="cert-modal-field">
+              <label htmlFor="detail-payout-date-input" className="fs-label">
                 Payout Date
               </label>
               <input
+                id="detail-payout-date-input"
                 type="date"
+                className="fs-input"
                 value={payoutDate}
                 onChange={(e) => setPayoutDate(e.target.value)}
-                style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '14px', boxSizing: 'border-box' }}
               />
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
+            <div className="cert-modal-field">
+              <label htmlFor="detail-payout-account-select" className="fs-label">
                 Destination Account
               </label>
               <select
+                id="detail-payout-account-select"
+                className="fs-select"
                 value={payoutAccount}
                 onChange={(e) => setPayoutAccount(e.target.value)}
-                style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '14px', boxSizing: 'border-box' }}
               >
                 <option value="Bank">Bank Account</option>
                 <option value="Cash">Cash Wallet</option>
@@ -472,161 +713,228 @@ const CertificateDetailPage = () => {
               </select>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div className="cert-modal-footer">
               <button
                 type="button"
-                onClick={() => setShowPayoutModal(false)}
+                className="fs-btn fs-btn-secondary"
+                onClick={handleClosePayoutModal}
                 disabled={isSubmittingPayout}
-                style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #d1d5db', background: 'white', color: '#374151', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
               >
                 Cancel
               </button>
               <button
                 type="button"
+                className="fs-btn fs-btn-primary"
                 onClick={handleConfirmPayout}
                 disabled={isSubmittingPayout}
-                style={{
-                  padding: '8px 18px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  background: '#10b981',
-                  color: 'white',
-                  cursor: isSubmittingPayout ? 'not-allowed' : 'pointer',
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  opacity: isSubmittingPayout ? 0.7 : 1,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
               >
-                <FaCoins /> {isSubmittingPayout ? 'Processing...' : 'Confirm Payout'}
+                <FaCoins aria-hidden="true" /> {isSubmittingPayout ? 'Processing...' : 'Confirm Payout'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Key Metric Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '16px',
-        marginBottom: '28px'
-      }}>
+      {/* Key Metric Cards (Reference Frame 03 Variant B) */}
+      <section className="cert-metrics-grid" aria-label="Certificate Key Metrics">
         {/* Principal */}
-        <div className="metric-box">
-          <div className="metric-icon" style={{ background: '#e0e7ff', color: '#4338ca' }}><FaCoins /></div>
-          <div>
-            <div className="metric-label">Principal Amount</div>
-            <div className="metric-value">{formatCurrency(cert.amount)}</div>
-            <div className="metric-sub">Base deposited capital</div>
+        <div className="cert-kpi-tile cert-metric-tile">
+          <div className="cert-metric-icon" aria-hidden="true"><FaCoins /></div>
+          <div className="cert-metric-body">
+            <div className="cert-kpi-label">Principal Amount</div>
+            <div className="cert-kpi-value fs-num">{formatCurrency(cert.amount)}</div>
+            <div className="cert-kpi-sub">Base deposited capital</div>
           </div>
         </div>
 
         {/* Interest Rate */}
-        <div className="metric-box">
-          <div className="metric-icon" style={{ background: '#ecfdf5', color: '#047857' }}><FaPercent /></div>
-          <div>
-            <div className="metric-label">Annual Yield Rate</div>
-            <div className="metric-value">{Number(cert.interest || 0).toFixed(2)}%</div>
-            <div className="metric-sub">Daily: {((cert.interest / 100) / 365 * 100).toFixed(4)}%</div>
+        <div className="cert-kpi-tile cert-metric-tile">
+          <div className="cert-metric-icon" aria-hidden="true"><FaPercent /></div>
+          <div className="cert-metric-body">
+            <div className="cert-kpi-label">Annual Yield Rate</div>
+            <div className="cert-kpi-value fs-num">{Number(cert.interest || 0).toFixed(2)}%</div>
+            <div className="cert-kpi-sub">Daily: <span className="fs-num">{dailyYieldPct}%</span></div>
           </div>
         </div>
 
         {/* Live Accrued Interest */}
-        <div className="metric-box" style={{ border: '2px solid #818cf8', background: '#faf5ff' }}>
-          <div className="metric-icon" style={{ background: '#f3e8ff', color: '#7e22ce' }}><FaClock /></div>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div className="metric-label">Live Accrued Interest</div>
+        <div className="cert-kpi-tile cert-metric-tile">
+          <div className="cert-metric-icon" aria-hidden="true"><FaClock /></div>
+          <div className="cert-metric-body">
+            <div className="cert-metric-head-row">
+              <div className="cert-kpi-label">Live Accrued Interest</div>
               <button
+                type="button"
+                className="cert-icon-btn"
                 onClick={refreshAccrualOnly}
+                disabled={refreshingAccrual}
+                aria-label="Refresh live accrued interest"
                 title="Refresh Live Accrual"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7c3aed', padding: 0 }}
               >
-                <FaSync className={refreshingAccrual ? 'spin' : ''} size={12} />
+                <FaSync aria-hidden="true" className={refreshingAccrual ? 'cert-spin' : ''} size={12} />
               </button>
             </div>
-            <div className="metric-value" style={{ color: '#6d28d9' }}>
-              {formatCurrency(liveAccrual?.accruedInterest ?? cert.accruedInterest ?? 0)}
+            <div className="cert-kpi-value fs-num">
+              {formatCurrency(currentAccrued)}
             </div>
-            <div className="metric-sub">
-              {liveAccrual?.daysElapsed ?? cert.daysElapsed ?? 0} days accrued (auto-refreshed 60s)
+            <div className="cert-kpi-sub">
+              <span className="fs-num">{liveAccrual?.daysElapsed ?? cert.daysElapsed ?? 0}</span> days accrued (auto-refreshed 60s)
             </div>
           </div>
         </div>
 
         {/* Next Payout Date */}
-        <div className="metric-box">
-          <div className="metric-icon" style={{ background: '#fef3c7', color: '#b45309' }}><FaCalendarCheck /></div>
-          <div>
-            <div className="metric-label">Next Payout Date</div>
-            <div className="metric-value" style={{ fontSize: '18px' }}>
-              {liveAccrual?.nextPayoutDate ? formatDate(liveAccrual.nextPayoutDate) : (cert.nextPayoutDate ? formatDate(cert.nextPayoutDate) : 'Completed')}
-            </div>
-            <div className="metric-sub">Frequency: {cert.payoutInterval || 'monthly'}</div>
+        <div className="cert-kpi-tile cert-metric-tile">
+          <div className="cert-metric-icon" aria-hidden="true"><FaCalendarCheck /></div>
+          <div className="cert-metric-body">
+            <div className="cert-kpi-label">Next Payout Date</div>
+            <div className="cert-kpi-value fs-num">{nextPayoutFormatted}</div>
+            <div className="cert-kpi-sub">Frequency: {cert.payoutInterval || 'monthly'}</div>
           </div>
         </div>
 
         {/* Maturity Date */}
-        <div className="metric-box">
-          <div className="metric-icon" style={{ background: '#fee2e2', color: '#b91c1c' }}><FaCalendarCheck /></div>
-          <div>
-            <div className="metric-label">Maturity Date</div>
-            <div className="metric-value" style={{ fontSize: '18px' }}>
+        <div className="cert-kpi-tile cert-metric-tile">
+          <div className="cert-metric-icon" aria-hidden="true"><FaCalendarCheck /></div>
+          <div className="cert-metric-body">
+            <div className="cert-kpi-label">Maturity Date</div>
+            <div className="cert-kpi-value fs-num">
               {cert.maturityDate ? formatDate(cert.maturityDate) : '-'}
             </div>
-            <div className="metric-sub">{cert.daysRemaining || 0} day(s) until maturity</div>
+            <div className="cert-kpi-sub">
+              <span className="fs-num">{cert.daysRemaining || 0}</span> day(s) until maturity
+            </div>
           </div>
         </div>
 
         {/* Total Interest Earned */}
-        <div className="metric-box">
-          <div className="metric-icon" style={{ background: '#f0fdf4', color: '#15803d' }}><FaChartLine /></div>
-          <div>
-            <div className="metric-label">Total Lifetime Yield</div>
-            <div className="metric-value" style={{ color: '#16a34a' }}>
-              {formatCurrency(liveAccrual?.totalEarned ?? cert.totalInterestEarned ?? 0)}
+        <div className="cert-kpi-tile cert-metric-tile">
+          <div className="cert-metric-icon" aria-hidden="true"><FaChartLine /></div>
+          <div className="cert-metric-body">
+            <div className="cert-kpi-label">Total Lifetime Yield</div>
+            <div className="cert-kpi-value fs-num">
+              {formatCurrency(totalLifetimeYield)}
             </div>
-            <div className="metric-sub">Paid + Live Accrued</div>
+            <div className="cert-kpi-sub">Paid + Live Accrued</div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Dual-Series Interest Accrual Chart */}
-      <div style={{
-        background: 'white',
-        borderRadius: '12px',
-        border: '1px solid #e5e7eb',
-        padding: '24px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        marginBottom: '28px'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <div>
-            <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', color: '#111827' }}>
-              Interest Accrual Trajectory (Dual Series)
-            </h3>
-            <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>
-              Solid line illustrates <strong>Actual Accrued</strong> interest up to today; dashed line projects <strong>Target Accrual</strong> to maturity.
-            </p>
-          </div>
+      {/* Dual-Series Interest Accrual Chart & Schedule Table */}
+      <section className="cert-chart-card">
+        <div className="cert-chart-header">
+          <h2 className="cert-chart-title">
+            Interest Accrual Trajectory (Dual Series)
+          </h2>
+          <p className="cert-chart-subtitle">
+            Solid line illustrates <strong>Actual Accrued</strong> interest up to today; dashed line projects <strong>Target Accrual</strong> to maturity.
+          </p>
         </div>
 
-        <div style={{ height: '320px', position: 'relative' }}>
+        <div
+          className="cert-chart-canvas-wrap"
+          role="img"
+          aria-label={chartAriaLabel}
+          data-testid="cert-chart-canvas-wrapper"
+          data-plugin-ids="certLastPointLabelPlugin"
+        >
           {trajectory.labels.length > 0 ? (
-            <Line data={chartData} options={chartOptions} />
+            <Line
+              data={chartData}
+              options={chartOptions}
+              plugins={[certLastPointLabelPlugin]}
+              aria-label={chartAriaLabel}
+            />
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#9ca3af' }}>
+            <div className="cert-chart-empty">
               Accrual trajectory points are generating...
             </div>
           )}
         </div>
-      </div>
 
-      {/* Withdrawal Impact Preview Modal */}
-            <ConfirmModal
+        <p className="cert-chart-summary" data-testid="cert-chart-summary">
+          {chartAriaLabel}
+        </p>
+
+        {trajectoryRows.length > 0 && (
+          <>
+            <details className="cert-trajectory-details">
+              <summary>View interest accrual schedule table</summary>
+              <table className="cert-trajectory-table" data-testid="cert-trajectory-table">
+                <caption>Actual vs. Projected Interest Accrual Trajectory</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Period</th>
+                    <th scope="col" className="cert-th-num">Actual Accrued</th>
+                    <th scope="col" className="cert-th-num">Projected Accrual</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trajectoryRows.map((row) => (
+                    <tr key={row.label}>
+                      <td data-label="Period">{row.label}</td>
+                      <td data-label="Actual Accrued" className="fs-num">
+                        {row.actual !== null && row.actual !== undefined ? formatCurrency(row.actual) : '—'}
+                      </td>
+                      <td data-label="Projected Accrual" className="fs-num">
+                        {row.projected !== null && row.projected !== undefined ? formatCurrency(row.projected) : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </details>
+
+            <div className="cert-trajectory-mobile-cards" data-testid="cert-trajectory-mobile-cards">
+              {trajectoryRows.map((row, idx) => {
+                const isExpanded = Boolean(expandedTrajectoryRows[idx]);
+                const panelId = `cert-trajectory-panel-${idx}`;
+                const actualFormatted = row.actual !== null && row.actual !== undefined
+                  ? formatCurrency(row.actual)
+                  : '—';
+                const projectedFormatted = row.projected !== null && row.projected !== undefined
+                  ? formatCurrency(row.projected)
+                  : '—';
+
+                return (
+                  <div key={row.label} className="cert-mobile-card">
+                    <div className="cert-card-compact-row">
+                      <div className="cert-card-primary">
+                        <strong>{row.label}</strong>
+                        <span className="cert-kpi-sub">Actual Accrued</span>
+                      </div>
+                      <div className="cert-card-metrics">
+                        <span className="cert-card-value fs-num">{actualFormatted}</span>
+                        <button
+                          type="button"
+                          className="cert-card-expander-btn"
+                          aria-expanded={isExpanded}
+                          aria-controls={panelId}
+                          aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${row.label} projection`}
+                          onClick={() => toggleTrajectoryRow(idx)}
+                        >
+                          {isExpanded ? <FaChevronUp aria-hidden="true" /> : <FaChevronDown aria-hidden="true" />}
+                        </button>
+                      </div>
+                    </div>
+                    {isExpanded && (
+                      <div id={panelId} className="cert-card-expanded">
+                        <div className="cert-card-detail-item">
+                          <span className="cert-card-detail-label">Projected Accrual</span>
+                          <span className="cert-card-detail-val fs-num">{projectedFormatted}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
         isOpen={showDeleteModal}
         title="Delete Certificate"
         message="Are you sure you want to delete this certificate?"
@@ -636,88 +944,71 @@ const CertificateDetailPage = () => {
         onCancel={() => setShowDeleteModal(false)}
       />
 
+      {/* Withdrawal Impact Preview Modal */}
       {showWithdrawModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          padding: '20px'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            maxWidth: '520px',
-            width: '100%',
-            padding: '24px',
-            boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-            position: 'relative'
-          }}>
-            <button
-              onClick={() => setShowWithdrawModal(false)}
-              style={{ position: 'absolute', top: '16px', right: '16px', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '18px', color: '#6b7280' }}
-            >
-              <FaTimes />
-            </button>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: '#b45309' }}>
-              <FaExclamationTriangle size={24} />
-              <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Withdraw Certificate Early</h2>
+        <div
+          className="cert-modal-backdrop"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isSubmittingWithdraw) {
+              handleCloseWithdrawModal();
+            }
+          }}
+        >
+          <div
+            ref={withdrawDialogRef}
+            className="cert-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="detail-withdraw-modal-title"
+            tabIndex={-1}
+          >
+            <div className="cert-modal-header">
+              <h2 id="detail-withdraw-modal-title" className="cert-modal-title">
+                <FaExclamationTriangle aria-hidden="true" /> Withdraw Certificate Early
+              </h2>
+              <button
+                ref={withdrawCloseBtnRef}
+                type="button"
+                className="cert-modal-close"
+                aria-label="Close withdrawal modal"
+                onClick={handleCloseWithdrawModal}
+                disabled={isSubmittingWithdraw}
+              >
+                <FaTimes aria-hidden="true" />
+              </button>
             </div>
 
-            <p style={{ color: '#4b5563', fontSize: '14px', marginBottom: '16px' }}>
+            <p className="cert-modal-desc">
               Confirm early redemption for <strong>{cert.name}</strong>. Interest accrual will cease permanently upon withdrawal.
             </p>
 
-            <div style={{
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '8px',
-              padding: '16px',
-              marginBottom: '16px'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ color: '#64748b' }}>Principal Returned:</span>
-                <strong>{formatCurrency(cert.amount)}</strong>
+            <div className="cert-modal-summary">
+              <div className="cert-modal-summary-row">
+                <span>Principal Returned:</span>
+                <strong className="fs-num">{formatCurrency(cert.amount)}</strong>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ color: '#64748b' }}>Live Accrued Interest (as of today):</span>
-                <strong style={{ color: '#10b981' }}>{formatCurrency(liveAccrual?.accruedInterest ?? cert.accruedInterest ?? 0)}</strong>
+              <div className="cert-modal-summary-row">
+                <span>Live Accrued Interest (as of today):</span>
+                <strong className="fs-num">{formatCurrency(currentAccrued)}</strong>
               </div>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                paddingTop: '8px',
-                borderTop: '1px solid #cbd5e1',
-                fontSize: '16px'
-              }}>
-                <span style={{ fontWeight: '600' }}>Estimated Total Payout:</span>
-                <strong style={{ color: '#4f46e5' }}>
-                  {formatCurrency((cert.amount || 0) + (liveAccrual?.accruedInterest ?? cert.accruedInterest ?? 0))}
+              <div className="cert-modal-summary-row cert-modal-summary-total">
+                <span>Estimated Total Payout:</span>
+                <strong className="fs-num">
+                  {formatCurrency((cert.amount || 0) + currentAccrued)}
                 </strong>
               </div>
             </div>
 
-                        <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+            <div className="cert-modal-field">
+              <label htmlFor="detail-withdraw-destination-account" className="fs-label">
                 Deposit Proceeds To:
               </label>
               <select
+                id="detail-withdraw-destination-account"
+                className="fs-select"
                 value={destinationAccount}
                 onChange={(e) => setDestinationAccount(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '6px',
-                  boxSizing: 'border-box'
-                }}
               >
                 <option value="Bank">Bank Account</option>
                 <option value="Cash">Cash Ledger</option>
@@ -725,56 +1016,47 @@ const CertificateDetailPage = () => {
               </select>
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>
+            <div className="cert-modal-field">
+              <label htmlFor="detail-withdraw-reason-input" className="fs-label">
                 Withdrawal Reason (Optional):
               </label>
               <input
+                id="detail-withdraw-reason-input"
                 type="text"
+                className="fs-input"
                 placeholder="e.g. Asset reallocation, cash liquidity"
                 value={withdrawalReason}
                 onChange={(e) => setWithdrawalReason(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '6px',
-                  boxSizing: 'border-box'
-                }}
               />
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px', color: '#1f2937', cursor: 'pointer' }}>
+            <div className="cert-modal-field">
+              <label htmlFor="detail-withdraw-confirm-checkbox" className="cert-modal-checkbox-label">
                 <input
+                  id="detail-withdraw-confirm-checkbox"
                   type="checkbox"
+                  className="cert-modal-checkbox"
                   checked={confirmedCheckbox}
                   onChange={(e) => setConfirmedCheckbox(e.target.checked)}
-                  style={{ marginTop: '3px' }}
                 />
                 <span>I understand this certificate will be marked as withdrawn and no further interest will accrue.</span>
               </label>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <div className="cert-modal-footer">
               <button
-                onClick={() => setShowWithdrawModal(false)}
-                style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #d1d5db', background: 'white', color: '#374151', cursor: 'pointer', fontWeight: '500' }}
+                type="button"
+                className="fs-btn fs-btn-secondary"
+                onClick={handleCloseWithdrawModal}
+                disabled={isSubmittingWithdraw}
               >
                 Cancel
               </button>
               <button
+                type="button"
+                className="fs-btn cert-withdraw-confirm-btn"
                 onClick={handleConfirmWithdraw}
                 disabled={!confirmedCheckbox || isSubmittingWithdraw}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  background: confirmedCheckbox ? '#ef4444' : '#9ca3af',
-                  color: 'white',
-                  cursor: confirmedCheckbox ? 'pointer' : 'not-allowed',
-                  fontWeight: '600'
-                }}
               >
                 {isSubmittingWithdraw ? 'Processing...' : 'Confirm Withdrawal'}
               </button>

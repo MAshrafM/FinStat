@@ -56,7 +56,7 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
         route.slug === 'analytics-purchasing-power'
       ) {
         await setupGoldMocks(page, route.slug);
-      } else if (route.slug === 'certificates') {
+      } else if (route.slug.startsWith('certificates')) {
         await setupCertificatesMocks(page);
       }
 
