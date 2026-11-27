@@ -3,7 +3,7 @@
 - **Date**: 2026-11-27 (original draft)
 - **Revision Date**: 2026-11-27
 - **Revision**: **v3** — addresses both residual blockers and all 3 minor clarifications from `docs/ui-plans/phase_8c_implementation_plan_v2_review.md` (and all 11 findings from the v1 review)
-- **Status**: Approved & Executed (explicitly approved by user `"approved. begin execution"` on 2026-11-27; Gates 1–18 complete on `phase-ui-8c-certificates-detail` @ `8826a99`; awaiting Gate 19 walkthrough sign-off)
+- **Status**: Approved & Executed (2026-11-27; implementation committed on `phase-ui-8c-certificates-detail` as `8826a99`; signed off by user and merged to `main` as `fa9b36e`)
 - **Merge Base**: `main` @ `942e165`
 - **Starting Baseline Commit**: `19d34c8` in `D:\Projects\FinStat-visual-baselines` (`334/334` manifest verified)
 - **Branch**: `phase-ui-8c-certificates-detail` (local only until Gate 19 walkthrough sign-off)

@@ -925,9 +925,9 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | `/gold-wallet/summary` | `pages/gold/GoldSummaryPage` | 8A | ☑ | ☑ | 11 inline styles purged; W-8A-1 summary overflow |
 | `/analytics/purchasing-power` | `pages/analytics/PurchasingPowerChart` | 8A | ☑ | ☑ | chartTheme palette + accessible data table |
 | `/certificates` | `pages/certificates/CertificateLogPage` | 8B | ☑ | ☑ | 89 inline styles purged (57 colour-bearing + 32 layout/typographic); Frame 01/03 dark table + D19 cards; W-8B-1 |
-| `/certificates/:id` | `pages/certificates/CertificateDetailPage` | 8C | ☐ | ☐ | 58 inline styles; chart |
-| `/certificates/new` | `pages/certificates/AddCertificatePage` | 8C | ☐ | ☐ | + `CertificateForm` |
-| `/certificates/edit/:id` | `pages/certificates/EditCertificatePage` | 8C | ☐ | ☐ | |
+| `/certificates/:id` | `pages/certificates/CertificateDetailPage` | 8C | ☑ | ☑ | 88 inline styles purged (62 colour + 26 layout; 789 lines); chartTheme dual-series + local certLastPointLabelPlugin + data table |
+| `/certificates/new` | `pages/certificates/AddCertificatePage` | 8C | ☑ | ☑ | + `CertificateForm` (2 inline styles purged; Frame 02 stacked form) |
+| `/certificates/edit/:id` | `pages/certificates/EditCertificatePage` | 8C | ☑ | ☑ | Frame 02 stacked form; shared `CertificateForm` |
 | `/currency` | `pages/currency/CurrencyLogPage` | 8D | ☐ | ☐ | 36 inline styles |
 | `/currency/:id` | `pages/currency/CurrencyDetailPage` | 8D | ☐ | ☐ | 36 inline styles; chart |
 | `/currency/new` | `pages/currency/AddCurrencyPage` | 8D | ☐ | ☐ | |
@@ -1064,7 +1064,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **7C** | Mutual funds | `phase-ui-7c-mutual-funds` | ☑ | ☑ |
 | **8A** | Gold wallet | `phase-ui-8a-gold` | ☑ | ☑ |
 | **8B** | Certificates: log | `phase-ui-8b-certificates-log` | ☑ | ☑ |
-| **8C** | Certificates: detail + forms | `phase-ui-8c-certificates-detail` | ☐ | ☐ |
+| **8C** | Certificates: detail + forms | `phase-ui-8c-certificates-detail` | ☑ | ☑ |
 | **8D** | Currency | `phase-ui-8d-currency` | ☐ | ☐ |
 | **8E** | Real estate (all three routes) | `phase-ui-8e-real-estate` | ☐ | ☐ |
 | **9A** | Credit cards, modals, installments | `phase-ui-9a-credit-cards` | ☐ | ☐ |
@@ -1847,15 +1847,15 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 8C — Certificates: detail + forms
 
-- [ ] `pages/certificates/CertificateDetail.css` — light → graphite.
-- [ ] `CertificateDetailPage.js` (58) → classes; chart via `chartTheme`; certificate status uses `.fs-badge` labels, and tone appears only where §4.3.1 records a warning condition.
-- [ ] `CertificateForm.js` → token form.
-- [ ] `AddCertificatePage.js` / `EditCertificatePage.js` headers.
-- [ ] Card list at ≤ 768px for certificate and currency logs; real-estate property cards already follow this shape.
-- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
-- [ ] Verify maturity display, interest schedule table, status transitions.
-- [ ] Certificate maturity and interest fixtures unchanged.
-- [ ] **Add `/certificates/:id`, `/certificates/new`, `/certificates/edit/:id`.**
+- [ ] `pages/certificates/CertificateDetail.css` — light → graphite. *(Explicitly deferred to Phase 8D per Plan Decision 1 & §10 scope amendment because unthemed `CurrencyDetailPage.js` still imports `../certificates/CertificateDetail.css`; `CertificateDetailPage.js` decoupled cleanly to `Certificates.css` `.cert-detail-page`/`.cert-form-page`.)*
+- [x] `CertificateDetailPage.js` (88 purged to 0 across 789 lines; 90 total with `CertificateForm`) → classes in `Certificates.css` + Section 20; dual-series chart via existing `chartTheme.js` exports + local `certLastPointLabelPlugin` + accessible `<details>`/`<table>`; certificate statuses render via neutral `<Badge tone="neutral">` labels (`react-icons/fa` `aria-hidden` + text per §4.3.1).
+- [x] `CertificateForm.js` (2 purged to 0) → Reference Frame 02 Variant B stacked form with blur + submit validation and accessible error surfaces.
+- [x] `AddCertificatePage.js` / `EditCertificatePage.js` headers & `.cert-form-page` wrappers (`0` inline styles).
+- [ ] Card list at ≤ 768px for certificate and currency logs; real-estate property cards already follow this shape. *(Certificate log D19 cards delivered in 8B & certificate detail trajectory D19 cards delivered in 8C; currency-log portion explicitly deferred to Phase 8D per Plan Decision 9 & §10 scope amendment.)*
+- [x] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll (`0` new `overflow-x` added).
+- [x] Verify maturity display, interest schedule table, status transitions, Withdraw/Payout accessible dialogs, and viewer `ProtectedAction` gating.
+- [x] Certificate maturity and interest fixtures unchanged (`calculations.spec.js` 11/11).
+- [x] **Add `/certificates/:id`, `/certificates/new`, `/certificates/edit/:id`.** (`THEMED_PATTERNS` 39 → 42; removed `CertificateDetailPage.js` and `CertificateForm.js` from `frontend/.eslintignore`.)
 
 #### 8D — Currency
 
@@ -1886,7 +1886,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [ ] Build/tests/lint/axe/screenshots.
 - [ ] Zero diff on non-allowlisted routes.
 
-> Phase 8B signed off 2026-11-27: 6 of 16 routes themed; 8C–8E remain open.
+> Phase 8C signed off 2026-11-27: 9 of 16 routes themed; 8D–8E remain open.
 
 **User-facing acceptance criterion:** "A user can open a certificate or property on a phone and read maturity, yield, and cost figures without clipping."
 
@@ -2196,7 +2196,7 @@ Metric: number of `style={{` props per file. Counts include layout-only styles; 
 | :--- | ---: | :---: |
 | `pages/salary/PaycheckFormPage.js` | 77 | 5C → 5D |
 | `pages/certificates/CertificateLogPage.js` | 89 *(purged to 0 in 8B; originally audited 66)* | 8B |
-| `pages/certificates/CertificateDetailPage.js` | 61 | 8C |
+| `pages/certificates/CertificateDetailPage.js` | 88 *(purged to 0 in 8C; originally audited 61)* | 8C |
 | `pages/trades/TradeSummaryPage.js` | 54 | 7A |
 | `pages/expenditure/BudgetsPage.js` | 53 | 4C |
 | `pages/expenditure/ExpenditureLogPage.js` | 47 | 4A |
@@ -2920,6 +2920,22 @@ Plan SHA:           6f31d1b
 Implementation SHA: 23f65bf
 Documentation SHA:  92c0747 + 6d7f772
 Merge SHA:          71fe3e2 (merged to main; governance finalized in follow-up commit)
+```
+
+```
+Sub-phase:   8C
+Status:      done (Signed off by User 2026-11-27)
+Done:        Modernized /certificates/:id, /certificates/new, and /certificates/edit/:id into the FinStat dark graphite design system while leaving CertificateDetail.css (imported by Phase 8D CurrencyDetailPage.js) and Phase 8B CertificateLogPage.js strictly untouched; extended Certificates.css (.cert-detail-page, .cert-form-page) and appended theme-components.css Section 20 under D22 html[data-fs-theme] attribute-existence selectors (zero changes to chartTheme.js); purged all 90 verified inline styles (88 in CertificateDetailPage.js [62 colour-bearing + 26 layout/typographic] across 789 lines + 2 in CertificateForm.js [2 colour-bearing]; Add/Edit wrappers had 0), plus 84 hex and 10 rgba literals; replaced purple hero gradient, green payout-due banner, and coloured metric tiles with flat Reference Frame 03 Variant B surfaces, neutral <Badge tone="neutral"> status/days chips per §4.3.1, un-underlined .cert-back-link, and neutral .fs-num figures; enforced §4.4 section/dialog CTA scoping; migrated dual-series chart to existing chartTheme.js exports + local certLastPointLabelPlugin (direct Actual/Projected endpoints, headroom against legend overlap) + accessible <details>/<table data-testid="cert-trajectory-table"> + D19 <=768px mobile cards with 0 new overflow-x; converted Withdraw/Payout dialogs to accessible dark modals preserving exact select labels; converted forms to Reference Frame 02 Variant B stacked layout with on-blur + submit validation, valid-blur clearing, startDate edit revalidation, distinct error surfaces (#cert-last-payout-error, .cert-form-error-summary, wrapper .cert-submit-error), and preserved account-selector-sourceAccount; de-ignored CertificateDetailPage.js & CertificateForm.js from .eslintignore; expanded THEMED_PATTERNS 39 -> 42; added 28 new Jest + jest-axe tests (43/43 cert total), extended certificatesMocks.js (MOCK_CERTIFICATES byte-identical to 8B), and added 8-test Playwright reference-match spec. Scope amendment (§6.12): CertificateDetail.css conversion and currency-log D19 cards deferred cleanly to Phase 8D per Plan Decisions 1 & 9. Gates 1-19 passed: Gate 1 42 patterns / 75 routes / 0 unassigned, Gate 2 0 drift, Gate 3 0 deletions, Gate 4 0 tone violations, Gate 5 lint-ratchet 0 / stylelint 0 / 0 new overflow-x, Gate 6 eslint 0 warnings, Gate 7 43/43 cert Jest/axe, Gate 8 15/15 App/Dashboard (DashboardSummary.js 96 lines), Gate 9 11/11 calc, Gate 10 4/4 browser axe, Gate 11 9/9 reference match, Gate 12 CI=true 2048MB build clean (authoritative CI runs on main), Gate 13 baseline 39fb1b0 (15 PNGs replaced in place; starting 19d34c8; 334/334 manifest), Gate 14 68/71 (3 accepted W-6A-1/AD16 diffs), Gate 15 326 accounted (292 passed + 34 accepted AD14/AD16 matching 7A/8A/8B; local run explicitly authorized by 8C plan Gate 15 deviating from §15.5; §7.1 HTML-report attachment satisfied via walkthrough diff summary per 8A/8B precedent), Gate 16 2/2 touch targets, Gate 17 9 PNGs inspected clean, Gate 18 41/41 (Certificates + Currency).
+Next:        Phase 8D (Currency)
+Blocked by:  None
+Allowlist:   ['/certificates/:id', '/certificates/new', '/certificates/edit/:id'] (cumulative: 42 patterns)
+Visual diff: Gate 13 replaced 15 /certificates detail & form snapshots in place (39fb1b0); manifest 334/334 verified; Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 326 accounted (292 + 34 AD14/AD16); Gate 18 41/41 across Certificates + Currency; 0 diffs attributable to 8C.
+Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (Domain 5 Certificates unchanged)
+Screenshots: None tracked per D5/D21; 15 /certificates detail & form baselines in FinStat-visual-baselines repo (39fb1b0)
+Branch:      phase-ui-8c-certificates-detail
+Plan+Impl SHA:      8826a99
+Walkthrough SHAs:   34cdc8c + ad20b22 + 2eaee46
+Merge SHA:          fa9b36e (merged to main; governance finalized in follow-up commit)
 ```
 
 ### Sub-phase note template

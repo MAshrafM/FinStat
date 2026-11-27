@@ -8,11 +8,11 @@
 > **Starting Baseline Commit**: `19d34c8` in `D:\Projects\FinStat-visual-baselines` (`334/334` manifest verified)  
 > **Gate 13 Baseline Commit SHA**: `39fb1b0` in `D:\Projects\FinStat-visual-baselines` (`Phase 8C: recapture 15 certificates detail and form snapshots`; `334/334` manifest verified)  
 > **Implementation & Plan Commit SHA**: `8826a99` (`feat(ui-phase-8c): theme certificates detail & forms`; plan status reconciled pre-sign-off)  
-> **Walkthrough Commit SHAs**: `34cdc8c` *(initial)* + `ad20b22` *(v1 review revision)* + pre-sign-off R1–R6 cleanup commit  
-> **Merge SHA**: `pending` *(upon post-sign-off `--no-ff` merge to `main`)*  
-> **Plan & Approval Evidence**: `docs/ui-plans/phase_8c_implementation_plan.md` (v3, explicitly approved by user `"approved. begin execution"` on 2026-11-27 after `phase_8c_implementation_plan_review.md` & `phase_8c_implementation_plan_v2_review.md`; plan `- **Status**:` line reconciled pre-sign-off)  
+> **Walkthrough Commit SHAs**: `34cdc8c` *(initial)* + `ad20b22` *(v1 review revision)* + `2eaee46` *(v2 review reconciliation)*  
+> **Merge SHA**: `fa9b36e` *(merged to `main`; governance finalized in follow-up commit)*  
+> **Plan & Approval Evidence**: `docs/ui-plans/phase_8c_implementation_plan.md` (v3, explicitly approved by user `"approved. begin execution"` on 2026-11-27; signed off & merged to `main` as `fa9b36e`)  
 > **Taste Checkpoint**: N/A (Cluster 8 Taste Checkpoint #6 was delivered and signed off in Phase 8A)  
-> **Status**: Verification Gates 1–18 Complete; Walkthrough Committed on Local Branch — **Awaiting Explicit User Sign-Off**
+> **Status**: Complete & Signed Off (Gate 19 User Approval 2026-11-27; merged to `main` as `fa9b36e`)
 
 ---
 
@@ -20,7 +20,7 @@
 
 ```text
 Sub-phase:   UI Phase 8C — Certificates: detail + forms
-Status:      AWAITING SIGN-OFF (Gates 1–18 complete on phase-ui-8c-certificates-detail; plan reconciled; walkthrough revised after ad20b22)
+Status:      done (Signed off by User 2026-11-27; merged to main as fa9b36e)
 Done:        Migrated /certificates/:id, /certificates/new, and /certificates/edit/:id into the FinStat
              dark graphite design system while leaving CertificateDetail.css (imported by Phase 8D
              CurrencyDetailPage.js) and Phase 8B CertificateLogPage.js strictly untouched.
@@ -51,7 +51,7 @@ Done:        Migrated /certificates/:id, /certificates/new, and /certificates/ed
              detail/accrual matching (keeping MOCK_CERTIFICATES byte-identical to 8B), and added 8-test
              Playwright reference-match spec (9/9 passed with setup).
 Next:        Phase 8D (Currency)
-Blocked by:  Awaiting explicit user sign-off on this walkthrough before §6 governance sync, merge (--no-ff), and push main
+Blocked by:  None
 Allowlist:   THEMED_PATTERNS expanded 39 -> 42 (+3: '/certificates/:id', '/certificates/new', '/certificates/edit/:id')
 Visual diff: Gate 13 replaced 15 PNGs in place (39fb1b0); Gate 14 68/71 (3 accepted W-6A-1/AD16 only);
              Gate 15 326 accounted (292 passed + 34 accepted AD14/AD16, matching 7A/8A/8B; 7C recorded
@@ -59,8 +59,8 @@ Visual diff: Gate 13 replaced 15 PNGs in place (39fb1b0); Gate 14 68/71 (3 accep
              Gate 18 41/41 across all Certificates + Currency routes
 Fixtures:    calculations.spec.js 11/11 passed (byte-identical across 8 domains including Domain 5 Certificates)
 Screenshots: 15 recaptures across 1440, 1024, 768, 480, 390px (39fb1b0); 334/334 manifest verified
-Branch:      phase-ui-8c-certificates-detail (plan+impl SHA: 8826a99; walkthrough SHAs: 34cdc8c, ad20b22)
-Merge SHA:   pending (upon post-sign-off --no-ff merge to main)
+Branch:      phase-ui-8c-certificates-detail (plan+impl SHA: 8826a99; walkthrough SHAs: 34cdc8c, ad20b22, 2eaee46)
+Merge SHA:   fa9b36e (merged to main; governance finalized in follow-up commit)
 ```
 
 ### §0 Plan Decisions Realized
@@ -197,26 +197,23 @@ All 15 recaptured snapshots in `frontend/tests/visual/baseline/` (tracked in `D:
 
 ## 6. Gate 19 / Merge Boundary & Complete Post-Sign-Off Governance Checklist
 
-### Pre-Sign-Off Status
+### Sign-Off Status (Gate 19 Complete)
 - [x] Gates 1–18 completed & reconciled (`CertificateDetail.css`, `CertificateLogPage.js`, `certificateService.js`, `CertContext.js`, `App.js`, `calculations.spec.js`, `package.json` untouched)
 - [x] Temporary `test-results` / `playwright-report` cleaned; `.auth.json` clean
-- [x] Plan & implementation (`8826a99`) and walkthrough (`34cdc8c` + `ad20b22` + v2 review reconciliation) committed on local `phase-ui-8c-certificates-detail`
+- [x] Plan & implementation (`8826a99`) and walkthrough (`34cdc8c` + `ad20b22` + `2eaee46`) committed on local `phase-ui-8c-certificates-detail`
 - [x] Plan status reconciliation (`phase_8c_implementation_plan.md`) completed prior to sign-off
-- [ ] **User sign-off on this Phase 8C walkthrough**
-- [ ] Governance sync (`UI-UX-PLAN.md`, `CHANGELOG.md`) & review-file cleanup (`*review*.md`)
-- [ ] Merge `phase-ui-8c-certificates-detail` into `main` (`--no-ff`) and push only `main` (§14)
+- [x] **User sign-off on this Phase 8C walkthrough** (approved 2026-11-27)
+- [x] Governance sync (`UI-UX-PLAN.md`, `CHANGELOG.md`) & review-file cleanup (`*review*.md` deleted)
+- [x] Merged `phase-ui-8c-certificates-detail` into `main` (`--no-ff`, `fa9b36e`) and pushed only `main` (§14)
 
-### Post-Sign-Off Governance Synchronization Checklist (Execute Only After Approval)
-1. `docs/ui-plans/phase_8c_implementation_plan.md`: Update `- **Status**:` (`:6`) with the final `main` merge SHA (`merged to main as <merge-sha>`).
-2. `docs/ui-plans/phase_8c_walkthrough.md`: Record Gate 19 sign-off date and final `main` merge SHA.
-3. Delete all `*review*.md` files from `docs/ui-plans/`.
-4. `docs/UI-UX_Plan/UI-UX-PLAN.md` **§5.7 (`:928–930`)**: Mark `/certificates/:id`, `/certificates/new`, `/certificates/edit/:id` themed & QA'd (`☑ | ☑`); update `58 inline styles; chart` → `88 inline styles purged (62 colour + 26 layout; 789 lines); chartTheme dual-series + local certLastPointLabelPlugin + data table`.
-5. `docs/UI-UX_Plan/UI-UX-PLAN.md` **§6.1 (`:1067`)**: Mark Phase 8C complete (`☑ | ☑`).
-6. `docs/UI-UX_Plan/UI-UX-PLAN.md` **§6.12 (`:1848–1858` & `:1889`)**:
-   - Check the **7** completed items (`:1851–1853`, `:1855–1858`).
-   - Do **not** check `:1850` (`CertificateDetail.css — light → graphite`, explicitly deferred to Phase 8D per Plan Decision 1) or the currency-log portion of `:1854`; annotate both clearly as deferred to Phase 8D (`Currency`) and record an explicit scope-amendment note in `UI-UX-PLAN.md` §10.
-   - Update `(58)` → `(88)` (`90` total across 789/152/20/37 lines), and update Phase 8 exit gate counter (`:1889`) from `6 of 16` → `9 of 16 routes themed; 8D–8E remain open`.
-7. `docs/UI-UX_Plan/UI-UX-PLAN.md` **§8.2 (`:2199`)**: Update `CertificateDetailPage.js` hotspot count from `61` → `88 (purged to 0 in 8C; originally audited 61)`.
-8. `docs/UI-UX_Plan/UI-UX-PLAN.md` **§10**: Append Phase 8C progress log entry with full SHAs (`phase-ui-8c-certificates-detail` branch / plan+impl `8826a99`, walkthrough SHAs, merge SHA, starting `19d34c8` & Gate 13 baseline `39fb1b0`), `28` new (`43` total cert) Jest tests, `11/11` calc, `15` snapshots replaced in place (`334/334` manifest), allowlist `39 → 42`, `90` inline styles purged, `0` new `overflow-x`, explicit Phase 8D scope deferral note (`CertificateDetail.css` & currency-log cards), explicit Gate 15 authorization vs §15.5 note, and Gate 18 `41/41`.
-9. `CHANGELOG.md`: Add Phase 8C entry explicitly announcing the **`AD13` allowlist expansion (`39 → 42`, adding `/certificates/:id`, `/certificates/new`, `/certificates/edit/:id`)** per §7.2 (`:2132`).
-10. **Merge & Push (§14)**: Merge `phase-ui-8c-certificates-detail` into `main` (`--no-ff`) and push only `main` to `origin/main` (never push feature branch).
+### Post-Sign-Off Governance Synchronization Checklist (Executed 2026-11-27)
+1. [x] `docs/ui-plans/phase_8c_implementation_plan.md`: Updated `- **Status**:` (`:6`) with final `main` merge SHA (`fa9b36e`).
+2. [x] `docs/ui-plans/phase_8c_walkthrough.md`: Recorded Gate 19 sign-off date (`2026-11-27`) and final `main` merge SHA (`fa9b36e`).
+3. [x] Deleted all `*review*.md` files from `docs/ui-plans/`.
+4. [x] `docs/UI-UX_Plan/UI-UX-PLAN.md` **§5.7**: Marked `/certificates/:id`, `/certificates/new`, `/certificates/edit/:id` themed & QA'd (`☑ | ☑`) with verified `88` / `90` inline-style notes.
+5. [x] `docs/UI-UX_Plan/UI-UX-PLAN.md` **§6.1**: Marked Phase 8C complete (`☑ | ☑`).
+6. [x] `docs/UI-UX_Plan/UI-UX-PLAN.md` **§6.12**: Checked the 7 completed Phase 8C items, left `CertificateDetail.css` & currency-log D19 card portion unchecked and explicitly annotated as deferred to Phase 8D, updated Phase 8 exit gate counter to `9 of 16 routes themed; 8D–8E remain open`, and recorded §10 scope amendment note.
+7. [x] `docs/UI-UX_Plan/UI-UX-PLAN.md` **§8.2**: Updated `CertificateDetailPage.js` hotspot count from `61` → `88 (purged to 0 in 8C; originally audited 61)`.
+8. [x] `docs/UI-UX_Plan/UI-UX-PLAN.md` **§10**: Appended Phase 8C progress log entry with full SHAs (`phase-ui-8c-certificates-detail`, `8826a99`, `34cdc8c + ad20b22 + 2eaee46`, `fa9b36e`, `19d34c8` → `39fb1b0`), Gate 1–18 metrics, Phase 8D deferral amendment, and Gate 15 / §15.5 authorization note.
+9. [x] `CHANGELOG.md`: Added Phase 8C entry explicitly announcing the `AD13` allowlist expansion (`39 → 42`, adding `/certificates/:id`, `/certificates/new`, `/certificates/edit/:id`) per §7.2.
+10. [x] **Merge & Push (§14)**: Merged `phase-ui-8c-certificates-detail` into `main` (`--no-ff` `fa9b36e`) and pushed only `main` to `origin/main`.
