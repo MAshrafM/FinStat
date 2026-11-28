@@ -3012,7 +3012,7 @@ Merge SHA:   53e3c0b
 
 ```
 Sub-phase:   10A (Finalized — Gate 19 + Checkpoint #8 Signed Off)
-Status:      done (Signed off by User 2026-11-28; merging to main)
+Status:      done (Signed off by User 2026-11-28; merged to main as dfaca50)
 Done:        Converted `/profile` (`ProfilePage.js`/`.css`), `/settings` (`SettingsPage.js`/`.css`), and `/settings/recycle-bin` (`RecycleBin.js`/`.css`) to dark graphite under D22 `html[data-fs-theme]`, appended `theme-components.css` Section 25 (`html[data-fs-theme] .fs-page .settings-page` radio accent), expanded `THEMED_PATTERNS` `56 -> 59`, and removed `ProfilePage.js` & `SettingsPage.js` from `.eslintignore` (`RecycleBin.test.js` retained ignored `10/10` untouched). Purged all 18 inline styles & 15 label warnings to 0, applied `.fs-num`/`.fs-mono` typography, implemented APG tabs + `<EmptyState>` + guarded `matchMedia` D19 mobile cards (`0px` overflow at `390px`), added `profileSettingsMocks.js` + `profile-settings-reference-match.spec.js` + `ProfilePage.test.js` / `SettingsPage.test.js` / `ProfileSettingsA11y.test.js`. Gates 0–18 verified green: Gate 1 `59` / `75 / 10 / 65 / 0`, Gate 2 `0` drift, Gate 3 `0` deletions, Gate 4 `0` violations, Gate 5 `0` regressions / `stylelint` clean / `0` `overflow-x` / `0` protected diffs / append-only `theme-components.css`, Gate 6 ESLint `0` warnings, Gate 7 `17/17`, Gate 8 `21/21` (`DashboardSummary.js` `96` lines), Gate 9 `11/11`, Gate 12 build `Compiled successfully.` (`2048`MB main-only + `GENERATE_SOURCEMAP=false`), Gate 10 `4/4`, Gate 11 `9/9` (`31` PNGs), Gate 13 `16/16` (`723c4ac`; `334/334` manifest), Gate 14 `68/71`, Gate 15 `292/34` (`0` unexplained), Gate 16 `2/2`, Gate 17 inspection clean, Gate 18 `61/61`.
 Next:        Phase 10B (Security)
 Blocked by:  None
@@ -3020,8 +3020,8 @@ Allowlist:   ['/profile', '/settings', '/settings/recycle-bin'] (cumulative: 59 
 Visual diff: Gate 13 recaptured 15 Phase 10A snapshots in place (723c4ac; 334/334 manifest verified); Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 292/34 (326 accounted: 292 + 34 AD14/AD16); Gate 18 61/61; 0 diffs on Cluster 9 or unthemed 10B/10C routes.
 Fixtures:    calculations.spec.js & paycheckMocks.js byte-identical; RecycleBin.test.js 10/10 untouched
 Screenshots: None tracked per D5/D21; 15 baselines in FinStat-visual-baselines (723c4ac) + 31 local §7.4 PNGs in gitignored docs/ui-snapshots/phase-10a/
-Branch:      phase-ui-10a-profile-settings (tag: ui-phase-10a-start; Gate 0 SHA: 51478bb; Impl SHA: fe20e40; Walkthrough SHA: 10aab73)
-Merge SHA:   Pending merge commit on main
+Branch:      phase-ui-10a-profile-settings (tag: ui-phase-10a-start; Gate 0 SHA: 51478bb; Impl SHA: fe20e40; Walkthrough SHA: 10aab73; Gov SHA: e699a5a)
+Merge SHA:   dfaca50
 ```
 
 ### Sub-phase note template

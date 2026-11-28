@@ -7,8 +7,8 @@
 - **Gate 0 Plan & Governance SHA**: `51478bb`
 - **Implementation SHA**: `fe20e40`
 - **Walkthrough SHA**: `10aab73`
-- **Gov SHA**: `Pending Gate 19 sign-off`
-- **Merge SHA**: `Pending`
+- **Gov SHA**: `e699a5a`
+- **Merge SHA**: `dfaca50`
 - **Starting Baseline Commit (`D:\Projects\FinStat-visual-baselines`)**: `5db8c61` (`334/334` manifest verified)
 - **Gate 13 Baseline Commit (`D:\Projects\FinStat-visual-baselines`)**: `723c4ac` (`334/334` manifest verified; `15` recaptured PNGs + `manifest.json`, `0` net new entries)
 - **Gate 12 Serving Harness & Heap**: Static production bundle built via `node --max-old-space-size=2048 node_modules/react-scripts/scripts/build.js` with `GENERATE_SOURCEMAP=false` (`Compiled successfully.`; `NODE_OPTIONS=--max-old-space-size=1536` hit Windows worker `AlignedAlloc` OOM; passing `--max-old-space-size=2048` directly to the main process succeeded). Gates 10, 11, 13–18 served via `npx serve -s build -l 3000` (`CI=true`).
@@ -134,4 +134,4 @@
 
 - [x] Receive explicit **Gate 19 + Taste Checkpoint #8 sign-off** from the User *(Signed off 2026-11-28; Phase 10B unblocked)*.
 - [ ] Update two-stage walkthrough header (`Complete — Gate 19 Signed Off`, `Checkpoint #8 approved`, `Gov SHA`, `Merge SHA`), finalize `UI-UX-PLAN.md` (§6.1, §6.1.1, §6.14, §10) & `phase_10a_implementation_plan.md` (`Status: Complete`).
-- [ ] Merge `phase-ui-10a-profile-settings` into `main` (`--no-ff`), record final Merge SHA on `main`, and push only `main` (`phase-ui-10a-profile-settings` remains local).
+- [x] Merge `phase-ui-10a-profile-settings` into `main` (`--no-ff` `dfaca50`), record final Merge SHA on `main`, and push only `main` (`phase-ui-10a-profile-settings` remains local).
