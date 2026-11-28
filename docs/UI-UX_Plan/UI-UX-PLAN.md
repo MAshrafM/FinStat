@@ -952,9 +952,9 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 
 | Route | Component | Phase | Theme applied | Visual QA | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| `/lending` | `pages/lending/LendingDashboardPage` | 9C | ☐ | ☐ | Loan cards, counterparty grid, inline Add Person / New Loan modals + `AddTransactionForm.js` *(§5.8.1 catalog corrected at Phase 9C Gate 0)* |
-| `/lending/persons/:id` | `pages/lending/PersonDetailPage` | 9C | ☐ | ☐ | Counterparty ledger and history |
-| `/lending/loans/:id` | `pages/lending/LoanDetailPage` | 9C | ☐ | ☐ | Repayment ledger, amortization schedule |
+| `/lending` | `pages/lending/LendingDashboardPage` | 9C | ☑ | ☑ | 20 inline styles & 9 hex literals purged to 0; `PersonCard` (3) & `AddTransactionForm` (2); neutral `<progress>`; `WrittenOff` negative `<Badge>`; D19 mobile cards |
+| `/lending/persons/:id` | `pages/lending/PersonDetailPage` | 9C | ☑ | ☑ | 18 inline styles & 16 hex literals purged to 0; flat dark summary banner; neutral `Delete Person` trigger; D19 mobile cards |
+| `/lending/loans/:id` | `pages/lending/LoanDetailPage` | 9C | ☑ | ☑ | 20 inline styles & 17 hex literals purged to 0; neutral `<progress>`; `WrittenOff` `<ConfirmModal>` `danger`/`primary`; D19 mobile cards |
 
 **Phase 9 count: 7 (4 credit card + 3 lending).**
 
@@ -1070,7 +1070,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **8E** | Real estate (all three routes) | `phase-ui-8e-real-estate` | ☑ | ☑ |
 | **9A** | Credit cards, modals, installments | `phase-ui-9a-credit-cards` | ☑ | ☑ |
 | **9B** | Statements, debt payoff, reconciliation | `phase-ui-9b-statements-debt` | ☑ | ☑ |
-| **9C** | Peer-to-peer lending (Module 23) | `phase-ui-9c-lending` | ☐ | ☐ |
+| **9C** | Peer-to-peer lending (Module 23) | `phase-ui-9c-lending` | ☑ | ☑ |
 | **10A** | Profile + Settings | `phase-ui-10a-profile-settings` | ☐ | ☐ |
 | **10B** | Security | `phase-ui-10b-security` | ☐ | ☐ |
 | **10C** | Admin family | `phase-ui-10c-admin` | ☐ | ☐ |
@@ -1905,7 +1905,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 - [x] `CreditCardSubNav.css` — byte-identical dual-mode until 9B lands (§4.16; Section 10 `.fs-page .cc-subnav-*` serves `/credit-cards`).
 - [x] Verify installment math display, partial payments, card CRUD (`6/6` Jest suites `32/32`, `9/9` Playwright reference match).
 - [x] Credit-card tables (Due Transactions, Full Transaction History, Installment Schedule) render as compact-expand cards at ≤ 768px per D19 with `0px` page overflow. Utilization bars keep `.fs-progress--*` semantics; the accent does not replace severity.
-- [ ] *(9C)* Lending-ledger tables render as compact-expand cards at ≤ 768px per D19 *(statement tables closed in 9B)*.
+- [x] *(9C)* Lending-ledger tables render as compact-expand cards at ≤ 768px per D19 *(statement tables closed in 9B; lending tables closed in 9C via guarded `matchMedia`)*.
 - [x] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll (`W-9A-1` desktop/tablet only).
 - [x] Installment schedule fixtures unchanged (`calculations.spec.js` `11/11`, Domain 2 unchanged; `$` formatter retained per `I3`).
 - [x] Remove Credit Card dashboard components (8 Phase 9A production components from `frontend/.eslintignore`, retaining `AddTransactionModal.currency.test.js` & 3 Phase 9B files); verify clean ESLint (`--max-warnings=0`).
@@ -1924,15 +1924,15 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 9C — Peer-to-Peer Lending (Module 23)
 
-- [ ] `LendingDashboardPage.js` (and lending styles) — loan cards, counterparty chips, metric cards, amortization summary.
-- [ ] `LoanDetailPage.js`, `PersonDetailPage.js` → dark detail views, transaction ledger table, soft deletion controls.
-- [ ] `AddTransactionForm.js`, `PersonCard.js`, and inline Add Person / New Loan modals (`LendingDashboardPage.js`, `PersonDetailPage.js`) → dark modal + form tokens *(live equivalents of non-existent `AddLoanPage.js` / `AddRepaymentModal.js`, corrected at Phase 9C Gate 0)*.
-- [ ] Utilization / remaining balance progress bars use `.fs-progress`.
-- [ ] Verify loan creation, repayments, soft deletion, and counterparty management.
-- [ ] Remove Lending components (`LendingDashboardPage.js`, `LoanDetailPage.js`, `PersonDetailPage.js`, etc.) from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add `/lending`, `/lending/persons/:id`, `/lending/loans/:id` to allowlist.**
+- [x] `LendingDashboardPage.js` (and `Lending.css`) — loan cards, counterparty chips, metric cards, amortization summary (`0` inline styles, `0` hex literals, `0` `!important`, `0` `overflow-x`).
+- [x] `LoanDetailPage.js`, `PersonDetailPage.js` → dark detail views, transaction ledger table + D19 mobile cards, soft deletion controls (`§4.4:409` neutral triggers).
+- [x] `AddTransactionForm.js`, `PersonCard.js`, and inline Add Person / New Loan modals (`LendingDashboardPage.js`, `PersonDetailPage.js`) → dark modal + form tokens *(live equivalents of non-existent `AddLoanPage.js` / `AddRepaymentModal.js`, corrected at Phase 9C Gate 0)*.
+- [x] Utilization / remaining balance progress bars use `<progress className="fs-progress lending-progress">` (`RealEstate.css:441–466` contract).
+- [x] Verify loan creation, repayments, soft deletion, `WrittenOff` toggle, and counterparty management (`4/4` Jest suites `20/20`, `9/9` Playwright reference match).
+- [x] Remove Lending components (`AddTransactionForm.js`, `LendingDashboardPage.js`, `LoanDetailPage.js`, `PersonCard.js`, `PersonDetailPage.js`) from `frontend/.eslintignore`; verify clean ESLint (`--max-warnings=0`).
+- [x] **Add `/lending`, `/lending/persons/:id`, `/lending/loans/:id` to allowlist.** (`THEMED_PATTERNS` `53 -> 56`; signed off by User 2026-11-28.)
 
-**Exit gate Phase 9:** 7 routes (4 credit cards + 3 lending); thresholds labelled; build/tests/lint/axe/screenshots; zero diff on non-allowlisted routes.
+**Exit gate Phase 9:** 7 routes (4 credit cards + 3 lending); thresholds labelled; build/tests/lint/axe/screenshots; zero diff on non-allowlisted routes. *(Phase 9 Exit Gate closed 2026-11-28.)*
 
 **User-facing acceptance criterion:** "A user can record a card transaction or peer loan and see utilization/debt severity as text, not just colour."
 
@@ -2997,17 +2997,17 @@ Merge SHA:   8d816b3
 ```
 
 ```
-Sub-phase:   9C (Gate 0 — Pre-Execution Governance)
-Status:      in progress (Branch phase-ui-9c-lending started from 1c75926; baseline 01e61c5)
-Done:        Gate 0 governance committed: Review Items #1–#4 approved (#1 Option A `WrittenOff` negative `<Badge>` provenance row added in §4.3.1 while keeping `Active`, `Repaid`, `Owes Money`, `Settled`, `Borrow`, `Repayment` & AD13 amounts neutral; #2 Confirmed removing `overflow-x: auto !important` from `Lending.css:222`, replacing `table-container lending-table-card` with `.lending-table-wrap`, and documenting pre-existing unchanged `App.css:230–239` in §7.1:2105 with zero new waivers; #3 Confirmed neutralizing page-level destructive triggers to `.fs-btn-secondary` and setting write-off `<ConfirmModal>` to `variant="danger"` / reactivation to `variant="primary"`; #4 Confirmed local Gate 12 2048MB/1536MB build, full 326-test Gate 15, and retained `$` `formatCurrency()` per I3). Catalog notes recorded in §5.8.1:954 & §6.13:1928; §7.2:2120 sort-header/checked-state clause recorded as not applicable (lending tables use `<select>` filters and have no sortable `<th>` or checkboxes).
-Next:        Rewrite `Lending.css`, convert 5 Lending JS files with guarded `matchMedia` D19 mobile cards, expand allowlist 53 -> 56, de-ignore 5 files, add tests & mocks, run Gates 1–19
+Sub-phase:   9C (Finalized — Gate 19 Signed Off; Phase 9 Exit Gate Closed 7/7)
+Status:      done (Signed off by User 2026-11-28; merging to main)
+Done:        Converted `/lending` (`LendingDashboardPage.js`), `/lending/persons/:id` (`PersonDetailPage.js`), `/lending/loans/:id` (`LoanDetailPage.js`), `PersonCard.js`, `AddTransactionForm.js`, and `Lending.css` into the dark graphite design system under D22 `html[data-fs-theme]` (`0` changes to `theme.css`, `theme-components.css`, `App.css`, or `ConfirmModal`). Purged all 63 inline styles (`20 + 18 + 20 + 3 + 2`), 46 hex literals, legacy `!important`, and `overflow-x: auto !important` (`Lending.css:222`) to 0. Replaced ad-hoc loading with `<Loading variant="card" />` inside preserved `data-testid="lending-loading"`, replaced inline progress bars with neutral native `<progress className="fs-progress lending-progress" />` (`RealEstate.css:441–466` contract), applied Option A `WrittenOff` negative `<Badge>` (`§4.3.1` provenance row added) + neutral AD13 figures, neutralized page-level destructive triggers (`§4.4:409`) with explicit `<ConfirmModal>` `danger`/`primary` variants, and implemented guarded `matchMedia('(max-width: 768px)')` D19 compact-expand mobile cards on all 3 tables (`0px` overflow across `1440..390px`) while keeping all 14/14 existing Jest tests byte-identical. De-ignored all 5 lending files in `.eslintignore`, expanded `THEMED_PATTERNS` `53 -> 56`, added `PersonDetailPage.test.js` & `LendingA11y.test.js` (`4/4` suites, `20/20` passed incl. `jest-axe`, `deleteLoan`, `WrittenOff` toggle, and new-loan creation), added `lendingMocks.js`, and added `lending-reference-match.spec.js` (`9/9` passed, `25` local §7.4 PNGs). Gates 0–18 verified green: Gate 1 `56` patterns / `75 / 10 / 65 / 0`, Gate 2 `0` drift, Gate 3 `0` deletions, Gate 4 `0` violations (`61` page / `64` total CSS), Gate 5 `0` regressions across `63` CSS / `stylelint` clean / `0` loading bypasses / protected diffs empty, Gate 6 ESLint `0` warnings, Gate 7 `20/20`, Gate 8 `15/15` (`DashboardSummary.js` `96` lines), Gate 9 `11/11`, Gate 12 `2048`MB build clean, Gate 10 `4/4`, Gate 11 `9/9`, Gate 13 `16/16` (`5db8c61`; `01e61c5 -> 5db8c61`; `334/334` manifest), Gate 14 `68/71` (`3` W-6A-1/AD16 only), Gate 15 `292/34` (`326` accounted; `0` unexplained / 9A / 9B / 9C / 10A+ diffs), Gate 16 `2/2`, Gate 17 inspection clean, Gate 18 `46/46` (Cluster 9 `7/7` + unthemed 10A `/profile`, `/settings`).
+Next:        Phase 10A (Profile, Settings & Recycle Bin)
 Blocked by:  None
-Allowlist:   Pending implementation (['/lending', '/lending/persons/:id', '/lending/loans/:id'], 53 -> 56)
-Visual diff: Baseline starting at 01e61c5 (334/334 manifest verified)
-Fixtures:    calculations.spec.js untouched
-Screenshots: None tracked per D5/D21; local §7.4 artifacts planned in docs/ui-snapshots/phase-9c/
-Branch:      phase-ui-9c-lending (tag: ui-phase-9c-start)
-Merge SHA:   Pending Gate 19 sign-off
+Allowlist:   ['/lending', '/lending/persons/:id', '/lending/loans/:id'] (cumulative: 56 patterns)
+Visual diff: Gate 13 recaptured 15 Phase 9C snapshots in place (5db8c61; 334/334 manifest verified); Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 292/34 (326 accounted: 292 + 34 AD14/AD16); Gate 18 46/46; 0 diffs on Cluster 9 or unthemed Phase 10A+ routes.
+Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains
+Screenshots: None tracked per D5/D21; 15 baselines in FinStat-visual-baselines repo (5db8c61) + 25 local §7.4 PNGs in gitignored docs/ui-snapshots/phase-9c/
+Branch:      phase-ui-9c-lending (tag: ui-phase-9c-start; Gate 0 SHA: 52c8f10; Impl SHA: 268741d; Walkthrough SHA: 2268a16)
+Merge SHA:   Pending merge commit on main
 ```
 
 ### Sub-phase note template

@@ -1,12 +1,12 @@
 # UI Phase 9C Walkthrough — Peer-to-Peer Lending (Module 23)
 
 - **Date**: 2026-11-28
-- **Status**: Ready for Gate 19 Sign-Off
+- **Status**: Complete — Gate 19 Signed Off 2026-11-28
 - **Branch**: `phase-ui-9c-lending` *(tag: `ui-phase-9c-start`; local branch policy per §14/§10)*
 - **Merge Base**: `main` @ `1c75926`
 - **Gate 0 Plan & Governance SHA**: `52c8f10`
 - **Implementation SHA**: `268741d`
-- **Walkthrough SHA**: Pending commit on `phase-ui-9c-lending`
+- **Walkthrough SHA**: `2268a16`
 - **Starting Baseline Commit**: `01e61c5` (`334/334` manifest verified)
 - **Gate 13 Baseline Commit**: `5db8c61` in `D:\Projects\FinStat-visual-baselines` (`334/334` manifest verified; 15 Phase 9C PNGs recaptured in place, `0` net new entries)
 
@@ -112,9 +112,9 @@ Merge SHA:   Pending Gate 19 sign-off
 
 ## §6 Post-Sign-Off Checklist
 
-- [ ] Receive explicit **Gate 19** user sign-off on `phase_9c_walkthrough.md`.
-- [ ] Sync governance in `docs/UI-UX_Plan/UI-UX-PLAN.md` (`§5.8.1:954–956`, `§6.1:1072`, `§6.13:1907/:1924–1934` closing Phase 9 Exit Gate `7/7`, `§10` final SHAs & Merge SHA).
-- [ ] Update `docs/ui-plans/phase_9c_implementation_plan.md` & `phase_9c_walkthrough.md` (`Status: Complete`, final SHAs/sign-off date).
-- [ ] Update `CHANGELOG.md` (Phase 9C conversion, `THEMED_PATTERNS` `53 -> 56`, Phase 9 Exit Gate closure, AD13 ordinary-amount neutrality).
+- [x] Receive explicit **Gate 19** user sign-off on `phase_9c_walkthrough.md`.
+- [x] Sync governance in `docs/UI-UX_Plan/UI-UX-PLAN.md` (`§5.8.1:954–956`, `§6.1:1072`, `§6.13:1907/:1924–1934` closing Phase 9 Exit Gate `7/7`, `§10` final SHAs & Merge SHA).
+- [x] Update `docs/ui-plans/phase_9c_implementation_plan.md` & `phase_9c_walkthrough.md` (`Status: Complete`, final SHAs/sign-off date).
+- [x] Update `CHANGELOG.md` (Phase 9C conversion, `THEMED_PATTERNS` `53 -> 56`, Phase 9 Exit Gate closure, AD13 ordinary-amount neutrality).
 - [ ] Merge `phase-ui-9c-lending` into `main` (`--no-ff`), finalize SHA closure on `main`, and push only `main`.
 - [ ] Clean `frontend/test-results/` and `frontend/playwright-report/`, and verify post-merge CI passes on `main`.

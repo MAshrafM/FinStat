@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - UI Phase 9C: Peer-to-Peer Lending (Module 23) & Phase 9 Exit Gate
+- **Theme & Allowlist (`53 -> 56`, Phase 9 Complete `7/7`)**: Converted `/lending`, `/lending/persons/:id`, and `/lending/loans/:id` (`LendingDashboardPage`, `PersonDetailPage`, `LoanDetailPage`, `PersonCard`, `AddTransactionForm`, `Lending.css`) to the FinStat dark graphite design system, expanded `THEMED_PATTERNS` from `53` to `56`, and removed all 5 lending files from `frontend/.eslintignore`.
+- **AD13 Neutrality, Native `<progress>` & D19 Mobile Cards**: Kept ordinary lending receivables, repayments, balances, and native `<progress>` meters neutral; rendered `WrittenOff` with `<Badge tone="negative">WrittenOff</Badge>` (`§4.3.1`), neutralized page-level destructive triggers (`§4.4:409`), removed `overflow-x: auto !important` from `Lending.css`, and added guarded `matchMedia` D19 compact-expand mobile cards across all 3 lending tables (`0px` overflow at `390px`).
+
 ### Changed - UI Phase 9B: Credit Cards Sub-Routes (Statements, Debt Payoff & Reconciliation)
 - **Theme & Allowlist (`50 -> 53`)**: Converted `/credit-cards/statements`, `/credit-cards/debt-payoff`, and `/credit-cards/reconcile` to the FinStat dark graphite design system (`StatementCyclePage`, `DebtPayoffPage`, `ReconciliationPage`), expanded `THEMED_PATTERNS` from `50` to `53`, removed all 3 Phase 9B pages from `frontend/.eslintignore`, and retired the legacy light branch and `overflow-x: auto` from `CreditCardSubNav.css` (`§6.13:1918`).
 - **AD13 Ordinary-Amount Neutrality & Semantic Labels**: Kept ordinary charges, payments, interest, balances, and payoff dates neutral (`.fs-num`, `--fs-text`); added 3-tier statement due-date `<Badge>` severity (`Overdue`, `Due soon`, neutral unlabeled) per `§4.3.1:359–360`, neutral `Reconciled` / warning `Discrepancy` + `<Delta>` status banner on reconciliation, and D19 `<= 768px` compact-expand mobile cards across all 5 Phase 9B tables (`0px` page overflow at `390px`).
