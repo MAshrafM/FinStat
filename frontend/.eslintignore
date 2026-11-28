@@ -19,9 +19,6 @@ src/pages/admin/AdminDashboard.js
 src/pages/admin/BackupPage.js
 src/pages/admin/InsuranceConfigModal.js
 src/pages/admin/TaxConfigModal.js
-src/pages/credit-cards/DebtPayoffPage.js
-src/pages/credit-cards/ReconciliationPage.js
-src/pages/credit-cards/StatementCyclePage.js
 src/pages/credit-cards/__tests__/AddTransactionModal.currency.test.js
 src/pages/lending/AddTransactionForm.js
 src/pages/lending/LendingDashboardPage.js

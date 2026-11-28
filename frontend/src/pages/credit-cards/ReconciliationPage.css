@@ -1,119 +1,440 @@
 /* frontend/src/pages/credit-cards/ReconciliationPage.css */
 
-.reconcile-input-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  margin-bottom: 2rem;
+html[data-fs-theme] .rec-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  box-sizing: border-box;
+  color: var(--fs-text);
 }
 
-.form-row-grid {
+html[data-fs-theme] .rec-page .rec-header {
+  margin-bottom: 24px;
+}
+
+html[data-fs-theme] .rec-page .rec-header h1 {
+  margin: 0 0 6px 0;
+  font-size: var(--fs-text-2xl);
+  font-weight: 700;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .rec-page .rec-subtitle {
+  margin: 0;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-2);
+}
+
+/* --- Frame 02 Dark Form Card --- */
+html[data-fs-theme] .rec-page .rec-input-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: none;
+}
+
+html[data-fs-theme] .rec-page .rec-form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-.reconcile-status-banner {
-  border-radius: 12px;
-  padding: 1.25rem 1.5rem;
+html[data-fs-theme] .rec-page .rec-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+html[data-fs-theme] .rec-page .rec-form-group label {
+  font-size: var(--fs-text-sm);
+  font-weight: 600;
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .rec-page .rec-form-group select,
+html[data-fs-theme] .rec-page .rec-form-group input {
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-md);
+  padding: 10px 12px;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text);
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+html[data-fs-theme] .rec-page .rec-form-group input::placeholder {
+  color: var(--fs-text-3);
+}
+
+html[data-fs-theme] .rec-page .rec-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+html[data-fs-theme] .rec-page .rec-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+}
+
+/* --- Status Banner --- */
+html[data-fs-theme] .rec-page .rec-status-banner {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 18px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 16px;
+  margin-bottom: 24px;
+  box-shadow: none;
 }
 
-.banner-success {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
+html[data-fs-theme] .rec-page .rec-status-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
 }
 
-.banner-warning {
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  color: #92400e;
+html[data-fs-theme] .rec-page .rec-status-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.banner-icon-success {
-  color: #16a34a;
-}
-
-.banner-icon-warning {
-  color: #d97706;
-}
-
-.discrepancy-pill {
-  background: #ffffff;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+html[data-fs-theme] .rec-page .rec-status-title-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.95rem;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.math-breakdown-grid {
+html[data-fs-theme] .rec-page .rec-status-copy h2 {
+  margin: 0;
+  font-size: var(--fs-text-lg);
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .rec-page .rec-status-copy p {
+  margin: 0;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .rec-page .rec-discrepancy-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 10px 14px;
+}
+
+html[data-fs-theme] .rec-page .rec-discrepancy-label {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
+  font-weight: 600;
+}
+
+html[data-fs-theme] .rec-page .rec-discrepancy-val {
+  font-size: var(--fs-text-sm);
+  font-weight: 700;
+  color: var(--fs-text);
+}
+
+/* --- Math Breakdown Strip --- */
+html[data-fs-theme] .rec-page .rec-math-grid {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 2rem;
+  margin-bottom: 24px;
 }
 
-.math-box {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 1rem 1.25rem;
+html[data-fs-theme] .rec-page .rec-math-box {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 16px;
   flex: 1 1 180px;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: none;
 }
 
-.math-operator {
-  font-size: 1.4rem;
+html[data-fs-theme] .rec-page .rec-math-box--expected {
+  background: var(--fs-surface-raised);
+}
+
+html[data-fs-theme] .rec-page .rec-math-operator {
+  font-size: var(--fs-text-xl);
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--fs-text-3);
 }
 
-.math-label {
+html[data-fs-theme] .rec-page .rec-math-label {
   display: block;
-  font-size: 0.8rem;
-  color: #64748b;
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
   font-weight: 600;
   text-transform: uppercase;
-  margin-bottom: 0.25rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
 }
 
-.math-val {
+html[data-fs-theme] .rec-page .rec-math-val {
   display: block;
-  font-size: 1.2rem;
+  font-size: var(--fs-text-lg);
   font-weight: 700;
-  color: #1e293b;
+  color: var(--fs-text);
 }
 
-.math-hint {
+html[data-fs-theme] .rec-page .rec-math-hint {
   display: block;
-  font-size: 0.72rem;
-  color: #94a3b8;
-  margin-top: 0.25rem;
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+  margin-top: 4px;
 }
 
-.itemized-box {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1.25rem;
-  border: 1px solid #e2e8f0;
+/* --- Itemized Tables & D19 Mobile Cards --- */
+html[data-fs-theme] .rec-page .rec-itemized-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
 }
 
-.mini-table th, .mini-table td {
-  padding: 0.5rem 0.75rem !important;
-  font-size: 0.85rem !important;
+html[data-fs-theme] .rec-page .rec-itemized-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 18px 20px;
+  box-shadow: none;
+}
+
+html[data-fs-theme] .rec-page .rec-itemized-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px 0;
+  font-size: var(--fs-text-base);
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .rec-page .rec-table-card {
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  overflow: hidden;
+}
+
+html[data-fs-theme] .rec-page .rec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .rec-page .rec-table thead th {
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+}
+
+html[data-fs-theme] .rec-page .rec-table tbody td {
+  padding: 10px 12px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text);
+  vertical-align: middle;
+}
+
+html[data-fs-theme] .rec-page .rec-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+html[data-fs-theme] .rec-page .rec-table tbody tr:hover {
+  background: var(--fs-surface-raised);
+}
+
+html[data-fs-theme] .rec-page .rec-th-num,
+html[data-fs-theme] .rec-page .rec-td-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-cards {
+  display: none;
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-card {
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-card-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-card-title {
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-card-sub {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-card-val {
+  text-align: right;
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-md);
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-xs);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 10px;
+  border-top: var(--fs-border-width) solid var(--fs-border);
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-detail-label {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+}
+
+html[data-fs-theme] .rec-page .rec-mobile-detail-value {
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text);
+}
+
+/* --- Loading, Empty & Error States --- */
+html[data-fs-theme] .rec-page .rec-empty-card,
+html[data-fs-theme] .rec-page .rec-error-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 20px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  box-shadow: none;
+}
+
+html[data-fs-theme] .rec-page .rec-empty-card h2,
+html[data-fs-theme] .rec-page .rec-error-card h2 {
+  margin: 0;
+  font-size: var(--fs-text-lg);
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .rec-page .rec-empty-card p,
+html[data-fs-theme] .rec-page .rec-error-card p {
+  margin: 0;
+  max-width: 520px;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .rec-page .rec-loading-wrap {
+  margin: 16px 0 24px 0;
+}
+
+@media (max-width: 768px) {
+  html[data-fs-theme] .rec-page {
+    padding: 16px 12px;
+  }
+
+  html[data-fs-theme] .rec-page .rec-form-actions {
+    justify-content: stretch;
+  }
+
+  html[data-fs-theme] .rec-page .rec-submit-btn {
+    width: 100%;
+  }
+
+  html[data-fs-theme] .rec-page .rec-math-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  html[data-fs-theme] .rec-page .rec-math-operator {
+    text-align: center;
+  }
+
+  html[data-fs-theme] .rec-page .rec-itemized-grid {
+    grid-template-columns: 1fr;
+  }
+
+  html[data-fs-theme] .rec-page .rec-table-card {
+    display: none;
+  }
+
+  html[data-fs-theme] .rec-page .rec-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 }

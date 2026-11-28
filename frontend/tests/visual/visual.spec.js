@@ -96,7 +96,7 @@ test.describe('Visual Regression Suite', () => {
           await setupCurrencyMocks(page);
         } else if (route.slug.startsWith('real-estate')) {
           await setupRealEstateMocks(page);
-        } else if (route.slug === 'credit-cards') {
+        } else if (route.slug.startsWith('credit-cards')) {
           await setupCreditCardsMocks(page);
         }
 

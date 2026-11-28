@@ -138,6 +138,200 @@ const MOCK_CURRENCY_PRICES = [
   { currencyID: 'EUR', buyRate: 52.2, sellRate: 52.5 },
 ];
 
+const MOCK_STATEMENT_CYCLES = {
+  'card-1': {
+    card: MOCK_CARDS[0],
+    currentPeriod: {
+      startDate: '2025-12-16T00:00:00.000Z',
+      closeDate: '2026-01-15T00:00:00.000Z',
+      endDate: '2026-01-15T00:00:00.000Z',
+      dueDate: '2026-01-20T00:00:00.000Z',
+      daysUntilClose: 4,
+      daysUntilDue: 5,
+      isOverdue: false,
+    },
+    cycles: [
+      {
+        startDate: '2025-12-16T00:00:00.000Z',
+        closeDate: '2026-01-15T00:00:00.000Z',
+        endDate: '2026-01-15T00:00:00.000Z',
+      },
+      {
+        startDate: '2025-11-16T00:00:00.000Z',
+        closeDate: '2025-12-15T00:00:00.000Z',
+        endDate: '2025-12-15T00:00:00.000Z',
+      },
+    ],
+    currentCycleData: {
+      totalCharges: 21500,
+      totalPayments: 9000,
+      netCycleChange: 12500,
+      transactions: [
+        MOCK_TRANSACTIONS_BY_CARD['card-1'][0],
+        MOCK_TRANSACTIONS_BY_CARD['card-2'][0],
+      ],
+      activeInstallments: [MOCK_TRANSACTIONS_BY_CARD['card-2'][0]],
+      payments: [
+        {
+          _id: 'pay-1',
+          date: '2026-01-08T00:00:00.000Z',
+          amount: 9000,
+          paymentSource: 'CIB Checking',
+        },
+      ],
+    },
+  },
+  'card-2': {
+    card: MOCK_CARDS[1],
+    currentPeriod: {
+      startDate: '2025-12-21T00:00:00.000Z',
+      closeDate: '2026-01-20T00:00:00.000Z',
+      endDate: '2026-01-20T00:00:00.000Z',
+      dueDate: '2026-01-12T00:00:00.000Z',
+      daysUntilClose: 5,
+      daysUntilDue: -3,
+      isOverdue: true,
+    },
+    cycles: [
+      {
+        startDate: '2025-12-21T00:00:00.000Z',
+        closeDate: '2026-01-20T00:00:00.000Z',
+        endDate: '2026-01-20T00:00:00.000Z',
+      },
+    ],
+    currentCycleData: {
+      totalCharges: 18000,
+      totalPayments: 9000,
+      netCycleChange: 9000,
+      transactions: MOCK_TRANSACTIONS_BY_CARD['card-2'],
+      activeInstallments: MOCK_TRANSACTIONS_BY_CARD['card-2'],
+      payments: [],
+    },
+  },
+  'card-3': {
+    card: MOCK_CARDS[2],
+    currentPeriod: {
+      startDate: '2026-01-06T00:00:00.000Z',
+      closeDate: '2026-02-05T00:00:00.000Z',
+      endDate: '2026-02-05T00:00:00.000Z',
+      dueDate: '2026-01-29T00:00:00.000Z',
+      daysUntilClose: 21,
+      daysUntilDue: 14,
+      isOverdue: false,
+    },
+    cycles: [
+      {
+        startDate: '2026-01-06T00:00:00.000Z',
+        closeDate: '2026-02-05T00:00:00.000Z',
+        endDate: '2026-02-05T00:00:00.000Z',
+      },
+    ],
+    currentCycleData: {
+      totalCharges: 5050,
+      totalPayments: 5050,
+      netCycleChange: 0,
+      transactions: MOCK_TRANSACTIONS_BY_CARD['card-3'],
+      activeInstallments: [],
+      payments: [],
+    },
+  },
+};
+
+const buildReconcileReport = (actualStatementBalance) => {
+  const expectedBalance = 3500;
+  const discrepancy = Number((actualStatementBalance - expectedBalance).toFixed(2));
+  const isReconciled = Math.abs(discrepancy) < 0.01;
+  return {
+    isReconciled,
+    discrepancy,
+    analysis: isReconciled
+      ? 'Statement matches logged charges and settlements.'
+      : 'Bank statement differs from logged charges and settlements.',
+    openingBalance: 0,
+    totalTransactions: 3500,
+    transactionCount: 1,
+    totalPayments: 0,
+    paymentCount: 0,
+    expectedBalance,
+    actualStatementBalance,
+    transactions: MOCK_TRANSACTIONS_BY_CARD['card-1'],
+    payments: [
+      {
+        _id: 'pay-1',
+        date: '2026-01-08T00:00:00.000Z',
+        paymentSource: 'CIB Checking',
+        amount: 1500,
+      },
+    ],
+  };
+};
+
+const buildDebtPayoffResult = (strategy = 'snowball', monthlyBudget = 2000) => {
+  const isAvalanche = strategy === 'avalanche';
+  const monthsToPayoff = 10;
+  const totalInterestPaidInPiastres = isAvalanche ? 258412 : 269145;
+  const minOnlyInterest = 412000;
+  const totalInterestSavedInPiastres = minOnlyInterest - totalInterestPaidInPiastres;
+  return {
+    strategy,
+    monthlyBudget,
+    monthlyBudgetInPiastres: Math.round(monthlyBudget * 100),
+    cards: [
+      {
+        cardId: 'card-1',
+        name: 'CIB Titanium',
+        balanceInPiastres: 900000,
+        minimumPaymentInPiastres: 45000,
+        apr: 24,
+      },
+      {
+        cardId: 'card-2',
+        name: 'NBE Platinum',
+        balanceInPiastres: 900000,
+        minimumPaymentInPiastres: 45000,
+        apr: 28,
+      },
+    ],
+    monthsToPayoff,
+    projectedPayoffDate: '2026-11-15T00:00:00.000Z',
+    totalInterestPaidInPiastres,
+    totalInterestSavedInPiastres,
+    schedule: [
+      {
+        month: 1,
+        cardName: isAvalanche ? 'NBE Platinum' : 'CIB Titanium',
+        paymentInPiastres: 155000,
+        interestChargedInPiastres: 21000,
+        remainingBalanceInPiastres: 766000,
+      },
+      {
+        month: 2,
+        cardName: isAvalanche ? 'NBE Platinum' : 'CIB Titanium',
+        paymentInPiastres: 155000,
+        interestChargedInPiastres: 17800,
+        remainingBalanceInPiastres: 628800,
+      },
+    ],
+    comparison: {
+      snowball: {
+        monthsToPayoff: 10,
+        totalInterestPaidInPiastres: 269145,
+        projectedPayoffDate: '2026-11-15T00:00:00.000Z',
+      },
+      avalanche: {
+        monthsToPayoff: 10,
+        totalInterestPaidInPiastres: 258412,
+        projectedPayoffDate: '2026-11-15T00:00:00.000Z',
+      },
+      minimumOnly: {
+        monthsToPayoff: 18,
+        totalInterestPaidInPiastres: minOnlyInterest,
+        projectedPayoffDate: '2027-07-15T00:00:00.000Z',
+      },
+    },
+  };
+};
+
 const getCorsHeaders = (request) => {
   const origin = request.headers().origin || 'http://localhost:3000';
   return {
@@ -248,6 +442,55 @@ async function setupCreditCardsMocks(page) {
     if (payMatch) {
       if (method === 'GET') return fulfillJson([]);
       if (method === 'DELETE') return fulfillJson({ message: 'Payment deleted', id: payMatch[1] });
+    }
+
+    const cycleMatch = pathname.match(/\/api\/credit-cards\/statement-cycles\/([^/]+)\/?$/);
+    if (method === 'GET' && cycleMatch) {
+      return fulfillJson(MOCK_STATEMENT_CYCLES[cycleMatch[1]] || MOCK_STATEMENT_CYCLES['card-1']);
+    }
+
+    const reconcileMatch = pathname.match(/\/api\/credit-cards\/reconcile\/([^/]+)\/?$/);
+    if (method === 'POST' && reconcileMatch) {
+      const body = request.postDataJSON() || {};
+      const actual = Number(body.actualStatementBalance ?? 3950);
+      return fulfillJson(buildReconcileReport(actual));
+    }
+
+    return route.continue();
+  });
+
+  await page.route(/\/api\/debt-payoff(?:\/|\?|$)/, async (route) => {
+    const request = route.request();
+    const method = request.method().toUpperCase();
+    const corsHeaders = getCorsHeaders(request);
+
+    if (method === 'OPTIONS') {
+      return route.fulfill({ status: 204, headers: corsHeaders });
+    }
+
+    const url = new URL(request.url());
+    const pathname = url.pathname;
+    const fulfillJson = (body, status = 200) =>
+      route.fulfill({
+        status,
+        contentType: 'application/json',
+        headers: corsHeaders,
+        body: JSON.stringify(body),
+      });
+
+    if (method === 'POST' && /\/api\/debt-payoff\/calculate\/?$/.test(pathname)) {
+      const body = request.postDataJSON() || {};
+      return fulfillJson(buildDebtPayoffResult(body.strategy || 'snowball', body.monthlyBudget || 2000));
+    }
+    if (/\/api\/debt-payoff\/plans\/?$/.test(pathname)) {
+      if (method === 'GET') return fulfillJson([]);
+      if (method === 'POST') {
+        const body = request.postDataJSON() || {};
+        return fulfillJson({ _id: 'plan-1', ...body }, 201);
+      }
+    }
+    if (method === 'DELETE' && /\/api\/debt-payoff\/plans\/([^/]+)\/?$/.test(pathname)) {
+      return fulfillJson({ message: 'Plan deleted' });
     }
 
     return route.continue();
