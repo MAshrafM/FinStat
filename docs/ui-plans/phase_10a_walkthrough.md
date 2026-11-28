@@ -1,12 +1,12 @@
 # UI Phase 10A — Profile, Settings & Recycle Bin — Walkthrough
 
 - **Date**: 2026-11-28
-- **Status**: `Ready for Gate 19 Sign-Off` *(Checkpoint #8 pending)*
+- **Status**: `Complete — Gate 19 + Checkpoint #8 Signed Off (2026-11-28)`
 - **Branch / Tag**: `phase-ui-10a-profile-settings` (`ui-phase-10a-start`, local branch policy per §14/§10)
 - **Merge Base**: `main` @ `3f42b4f`
 - **Gate 0 Plan & Governance SHA**: `51478bb`
 - **Implementation SHA**: `fe20e40`
-- **Walkthrough SHA**: `Pending commit`
+- **Walkthrough SHA**: `10aab73`
 - **Gov SHA**: `Pending Gate 19 sign-off`
 - **Merge SHA**: `Pending`
 - **Starting Baseline Commit (`D:\Projects\FinStat-visual-baselines`)**: `5db8c61` (`334/334` manifest verified)
@@ -132,6 +132,6 @@
 
 ## §6 Post-Sign-Off Checklist
 
-- [ ] Receive explicit **Gate 19 + Taste Checkpoint #8 sign-off** from the User *(Phase 10B may start only after Checkpoint #8 is signed)*.
+- [x] Receive explicit **Gate 19 + Taste Checkpoint #8 sign-off** from the User *(Signed off 2026-11-28; Phase 10B unblocked)*.
 - [ ] Update two-stage walkthrough header (`Complete — Gate 19 Signed Off`, `Checkpoint #8 approved`, `Gov SHA`, `Merge SHA`), finalize `UI-UX-PLAN.md` (§6.1, §6.1.1, §6.14, §10) & `phase_10a_implementation_plan.md` (`Status: Complete`).
 - [ ] Merge `phase-ui-10a-profile-settings` into `main` (`--no-ff`), record final Merge SHA on `main`, and push only `main` (`phase-ui-10a-profile-settings` remains local).

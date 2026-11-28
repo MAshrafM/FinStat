@@ -12,7 +12,7 @@
   - `/settings/recycle-bin` (`frontend/src/pages/profile/RecycleBin.js`, slug `settings-recycle-bin`)
 - **Taste Checkpoint**: **Checkpoint #8** (§6.1.1:1101) — `/profile` compared against **Reference Frame 02 (Variant B — Two-Column Form)** (`docs/UI-UX_Plan/reference/02-form.html`). No later sub-phase starts until signed off at Gate 19.
 - **Waivers Requested**: **0** (all tables collapse to D19 compact-expand cards at `≤ 768px`; `0` `overflow-x`; `0` tone tokens in page CSS; `0` gradients/blurs/glows). The retained ignored `RecycleBin.test.js` is a pre-existing ESLint exception, not a waiver.
-- **Status**: `Approved — Gate 0 Executing (2026-11-28)`
+- **Status**: `Complete — Gate 19 + Checkpoint #8 Signed Off (2026-11-28)`
 
 ---
 
