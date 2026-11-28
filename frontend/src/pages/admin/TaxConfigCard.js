@@ -1,6 +1,7 @@
 // frontend/src/pages/admin/TaxConfigCard.js
 import React from 'react';
 import { Edit3, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Badge } from '../../components/ui';
 
 const TaxConfigCard = ({ config, onEdit, onDelete, onToggleActive }) => {
   if (!config) return null;
@@ -11,21 +12,18 @@ const TaxConfigCard = ({ config, onEdit, onDelete, onToggleActive }) => {
   const brackets = config.brackets || [];
 
   return (
-    <div className={`admin-config-card ${isActive ? 'is-active' : 'is-inactive'}`}>
+    <div className={`fs-card admin-config-card ${isActive ? 'is-active' : 'is-inactive'}`}>
       <div className="admin-card-header">
         <div className="card-header-left">
           <div className="card-title-row">
-            <h3 className="card-year-title">
-              {year} Tax Brackets
-            </h3>
-            <span className={`status-badge-pill ${isActive ? 'status-active' : 'status-inactive'}`}>
-              <span className="status-dot"></span>
+            <h2 className="card-year-title">{year} Tax Brackets</h2>
+            <Badge tone={isActive ? 'neutral' : 'warning'}>
               {isActive ? 'Active' : 'Inactive'}
-            </span>
+            </Badge>
           </div>
           <div className="card-summary-subtext">
             <span>Personal Exemption: </span>
-            <strong className="accent-amount">{personalExemption} EGP</strong>
+            <strong className="fs-num card-summary-figure">{personalExemption} EGP</strong>
             {config.country && <span className="text-muted-country"> • {config.country}</span>}
           </div>
         </div>
@@ -33,36 +31,36 @@ const TaxConfigCard = ({ config, onEdit, onDelete, onToggleActive }) => {
         <div className="card-header-actions">
           <button
             type="button"
-            className={`action-icon-btn toggle-btn ${isActive ? 'btn-active' : 'btn-inactive'}`}
+            className="fs-btn fs-btn-ghost action-icon-btn"
             onClick={() => onToggleActive && onToggleActive(config)}
             title={isActive ? 'Deactivate configuration' : 'Activate configuration'}
             aria-label={isActive ? 'Deactivate configuration' : 'Activate configuration'}
           >
-            {isActive ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+            {isActive ? <ToggleRight size={20} aria-hidden="true" /> : <ToggleLeft size={20} aria-hidden="true" />}
           </button>
           <button
             type="button"
-            className="action-icon-btn edit-btn"
+            className="fs-btn fs-btn-ghost action-icon-btn"
             onClick={() => onEdit && onEdit(config)}
             title="Edit configuration"
             aria-label="Edit configuration"
           >
-            <Edit3 size={16} />
+            <Edit3 size={16} aria-hidden="true" />
           </button>
           <button
             type="button"
-            className="action-icon-btn delete-btn"
+            className="fs-btn fs-btn-ghost action-icon-btn"
             onClick={() => onDelete && onDelete(config)}
             title="Delete configuration"
             aria-label="Delete configuration"
           >
-            <Trash2 size={16} />
+            <Trash2 size={16} aria-hidden="true" />
           </button>
         </div>
       </div>
 
       <div className="card-table-wrapper">
-        <table className="admin-data-table">
+        <table className="fs-table admin-data-table">
           <thead>
             <tr>
               <th scope="col">From (EGP)</th>
@@ -80,15 +78,15 @@ const TaxConfigCard = ({ config, onEdit, onDelete, onToggleActive }) => {
                 const isInfinity = bracket.to >= 100000000;
                 return (
                   <tr key={bracket._id || index}>
-                    <td className="font-mono">{Number(bracket.from || 0).toLocaleString()}</td>
-                    <td className="font-mono">
+                    <td className="fs-num">{Number(bracket.from || 0).toLocaleString()}</td>
+                    <td className="fs-num">
                       {isInfinity ? (
                         <span className="infinity-symbol">∞</span>
                       ) : (
                         Number(bracket.to || 0).toLocaleString()
                       )}
                     </td>
-                    <td className="font-mono text-right rate-cell">
+                    <td className="fs-num text-right rate-cell">
                       <span className="rate-badge">{bracket.rate}%</span>
                     </td>
                   </tr>
@@ -101,11 +99,14 @@ const TaxConfigCard = ({ config, onEdit, onDelete, onToggleActive }) => {
 
       <div className="card-footer-meta">
         <span className="card-meta-status">
-          Status: {isActive ? '🟢 Active' : '🟡 Inactive'}
+          Status: {isActive ? 'Active' : 'Inactive'}
         </span>
         {config.lastUpdated && (
           <span className="card-meta-date">
-            Updated {new Date(config.lastUpdated).toLocaleDateString()}
+            Updated{' '}
+            <time data-visual-mask="true" className="fs-num">
+              {new Date(config.lastUpdated).toLocaleDateString()}
+            </time>
           </span>
         )}
       </div>

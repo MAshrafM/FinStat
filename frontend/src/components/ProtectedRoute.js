@@ -76,6 +76,10 @@ export const THEMED_PATTERNS = [
   '/settings',
   '/settings/recycle-bin',
   '/security',
+  '/admin',
+  '/admin/tax-brackets',
+  '/admin/social-insurance',
+  '/admin/backup',
 ];
 
 export const isThemedRoute = (pathname) => {

@@ -337,6 +337,7 @@ That is the complete tone set. There is no six-tone palette, no category colour,
 | Gold | **weight, price, value** | — | — | — |
 | Account balance / net worth | **the balance** | change is positive *and* change is what the view is about | — | change is negative *and* change is what the view is about |
 | Security / auth status | Enabled, Success, role | — | 2FA disabled, backup codes not saved | Failed login |
+| Admin / Backup status | Role, 2FA Enabled, Active config, Recommended, Dev Mode | — | 2FA Disabled, Inactive config, Prod — Restore Disabled | — |
 
 Consequences: the expense log has **no red rows**; a budget bar is the only place an expense category shows colour; a paycheck is never green; a debt balance is red only when it is overdue, never because it is debt; a gold holding is never a gold colour; a credit-card bar shows severity, not "healthy green".
 
@@ -372,6 +373,9 @@ Every conditional tone above is audited in 1A before a page implements it. The a
 | Security / 2FA | 2FA disabled | `Disabled` | `pages/security/SecuritySettingsPage.js` (`user?.totpEnabled` false; JSX:250) | Neutral, no label |
 | Security / Login audit | unsuccessful login | `Failed` | `pages/security/SecuritySettingsPage.js` (`log.success === false`; JSX:358) | Neutral, no label |
 | Security / Backup codes | codes not yet acknowledged | `Save Now` | `pages/security/SecuritySettingsPage.js` (backup-code warning banner; JSX:509–513) | Neutral, no label |
+| Admin / 2FA | 2FA disabled for user | `Disabled` | `pages/admin/AdminDashboard.js` (`!user.totpEnabled`) | Neutral, no label |
+| Admin / Config | Tax or insurance config inactive | `Inactive` | `pages/admin/TaxConfigCard.js`, `InsuranceConfigCard.js` (`!config.isActive`) | Neutral, no label |
+| Admin / Backup | Production environment restore lock | `Prod — Restore Disabled` | `pages/admin/BackupPage.js` (`!status?.canRestore`) | Neutral, no label |
 
 1A leaves the source empty when the code has none. An empty source means the row is **neutral and unlabeled**: no target, threshold, figure, or label is computed in the component. Reusing an existing label is allowed; adding a new label requires a recorded decision in §10 and updates to the tests and accessible names (I5).
 
@@ -1966,22 +1970,22 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 10C — Admin family
 
-- [ ] `AdminDashboard.css` — red heading gradient → plain `--fs-text`; red only for destructive.
-- [ ] `AdminDashboard.js` (41) → classes; quick cards, search, audit table, role badges.
-- [ ] `TaxConfigPage.css`, `InsuranceConfigPage.css` — token pass.
-- [ ] `BackupPage.css` — token pass; restore modal → `.fs-surface-solid`.
-- [ ] Admin modals → shared modal tokens.
-- [ ] Verify role editing, search, backup/restore, tax bracket editing, insurance toggles.
-- [ ] Remove Admin components (`AdminDashboard.js`, `TaxConfigPage.js`, `InsuranceConfigPage.js`, `BackupPage.js`) from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add the four admin patterns.**
+- [x] `AdminDashboard.css` — red heading gradient → plain `--fs-text`; red only for destructive.
+- [x] `AdminDashboard.js` (41) → classes; quick cards, search, user table + D19 mobile cards, role badges.
+- [x] `TaxConfigPage.css`, `InsuranceConfigPage.css` — token pass.
+- [x] `BackupPage.css` — token pass; restore modal → `.fs-surface-solid`.
+- [x] Admin modals → shared `.modal-overlay` / `.modal-content` + APG focus lifecycle.
+- [x] Verify user creation/deletion, search, backup/restore, tax bracket editing, insurance toggles *(live-scope note per I2: `AdminDashboard.js` manages User creation with initial role selection and User deletion; no role-edit endpoint or admin audit-log table exists in the codebase)*.
+- [x] Remove Admin components (`AdminDashboard.js`, `BackupPage.js`, `InsuranceConfigModal.js`, `TaxConfigModal.js`) from `frontend/.eslintignore`; verify clean ESLint (`TaxConfigPage.js` and `InsuranceConfigPage.js` are already ESLint-clean).
+- [x] **Add the four admin patterns (`THEMED_PATTERNS` `60 -> 64`).** *(Signed off by User 2026-11-28; §15.5 deviation: local `2048`MB standalone build & full `326`-test local Playwright visual run.)*
 
 **Exit gate Phase 10:**
-- [ ] 8 routes themed.
-- [ ] No page-wide red or purple identity.
-- [ ] Viewer-role UI unchanged in behaviour.
-- [ ] 64 of 65 rendering routes allowlisted (Landing excepted).
-- [ ] Build/tests/lint/axe/screenshots.
-- [ ] Zero diff on non-allowlisted routes.
+- [x] 8 routes themed.
+- [x] No page-wide red or purple identity.
+- [x] Viewer-role UI unchanged in behaviour.
+- [x] 64 of 65 rendering routes allowlisted (Landing excepted).
+- [x] Build/tests/lint/axe/screenshots.
+- [x] Zero diff on non-allowlisted routes.
 
 **User-facing acceptance criterion:** "An admin can edit a role and restore a backup; a viewer sees the same read-only affordances as before."
 

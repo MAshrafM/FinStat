@@ -1,6 +1,7 @@
 // frontend/src/pages/admin/InsuranceConfigCard.js
 import React from 'react';
 import { Edit3, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Badge } from '../../components/ui';
 
 const InsuranceConfigCard = ({ config, onEdit, onDelete, onToggleActive }) => {
   if (!config) return null;
@@ -13,17 +14,14 @@ const InsuranceConfigCard = ({ config, onEdit, onDelete, onToggleActive }) => {
   const maxIncome = Number(config.maxInsurableIncome || 0).toLocaleString();
 
   return (
-    <div className={`admin-config-card ${isActive ? 'is-active' : 'is-inactive'}`}>
+    <div className={`fs-card admin-config-card ${isActive ? 'is-active' : 'is-inactive'}`}>
       <div className="admin-card-header">
         <div className="card-header-left">
           <div className="card-title-row">
-            <h3 className="card-year-title">
-              {year} Social Insurance
-            </h3>
-            <span className={`status-badge-pill ${isActive ? 'status-active' : 'status-inactive'}`}>
-              <span className="status-dot"></span>
+            <h2 className="card-year-title">{year} Social Insurance</h2>
+            <Badge tone={isActive ? 'neutral' : 'warning'}>
               {isActive ? 'Active' : 'Inactive'}
-            </span>
+            </Badge>
           </div>
           <div className="card-summary-subtext">
             <span>Official contribution rates &amp; legal wage thresholds</span>
@@ -34,64 +32,66 @@ const InsuranceConfigCard = ({ config, onEdit, onDelete, onToggleActive }) => {
         <div className="card-header-actions">
           <button
             type="button"
-            className={`action-icon-btn toggle-btn ${isActive ? 'btn-active' : 'btn-inactive'}`}
+            className="fs-btn fs-btn-ghost action-icon-btn"
             onClick={() => onToggleActive && onToggleActive(config)}
             title={isActive ? 'Deactivate configuration' : 'Activate configuration'}
             aria-label={isActive ? 'Deactivate configuration' : 'Activate configuration'}
           >
-            {isActive ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+            {isActive ? <ToggleRight size={20} aria-hidden="true" /> : <ToggleLeft size={20} aria-hidden="true" />}
           </button>
           <button
             type="button"
-            className="action-icon-btn edit-btn"
+            className="fs-btn fs-btn-ghost action-icon-btn"
             onClick={() => onEdit && onEdit(config)}
             title="Edit configuration"
             aria-label="Edit configuration"
           >
-            <Edit3 size={16} />
+            <Edit3 size={16} aria-hidden="true" />
           </button>
           <button
             type="button"
-            className="action-icon-btn delete-btn"
+            className="fs-btn fs-btn-ghost action-icon-btn"
             onClick={() => onDelete && onDelete(config)}
             title="Delete configuration"
             aria-label="Delete configuration"
           >
-            <Trash2 size={16} />
+            <Trash2 size={16} aria-hidden="true" />
           </button>
         </div>
       </div>
 
-      {/* Summary Cards (inline grid) */}
       <div className="insurance-metrics-grid">
         <div className="insurance-metric-tile">
           <span className="metric-tile-label">Employee Share</span>
-          <span className="metric-tile-val text-accent-blue font-bold">{employeeShare}%</span>
+          <span className="metric-tile-val fs-num">{employeeShare}%</span>
         </div>
 
         <div className="insurance-metric-tile">
           <span className="metric-tile-label">Employer Share</span>
-          <span className="metric-tile-val text-accent-purple font-bold">{employerShare}%</span>
+          <span className="metric-tile-val fs-num">{employerShare}%</span>
         </div>
 
         <div className="insurance-metric-tile">
           <span className="metric-tile-label">Min Insurable Income</span>
-          <span className="metric-tile-val text-accent-cyan font-semibold">{minIncome} EGP</span>
+          <span className="metric-tile-val fs-num">{minIncome} EGP</span>
         </div>
 
         <div className="insurance-metric-tile">
           <span className="metric-tile-label">Max Insurable Income</span>
-          <span className="metric-tile-val text-accent-amber font-semibold">{maxIncome} EGP</span>
+          <span className="metric-tile-val fs-num">{maxIncome} EGP</span>
         </div>
       </div>
 
       <div className="card-footer-meta">
         <span className="card-meta-status">
-          Status: {isActive ? '🟢 Active' : '🟡 Inactive'}
+          Status: {isActive ? 'Active' : 'Inactive'}
         </span>
         {config.updatedAt && (
           <span className="card-meta-date">
-            Updated {new Date(config.updatedAt).toLocaleDateString()}
+            Updated{' '}
+            <time data-visual-mask="true" className="fs-num">
+              {new Date(config.updatedAt).toLocaleDateString()}
+            </time>
           </span>
         )}
       </div>

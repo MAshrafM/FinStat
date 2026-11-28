@@ -1,24 +1,47 @@
 // frontend/src/pages/admin/BackupPage.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  Database,
   Download,
   Upload,
   AlertTriangle,
   CheckCircle2,
-  RefreshCw,
   FileText,
   ShieldAlert,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { getBackupStatus, exportBackup, importBackup } from '../../services/backupService';
 import { dispatchToast } from '../../services/apiClient';
 import { useAuth } from '../../context/AuthContext';
+import { Badge, Delta, Loading, PageHeader } from '../../components/ui';
+import { useModalFocus } from './useModalFocus';
 import './BackupPage.css';
 
 const BackupPage = () => {
   const { isAdmin } = useAuth();
   const [status, setStatus] = useState(null);
   const [statusLoading, setStatusLoading] = useState(true);
+
+  // Guarded D19 mobile viewport state
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(max-width: 768px)').matches
+      : false
+  );
+  const [expandedColls, setExpandedColls] = useState({});
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const mql = window.matchMedia('(max-width: 768px)');
+    const onChange = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', onChange);
+      return () => mql.removeEventListener('change', onChange);
+    }
+    mql.addListener(onChange);
+    return () => mql.removeListener(onChange);
+  }, []);
 
   // Export State
   const [exportFormat, setExportFormat] = useState('json');
@@ -34,8 +57,16 @@ const BackupPage = () => {
   // Destructive Confirmation Modal
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [confirmInput, setConfirmInput] = useState('');
+  const confirmModalRef = useRef(null);
+  const confirmInputRef = useRef(null);
 
   const fileInputRef = useRef(null);
+
+  const closeConfirmModal = useCallback(() => {
+    setConfirmModalOpen(false);
+  }, []);
+
+  useModalFocus(confirmModalOpen, closeConfirmModal, confirmModalRef, confirmInputRef);
 
   // Load status on mount
   useEffect(() => {
@@ -128,12 +159,18 @@ const BackupPage = () => {
     }
   };
 
+  const toggleExpandColl = (name) => {
+    setExpandedColls((prev) => ({ ...prev, [name]: !prev[name] }));
+  };
+
   if (!isAdmin) {
     return (
-      <div className="backup-page-container">
-        <div className="backup-danger-alert">
-          <ShieldAlert size={20} />
-          <span>Access Denied: Only users with the <strong>admin</strong> role can manage database backups.</span>
+      <div className="fs-page backup-page-container">
+        <div className="fs-card backup-danger-alert" role="alert">
+          <ShieldAlert size={20} aria-hidden="true" />
+          <span>
+            Access Denied: Only users with the <strong>admin</strong> role can manage database backups.
+          </span>
         </div>
       </div>
     );
@@ -142,35 +179,35 @@ const BackupPage = () => {
   const importAvailable = status?.importAvailable ?? false;
 
   return (
-    <div className="backup-page-container">
-      {/* Page Header */}
-      <div className="backup-header">
-        <div className="backup-title-group">
-          <div className="backup-icon-wrapper">
-            <Database size={26} />
-          </div>
-          <div>
-            <h1 className="backup-page-title">Database Backup & Recovery</h1>
-            <p className="backup-subtitle">
-              Export complete database models in-memory or restore MongoDB collections in local development.
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="fs-page backup-page-container">
+      <PageHeader
+        title="Database Backup & Recovery"
+        subtitle="Export complete database models in-memory or restore MongoDB collections in local development."
+        actions={
+          !statusLoading ? (
+            <Badge tone={importAvailable ? 'neutral' : 'warning'}>
+              {importAvailable ? 'Dev Mode — Restore Enabled' : 'Prod — Restore Disabled'}
+            </Badge>
+          ) : null
+        }
+      />
 
-      {/* Environment Status Banner */}
-      {!statusLoading && (
-        <div className={`backup-status-banner ${importAvailable ? 'dev' : 'prod'}`}>
+      {statusLoading ? (
+        <div className="backup-loading-wrap">
+          <Loading variant="card" text="Checking backup system status..." />
+        </div>
+      ) : (
+        <div className="fs-card backup-status-banner">
           {importAvailable ? (
             <>
-              <CheckCircle2 size={18} />
+              <CheckCircle2 size={18} aria-hidden="true" />
               <span>
                 <strong>Development Mode Active:</strong> Full in-memory backup export and collection restoration are enabled.
               </span>
             </>
           ) : (
             <>
-              <AlertTriangle size={18} />
+              <AlertTriangle size={18} aria-hidden="true" />
               <span>
                 <strong>Production / Cloud Environment:</strong> Streaming backup export is enabled.
                 Database restore is disabled (501) to protect production data from accidental loss or overwrite.
@@ -183,9 +220,9 @@ const BackupPage = () => {
       {/* Main Grid: Export and Import Cards */}
       <div className="backup-grid">
         {/* CARD 1: EXPORT */}
-        <div className="backup-card">
+        <div className="fs-card backup-card">
           <div className="backup-card-header">
-            <Download size={20} className="text-indigo-400" />
+            <Download size={20} aria-hidden="true" />
             <h2>Export Database Backup</h2>
           </div>
           <p className="backup-card-desc">
@@ -194,115 +231,109 @@ const BackupPage = () => {
           </p>
 
           <div className="backup-format-selector">
-            <label
-              className={`backup-format-option ${exportFormat === 'json' ? 'selected' : ''}`}
-              onClick={() => setExportFormat('json')}
-            >
+            <div className={`backup-format-option ${exportFormat === 'json' ? 'selected' : ''}`}>
               <input
+                id="export-format-json"
                 type="radio"
                 name="exportFormat"
                 value="json"
                 checked={exportFormat === 'json'}
                 onChange={() => setExportFormat('json')}
               />
-              <div className="backup-format-info">
+              <label htmlFor="export-format-json" className="backup-format-info">
                 <span className="backup-format-title">
-                  Extended JSON (EJSON)
-                  <span className="badge-pill badge-recommended">Recommended</span>
+                  <span>Extended JSON (EJSON)</span>
+                  <Badge>Recommended</Badge>
                 </span>
                 <span className="backup-format-sub">
                   Preserves exact MongoDB BSON types (ObjectIds, Dates, nested structures). Required for restoring data.
                 </span>
-              </div>
-            </label>
+              </label>
+            </div>
 
-            <label
-              className={`backup-format-option ${exportFormat === 'xlsx' ? 'selected' : ''}`}
-              onClick={() => setExportFormat('xlsx')}
-            >
+            <div className={`backup-format-option ${exportFormat === 'xlsx' ? 'selected' : ''}`}>
               <input
+                id="export-format-xlsx"
                 type="radio"
                 name="exportFormat"
                 value="xlsx"
                 checked={exportFormat === 'xlsx'}
                 onChange={() => setExportFormat('xlsx')}
               />
-              <div className="backup-format-info">
+              <label htmlFor="export-format-xlsx" className="backup-format-info">
                 <span className="backup-format-title">Excel Workbook (.xlsx)</span>
                 <span className="backup-format-sub">
                   Multi-sheet spreadsheet format. Best for external financial analysis, spreadsheets, and manual review.
                 </span>
-              </div>
-            </label>
+              </label>
+            </div>
           </div>
 
           <div className="backup-actions-row">
             <button
               type="button"
-              className="backup-btn backup-btn-primary"
+              className="fs-btn fs-btn-primary"
               onClick={handleExport}
               disabled={exportLoading}
             >
-              {exportLoading ? (
-                <>
-                  <RefreshCw size={16} className="animate-spin" />
-                  <span>Streaming Backup...</span>
-                </>
-              ) : (
-                <>
-                  <Download size={16} />
-                  <span>Download Backup ({exportFormat.toUpperCase()})</span>
-                </>
-              )}
+              <Download size={16} aria-hidden="true" />
+              <span>
+                {exportLoading
+                  ? 'Streaming Backup...'
+                  : `Download Backup (${exportFormat.toUpperCase()})`}
+              </span>
             </button>
           </div>
         </div>
 
         {/* CARD 2: IMPORT (DEV ONLY) */}
-        <div className="backup-card">
+        <div className="fs-card backup-card">
           <div className="backup-card-header">
-            <Upload size={20} className="text-emerald-400" />
+            <Upload size={20} aria-hidden="true" />
             <h2>Restore Database (Dev Only)</h2>
           </div>
           <p className="backup-card-desc">
             Restore collections from an Extended JSON (.json) backup file.
-            Collections are atomic replaced via transactions or staging swap with index preservation.
+            Collections are atomically replaced via transactions or staging swap with index preservation.
           </p>
 
-          {/* Upload Drop Box */}
-          <div
+          <input
+            id="backup-file-input"
+            type="file"
+            ref={fileInputRef}
+            accept=".json"
+            aria-label="Select Extended JSON backup file"
+            className="fs-visually-hidden"
+            onChange={handleFileChange}
+            disabled={!importAvailable}
+          />
+          <button
+            type="button"
             className={`backup-upload-box ${selectedFile ? 'has-file' : ''}`}
             onClick={() => fileInputRef.current?.click()}
+            disabled={!importAvailable}
           >
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept=".json"
-              style={{ display: 'none' }}
-              onChange={handleFileChange}
-              disabled={!importAvailable}
-            />
-            <div className="backup-upload-icon">
-              <FileText size={32} />
+            <div className="backup-upload-icon" aria-hidden="true">
+              <FileText size={28} />
             </div>
             <div className="backup-upload-text">
               {selectedFile ? (
                 <>
-                  <div>Selected backup file:</div>
-                  <div className="backup-upload-file-name">
+                  <span>Selected backup file:</span>
+                  <span className="backup-upload-file-name fs-mono">
                     {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
-                  </div>
+                  </span>
                 </>
               ) : (
-                <div>Click to select an Extended JSON (.json) backup file</div>
+                <span>Click to select an Extended JSON (.json) backup file</span>
               )}
             </div>
-          </div>
+          </button>
 
-          {/* Import Flags */}
           <div className="backup-options-list">
-            <label className="backup-checkbox-label">
+            <label className="backup-checkbox-label" htmlFor="backup-dry-run">
               <input
+                id="backup-dry-run"
                 type="checkbox"
                 checked={dryRun}
                 onChange={(e) => setDryRun(e.target.checked)}
@@ -313,25 +344,25 @@ const BackupPage = () => {
               </span>
             </label>
 
-            <label className="backup-checkbox-label">
+            <label className="backup-checkbox-label" htmlFor="backup-allow-users">
               <input
+                id="backup-allow-users"
                 type="checkbox"
                 checked={allowUsers}
                 onChange={(e) => setAllowUsers(e.target.checked)}
                 disabled={!importAvailable}
               />
               <span>
-                <strong>Restore Users Collection:</strong>
-                <span className="text-amber-400"> (⚠️ Danger: Replaces all local user credentials and 2FA secrets with backup snapshot).</span>
+                <strong>Restore Users Collection:</strong> Replaces all local user credentials and 2FA secrets with backup snapshot.
               </span>
             </label>
           </div>
 
           {!dryRun && importAvailable && (
-            <div className="backup-danger-alert">
-              <AlertTriangle size={18} />
+            <div className="backup-danger-alert" role="status">
+              <AlertTriangle size={18} aria-hidden="true" />
               <span>
-                <strong>Warning:</strong> Restoring without Dry Run will REPLACE existing collection data.
+                <strong>Warning:</strong> Restoring without Dry Run will replace existing collection data.
               </span>
             </div>
           )}
@@ -339,114 +370,158 @@ const BackupPage = () => {
           <div className="backup-actions-row">
             <button
               type="button"
-              className={`backup-btn ${dryRun ? 'backup-btn-primary' : 'backup-btn-danger'}`}
+              className={`fs-btn ${dryRun ? 'fs-btn-primary' : 'fs-btn-secondary'}`}
               onClick={handleRestoreClick}
               disabled={!importAvailable || !selectedFile || importLoading}
             >
-              {importLoading ? (
-                <>
-                  <RefreshCw size={16} className="animate-spin" />
-                  <span>Processing Backup...</span>
-                </>
-              ) : dryRun ? (
-                <>
-                  <CheckCircle2 size={16} />
-                  <span>Run Dry Run Validation</span>
-                </>
-              ) : (
-                <>
-                  <Upload size={16} />
-                  <span>Execute Full Restore</span>
-                </>
-              )}
+              {dryRun ? <CheckCircle2 size={16} aria-hidden="true" /> : <Upload size={16} aria-hidden="true" />}
+              <span>
+                {importLoading
+                  ? 'Processing Backup...'
+                  : dryRun
+                    ? 'Run Dry Run Validation'
+                    : 'Execute Full Restore'}
+              </span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* DELTA RESULTS TABLE */}
+      {/* DELTA RESULTS TABLE / D19 MOBILE CARDS */}
       {importResult && (
-        <div className="backup-results-card">
+        <div className="fs-card backup-results-card">
           <div className="backup-results-header">
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#f8fafc' }}>
-                {importResult.dryRun ? '🔍 Dry Run Validation Report' : '✅ Restore Summary'}
-              </h3>
-              <p style={{ margin: '4px 0 0', color: '#94a3b8', fontSize: '0.85rem' }}>
-                Execution Time: {importResult.durationMs}ms | Mode: {importResult.dryRun ? 'Dry Run (No writes)' : 'Committed'}
-              </p>
-            </div>
+            <h3 className="backup-results-title">
+              {importResult.dryRun ? 'Dry Run Validation Report' : 'Restore Summary'}
+            </h3>
+            <p className="backup-results-meta fs-num">
+              Execution Time: {importResult.durationMs}ms | Mode: {importResult.dryRun ? 'Dry Run (No writes)' : 'Committed'}
+            </p>
           </div>
 
-          <div className="backup-table-wrapper">
-            <table className="backup-table">
-              <thead>
-                <tr>
-                  <th>Collection</th>
-                  <th>Current Documents (To Delete)</th>
-                  <th>New Documents (To Insert)</th>
-                  <th>Net Difference</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(importResult.collections || {}).map(([collName, stats]) => {
-                  const net = (stats.willInsert || 0) - (stats.willDelete || 0);
-                  return (
-                    <tr key={collName}>
-                      <td style={{ fontWeight: 600 }}>{collName}</td>
-                      <td className="count-badge-delete">-{stats.willDelete ?? 0}</td>
-                      <td className="count-badge-insert">+{stats.willInsert ?? 0}</td>
-                      <td style={{ color: net > 0 ? '#4ade80' : net < 0 ? '#f87171' : '#94a3b8' }}>
-                        {net > 0 ? `+${net}` : net}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          {!isMobile ? (
+            <div className="backup-table-wrapper" data-testid="backup-delta-table">
+              <table className="fs-table backup-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Collection</th>
+                    <th scope="col" className="fs-num">Current Documents (To Delete)</th>
+                    <th scope="col" className="fs-num">New Documents (To Insert)</th>
+                    <th scope="col" className="fs-num">Net Difference</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(importResult.collections || {}).map(([collName, stats]) => {
+                    const net = (stats.willInsert || 0) - (stats.willDelete || 0);
+                    return (
+                      <tr key={collName}>
+                        <td className="backup-coll-name fs-mono">{collName}</td>
+                        <td className="fs-num">-{stats.willDelete ?? 0}</td>
+                        <td className="fs-num">+{stats.willInsert ?? 0}</td>
+                        <td className="fs-num">
+                          <Delta
+                            value={net}
+                            tone={net > 0 ? 'positive' : net < 0 ? 'negative' : 'neutral'}
+                            label="net"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="backup-mobile-cards" data-testid="backup-delta-mobile-cards">
+              {Object.entries(importResult.collections || {}).map(([collName, stats]) => {
+                const net = (stats.willInsert || 0) - (stats.willDelete || 0);
+                const isExpanded = Boolean(expandedColls[collName]);
+                return (
+                  <div key={collName} className="backup-mobile-card">
+                    <div className="backup-mobile-card-top">
+                      <span className="backup-coll-name fs-mono">{collName}</span>
+                      <div className="backup-mobile-card-right">
+                        <Delta
+                          value={net}
+                          tone={net > 0 ? 'positive' : net < 0 ? 'negative' : 'neutral'}
+                          label="net"
+                        />
+                        <button
+                          type="button"
+                          className="fs-btn fs-btn-ghost backup-expand-btn"
+                          onClick={() => toggleExpandColl(collName)}
+                          aria-expanded={isExpanded}
+                          aria-label={isExpanded ? `Collapse ${collName}` : `Expand ${collName}`}
+                        >
+                          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                    {isExpanded && (
+                      <div className="backup-mobile-card-details">
+                        <div className="backup-mobile-detail-row">
+                          <span className="backup-mobile-detail-label">To Delete</span>
+                          <span className="fs-num">-{stats.willDelete ?? 0}</span>
+                        </div>
+                        <div className="backup-mobile-detail-row">
+                          <span className="backup-mobile-detail-label">To Insert</span>
+                          <span className="fs-num">+{stats.willInsert ?? 0}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
       {/* CONFIRMATION MODAL FOR DESTRUCTIVE RESTORE */}
       {confirmModalOpen && (
-        <div className="restore-modal-overlay">
-          <div className="restore-modal-content">
-            <h3 className="restore-modal-title">
-              <AlertTriangle size={24} />
-              Confirm Database Restore
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="restore-modal-title"
+        >
+          <div className="modal-content fs-surface-solid restore-modal-card" ref={confirmModalRef}>
+            <h3 id="restore-modal-title" className="restore-modal-title">
+              <AlertTriangle size={20} aria-hidden="true" />
+              <span>Confirm Database Restore</span>
             </h3>
             <p className="restore-modal-body">
               This action will overwrite data in your local MongoDB database with the contents of{' '}
-              <strong>{selectedFile?.name}</strong>. Existing records in affected collections will be replaced.
+              <strong className="fs-mono">{selectedFile?.name}</strong>. Existing records in affected collections will be replaced.
               {allowUsers && (
-                <span style={{ display: 'block', marginTop: '8px', color: '#fca5a5' }}>
-                  ⚠️ User accounts and credentials will also be overwritten.
+                <span className="restore-modal-users-warning">
+                  User accounts and credentials will also be overwritten.
                 </span>
               )}
             </p>
-            <p style={{ fontSize: '0.88rem', color: '#94a3b8' }}>
-              Type <strong>RESTORE</strong> below to proceed:
-            </p>
+            <label htmlFor="restore-confirm-input" className="restore-modal-prompt">
+              Type <strong className="fs-mono">RESTORE</strong> below to proceed:
+            </label>
             <input
+              id="restore-confirm-input"
+              ref={confirmInputRef}
               type="text"
-              className="restore-modal-input"
+              className="restore-modal-input fs-mono"
               value={confirmInput}
               onChange={(e) => setConfirmInput(e.target.value)}
               placeholder="RESTORE"
-              autoFocus
             />
             <div className="restore-modal-footer">
               <button
                 type="button"
-                className="backup-btn backup-btn-secondary"
-                onClick={() => setConfirmModalOpen(false)}
+                className="fs-btn fs-btn-secondary"
+                onClick={closeConfirmModal}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="backup-btn backup-btn-danger"
+                className="fs-btn fs-btn-danger"
                 disabled={confirmInput !== 'RESTORE' || importLoading}
                 onClick={() => runImportAction(false)}
               >

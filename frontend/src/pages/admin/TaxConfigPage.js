@@ -1,6 +1,6 @@
 // frontend/src/pages/admin/TaxConfigPage.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, BarChart3, ShieldAlert } from 'lucide-react';
+import { Plus, BarChart3 } from 'lucide-react';
 import {
   getTaxBracketConfigs,
   createTaxBracketConfig,
@@ -9,6 +9,7 @@ import {
   toggleTaxBracketConfig,
 } from '../../services/adminService';
 import { useToast } from '../../context/ToastContext';
+import { EmptyState, Loading, PageHeader } from '../../components/ui';
 import TaxConfigCard from './TaxConfigCard';
 import TaxConfigModal from './TaxConfigModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -110,7 +111,6 @@ const TaxConfigPage = () => {
         `${cfg.year} Tax Brackets marked as ${isNowActive ? 'Active' : 'Inactive'}`,
         'success'
       );
-      // Optimistic or refresh
       setConfigs((prev) =>
         prev.map((item) =>
           item._id === cfg._id ? { ...item, isActive: isNowActive } : item
@@ -123,53 +123,44 @@ const TaxConfigPage = () => {
   };
 
   return (
-    <div className="admin-config-container">
-      {/* Header Section */}
-      <div className="admin-page-hero">
-        <div className="hero-title-group">
-          <div className="hero-badge">
-            <ShieldAlert size={13} /> Admin System Configuration
-          </div>
-          <h1 className="hero-main-title">
-            <span role="img" aria-label="diamond">🔹</span> Tax Brackets Configuration
-          </h1>
-          <p className="hero-subtitle">
-            Manage progressive income tax brackets for each year. Changes take effect across payroll calculations immediately.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          className="btn-primary-add"
-          onClick={handleOpenCreateModal}
-          id="btn-add-tax-config"
-        >
-          <Plus size={18} />
-          <span>Add New Configuration</span>
-        </button>
-      </div>
-
-      {/* Main Content Area */}
-      {loading ? (
-        <div className="admin-loading-state">
-          <div className="loading-spinner-ring"></div>
-          <p>Loading tax bracket configurations...</p>
-        </div>
-      ) : configs.length === 0 ? (
-        <div className="admin-empty-state-box">
-          <BarChart3 size={48} className="empty-state-icon" />
-          <h3 className="empty-state-title">No Tax Configurations Found</h3>
-          <p className="empty-state-desc">
-            No progressive tax bracket rules have been configured yet. Click below to establish tax rules for Egypt.
-          </p>
+    <div className="fs-page admin-config-container">
+      <PageHeader
+        title="Tax Brackets Configuration"
+        subtitle="Manage progressive income tax brackets for each year. Changes take effect across payroll calculations immediately."
+        actions={
           <button
             type="button"
-            className="btn-primary-add"
+            className="fs-btn fs-btn-primary"
             onClick={handleOpenCreateModal}
+            id="btn-add-tax-config"
           >
-            <Plus size={16} />
-            <span>Add {new Date().getFullYear()} Tax Brackets</span>
+            <Plus size={18} aria-hidden="true" />
+            <span>Add New Configuration</span>
           </button>
+        }
+      />
+
+      {loading ? (
+        <div className="admin-config-loading">
+          <Loading variant="card" text="Loading tax bracket configurations..." />
+        </div>
+      ) : configs.length === 0 ? (
+        <div className="fs-card">
+          <EmptyState
+            icon={<BarChart3 size={36} />}
+            title="No Tax Configurations Found"
+            description="No progressive tax bracket rules have been configured yet. Click below to establish tax rules for Egypt."
+            action={
+              <button
+                type="button"
+                className="fs-btn fs-btn-primary"
+                onClick={handleOpenCreateModal}
+              >
+                <Plus size={16} aria-hidden="true" />
+                <span>Add {new Date().getFullYear()} Tax Brackets</span>
+              </button>
+            }
+          />
         </div>
       ) : (
         <div className="admin-cards-container">

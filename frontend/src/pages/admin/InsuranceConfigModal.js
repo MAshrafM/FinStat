@@ -1,9 +1,11 @@
 // frontend/src/pages/admin/InsuranceConfigModal.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useModalFocus } from './useModalFocus';
 
 const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false }) => {
   const currentYear = new Date().getFullYear();
+  const modalRef = useRef(null);
 
   const [formData, setFormData] = useState({
     year: currentYear,
@@ -16,6 +18,8 @@ const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving =
   });
 
   const [validationError, setValidationError] = useState('');
+
+  useModalFocus(isOpen, saving ? null : onClose, modalRef);
 
   useEffect(() => {
     if (config) {
@@ -73,8 +77,13 @@ const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving =
   };
 
   return (
-    <div className="admin-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="insurance-modal-title">
-      <div className="admin-modal-card max-w-2xl animate-slide-up">
+    <div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="insurance-modal-title"
+    >
+      <div className="modal-content admin-modal-card admin-modal-wide" ref={modalRef}>
         <div className="admin-modal-header">
           <div>
             <h3 id="insurance-modal-title" className="admin-modal-title">
@@ -91,14 +100,14 @@ const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving =
             aria-label="Close modal"
             disabled={saving}
           >
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="admin-modal-body">
             {validationError && (
-              <div className="admin-form-alert admin-alert-danger" role="alert">
+              <div className="admin-form-alert" role="alert">
                 {validationError}
               </div>
             )}
@@ -106,12 +115,12 @@ const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving =
             <div className="admin-form-grid-2">
               <div className="admin-form-group">
                 <label className="admin-form-label" htmlFor="ins-year-input">
-                  Effective Year <span className="text-danger">*</span>
+                  Effective Year *
                 </label>
                 <input
                   id="ins-year-input"
                   type="number"
-                  className="admin-form-input"
+                  className="admin-form-input fs-num"
                   value={formData.year}
                   onChange={(e) => setFormData({ ...formData, year: e.target.value })}
                   min="2000"
@@ -138,14 +147,14 @@ const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving =
             <div className="admin-form-grid-2">
               <div className="admin-form-group">
                 <label className="admin-form-label" htmlFor="ins-employee-input">
-                  Employee Contribution Share (%) <span className="text-danger">*</span>
+                  Employee Contribution Share (%) *
                 </label>
                 <div className="unit-input-group">
                   <input
                     id="ins-employee-input"
                     type="number"
                     step="any"
-                    className="admin-form-input"
+                    className="admin-form-input fs-num"
                     value={formData.employeeShare}
                     onChange={(e) => setFormData({ ...formData, employeeShare: e.target.value })}
                     min="0"
@@ -158,14 +167,14 @@ const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving =
 
               <div className="admin-form-group">
                 <label className="admin-form-label" htmlFor="ins-employer-input">
-                  Employer Contribution Share (%) <span className="text-danger">*</span>
+                  Employer Contribution Share (%) *
                 </label>
                 <div className="unit-input-group">
                   <input
                     id="ins-employer-input"
                     type="number"
                     step="any"
-                    className="admin-form-input"
+                    className="admin-form-input fs-num"
                     value={formData.employerShare}
                     onChange={(e) => setFormData({ ...formData, employerShare: e.target.value })}
                     min="0"
@@ -186,7 +195,7 @@ const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving =
                   id="ins-min-input"
                   type="number"
                   step="any"
-                  className="admin-form-input"
+                  className="admin-form-input fs-num"
                   value={formData.minInsurableIncome}
                   onChange={(e) => setFormData({ ...formData, minInsurableIncome: e.target.value })}
                   min="0"
@@ -195,13 +204,13 @@ const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving =
 
               <div className="admin-form-group">
                 <label className="admin-form-label" htmlFor="ins-max-input">
-                  Max Insurable Income Ceiling (EGP) <span className="text-danger">*</span>
+                  Max Insurable Income Ceiling (EGP) *
                 </label>
                 <input
                   id="ins-max-input"
                   type="number"
                   step="any"
-                  className="admin-form-input"
+                  className="admin-form-input fs-num"
                   value={formData.maxInsurableIncome}
                   onChange={(e) => setFormData({ ...formData, maxInsurableIncome: e.target.value })}
                   min="0"
@@ -211,13 +220,15 @@ const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving =
             </div>
 
             <div className="admin-toggle-field-wrapper">
-              <label className="admin-toggle-switch">
+              <label className="admin-toggle-switch" htmlFor="ins-active-toggle">
                 <input
+                  id="ins-active-toggle"
                   type="checkbox"
                   checked={formData.isActive}
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                 />
                 <span className="admin-toggle-slider"></span>
+                <span className="fs-visually-hidden">Active Status</span>
               </label>
               <div className="admin-toggle-label-group">
                 <span className="toggle-main-label">Active Status</span>
@@ -233,7 +244,7 @@ const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving =
           <div className="admin-modal-footer">
             <button
               type="button"
-              className="admin-btn-secondary"
+              className="fs-btn fs-btn-secondary"
               onClick={onClose}
               disabled={saving}
             >
@@ -241,7 +252,7 @@ const InsuranceConfigModal = ({ isOpen, onClose, onSave, config = null, saving =
             </button>
             <button
               type="submit"
-              className="admin-btn-primary"
+              className="fs-btn fs-btn-primary"
               disabled={saving}
             >
               {saving ? 'Saving...' : config ? 'Update Configuration' : 'Save Configuration'}

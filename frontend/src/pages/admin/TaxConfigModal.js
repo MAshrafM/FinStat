@@ -1,6 +1,7 @@
 // frontend/src/pages/admin/TaxConfigModal.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
+import { useModalFocus } from './useModalFocus';
 
 const DEFAULT_BRACKETS = [
   { level: 1, from: 0, to: 40000, rate: 0 },
@@ -14,6 +15,7 @@ const DEFAULT_BRACKETS = [
 
 const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false }) => {
   const currentYear = new Date().getFullYear();
+  const modalRef = useRef(null);
 
   const [formData, setFormData] = useState({
     year: currentYear,
@@ -24,6 +26,8 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
   });
 
   const [validationError, setValidationError] = useState('');
+
+  useModalFocus(isOpen, saving ? null : onClose, modalRef);
 
   useEffect(() => {
     if (config) {
@@ -131,8 +135,13 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
   };
 
   return (
-    <div className="admin-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="tax-modal-title">
-      <div className="admin-modal-card max-w-3xl animate-slide-up">
+    <div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tax-modal-title"
+    >
+      <div className="modal-content admin-modal-card admin-modal-wide" ref={modalRef}>
         <div className="admin-modal-header">
           <div>
             <h3 id="tax-modal-title" className="admin-modal-title">
@@ -149,14 +158,14 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
             aria-label="Close modal"
             disabled={saving}
           >
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="admin-modal-body">
             {validationError && (
-              <div className="admin-form-alert admin-alert-danger" role="alert">
+              <div className="admin-form-alert" role="alert">
                 {validationError}
               </div>
             )}
@@ -164,12 +173,12 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
             <div className="admin-form-grid-3">
               <div className="admin-form-group">
                 <label className="admin-form-label" htmlFor="tax-year-input">
-                  Tax Year <span className="text-danger">*</span>
+                  Tax Year *
                 </label>
                 <input
                   id="tax-year-input"
                   type="number"
-                  className="admin-form-input"
+                  className="admin-form-input fs-num"
                   value={formData.year}
                   onChange={(e) => setFormData({ ...formData, year: e.target.value })}
                   min="2000"
@@ -185,7 +194,7 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
                 <input
                   id="tax-exemption-input"
                   type="number"
-                  className="admin-form-input"
+                  className="admin-form-input fs-num"
                   value={formData.personalExemption}
                   onChange={(e) => setFormData({ ...formData, personalExemption: e.target.value })}
                   min="0"
@@ -209,13 +218,15 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
             </div>
 
             <div className="admin-toggle-field-wrapper">
-              <label className="admin-toggle-switch">
+              <label className="admin-toggle-switch" htmlFor="tax-active-toggle">
                 <input
+                  id="tax-active-toggle"
                   type="checkbox"
                   checked={formData.isActive}
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                 />
                 <span className="admin-toggle-slider"></span>
+                <span className="fs-visually-hidden">Active Status</span>
               </label>
               <div className="admin-toggle-label-group">
                 <span className="toggle-main-label">Active Status</span>
@@ -232,10 +243,10 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
                 <h4 className="section-heading">Progressive Bracket Levels</h4>
                 <button
                   type="button"
-                  className="admin-btn-secondary btn-sm"
+                  className="fs-btn fs-btn-secondary"
                   onClick={handleAddBracket}
                 >
-                  <Plus size={14} /> Add Row
+                  <Plus size={14} aria-hidden="true" /> Add Row
                 </button>
               </div>
               <p className="section-subheading">
@@ -247,21 +258,23 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
               <table className="admin-editable-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '60px' }}>Tier</th>
-                    <th>From (EGP)</th>
-                    <th>To (EGP)</th>
-                    <th style={{ width: '130px' }}>Rate (%)</th>
-                    <th style={{ width: '50px' }}></th>
+                    <th scope="col" className="col-tier">Tier</th>
+                    <th scope="col">From (EGP)</th>
+                    <th scope="col">To (EGP)</th>
+                    <th scope="col" className="col-rate">Rate (%)</th>
+                    <th scope="col" className="col-remove">
+                      <span className="fs-visually-hidden">Remove</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {formData.brackets.map((b, idx) => (
                     <tr key={idx}>
-                      <td className="tier-cell">#{idx + 1}</td>
+                      <td className="tier-cell fs-num">#{idx + 1}</td>
                       <td>
                         <input
                           type="number"
-                          className="admin-table-input"
+                          className="admin-table-input fs-num"
                           value={b.from}
                           onChange={(e) => handleBracketChange(idx, 'from', e.target.value)}
                           min="0"
@@ -272,7 +285,7 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
                       <td>
                         <input
                           type="number"
-                          className="admin-table-input"
+                          className="admin-table-input fs-num"
                           value={b.to}
                           onChange={(e) => handleBracketChange(idx, 'to', e.target.value)}
                           min="0"
@@ -285,7 +298,7 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
                           <input
                             type="number"
                             step="any"
-                            className="admin-table-input"
+                            className="admin-table-input fs-num"
                             value={b.rate}
                             onChange={(e) => handleBracketChange(idx, 'rate', e.target.value)}
                             min="0"
@@ -296,16 +309,16 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
                           <span className="unit-tag">%</span>
                         </div>
                       </td>
-                      <td>
+                      <td className="col-remove-cell">
                         {formData.brackets.length > 1 && (
                           <button
                             type="button"
-                            className="admin-row-delete-btn"
+                            className="fs-btn fs-btn-ghost admin-row-delete-btn"
                             onClick={() => handleRemoveBracket(idx)}
                             title="Remove tier"
                             aria-label={`Remove tier ${idx + 1}`}
                           >
-                            <Trash2 size={15} />
+                            <Trash2 size={15} aria-hidden="true" />
                           </button>
                         )}
                       </td>
@@ -319,7 +332,7 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
           <div className="admin-modal-footer">
             <button
               type="button"
-              className="admin-btn-secondary"
+              className="fs-btn fs-btn-secondary"
               onClick={onClose}
               disabled={saving}
             >
@@ -327,7 +340,7 @@ const TaxConfigModal = ({ isOpen, onClose, onSave, config = null, saving = false
             </button>
             <button
               type="submit"
-              className="admin-btn-primary"
+              className="fs-btn fs-btn-primary"
               disabled={saving}
             >
               {saving ? 'Saving...' : config ? 'Update Configuration' : 'Save Configuration'}
