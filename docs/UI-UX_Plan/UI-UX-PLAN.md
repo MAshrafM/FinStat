@@ -3030,7 +3030,7 @@ Merge SHA:   dfaca50
 
 ```
 Sub-phase:   10B (Finalized — Gate 19 Signed Off)
-Status:      done (Signed off by User 2026-11-28; merging to main)
+Status:      done (Signed off by User 2026-11-28; merged to main as f70e2cc)
 Done:        Converted `/security` (`SecuritySettingsPage.js` & `SecuritySettingsPage.css`) to dark graphite under D22 `html[data-fs-theme]`, expanded `THEMED_PATTERNS` `59 -> 60`, and removed `SecuritySettingsPage.js` from `.eslintignore`. Purged all 42 inline styles, 5 hex icon props, purple gradient heading, violet identity wash, `backdrop-filter: blur`, `animate-spin`, `LOADING...`, and `overflow-x` (`88` Stylelint errors -> `0`). Applied neutral `Enabled`/`Success`/role `<Badge>` + semantic `Disabled` (`warning`), `Failed` (`negative`), and `Save Now` (`warning`) per §4.3/§4.3.1, neutral page-level `Disable 2FA` trigger (§4.4:410), full APG modal focus lifecycle reusing shared `.modal-overlay`/`.modal-content`, `.fs-num` tabular timestamps with `data-visual-mask="true"`, `.fs-mono` IP/secret/backup codes/TOTP inputs, full-wrap device/client (`overflow-wrap: anywhere`), and guarded `matchMedia` D19 mobile cards (`0px` overflow at `390px`). Added `securityMocks.js`, `security-reference-match.spec.js`, `SecuritySettingsPage.test.js` (`9/9`), and `SecuritySettingsA11y.test.js` (`5/5` `jest-axe`). Gates 0–18 verified green: Gate 1 `60` / `75 / 10 / 65 / 0`, Gate 2 `0` drift, Gate 3 `0` deletions, Gate 4 `0` violations, Gate 5 `0` regressions / `stylelint` clean / `0` `overflow-x` / `0` protected diffs, Gate 6 ESLint `0` warnings, Gate 7 `14/14`, Gate 8 `21/21` (`DashboardSummary.js` `96` lines), Gate 9 `11/11`, Gate 12 build `Compiled successfully.` (`2048`MB main-only + `GENERATE_SOURCEMAP=false`), Gate 10 `2/2`, Gate 11 `9/9` (`25` PNGs), Gate 13 `6/6` (`3b3cfc5`; `334/334` manifest), Gate 14 `68/71`, Gate 15 `292/34` (`0` unexplained), Gate 16 `2/2`, Gate 17 inspection clean, Gate 18 `71/71`.
 Next:        Phase 10C (Admin family — closing Phase 10 at 64/65 routes)
 Blocked by:  None
@@ -3038,8 +3038,8 @@ Allowlist:   ['/security'] (cumulative: 60 patterns)
 Visual diff: Gate 13 recaptured 5 Phase 10B snapshots in place (3b3cfc5; 334/334 manifest verified); Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 292/34 (326 accounted: 292 + 34 AD14/AD16); Gate 18 71/71; 0 diffs on Cluster 9, 10A, or unthemed 10C routes.
 Fixtures:    calculations.spec.js, paycheckMocks.js & profileSettingsMocks.js byte-identical
 Screenshots: None tracked per D5/D21; 5 baselines in FinStat-visual-baselines (3b3cfc5) + 25 local §7.4 PNGs in gitignored docs/ui-snapshots/phase-10b/
-Branch:      phase-ui-10b-security (tag: ui-phase-10b-start; Gate 0 SHA: 7f8d4c6; Impl SHA: 7a8e9bb; Walkthrough SHA: 23a94aa)
-Merge SHA:   Pending merge commit on main
+Branch:      phase-ui-10b-security (tag: ui-phase-10b-start; Gate 0 SHA: 7f8d4c6; Impl SHA: 7a8e9bb; Walkthrough SHA: 23a94aa; Gov SHA: 234dcc4)
+Merge SHA:   f70e2cc
 ```
 
 ### Sub-phase note template
