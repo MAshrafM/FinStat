@@ -20,11 +20,6 @@ src/pages/admin/BackupPage.js
 src/pages/admin/InsuranceConfigModal.js
 src/pages/admin/TaxConfigModal.js
 src/pages/credit-cards/__tests__/AddTransactionModal.currency.test.js
-src/pages/lending/AddTransactionForm.js
-src/pages/lending/LendingDashboardPage.js
-src/pages/lending/LoanDetailPage.js
-src/pages/lending/PersonCard.js
-src/pages/lending/PersonDetailPage.js
 src/pages/profile/ProfilePage.js
 src/pages/profile/SettingsPage.js
 src/pages/profile/__tests__/RecycleBin.test.js

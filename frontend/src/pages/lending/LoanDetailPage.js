@@ -1,6 +1,7 @@
 // frontend/src/pages/lending/LoanDetailPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import {
   getLoanById,
   updateLoan,
@@ -10,9 +11,16 @@ import {
 } from '../../services/lendingService';
 import AddTransactionForm from './AddTransactionForm';
 import ConfirmModal from '../../components/common/ConfirmModal';
+import Loading from '../../components/ui/Loading';
+import Badge from '../../components/ui/Badge';
 import { formatCurrency } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
 import './Lending.css';
+
+const getIsMobile = () =>
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(max-width: 768px)').matches;
 
 const LoanDetailPage = () => {
   const { id } = useParams();
@@ -21,6 +29,8 @@ const LoanDetailPage = () => {
 
   const [loading, setLoading] = useState(true);
   const [loan, setLoan] = useState(null);
+  const [isMobile, setIsMobile] = useState(getIsMobile);
+  const [expandedTxIds, setExpandedTxIds] = useState(() => new Set());
 
   // Modals
   const [modalType, setModalType] = useState(null); // 'repay' | 'borrow' | null
@@ -28,6 +38,15 @@ const LoanDetailPage = () => {
   const [showDeleteLoanModal, setShowDeleteLoanModal] = useState(false);
   const [showWrittenOffModal, setShowWrittenOffModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const mql = window.matchMedia('(max-width: 768px)');
+    const handleChange = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener('change', handleChange);
+    return () => mql.removeEventListener('change', handleChange);
+  }, []);
 
   const fetchLoan = useCallback(async () => {
     try {
@@ -46,6 +65,18 @@ const LoanDetailPage = () => {
   useEffect(() => {
     fetchLoan();
   }, [fetchLoan]);
+
+  const toggleTxExpand = (txId) => {
+    setExpandedTxIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(txId)) {
+        next.delete(txId);
+      } else {
+        next.add(txId);
+      }
+      return next;
+    });
+  };
 
   const handleAddTransaction = async (formData) => {
     try {
@@ -116,8 +147,10 @@ const LoanDetailPage = () => {
 
   if (loading && !loan) {
     return (
-      <div className="lending-page" style={{ textAlign: 'center', padding: '60px' }}>
-        <p>Loading Loan Ledger...</p>
+      <div className="lending-page">
+        <div className="lending-loading-wrap">
+          <Loading variant="card" text="Loading Loan Ledger..." />
+        </div>
       </div>
     );
   }
@@ -125,10 +158,12 @@ const LoanDetailPage = () => {
   if (!loan) {
     return (
       <div className="lending-page">
-        <p>Loan not found.</p>
-        <Link to="/lending" className="lending-btn lending-btn-secondary">
-          ← Back to Lending Dashboard
-        </Link>
+        <div className="lending-empty-state">
+          <p className="lending-empty-title">Loan not found.</p>
+          <Link to="/lending" className="fs-btn fs-btn-secondary lending-action-btn">
+            ← Back to Lending Dashboard
+          </Link>
+        </div>
       </div>
     );
   }
@@ -138,13 +173,14 @@ const LoanDetailPage = () => {
   const balance = (loan.balanceInPiastres || 0) / 100;
   const progressPct = borrowed > 0 ? Math.min(100, Math.round((repaid / borrowed) * 100)) : 0;
   const personName = loan.person?.name || 'Borrower';
+  const transactions = loan.transactions || [];
 
   return (
     <div className="lending-page">
-      <div style={{ marginBottom: '16px' }}>
+      <div className="lending-back-row">
         <Link
           to={loan.person?._id ? `/lending/persons/${loan.person._id}` : '/lending'}
-          style={{ textDecoration: 'none', color: '#009879', fontSize: '0.9rem', fontWeight: 500 }}
+          className="lending-back-link"
         >
           ← Back to {personName}
         </Link>
@@ -153,14 +189,14 @@ const LoanDetailPage = () => {
       <div className="lending-header">
         <div>
           <h1>Loan: {personName}</h1>
-          <p style={{ color: '#64748b', margin: '4px 0 0 0' }}>
+          <p className="lending-subtitle">
             {loan.notes || 'No specific notes entered for this loan.'}
           </p>
         </div>
         <div className="lending-header-actions">
           <button
             type="button"
-            className="lending-btn lending-btn-primary"
+            className="fs-btn fs-btn-primary lending-action-btn"
             onClick={() => setModalType('repay')}
             disabled={balance <= 0 || loan.status === 'WrittenOff'}
           >
@@ -168,7 +204,7 @@ const LoanDetailPage = () => {
           </button>
           <button
             type="button"
-            className="lending-btn lending-btn-secondary"
+            className="fs-btn fs-btn-secondary lending-action-btn"
             onClick={() => setModalType('borrow')}
           >
             + Increase Loan (Borrow More)
@@ -176,11 +212,7 @@ const LoanDetailPage = () => {
           {balance > 0 && (
             <button
               type="button"
-              className="lending-btn lending-btn-secondary"
-              style={{
-                color: loan.status === 'WrittenOff' ? '#047857' : '#b45309',
-                borderColor: loan.status === 'WrittenOff' ? '#a7f3d0' : '#fde68a',
-              }}
+              className="fs-btn fs-btn-secondary lending-action-btn"
               onClick={() => setShowWrittenOffModal(true)}
             >
               {loan.status === 'WrittenOff' ? 'Re-activate Loan' : 'Mark as Written Off'}
@@ -188,8 +220,7 @@ const LoanDetailPage = () => {
           )}
           <button
             type="button"
-            className="lending-btn lending-btn-secondary"
-            style={{ color: '#b91c1c', borderColor: '#fecaca' }}
+            className="fs-btn fs-btn-secondary lending-action-btn"
             onClick={() => setShowDeleteLoanModal(true)}
           >
             Delete Loan
@@ -198,125 +229,174 @@ const LoanDetailPage = () => {
       </div>
 
       {/* Loan Financial Hero Card */}
-      <div className="lending-kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+      <div className="lending-kpi-grid">
         <div className="lending-kpi-card">
           <div className="lending-kpi-title">Remaining Balance</div>
-          <div
-            className="lending-kpi-value"
-            style={{ color: balance > 0 ? '#009879' : '#059669', fontSize: '1.8rem' }}
-          >
-            {formatCurrency(balance)}
-          </div>
+          <div className="lending-kpi-value fs-num">{formatCurrency(balance)}</div>
           <div className="lending-kpi-sub">
-            Status:{' '}
-            <span
-              className={`person-card-badge ${loan.status === 'Active'
-                  ? 'badge-active'
-                  : loan.status === 'Repaid'
-                    ? 'badge-repaid'
-                    : 'badge-writtenoff'
-                }`}
-            >
+            <span>Status:</span>
+            <Badge tone={loan.status === 'WrittenOff' ? 'negative' : 'neutral'}>
               {loan.status}
-            </span>
+            </Badge>
           </div>
         </div>
 
         <div className="lending-kpi-card">
           <div className="lending-kpi-title">Total Borrowed</div>
-          <div className="lending-kpi-value">{formatCurrency(borrowed)}</div>
+          <div className="lending-kpi-value fs-num">{formatCurrency(borrowed)}</div>
           <div className="lending-kpi-sub">Principal + cumulative increases</div>
         </div>
 
         <div className="lending-kpi-card">
           <div className="lending-kpi-title">Total Repaid</div>
-          <div className="lending-kpi-value" style={{ color: '#059669' }}>
-            {formatCurrency(repaid)}
-          </div>
+          <div className="lending-kpi-value fs-num">{formatCurrency(repaid)}</div>
           <div className="lending-kpi-sub">Installments received</div>
         </div>
 
         <div className="lending-kpi-card">
           <div className="lending-kpi-title">Repayment Progress</div>
-          <div className="lending-kpi-value">{progressPct}%</div>
-          <div className="lending-progress-bg" style={{ marginTop: '10px' }}>
-            <div className="lending-progress-fill" style={{ width: `${progressPct}%` }} />
+          <div className="lending-kpi-value fs-num">{progressPct}%</div>
+          <div className="lending-kpi-sub">
+            <progress
+              className="fs-progress lending-progress"
+              value={progressPct}
+              max={100}
+              aria-label={`Repayment progress for ${personName}`}
+              aria-valuetext={`${progressPct}% repaid`}
+            />
           </div>
         </div>
       </div>
 
       {/* Transaction Ledger Table */}
-      <div className="lending-controls-bar" style={{ marginTop: '28px' }}>
-        <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 600 }}>Transaction History & Ledger</h2>
+      <div className="lending-controls-bar">
+        <h2 className="lending-section-title">Transaction History &amp; Ledger</h2>
       </div>
 
-      <div className="lending-scroll-hint" aria-hidden="true">
-        <span>↔ Scroll horizontally to view full ledger columns</span>
-      </div>
-
-      <div className="table-container lending-table-card">
-        <table className="lending-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Type</th>
-              <th>Transaction Amount</th>
-              <th>Running Balance</th>
-              <th>Note</th>
-              <th style={{ textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(loan.transactions || []).length === 0 ? (
+      {!isMobile ? (
+        <div className="lending-table-wrap">
+          <table className="lending-table">
+            <thead>
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
-                  No transactions recorded.
-                </td>
+                <th scope="col">Date</th>
+                <th scope="col">Type</th>
+                <th scope="col" className="lending-th-num">Transaction Amount</th>
+                <th scope="col" className="lending-th-num">Running Balance</th>
+                <th scope="col">Note</th>
+                <th scope="col" className="lending-th-actions">Actions</th>
               </tr>
-            ) : (
-              loan.transactions.map((tx) => {
-                const txAmount = (tx.amountInPiastres || 0) / 100;
-                const runningBal = (tx.runningBalanceInPiastres || 0) / 100;
+            </thead>
+            <tbody>
+              {transactions.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="lending-table-empty">
+                    No transactions recorded.
+                  </td>
+                </tr>
+              ) : (
+                transactions.map((tx) => {
+                  const txAmount = (tx.amountInPiastres || 0) / 100;
+                  const runningBal = (tx.runningBalanceInPiastres || 0) / 100;
 
-                return (
-                  <tr key={tx._id}>
-                    <td>{new Date(tx.date).toLocaleDateString()}</td>
-                    <td>
-                      <span
-                        className={`person-card-badge ${tx.type === 'borrow' ? 'badge-writtenoff' : 'badge-repaid'}`}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                      >
-                        {tx.type === 'borrow' ? 'Borrow' : 'Repayment'}
-                      </span>
-                    </td>
-                    <td
-                      style={{
-                        fontWeight: 600,
-                        color: tx.type === 'borrow' ? '#b91c1c' : '#059669',
-                      }}
-                    >
+                  return (
+                    <tr key={tx._id}>
+                      <td className="fs-num">{new Date(tx.date).toLocaleDateString()}</td>
+                      <td>
+                        <Badge tone="neutral">
+                          {tx.type === 'borrow' ? 'Borrow' : 'Repayment'}
+                        </Badge>
+                      </td>
+                      <td className="lending-td-num fs-num">
+                        <strong>
+                          {tx.type === 'borrow' ? `+ ${formatCurrency(txAmount)}` : `- ${formatCurrency(txAmount)}`}
+                        </strong>
+                      </td>
+                      <td className="lending-td-num fs-num">
+                        <strong>{formatCurrency(runningBal)}</strong>
+                      </td>
+                      <td className="cell-wrap">{tx.note || '—'}</td>
+                      <td className="lending-td-actions">
+                        <button
+                          type="button"
+                          aria-label="Delete transaction"
+                          className="fs-btn fs-btn-secondary lending-table-btn"
+                          onClick={() => setTxToDelete(tx)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="lending-mobile-cards" data-testid="loan-tx-mobile-cards">
+          {transactions.length === 0 ? (
+            <div className="lending-empty-state">
+              <p className="lending-empty-desc">No transactions recorded.</p>
+            </div>
+          ) : (
+            transactions.map((tx) => {
+              const txAmount = (tx.amountInPiastres || 0) / 100;
+              const runningBal = (tx.runningBalanceInPiastres || 0) / 100;
+              const dateLabel = new Date(tx.date).toLocaleDateString();
+              const typeLabel = tx.type === 'borrow' ? 'Borrow' : 'Repayment';
+              const isExpanded = expandedTxIds.has(tx._id);
+
+              return (
+                <article key={tx._id} className="lending-mobile-card">
+                  <div className="lending-mobile-card-summary">
+                    <div className="lending-mobile-card-main">
+                      <span className="lending-mobile-card-title fs-num">{dateLabel}</span>
+                      <Badge tone="neutral">{typeLabel}</Badge>
+                    </div>
+                    <div className="lending-mobile-card-val fs-num">
                       {tx.type === 'borrow' ? `+ ${formatCurrency(txAmount)}` : `- ${formatCurrency(txAmount)}`}
-                    </td>
-                    <td style={{ fontWeight: 600, color: '#1e293b' }}>{formatCurrency(runningBal)}</td>
-                    <td className="cell-wrap">{tx.note || '—'}</td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button
-                        type="button"
-                        aria-label="Delete transaction"
-                        className="lending-btn lending-btn-secondary"
-                        style={{ padding: '3px 8px', fontSize: '0.75rem', color: '#b91c1c', borderColor: '#fecaca' }}
-                        onClick={() => setTxToDelete(tx)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="lending-mobile-expand-btn"
+                    aria-expanded={isExpanded}
+                    aria-label={`${isExpanded ? 'Hide' : 'Show'} transaction details for ${dateLabel}`}
+                    onClick={() => toggleTxExpand(tx._id)}
+                  >
+                    <span>{isExpanded ? 'Hide details' : 'Show details'}</span>
+                    {isExpanded ? <FaChevronUp aria-hidden="true" /> : <FaChevronDown aria-hidden="true" />}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="lending-mobile-details">
+                      <div className="lending-mobile-detail-item">
+                        <span className="lending-mobile-detail-label">Running Balance</span>
+                        <span className="lending-mobile-detail-value fs-num">{formatCurrency(runningBal)}</span>
+                      </div>
+                      <div className="lending-mobile-detail-item">
+                        <span className="lending-mobile-detail-label">Note</span>
+                        <span className="lending-mobile-detail-value">{tx.note || '—'}</span>
+                      </div>
+                      <div className="lending-mobile-card-actions">
+                        <button
+                          type="button"
+                          aria-label="Delete transaction"
+                          className="fs-btn fs-btn-secondary lending-table-btn"
+                          onClick={() => setTxToDelete(tx)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </article>
+              );
+            })
+          )}
+        </div>
+      )}
 
       {/* Add Transaction Form Modal */}
       <AddTransactionForm
@@ -351,7 +431,7 @@ const LoanDetailPage = () => {
         }
         confirmText={loan.status === 'WrittenOff' ? 'Re-activate' : 'Write Off Loan'}
         cancelText="Cancel"
-        variant={loan.status === 'WrittenOff' ? 'primary' : 'warning'}
+        variant={loan.status === 'WrittenOff' ? 'primary' : 'danger'}
         isLoading={actionLoading}
         onConfirm={handleToggleWrittenOff}
         onCancel={() => setShowWrittenOffModal(false)}

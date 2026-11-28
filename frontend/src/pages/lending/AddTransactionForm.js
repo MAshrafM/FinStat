@@ -52,16 +52,18 @@ const AddTransactionForm = ({
   };
 
   return (
-    <div className="lending-modal-backdrop" role="dialog" aria-modal="true">
+    <div className="modal-overlay lending-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="add-lending-tx-title">
       <div className="lending-modal-content">
         <div className="lending-modal-header">
-          <h3>{type === 'repay' ? 'Record Repayment' : 'Increase Loan (Borrow More)'}</h3>
+          <h3 id="add-lending-tx-title">
+            {type === 'repay' ? 'Record Repayment' : 'Increase Loan (Borrow More)'}
+          </h3>
           <button
             type="button"
-            className="lending-btn lending-btn-secondary"
+            aria-label="Close modal"
+            className="fs-btn fs-btn-secondary lending-modal-close"
             onClick={onClose}
             disabled={isLoading}
-            style={{ padding: '4px 8px' }}
           >
             ✕
           </button>
@@ -70,7 +72,7 @@ const AddTransactionForm = ({
         <form onSubmit={handleSubmit}>
           <div className="lending-modal-body">
             {error && (
-              <div style={{ color: '#b91c1c', background: '#fef2f2', padding: '8px 12px', borderRadius: '6px', marginBottom: '12px', fontSize: '0.85rem' }}>
+              <div className="lending-modal-error" role="alert">
                 {error}
               </div>
             )}
@@ -132,7 +134,7 @@ const AddTransactionForm = ({
           <div className="lending-modal-footer">
             <button
               type="button"
-              className="lending-btn lending-btn-secondary"
+              className="fs-btn fs-btn-secondary lending-action-btn"
               onClick={onClose}
               disabled={isLoading}
             >
@@ -140,7 +142,7 @@ const AddTransactionForm = ({
             </button>
             <button
               type="submit"
-              className="lending-btn lending-btn-primary"
+              className="fs-btn fs-btn-primary lending-action-btn"
               disabled={isLoading}
             >
               {isLoading ? 'Saving...' : 'Record Transaction'}

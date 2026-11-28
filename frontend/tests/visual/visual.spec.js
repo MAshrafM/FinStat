@@ -22,6 +22,7 @@ const { setupCertificatesMocks } = require('./fixtures/certificatesMocks');
 const { setupCurrencyMocks } = require('./fixtures/currencyMocks');
 const { setupRealEstateMocks } = require('./fixtures/realEstateMocks');
 const { setupCreditCardsMocks } = require('./fixtures/creditCardsMocks');
+const { setupLendingMocks } = require('./fixtures/lendingMocks');
 
 const MANDATORY_QA_WIDTHS = [1440, 1024, 768, 480, 390];
 
@@ -98,6 +99,8 @@ test.describe('Visual Regression Suite', () => {
           await setupRealEstateMocks(page);
         } else if (route.slug.startsWith('credit-cards')) {
           await setupCreditCardsMocks(page);
+        } else if (route.slug.startsWith('lending')) {
+          await setupLendingMocks(page);
         }
 
         // Navigate to route
