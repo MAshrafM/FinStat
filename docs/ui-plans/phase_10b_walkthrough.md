@@ -1,12 +1,12 @@
 # UI Phase 10B — Security (`/security`) — Walkthrough
 
 - **Date**: 2026-11-28
-- **Status**: `Ready for Gate 19 Sign-Off` *(Checkpoint #8 already approved in 10A; no 10B taste checkpoint)*
+- **Status**: `Complete — Gate 19 Signed Off (2026-11-28)` *(Checkpoint #8 already approved in 10A; no 10B taste checkpoint)*
 - **Branch / Tag**: `phase-ui-10b-security` (`ui-phase-10b-start`, local branch policy per §14/§10)
 - **Merge Base**: `main` @ `1edb58d`
 - **Gate 0 Plan & Governance SHA**: `7f8d4c6`
 - **Implementation SHA**: `7a8e9bb`
-- **Walkthrough SHA**: `Pending commit`
+- **Walkthrough SHA**: `23a94aa`
 - **Gov SHA**: `Pending Gate 19 sign-off`
 - **Merge SHA**: `Pending`
 - **Starting Baseline Commit (`D:\Projects\FinStat-visual-baselines`)**: `723c4ac` (`334/334` manifest verified)
@@ -118,6 +118,6 @@
 
 ## §6 Post-Sign-Off Checklist
 
-- [ ] Receive explicit **Gate 19 sign-off** from the User *(no 10B taste checkpoint)*.
+- [x] Receive explicit **Gate 19 sign-off** from the User *(Signed off 2026-11-28; no 10B taste checkpoint)*.
 - [ ] Update two-stage walkthrough header (`Complete — Gate 19 Signed Off`, `Gov SHA`, `Merge SHA`), finalize `UI-UX-PLAN.md` (§5, §6.1, §6.14, §10) & `phase_10b_implementation_plan.md` (`Status: Complete`).
 - [ ] Merge `phase-ui-10b-security` into `main` (`--no-ff`), record final Merge SHA on `main`, and push only `main` (`phase-ui-10b-security` remains local).
