@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - UI Phase 10A: Profile, Settings & Recycle Bin (Checkpoint #8)
+- **Theme & Allowlist (`56 -> 59`)**: Converted `/profile`, `/settings`, and `/settings/recycle-bin` (`ProfilePage`, `SettingsPage`, `RecycleBin` and their CSS) into the FinStat dark graphite design system under D22 `html[data-fs-theme]`, added `theme-components.css` Section 25 interactive accent for Settings cost-basis radio cards, expanded `THEMED_PATTERNS` from `56` to `59`, and removed `ProfilePage.js` and `SettingsPage.js` from `frontend/.eslintignore`.
+- **Accessibility, Typography & D19 Mobile Cards**: Purged all 18 inline styles and 15 label association warnings, replaced ad-hoc loading blocks with `<Loading>`, implemented full APG keyboard/ARIA tabs + `<EmptyState>` + guarded `matchMedia` D19 compact-expand mobile cards on `/settings/recycle-bin` (`0px` overflow at `390px`), and applied `.fs-num` / `.fs-mono` typography per §4.5.
+
 ### Changed - UI Phase 9C: Peer-to-Peer Lending (Module 23) & Phase 9 Exit Gate
 - **Theme & Allowlist (`53 -> 56`, Phase 9 Complete `7/7`)**: Converted `/lending`, `/lending/persons/:id`, and `/lending/loans/:id` (`LendingDashboardPage`, `PersonDetailPage`, `LoanDetailPage`, `PersonCard`, `AddTransactionForm`, `Lending.css`) to the FinStat dark graphite design system, expanded `THEMED_PATTERNS` from `53` to `56`, and removed all 5 lending files from `frontend/.eslintignore`.
 - **AD13 Neutrality, Native `<progress>` & D19 Mobile Cards**: Kept ordinary lending receivables, repayments, balances, and native `<progress>` meters neutral; rendered `WrittenOff` with `<Badge tone="negative">WrittenOff</Badge>` (`§4.3.1`), neutralized page-level destructive triggers (`§4.4:409`), removed `overflow-x: auto !important` from `Lending.css`, and added guarded `matchMedia` D19 compact-expand mobile cards across all 3 lending tables (`0px` overflow at `390px`).

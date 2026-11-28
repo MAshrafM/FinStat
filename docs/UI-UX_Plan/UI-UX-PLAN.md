@@ -962,9 +962,9 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 
 | Route | Component | Phase | Theme applied | Visual QA | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| `/profile` | `pages/profile/ProfilePage` | 10A | ☐ | ☐ | |
-| `/settings` | `pages/profile/SettingsPage` | 10A | ☐ | ☐ | |
-| `/settings/recycle-bin` | `pages/profile/RecycleBin` | 10A | ☐ | ☐ | Soft-deleted item restoration |
+| `/profile` | `pages/profile/ProfilePage` | 10A | ☑ | ☐ | Gate 0: 8 inline styles & 12 label warnings queued; Frame 02 Variant B target (Checkpoint #8 pending); I2 deviations (no avatar/cancel/inline-error; toast feedback) |
+| `/settings` | `pages/profile/SettingsPage` | 10A | ☑ | ☐ | Gate 0: 9 inline styles (corrected from 6) & 3 label warnings queued; Section 25 `.fs-page .settings-page` radio accent |
+| `/settings/recycle-bin` | `pages/profile/RecycleBin` | 10A | ☑ | ☐ | Soft-deleted item restoration; already ESLint-clean (only `RecycleBin.test.js` retained ignored); APG tabs + D19 mobile cards |
 | `/security` | `pages/security/SecuritySettingsPage` | 10B | ☐ | ☐ | 42 inline styles |
 | `/admin` | `pages/admin/AdminDashboard` | 10C | ☐ | ☐ | 41 inline styles |
 | `/admin/tax-brackets` | `pages/admin/TaxConfigPage` | 10C | ☐ | ☐ | Already dark |
@@ -1071,7 +1071,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **9A** | Credit cards, modals, installments | `phase-ui-9a-credit-cards` | ☑ | ☑ |
 | **9B** | Statements, debt payoff, reconciliation | `phase-ui-9b-statements-debt` | ☑ | ☑ |
 | **9C** | Peer-to-peer lending (Module 23) | `phase-ui-9c-lending` | ☑ | ☑ |
-| **10A** | Profile + Settings | `phase-ui-10a-profile-settings` | ☐ | ☐ |
+| **10A** | Profile, Settings & Recycle Bin | `phase-ui-10a-profile-settings` | ☐ | ☐ |
 | **10B** | Security | `phase-ui-10b-security` | ☐ | ☐ |
 | **10C** | Admin family | `phase-ui-10c-admin` | ☐ | ☐ |
 | **11A** | Landing / login + 2FA | `phase-ui-11a-landing` | ☐ | ☐ |
@@ -1098,7 +1098,7 @@ A checkpoint is a rendered screen the developer opens and approves, not a token 
 | 5 | 7A | `/trades` | frame 1 (Variant B) — Approved by User (2026-11-24) |
 | 6 | 8A | `/gold-wallet` | frame 1 (Variant B) — Approved by User (2026-11-26) |
 | 7 | 9A | `/credit-cards` | frame 2 (Variant B) — Approved by User (2026-11-28, two-part evidence) |
-| 8 | 10A | `/profile` | frame 2 (Variant B) |
+| 8 | 10A | `/profile` | frame 2 (Variant B) — Pending Gate 19 sign-off |
 | 9 | 11A | Landing / login | frame 2 (Variant B) |
 
 All variants are finalized as Variant B at the 1B walkthrough. Variant A artifacts remain in the reference frames for historical comparison (via an in-browser toggle) but the acceptance target for every cluster start is Variant B. A sub-phase whose rendered screen matches Variant A's pattern instead of Variant B's will fail its taste checkpoint.
@@ -1942,15 +1942,15 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 10A — Profile, Settings & Recycle Bin
 
-- [ ] `ProfilePage.css` — white cards → graphite; role pill → `.fs-badge`.
-- [ ] `SettingsPage.css` — cards, method options, radio cards, section icons → tokens.
-- [ ] `ProfilePage.js` (8), `SettingsPage.js` (6) → classes.
-- [ ] `RecycleBin.js` + `RecycleBin.css` — soft-deleted item restoration table, permanent purge modal.
-- [ ] Recycle-bin and audit tables render as compact-expand cards at ≤ 768px; audit logs exceed 12 columns and retain horizontal scroll.
-- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
-- [ ] Verify avatar, form grid, save/cancel, success banner, recycle bin restoration.
-- [ ] Remove `ProfilePage.js`, `SettingsPage.js`, and `RecycleBin.js` from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add `/profile`, `/settings`, and `/settings/recycle-bin`.**
+- [ ] `ProfilePage.css` — white cards → graphite (`html[data-fs-theme] .fs-page .user-profile-page`); role pill → `<Badge>` (`.fs-badge`).
+- [ ] `SettingsPage.css` — cards, method options, radio cards, section icons → tokens; `theme-components.css` Section 25 (`html[data-fs-theme] .fs-page .settings-page`) provides interactive `--fs-accent` on checked radio & active check icon (Option A).
+- [ ] `ProfilePage.js` (8), `SettingsPage.js` (9 inline styles, corrected from 6) → classes, `htmlFor`/`id` label associations, `<Loading variant="card" />`, `.fs-num`/`.fs-mono` typography. *(Live I2 scope: `ProfilePage.js` has no avatar, no cancel/Discard button, no inline error state, and uses toast feedback rather than an inline success banner.)*
+- [ ] `RecycleBin.js` + `RecycleBin.css` — soft-deleted item restoration table (`<ConfirmModal variant="primary">`), APG `role="tab"`/`aria-selected`/`aria-labelledby` tabs, `<Loading variant="table" />`, `<EmptyState />`, `.fs-num` figures. *(Live I2 scope: no permanent purge modal and no audit log table in 10A; audit logs belong to Phase 10C `AdminDashboard.js`.)*
+- [ ] *(Audit-log exception N/A in 10A — deferred to 10C `AdminDashboard.js`; no sortable `<th>` or checkbox in Recycle Bin so §7.2:2121 sort-header/checked clause is N/A.)*
+- [ ] Recycle Bin table renders as D19 compact-expand cards at ≤ 768px via guarded `matchMedia` (mixed-file hook precedent); `0px` page-level horizontal scroll, `0` waivers, `0` `overflow-x`.
+- [ ] Verify profile form grid, save/toast flow, cost-basis radio selection, and recycle bin restoration (`ProfilePage.test.js`, `SettingsPage.test.js`, `ProfileSettingsA11y.test.js` + untouched `10/10` `RecycleBin.test.js`).
+- [ ] Remove `ProfilePage.js` and `SettingsPage.js` from `frontend/.eslintignore` (`RecycleBin.js` is already absent; `RecycleBin.test.js` retained ignored as pre-existing exception under §7.1/§7.2); verify clean ESLint (`--max-warnings=0`).
+- [ ] **Add `/profile`, `/settings`, and `/settings/recycle-bin` (`THEMED_PATTERNS` 56 → 59).** *(Gate 0 authorized: `0` waivers, local `2048`MB build with `1536`MB fallback, and full `326`-test Gate 15 run per §15.5.)*
 
 #### 10B — Security
 
@@ -3008,6 +3008,20 @@ Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains
 Screenshots: None tracked per D5/D21; 15 baselines in FinStat-visual-baselines repo (5db8c61) + 25 local §7.4 PNGs in gitignored docs/ui-snapshots/phase-9c/
 Branch:      phase-ui-9c-lending (tag: ui-phase-9c-start; Gate 0 SHA: 52c8f10; Impl SHA: 268741d; Walkthrough SHA: 2268a16; Gov SHA: beda370)
 Merge SHA:   53e3c0b
+```
+
+```
+Sub-phase:   10A
+Status:      in progress (Gate 0 initialized 2026-11-28)
+Done:        Gate 0 governance sync & approved implementation plan (`phase_10a_implementation_plan.md` v5) committed on `phase-ui-10a-profile-settings` (`ui-phase-10a-start` @ `3f42b4f`); baseline HEAD `5db8c61` (`334/334`) verified. Approved Decisions 1–4: Option A (`theme-components.css` Section 25 `html[data-fs-theme] .fs-page .settings-page`), Decision 2 (`RecycleBin.test.js` retained ignored as pre-existing exception, `ProfilePage.js`/`SettingsPage.js` removed), Decision 3 (live-scope clarifications, Frame 02 I2 deviations, guarded `matchMedia` mixed-file precedent), Decision 4 (`0` waivers, authorized `2048`MB/`1536`MB local build & full `326`-test Gate 15 run).
+Next:        Convert Profile, Settings, Recycle Bin, wire allowlist & tests, and execute Gates 1–18 + Checkpoint #8 evidence.
+Blocked by:  Gate 19 User Sign-Off (Checkpoint #8 pending)
+Allowlist:   ['/profile', '/settings', '/settings/recycle-bin'] (target cumulative: 59 patterns)
+Visual diff: Baseline start 5db8c61 (334/334 verified)
+Fixtures:    calculations.spec.js untouched
+Screenshots: docs/ui-snapshots/phase-10a/ (31 local PNGs planned)
+Branch:      phase-ui-10a-profile-settings (tag: ui-phase-10a-start; Gate 0 SHA: pending commit)
+Merge SHA:   Pending
 ```
 
 ### Sub-phase note template
