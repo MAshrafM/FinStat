@@ -2998,7 +2998,7 @@ Merge SHA:   8d816b3
 
 ```
 Sub-phase:   9C (Finalized — Gate 19 Signed Off; Phase 9 Exit Gate Closed 7/7)
-Status:      done (Signed off by User 2026-11-28; merging to main)
+Status:      done (Signed off by User 2026-11-28; merged to main as 53e3c0b)
 Done:        Converted `/lending` (`LendingDashboardPage.js`), `/lending/persons/:id` (`PersonDetailPage.js`), `/lending/loans/:id` (`LoanDetailPage.js`), `PersonCard.js`, `AddTransactionForm.js`, and `Lending.css` into the dark graphite design system under D22 `html[data-fs-theme]` (`0` changes to `theme.css`, `theme-components.css`, `App.css`, or `ConfirmModal`). Purged all 63 inline styles (`20 + 18 + 20 + 3 + 2`), 46 hex literals, legacy `!important`, and `overflow-x: auto !important` (`Lending.css:222`) to 0. Replaced ad-hoc loading with `<Loading variant="card" />` inside preserved `data-testid="lending-loading"`, replaced inline progress bars with neutral native `<progress className="fs-progress lending-progress" />` (`RealEstate.css:441–466` contract), applied Option A `WrittenOff` negative `<Badge>` (`§4.3.1` provenance row added) + neutral AD13 figures, neutralized page-level destructive triggers (`§4.4:409`) with explicit `<ConfirmModal>` `danger`/`primary` variants, and implemented guarded `matchMedia('(max-width: 768px)')` D19 compact-expand mobile cards on all 3 tables (`0px` overflow across `1440..390px`) while keeping all 14/14 existing Jest tests byte-identical. De-ignored all 5 lending files in `.eslintignore`, expanded `THEMED_PATTERNS` `53 -> 56`, added `PersonDetailPage.test.js` & `LendingA11y.test.js` (`4/4` suites, `20/20` passed incl. `jest-axe`, `deleteLoan`, `WrittenOff` toggle, and new-loan creation), added `lendingMocks.js`, and added `lending-reference-match.spec.js` (`9/9` passed, `25` local §7.4 PNGs). Gates 0–18 verified green: Gate 1 `56` patterns / `75 / 10 / 65 / 0`, Gate 2 `0` drift, Gate 3 `0` deletions, Gate 4 `0` violations (`61` page / `64` total CSS), Gate 5 `0` regressions across `63` CSS / `stylelint` clean / `0` loading bypasses / protected diffs empty, Gate 6 ESLint `0` warnings, Gate 7 `20/20`, Gate 8 `15/15` (`DashboardSummary.js` `96` lines), Gate 9 `11/11`, Gate 12 `2048`MB build clean, Gate 10 `4/4`, Gate 11 `9/9`, Gate 13 `16/16` (`5db8c61`; `01e61c5 -> 5db8c61`; `334/334` manifest), Gate 14 `68/71` (`3` W-6A-1/AD16 only), Gate 15 `292/34` (`326` accounted; `0` unexplained / 9A / 9B / 9C / 10A+ diffs), Gate 16 `2/2`, Gate 17 inspection clean, Gate 18 `46/46` (Cluster 9 `7/7` + unthemed 10A `/profile`, `/settings`).
 Next:        Phase 10A (Profile, Settings & Recycle Bin)
 Blocked by:  None
@@ -3006,8 +3006,8 @@ Allowlist:   ['/lending', '/lending/persons/:id', '/lending/loans/:id'] (cumulat
 Visual diff: Gate 13 recaptured 15 Phase 9C snapshots in place (5db8c61; 334/334 manifest verified); Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 292/34 (326 accounted: 292 + 34 AD14/AD16); Gate 18 46/46; 0 diffs on Cluster 9 or unthemed Phase 10A+ routes.
 Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains
 Screenshots: None tracked per D5/D21; 15 baselines in FinStat-visual-baselines repo (5db8c61) + 25 local §7.4 PNGs in gitignored docs/ui-snapshots/phase-9c/
-Branch:      phase-ui-9c-lending (tag: ui-phase-9c-start; Gate 0 SHA: 52c8f10; Impl SHA: 268741d; Walkthrough SHA: 2268a16)
-Merge SHA:   Pending merge commit on main
+Branch:      phase-ui-9c-lending (tag: ui-phase-9c-start; Gate 0 SHA: 52c8f10; Impl SHA: 268741d; Walkthrough SHA: 2268a16; Gov SHA: beda370)
+Merge SHA:   53e3c0b
 ```
 
 ### Sub-phase note template
