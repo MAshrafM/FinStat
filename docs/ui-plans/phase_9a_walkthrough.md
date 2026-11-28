@@ -50,8 +50,8 @@ Screenshots: None tracked per D5/D21; 5 baselines in FinStat-visual-baselines re
 Branch:      phase-ui-9a-credit-cards (tag: ui-phase-9a-start)
 Plan SHA:    3743f17
 Impl SHA:    f9e40ea
-Walkthrough SHAs: Pending commit on phase-ui-9a-credit-cards
-Merge SHA:   Pending Gate 19 + Taste Checkpoint #7 sign-off
+Walkthrough SHAs: 1e38616 (Walkthrough), 9f844bd (Gov Sync)
+Merge SHA:   4e63db1
 ```
 
 ---
@@ -176,9 +176,9 @@ Unassigned: 0
 
 ## 6. Post-Sign-Off Checklist (Execute ONLY After Gate 19 + Taste Checkpoint #7 Sign-Off)
 
-- [ ] Receive explicit **Gate 19 + Taste Checkpoint #7** user sign-off on `phase_9a_walkthrough.md`.
-- [ ] Sync governance in `docs/UI-UX_Plan/UI-UX-PLAN.md` (`§5.8:945`, `§6.1:1070`, `§6.1.1:1099` Checkpoint #7 sign-off, `§6.13:1899–1910` **12/12** 9A items checked, `§8.1`/`§8.2`, `§10` final SHAs & Merge SHA).
-- [ ] Update `docs/ui-plans/phase_9a_implementation_plan.md` & `phase_9a_walkthrough.md` (`Status: Complete`, final SHAs/sign-off date).
-- [ ] Update `CHANGELOG.md` (announcing AD13 ordinary-amount neutrality, `THEMED_PATTERNS` `49 -> 50`, and 3-tier utilization severity labels).
-- [ ] Clean any `*review*.md` from `docs/ui-plans/`, merge `phase-ui-9a-credit-cards` into `main` (`--no-ff`), finalize SHA closure on `main`, and push only `main`.
+- [x] Receive explicit **Gate 19 + Taste Checkpoint #7** user sign-off on `phase_9a_walkthrough.md`.
+- [x] Sync governance in `docs/UI-UX_Plan/UI-UX-PLAN.md` (`§5.8:945`, `§6.1:1070`, `§6.1.1:1099` Checkpoint #7 sign-off, `§6.13:1899–1910` **12/12** 9A items checked, `§8.1`/`§8.2`, `§10` final SHAs & Merge SHA).
+- [x] Update `docs/ui-plans/phase_9a_implementation_plan.md` & `phase_9a_walkthrough.md` (`Status: Complete`, final SHAs/sign-off date).
+- [x] Update `CHANGELOG.md` (announcing AD13 ordinary-amount neutrality, `THEMED_PATTERNS` `49 -> 50`, and 3-tier utilization severity labels).
+- [x] Clean any `*review*.md` from `docs/ui-plans/`, merge `phase-ui-9a-credit-cards` into `main` (`--no-ff`), finalize SHA closure on `main`, and push only `main`.
 - [ ] Verify authoritative GitHub Actions CI passes on `main` post-merge.
