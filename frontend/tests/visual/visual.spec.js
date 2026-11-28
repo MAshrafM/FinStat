@@ -23,6 +23,7 @@ const { setupCurrencyMocks } = require('./fixtures/currencyMocks');
 const { setupRealEstateMocks } = require('./fixtures/realEstateMocks');
 const { setupCreditCardsMocks } = require('./fixtures/creditCardsMocks');
 const { setupLendingMocks } = require('./fixtures/lendingMocks');
+const { setupProfileSettingsMocks } = require('./fixtures/profileSettingsMocks');
 
 const MANDATORY_QA_WIDTHS = [1440, 1024, 768, 480, 390];
 
@@ -101,6 +102,12 @@ test.describe('Visual Regression Suite', () => {
           await setupCreditCardsMocks(page);
         } else if (route.slug.startsWith('lending')) {
           await setupLendingMocks(page);
+        } else if (
+          route.slug === 'profile' ||
+          route.slug === 'settings' ||
+          route.slug === 'settings-recycle-bin'
+        ) {
+          await setupProfileSettingsMocks(page, route.slug);
         }
 
         // Navigate to route

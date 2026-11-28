@@ -72,6 +72,9 @@ export const THEMED_PATTERNS = [
   '/lending',
   '/lending/persons/:id',
   '/lending/loans/:id',
+  '/profile',
+  '/settings',
+  '/settings/recycle-bin',
 ];
 
 export const isThemedRoute = (pathname) => {
