@@ -358,6 +358,7 @@ Every conditional tone above is audited in 1A before a page implements it. The a
 | Budget progress | over 100% | `Over budget` | `pages/expenditure/BudgetsPage.js` (`pct > 100`) & `pages/dashboard/BudgetPulseCard.js` | Neutral, no label |
 | Debt and card balance | payment due within 7 days | `Due soon` | `pages/credit-cards/StatementCyclePage.js` (`!isOverdue && daysUntilDue <= 7`; supersedes stale `dueDiffDays` citation in `CreditCardPage.js` & `DebtPayoffPage.js`, amended at Phase 9B Gate 0) | Neutral, no label |
 | Debt and card balance | overdue | `Overdue` | `pages/credit-cards/StatementCyclePage.js` (`isOverdue`; supersedes stale `dueDiffDays` citation in `CreditCardPage.js` & `DebtPayoffPage.js`, amended at Phase 9B Gate 0) | Neutral, no label |
+| Debt and card balance | written off | `WrittenOff` | `pages/lending/LoanDetailPage.js` (`loan.status === 'WrittenOff'`, added at Phase 9C Gate 0 Option A) | Neutral, no label |
 | Recurring bills | payment due within 3 days | `Due Soon` | `pages/expenditure/RecurringBills.js` (`getUpcomingBills({ days: 3 })` on line 69; `getBillStatus` lines 210–227) | Neutral, no label |
 | Recurring bills | overdue | `Overdue` | `pages/expenditure/RecurringBills.js` (`diffDays < 0` in `getBillStatus` lines 210–227) | Neutral, no label |
 | Card utilization | 30–70% | `Elevated` | *(No pre-existing source — 30/70 thresholds and `Elevated`/`High` labels mandated by Gate 0 §10 decision; supersedes legacy colour-only `UtilizationWidget.js:25–29`)* | Neutral, no label |
@@ -951,7 +952,7 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 
 | Route | Component | Phase | Theme applied | Visual QA | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| `/lending` | `pages/lending/LendingDashboardPage` | 9C | ☐ | ☐ | Loan cards, counterparty tabs, + 2 modals |
+| `/lending` | `pages/lending/LendingDashboardPage` | 9C | ☐ | ☐ | Loan cards, counterparty grid, inline Add Person / New Loan modals + `AddTransactionForm.js` *(§5.8.1 catalog corrected at Phase 9C Gate 0)* |
 | `/lending/persons/:id` | `pages/lending/PersonDetailPage` | 9C | ☐ | ☐ | Counterparty ledger and history |
 | `/lending/loans/:id` | `pages/lending/LoanDetailPage` | 9C | ☐ | ☐ | Repayment ledger, amortization schedule |
 
@@ -1925,7 +1926,7 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 - [ ] `LendingDashboardPage.js` (and lending styles) — loan cards, counterparty chips, metric cards, amortization summary.
 - [ ] `LoanDetailPage.js`, `PersonDetailPage.js` → dark detail views, transaction ledger table, soft deletion controls.
-- [ ] `AddLoanPage.js`, `AddRepaymentModal.js` → dark modal + form tokens.
+- [ ] `AddTransactionForm.js`, `PersonCard.js`, and inline Add Person / New Loan modals (`LendingDashboardPage.js`, `PersonDetailPage.js`) → dark modal + form tokens *(live equivalents of non-existent `AddLoanPage.js` / `AddRepaymentModal.js`, corrected at Phase 9C Gate 0)*.
 - [ ] Utilization / remaining balance progress bars use `.fs-progress`.
 - [ ] Verify loan creation, repayments, soft deletion, and counterparty management.
 - [ ] Remove Lending components (`LendingDashboardPage.js`, `LoanDetailPage.js`, `PersonDetailPage.js`, etc.) from `frontend/.eslintignore`; verify clean ESLint.
@@ -2102,7 +2103,7 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 - [ ] If the PR adds an allowlist pattern: the route it names is converted **in this PR**.
 - [ ] If the PR converts a cluster's first route: the screen matches its reference frame.
 - [ ] `grep -rn '#14b8a6' frontend/src --include='*.css'` returns only tokens.css:36.
-- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`, waiver **W-8B-1** for `.cert-log-page .cert-table-wrap` in `Certificates.css`, waiver **W-8D-1** for `.curr-log-page .curr-table-wrap` in `Currency.css`, waiver **W-8E-1** for `.re-log-page .re-table-wrap` in `RealEstate.css`, and waiver **W-9A-1** for `.cc-dashboard-page .cc-table-wrap` in `CreditCardPage.css` covering `/credit-cards` and the embedded `<CardInstallmentSchedule />` on `/credit-cards/statements` at `> 768px` only; `CreditCardSubNav.css:21` exception retired in Phase 9B); `PurchasingPowerChart.css` has no `overflow-x`.
+- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, pre-existing unchanged `App.css:230–239` global `.table-container`/`.table-responsive`/`.paycheck-table-container`/`.admin-table-container`/`.card-table-wrapper`/`.lending-table-card` block — explicitly not applied to converted Phase 9C lending routes, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`, waiver **W-8B-1** for `.cert-log-page .cert-table-wrap` in `Certificates.css`, waiver **W-8D-1** for `.curr-log-page .curr-table-wrap` in `Currency.css`, waiver **W-8E-1** for `.re-log-page .re-table-wrap` in `RealEstate.css`, and waiver **W-9A-1** for `.cc-dashboard-page .cc-table-wrap` in `CreditCardPage.css` covering `/credit-cards` and the embedded `<CardInstallmentSchedule />` on `/credit-cards/statements` at `> 768px` only; `CreditCardSubNav.css:21` exception retired in Phase 9B); `PurchasingPowerChart.css` has no `overflow-x`.
 - [ ] Loading consistency check: `git grep -nE "<div>Loading|className=\"loading-spinner\"|custom spinner SVG" frontend/src --include="*.js"` returns only loading primitive usages and test files.
 
 The legacy zero-diff gate is the proof that the allowlist works. A PR that changes a legacy page fails here, regardless of whether the change looks harmless.
@@ -2993,6 +2994,20 @@ Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (
 Screenshots: None tracked per D5/D21; 15 baselines in FinStat-visual-baselines repo (01e61c5) + 25 local §7.4 PNGs in gitignored docs/ui-snapshots/phase-9b/
 Branch:      phase-ui-9b-statements-debt (tag: ui-phase-9b-start; Gate 0 SHA: db1e7ac; Impl SHA: 863dd85; Walkthrough SHA: 464d01e; Gov SHA: 7a35608)
 Merge SHA:   8d816b3
+```
+
+```
+Sub-phase:   9C (Gate 0 — Pre-Execution Governance)
+Status:      in progress (Branch phase-ui-9c-lending started from 1c75926; baseline 01e61c5)
+Done:        Gate 0 governance committed: Review Items #1–#4 approved (#1 Option A `WrittenOff` negative `<Badge>` provenance row added in §4.3.1 while keeping `Active`, `Repaid`, `Owes Money`, `Settled`, `Borrow`, `Repayment` & AD13 amounts neutral; #2 Confirmed removing `overflow-x: auto !important` from `Lending.css:222`, replacing `table-container lending-table-card` with `.lending-table-wrap`, and documenting pre-existing unchanged `App.css:230–239` in §7.1:2105 with zero new waivers; #3 Confirmed neutralizing page-level destructive triggers to `.fs-btn-secondary` and setting write-off `<ConfirmModal>` to `variant="danger"` / reactivation to `variant="primary"`; #4 Confirmed local Gate 12 2048MB/1536MB build, full 326-test Gate 15, and retained `$` `formatCurrency()` per I3). Catalog notes recorded in §5.8.1:954 & §6.13:1928; §7.2:2120 sort-header/checked-state clause recorded as not applicable (lending tables use `<select>` filters and have no sortable `<th>` or checkboxes).
+Next:        Rewrite `Lending.css`, convert 5 Lending JS files with guarded `matchMedia` D19 mobile cards, expand allowlist 53 -> 56, de-ignore 5 files, add tests & mocks, run Gates 1–19
+Blocked by:  None
+Allowlist:   Pending implementation (['/lending', '/lending/persons/:id', '/lending/loans/:id'], 53 -> 56)
+Visual diff: Baseline starting at 01e61c5 (334/334 manifest verified)
+Fixtures:    calculations.spec.js untouched
+Screenshots: None tracked per D5/D21; local §7.4 artifacts planned in docs/ui-snapshots/phase-9c/
+Branch:      phase-ui-9c-lending (tag: ui-phase-9c-start)
+Merge SHA:   Pending Gate 19 sign-off
 ```
 
 ### Sub-phase note template
