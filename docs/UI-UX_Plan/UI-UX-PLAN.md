@@ -356,8 +356,8 @@ Every conditional tone above is audited in 1A before a page implements it. The a
 | :--- | :--- | :--- | :--- | :--- |
 | Budget progress | 80–100% | `Warning` | `pages/expenditure/BudgetsPage.js` (`pct >= 80`) & `pages/dashboard/BudgetPulseCard.js` | Neutral, no label |
 | Budget progress | over 100% | `Over budget` | `pages/expenditure/BudgetsPage.js` (`pct > 100`) & `pages/dashboard/BudgetPulseCard.js` | Neutral, no label |
-| Debt and card balance | payment due within 7 days | `Due soon` | `pages/credit-cards/CreditCardPage.js` & `pages/credit-cards/DebtPayoffPage.js` (`dueDiffDays <= 7`) | Neutral, no label |
-| Debt and card balance | overdue | `Overdue` | `pages/credit-cards/CreditCardPage.js` & `pages/credit-cards/DebtPayoffPage.js` (`dueDiffDays < 0`) | Neutral, no label |
+| Debt and card balance | payment due within 7 days | `Due soon` | `pages/credit-cards/StatementCyclePage.js` (`!isOverdue && daysUntilDue <= 7`; supersedes stale `dueDiffDays` citation in `CreditCardPage.js` & `DebtPayoffPage.js`, amended at Phase 9B Gate 0) | Neutral, no label |
+| Debt and card balance | overdue | `Overdue` | `pages/credit-cards/StatementCyclePage.js` (`isOverdue`; supersedes stale `dueDiffDays` citation in `CreditCardPage.js` & `DebtPayoffPage.js`, amended at Phase 9B Gate 0) | Neutral, no label |
 | Recurring bills | payment due within 3 days | `Due Soon` | `pages/expenditure/RecurringBills.js` (`getUpcomingBills({ days: 3 })` on line 69; `getBillStatus` lines 210–227) | Neutral, no label |
 | Recurring bills | overdue | `Overdue` | `pages/expenditure/RecurringBills.js` (`diffDays < 0` in `getBillStatus` lines 210–227) | Neutral, no label |
 | Card utilization | 30–70% | `Elevated` | *(No pre-existing source — 30/70 thresholds and `Elevated`/`High` labels mandated by Gate 0 §10 decision; supersedes legacy colour-only `UtilizationWidget.js:25–29`)* | Neutral, no label |
@@ -2102,7 +2102,7 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 - [ ] If the PR adds an allowlist pattern: the route it names is converted **in this PR**.
 - [ ] If the PR converts a cluster's first route: the screen matches its reference frame.
 - [ ] `grep -rn '#14b8a6' frontend/src --include='*.css'` returns only tokens.css:36.
-- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, pre-existing `CreditCardSubNav.css:21` inherited baseline exception, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`, waiver **W-8B-1** for `.cert-log-page .cert-table-wrap` in `Certificates.css`, waiver **W-8D-1** for `.curr-log-page .curr-table-wrap` in `Currency.css`, waiver **W-8E-1** for `.re-log-page .re-table-wrap` in `RealEstate.css`, and waiver **W-9A-1** for `.cc-dashboard-page .cc-table-wrap` in `CreditCardPage.css`); `PurchasingPowerChart.css` has no `overflow-x`.
+- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`, waiver **W-8B-1** for `.cert-log-page .cert-table-wrap` in `Certificates.css`, waiver **W-8D-1** for `.curr-log-page .curr-table-wrap` in `Currency.css`, waiver **W-8E-1** for `.re-log-page .re-table-wrap` in `RealEstate.css`, and waiver **W-9A-1** for `.cc-dashboard-page .cc-table-wrap` in `CreditCardPage.css` covering `/credit-cards` and the embedded `<CardInstallmentSchedule />` on `/credit-cards/statements` at `> 768px` only; `CreditCardSubNav.css:21` exception retired in Phase 9B); `PurchasingPowerChart.css` has no `overflow-x`.
 - [ ] Loading consistency check: `git grep -nE "<div>Loading|className=\"loading-spinner\"|custom spinner SVG" frontend/src --include="*.js"` returns only loading primitive usages and test files.
 
 The legacy zero-diff gate is the proof that the allowlist works. A PR that changes a legacy page fails here, regardless of whether the change looks harmless.
@@ -2979,6 +2979,20 @@ Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (
 Screenshots: None tracked per D5/D21; 5 baselines in FinStat-visual-baselines repo (2ec388e) + 21 local §7.4 PNG artifacts in gitignored docs/ui-snapshots/phase-9a/
 Branch:      phase-ui-9a-credit-cards (tag: ui-phase-9a-start; Gate 0 Plan SHA: 3743f17; Impl SHA: f9e40ea; Walkthrough SHA: 1e38616; Gov SHA: 9f844bd)
 Merge SHA:   4e63db1
+```
+
+```
+Sub-phase:   9B (Gate 0 — Pre-Execution Governance)
+Status:      in progress (Branch phase-ui-9b-statements-debt started from e3bd47a; baseline 2ec388e)
+Done:        Gate 0 governance committed: Review Items #1–#7 approved (#1 Option A StatementCyclePage due-date source amendment in §4.3.1:359–360; #2 Option A scoped `useCanModify()` destructuring fix in `DebtPayoffPage.js:13`; #3 Option A neutral `Interest Saved` per §4.3.1:371; #4 Option A `W-9A-1` scope extension to embedded `<CardInstallmentSchedule />` on `/credit-cards/statements` & retirement of `CreditCardSubNav.css:21` exception from §7.1:2105; #5 Confirmed neutral `Reconciled` + warning `Discrepancy` / `vs bank statement` label decision per §4.3.1:371; #6 Option A neutral timeline milestone dots with severity via existing `Badge` & interactive-accent-only Section 24; #7 Confirmed local Gate 12 2048MB/1536MB build, full 326-test Gate 15, and retained `$` `formatCurrency()` per I3). Typography governed by §4.5:443 / §7.2:2129 (proportional IBM Plex Sans + tabular-nums via `.fs-num`, no mono figures). 2E `!important` deferrals in `DebtPayoffPage.css:162` & `ReconciliationPage.css:117–118` scheduled for removal.
+Next:        Implement Phase 9B CSS/SubNav/Section 24, convert 3 pages + D19 mobile cards, update allowlist/eslintignore/tests, run Gates 1–19
+Blocked by:  None
+Allowlist:   Pending implementation (['/credit-cards/statements', '/credit-cards/debt-payoff', '/credit-cards/reconcile'], 50 -> 53)
+Visual diff: Baseline starting at 2ec388e (334/334 manifest verified)
+Fixtures:    calculations.spec.js untouched (Domains 2 & 3 unchanged)
+Screenshots: None tracked per D5/D21; local §7.4 artifacts planned in docs/ui-snapshots/phase-9b/
+Branch:      phase-ui-9b-statements-debt (tag: ui-phase-9b-start)
+Merge SHA:   Pending Gate 19 sign-off
 ```
 
 ### Sub-phase note template
