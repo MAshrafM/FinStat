@@ -1,5 +1,5 @@
 // frontend/src/pages/security/SecuritySettingsPage.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Shield,
   ShieldCheck,
@@ -17,6 +17,8 @@ import {
   XCircle,
   AlertTriangle,
   UserCheck,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import {
   getCurrentUser,
@@ -26,7 +28,11 @@ import {
   getAuditLogs,
 } from '../../services/authService';
 import { dispatchToast } from '../../services/apiClient';
+import { Badge, Loading, EmptyState } from '../../components/ui';
 import './SecuritySettingsPage.css';
+
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const SecuritySettingsPage = () => {
   const [user, setUser] = useState(null);
@@ -61,6 +67,98 @@ const SecuritySettingsPage = () => {
   const [auditTotalCount, setAuditTotalCount] = useState(0);
   const [auditLoading, setAuditLoading] = useState(false);
 
+  // D19 Responsive State (<= 768px)
+  const [isMobile, setIsMobile] = useState(() => (
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(max-width: 768px)').matches
+      : false
+  ));
+  const [expandedLogIds, setExpandedLogIds] = useState(() => new Set());
+
+  // APG Modal Focus Lifecycle Refs
+  const modalContentRef = useRef(null);
+  const restoreFocusRef = useRef(null);
+  const wasModalOpenRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined;
+    }
+    const mql = window.matchMedia('(max-width: 768px)');
+    const handleMediaChange = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', handleMediaChange);
+      return () => mql.removeEventListener('change', handleMediaChange);
+    }
+    if (typeof mql.addListener === 'function') {
+      mql.addListener(handleMediaChange);
+      return () => mql.removeListener(handleMediaChange);
+    }
+    return undefined;
+  }, []);
+
+  const anyModalOpen = setupModalOpen || backupCodesModalOpen || disableModalOpen;
+
+  useEffect(() => {
+    if (anyModalOpen) {
+      wasModalOpenRef.current = true;
+      const timer = setTimeout(() => {
+        if (modalContentRef.current) {
+          const focusables = modalContentRef.current.querySelectorAll(FOCUSABLE_SELECTOR);
+          if (focusables.length > 0) {
+            focusables[0].focus();
+          }
+        }
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
+    if (wasModalOpenRef.current) {
+      wasModalOpenRef.current = false;
+      if (restoreFocusRef.current && typeof restoreFocusRef.current.focus === 'function') {
+        restoreFocusRef.current.focus();
+      }
+      restoreFocusRef.current = null;
+    }
+    return undefined;
+  }, [anyModalOpen, setupModalOpen, backupCodesModalOpen, disableModalOpen]);
+
+  const captureTriggerFocus = () => {
+    if (typeof document !== 'undefined' && document.activeElement) {
+      restoreFocusRef.current = document.activeElement;
+    }
+  };
+
+  const closeActiveModal = () => {
+    if (setupModalOpen) setSetupModalOpen(false);
+    if (backupCodesModalOpen) setBackupCodesModalOpen(false);
+    if (disableModalOpen) setDisableModalOpen(false);
+  };
+
+  const handleModalKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeActiveModal();
+      return;
+    }
+    if (e.key === 'Tab' && modalContentRef.current) {
+      const focusables = Array.from(modalContentRef.current.querySelectorAll(FOCUSABLE_SELECTOR));
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first || !modalContentRef.current.contains(document.activeElement)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (document.activeElement === last || !modalContentRef.current.contains(document.activeElement)) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  };
+
   // Fetch initial profile
   const fetchUserProfile = useCallback(async () => {
     try {
@@ -70,6 +168,7 @@ const SecuritySettingsPage = () => {
       }
     } catch (err) {
       console.error('Failed to load user profile:', err);
+      dispatchToast(err.message || 'Failed to load security profile.', 'error');
     } finally {
       setLoading(false);
     }
@@ -88,6 +187,7 @@ const SecuritySettingsPage = () => {
       }
     } catch (err) {
       console.error('Failed to load audit logs:', err);
+      dispatchToast(err.message || 'Failed to load audit logs.', 'error');
     } finally {
       setAuditLoading(false);
     }
@@ -100,8 +200,11 @@ const SecuritySettingsPage = () => {
 
   // Start 2FA Setup
   const handleStart2FASetup = async () => {
+    captureTriggerFocus();
     setSetupError('');
     setVerifyCode('');
+    setSetupSecret('');
+    setFormattedSecret('');
     setSetupLoading(true);
     setSetupModalOpen(true);
     try {
@@ -117,7 +220,7 @@ const SecuritySettingsPage = () => {
 
   // Copy secret
   const handleCopySecret = () => {
-    if (setupSecret) {
+    if (setupSecret && navigator.clipboard) {
       navigator.clipboard.writeText(setupSecret);
       setCopiedSecret(true);
       setTimeout(() => setCopiedSecret(false), 2000);
@@ -152,10 +255,12 @@ const SecuritySettingsPage = () => {
 
   // Copy backup codes
   const handleCopyBackupCodes = () => {
-    const text = backupCodes.join('\n');
-    navigator.clipboard.writeText(text);
-    setCopiedBackupCodes(true);
-    setTimeout(() => setCopiedBackupCodes(false), 2000);
+    if (navigator.clipboard) {
+      const text = backupCodes.join('\n');
+      navigator.clipboard.writeText(text);
+      setCopiedBackupCodes(true);
+      setTimeout(() => setCopiedBackupCodes(false), 2000);
+    }
   };
 
   // Download backup codes
@@ -199,6 +304,18 @@ const SecuritySettingsPage = () => {
     }
   };
 
+  const toggleExpandLog = (key) => {
+    setExpandedLogIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
   const formatTimestamp = (dateStr) => {
     if (!dateStr) return 'N/A';
     const d = new Date(dateStr);
@@ -213,279 +330,355 @@ const SecuritySettingsPage = () => {
   };
 
   if (loading) {
-    return <div className="loading-spinner" style={{ margin: '40px auto' }}>Loading...</div>;
+    return (
+      <div className="security-page-container">
+        <Loading variant="card" text="Loading security settings..." />
+      </div>
+    );
   }
 
   return (
     <div className="security-page-container">
-      {/* Header */}
-      <div className="security-header">
-        <div className="security-title-row">
-          <Shield size={32} color="#c084fc" />
-          <h1 className="security-page-title">Security &amp; Access Control</h1>
+      <div className="security-shell">
+        {/* Header */}
+        <div className="security-header">
+          <div className="security-title-row">
+            <Shield size={24} className="security-header-icon" aria-hidden="true" />
+            <h1 className="security-page-title">Security &amp; Access Control</h1>
+          </div>
+          <p className="security-subtitle">
+            Manage your account protection, two-factor authentication, and monitor security audit logs.
+          </p>
         </div>
-        <p className="security-subtitle">
-          Manage your account protection, two-factor authentication, and monitor security audit logs.
-        </p>
-      </div>
 
-      {/* Top Cards Grid */}
-      <div className="security-grid">
-        {/* 2FA Card */}
-        <div className="security-card">
-          <div className="security-card-header">
-            <div className="card-title-group">
-              <div className="card-icon-badge">
-                <Key size={22} />
+        <div className="security-content">
+          {/* Top Cards Grid */}
+          <div className="security-grid">
+            {/* 2FA Card */}
+            <div className="security-card">
+              <div className="security-card-header">
+                <div className="card-title-group">
+                  <div className="card-icon-badge" aria-hidden="true">
+                    <Key size={20} />
+                  </div>
+                  <h2>Two-Factor Authentication (TOTP)</h2>
+                </div>
+                {user?.totpEnabled ? (
+                  <Badge className="security-status-badge">
+                    <ShieldCheck size={14} aria-hidden="true" /> Enabled
+                  </Badge>
+                ) : (
+                  <Badge tone="warning" className="security-status-badge">
+                    <ShieldAlert size={14} aria-hidden="true" /> Disabled
+                  </Badge>
+                )}
               </div>
-              <div>
-                <h3>Two-Factor Authentication (TOTP)</h3>
+
+              <p className="card-description">
+                Add a layer of security to your FinStat account. When enabled, signing in requires your
+                password and a 6-digit verification code from your authenticator app (e.g., Authy, Google Authenticator).
+              </p>
+
+              <div className="security-card-actions">
+                {user?.totpEnabled ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      captureTriggerFocus();
+                      setDisableError('');
+                      setDisablePassword('');
+                      setDisableCode('');
+                      setDisableModalOpen(true);
+                    }}
+                    className="fs-btn fs-btn-secondary security-action-btn"
+                  >
+                    Disable 2FA
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleStart2FASetup}
+                    className="fs-btn fs-btn-primary security-action-btn"
+                  >
+                    <ShieldCheck size={18} aria-hidden="true" /> Enable 2FA
+                  </button>
+                )}
               </div>
             </div>
-            {user?.totpEnabled ? (
-              <span className="badge badge-success">
-                <ShieldCheck size={14} /> Enabled
-              </span>
-            ) : (
-              <span className="badge badge-warning">
-                <ShieldAlert size={14} /> Disabled
-              </span>
-            )}
-          </div>
 
-          <p className="card-description">
-            Add a layer of security to your FinStat account. When enabled, signing in requires your
-            password and a 6-digit verification code from your authenticator app (e.g., Authy, Google Authenticator).
-          </p>
-
-          {user?.totpEnabled ? (
-            <button
-              onClick={() => {
-                setDisableError('');
-                setDisablePassword('');
-                setDisableCode('');
-                setDisableModalOpen(true);
-              }}
-              className="action-btn-danger"
-            >
-              Disable 2FA
-            </button>
-          ) : (
-            <button onClick={handleStart2FASetup} className="action-btn-primary">
-              <ShieldCheck size={18} /> Enable 2FA
-            </button>
-          )}
-        </div>
-
-        {/* Role-Based Access Control Card */}
-        <div className="security-card">
-          <div className="security-card-header">
-            <div className="card-title-group">
-              <div className="card-icon-badge">
-                <UserCheck size={22} />
+            {/* Role-Based Access Control Card */}
+            <div className="security-card">
+              <div className="security-card-header">
+                <div className="card-title-group">
+                  <div className="card-icon-badge" aria-hidden="true">
+                    <UserCheck size={20} />
+                  </div>
+                  <h2>Role &amp; Permissions</h2>
+                </div>
+                <Badge className="security-role-badge">
+                  {user?.role || 'viewer'}
+                </Badge>
               </div>
-              <div>
-                <h3>Role &amp; Permissions</h3>
+
+              <p className="card-description">
+                Your account is assigned the <strong>{user?.role || 'viewer'}</strong> role.
+                {user?.role === 'admin' && ' You have full administrative privileges to manage all financial records, audit logs, and configurations.'}
+                {user?.role === 'manager' && ' You have management permissions to create and edit portfolio items.'}
+                {user?.role === 'viewer' && ' You have read-only access to view financial dashboards.'}
+              </p>
+
+              <div className="security-username-row">
+                <Laptop size={16} className="security-inline-icon" aria-hidden="true" />
+                <span>
+                  Active Username: <strong className="security-username">{user?.username}</strong>
+                </span>
               </div>
             </div>
-            <span className="badge badge-admin">
-              {user?.role || 'viewer'}
-            </span>
           </div>
 
-          <p className="card-description">
-            Your account is assigned the <strong>{user?.role || 'viewer'}</strong> role.
-            {user?.role === 'admin' && ' You have full administrative privileges to manage all financial records, audit logs, and configurations.'}
-            {user?.role === 'manager' && ' You have management permissions to create and edit portfolio items.'}
-            {user?.role === 'viewer' && ' You have read-only access to view financial dashboards.'}
-          </p>
+          {/* Login Audit Log Section */}
+          <div className="audit-table-card">
+            <div className="audit-header">
+              <div>
+                <h2 className="audit-title">Login Audit Trail</h2>
+                <p className="audit-subtitle">
+                  Historical record of authentication events and device signatures for your account.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => fetchLogs(auditPage)}
+                disabled={auditLoading}
+                className="fs-btn fs-btn-secondary fs-btn-sm audit-refresh-btn"
+              >
+                <RefreshCw size={14} aria-hidden="true" /> Refresh
+              </button>
+            </div>
 
-          <div style={{ fontSize: '0.85rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Laptop size={16} color="#c084fc" />
-            <span>Active Username: <strong>{user?.username}</strong></span>
-          </div>
-        </div>
-      </div>
+            <div className="audit-table-body-wrap">
+              {auditLoading ? (
+                <div className="audit-loading-wrap">
+                  <Loading variant="table" rows={3} text="Loading audit logs..." />
+                </div>
+              ) : auditLogs.length === 0 ? (
+                <EmptyState
+                  className="audit-empty-state"
+                  data-testid="security-audit-empty"
+                  icon={<ShieldAlert size={28} aria-hidden="true" />}
+                  title="No audit logs recorded yet."
+                />
+              ) : isMobile ? (
+                <div className="security-mobile-cards" data-testid="security-mobile-cards">
+                  {auditLogs.map((log, index) => {
+                    const rowKey = log._id || `log-${index}`;
+                    const isExpanded = expandedLogIds.has(rowKey);
+                    const formattedTime = formatTimestamp(log.timestamp);
+                    const statusText = log.success ? 'Success' : 'Failed';
 
-      {/* Login Audit Log Section */}
-      <div className="audit-table-card">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <div>
-            <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#f8fafc' }}>Login Audit Trail</h3>
-            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
-              Historical record of authentication events and device signatures for your account.
-            </p>
-          </div>
-          <button
-            onClick={() => fetchLogs(auditPage)}
-            disabled={auditLoading}
-            style={{
-              background: 'rgba(168, 85, 247, 0.1)',
-              border: '1px solid rgba(168, 85, 247, 0.2)',
-              color: '#c084fc',
-              borderRadius: '8px',
-              padding: '6px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-            }}
-          >
-            <RefreshCw size={14} className={auditLoading ? 'animate-spin' : ''} /> Refresh
-          </button>
-        </div>
+                    return (
+                      <div key={rowKey} className="security-mobile-card">
+                        <div className="security-mobile-summary">
+                          <div className="security-mobile-primary">
+                            {log.success ? (
+                              <Badge className="security-status-badge">
+                                <CheckCircle2 size={14} aria-hidden="true" /> Success
+                              </Badge>
+                            ) : (
+                              <Badge tone="negative" className="security-status-badge">
+                                <XCircle size={14} aria-hidden="true" /> Failed
+                              </Badge>
+                            )}
+                            <time className="security-mobile-time fs-num" data-visual-mask="true">
+                              {formattedTime}
+                            </time>
+                          </div>
+                          <button
+                            type="button"
+                            className="fs-btn fs-btn-secondary fs-btn-sm security-expand-btn"
+                            aria-expanded={isExpanded}
+                            aria-label={
+                              isExpanded
+                                ? `Hide details for ${statusText} attempt`
+                                : `Show details for ${statusText} attempt`
+                            }
+                            onClick={() => toggleExpandLog(rowKey)}
+                          >
+                            {isExpanded ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
+                          </button>
+                        </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table className="audit-table">
-            <thead>
-              <tr>
-                <th>Status</th>
-                <th>Time</th>
-                <th>IP Address</th>
-                <th>Device / Client</th>
-              </tr>
-            </thead>
-            <tbody>
-              {auditLogs.length > 0 ? (
-                auditLogs.map((log, index) => (
-                  <tr key={log._id || index}>
-                    <td>
-                      {log.success ? (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#4ade80', fontWeight: '600' }}>
-                          <CheckCircle2 size={16} /> Success
-                        </span>
-                      ) : (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#f87171', fontWeight: '600' }}>
-                          <XCircle size={16} /> Failed
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Clock size={14} color="#94a3b8" />
-                        {formatTimestamp(log.timestamp)}
+                        {isExpanded && (
+                          <div className="security-mobile-details">
+                            <div className="security-mobile-kv">
+                              <span className="security-mobile-k">IP Address</span>
+                              <code className="audit-ip-code fs-mono">{log.ip}</code>
+                            </div>
+                            <div className="security-mobile-kv security-mobile-kv--stack">
+                              <span className="security-mobile-k">Device / Client</span>
+                              <span className="audit-agent-cell" title={log.userAgent}>
+                                {log.userAgent || 'Unknown'}
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </td>
-                    <td>
-                      <code style={{ background: '#0f172a', padding: '2px 8px', borderRadius: '4px', color: '#38bdf8' }}>
-                        {log.ip}
-                      </code>
-                    </td>
-                    <td style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      <span title={log.userAgent}>{log.userAgent || 'Unknown'}</span>
-                    </td>
-                  </tr>
-                ))
+                    );
+                  })}
+                </div>
               ) : (
-                <tr>
-                  <td colSpan="4" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
-                    No audit logs recorded yet.
-                  </td>
-                </tr>
+                <table className="fs-table audit-table" data-testid="security-audit-table">
+                  <thead>
+                    <tr>
+                      <th>Status</th>
+                      <th>Time</th>
+                      <th>IP Address</th>
+                      <th>Device / Client</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditLogs.map((log, index) => (
+                      <tr key={log._id || index}>
+                        <td>
+                          {log.success ? (
+                            <Badge className="security-status-badge">
+                              <CheckCircle2 size={14} aria-hidden="true" /> Success
+                            </Badge>
+                          ) : (
+                            <Badge tone="negative" className="security-status-badge">
+                              <XCircle size={14} aria-hidden="true" /> Failed
+                            </Badge>
+                          )}
+                        </td>
+                        <td>
+                          <div className="audit-time-cell">
+                            <Clock size={14} className="security-inline-icon" aria-hidden="true" />
+                            <time className="fs-num" data-visual-mask="true">
+                              {formatTimestamp(log.timestamp)}
+                            </time>
+                          </div>
+                        </td>
+                        <td>
+                          <code className="audit-ip-code fs-mono">{log.ip}</code>
+                        </td>
+                        <td className="audit-agent-cell">
+                          <span title={log.userAgent}>{log.userAgent || 'Unknown'}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
-            </tbody>
-          </table>
-        </div>
+            </div>
 
-        {/* Pagination */}
-        <div className="pagination-bar">
-          <div>
-            Showing page {auditPage} of {auditTotalPages} ({auditTotalCount} total attempts)
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => fetchLogs(auditPage - 1)}
-              disabled={auditPage <= 1 || auditLoading}
-              className="pagination-btn"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => fetchLogs(auditPage + 1)}
-              disabled={auditPage >= auditTotalPages || auditLoading}
-              className="pagination-btn"
-            >
-              Next
-            </button>
+            {/* Pagination */}
+            <div className="pagination-bar">
+              <div className="fs-num">
+                Showing page {auditPage} of {auditTotalPages} ({auditTotalCount} total attempts)
+              </div>
+              <div className="pagination-actions">
+                <button
+                  type="button"
+                  onClick={() => fetchLogs(auditPage - 1)}
+                  disabled={auditPage <= 1 || auditLoading}
+                  className="fs-btn fs-btn-secondary fs-btn-sm pagination-btn"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fetchLogs(auditPage + 1)}
+                  disabled={auditPage >= auditTotalPages || auditLoading}
+                  className="fs-btn fs-btn-secondary fs-btn-sm pagination-btn"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 2FA Setup Modal */}
       {setupModalOpen && (
-        <div className="security-modal-overlay">
-          <div className="security-modal-content">
-            <div className="modal-header">
-              <h3>Enable Two-Factor Authentication</h3>
-              <button onClick={() => setSetupModalOpen(false)} className="close-btn">&times;</button>
+        <div className="modal-overlay security-modal-overlay">
+          <div
+            ref={modalContentRef}
+            className="modal-content security-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="security-setup-modal-title"
+            onKeyDown={handleModalKeyDown}
+          >
+            <div className="modal-header security-modal-header">
+              <h2 id="security-setup-modal-title">Enable Two-Factor Authentication</h2>
+              <button
+                type="button"
+                onClick={() => setSetupModalOpen(false)}
+                className="fs-btn fs-btn-secondary fs-btn-sm security-modal-close"
+                aria-label="Close modal"
+              >
+                &times;
+              </button>
             </div>
 
-            <p style={{ fontSize: '0.9rem', color: '#94a3b8', lineHeight: '1.5' }}>
+            <p className="security-modal-intro">
               1. Open your authenticator app (such as Authy or Google Authenticator).<br />
               2. Add a new account manually and enter the secret key below:
             </p>
 
             <div className="secret-display-box">
-              <span className="secret-code-text">{formattedSecret || 'LOADING...'}</span>
-              <button onClick={handleCopySecret} className="copy-button">
-                {copiedSecret ? <Check size={14} /> : <Copy size={14} />}
-                {copiedSecret ? 'Copied' : 'Copy'}
-              </button>
+              {setupLoading && !formattedSecret ? (
+                <Loading variant="form-field" text="Generating secret..." />
+              ) : (
+                <>
+                  <span className="secret-code-text fs-mono">{formattedSecret || '—'}</span>
+                  <button
+                    type="button"
+                    onClick={handleCopySecret}
+                    className="fs-btn fs-btn-secondary fs-btn-sm copy-button"
+                  >
+                    {copiedSecret ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
+                    {copiedSecret ? 'Copied' : 'Copy'}
+                  </button>
+                </>
+              )}
             </div>
 
             <form onSubmit={handleVerifySetup}>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '6px' }}>
+              <div className="security-modal-field">
+                <label htmlFor="security-verify-code" className="security-modal-label">
                   3. Enter the 6-digit verification code from your app:
                 </label>
                 <input
+                  id="security-verify-code"
                   type="text"
                   maxLength={6}
                   placeholder="123456"
                   value={verifyCode}
                   onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, ''))}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    background: '#0f172a',
-                    border: '1px solid rgba(148, 163, 184, 0.3)',
-                    color: 'white',
-                    fontSize: '1.2rem',
-                    textAlign: 'center',
-                    letterSpacing: '4px',
-                    fontWeight: '600',
-                  }}
-                  autoFocus
+                  className="security-totp-input fs-mono"
                   required
                 />
               </div>
 
               {setupError && (
-                <div style={{ color: '#f87171', fontSize: '0.85rem', marginBottom: '16px' }}>
+                <div role="alert" className="security-modal-error">
                   {setupError}
                 </div>
               )}
 
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <div className="security-modal-footer">
                 <button
                   type="button"
                   onClick={() => setSetupModalOpen(false)}
-                  style={{
-                    background: 'transparent',
-                    border: '1px solid rgba(148, 163, 184, 0.3)',
-                    color: '#cbd5e1',
-                    borderRadius: '8px',
-                    padding: '8px 16px',
-                    cursor: 'pointer',
-                  }}
+                  className="fs-btn fs-btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={setupLoading}
-                  className="action-btn-primary"
+                  className="fs-btn fs-btn-primary"
                 >
                   {setupLoading ? 'Verifying...' : 'Verify & Activate'}
                 </button>
@@ -497,44 +690,63 @@ const SecuritySettingsPage = () => {
 
       {/* Backup Codes Reveal Modal */}
       {backupCodesModalOpen && (
-        <div className="security-modal-overlay">
-          <div className="security-modal-content">
-            <div className="modal-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle2 size={24} color="#4ade80" />
-                <h3 style={{ margin: 0 }}>2FA Successfully Activated!</h3>
+        <div className="modal-overlay security-modal-overlay">
+          <div
+            ref={modalContentRef}
+            className="modal-content security-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="security-backup-modal-title"
+            onKeyDown={handleModalKeyDown}
+          >
+            <div className="modal-header security-modal-header">
+              <div className="security-modal-title-wrap">
+                <CheckCircle2 size={22} className="security-inline-icon" aria-hidden="true" />
+                <h2 id="security-backup-modal-title">2FA Successfully Activated!</h2>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', background: 'rgba(234, 179, 8, 0.12)', border: '1px solid rgba(234, 179, 8, 0.3)', padding: '12px', borderRadius: '10px', margin: '14px 0' }}>
-              <AlertTriangle size={20} color="#facc15" style={{ flexShrink: 0 }} />
-              <p style={{ margin: 0, fontSize: '0.85rem', color: '#fef08a', lineHeight: '1.4' }}>
-                <strong>Save these 10 backup codes in a safe place.</strong> Each code can only be used once if you lose access to your authenticator app. They will not be displayed again!
-              </p>
+            <div className="security-backup-warning">
+              <AlertTriangle size={18} className="security-inline-icon" aria-hidden="true" />
+              <div className="security-backup-warning-body">
+                <Badge tone="warning">Save Now</Badge>
+                <p>
+                  <strong>Save these 10 backup codes in a safe place.</strong> Each code can only be used once if you lose access to your authenticator app. They will not be displayed again!
+                </p>
+              </div>
             </div>
 
             <div className="backup-codes-grid">
               {backupCodes.map((code, idx) => (
-                <div key={idx} className="backup-code-pill">
+                <div key={idx} className="backup-code-pill fs-mono">
                   {code}
                 </div>
               ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '20px' }}>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={handleCopyBackupCodes} className="copy-button">
-                  {copiedBackupCodes ? <Check size={14} /> : <Copy size={14} />}
+            <div className="security-modal-footer security-modal-footer--split">
+              <div className="security-modal-footer-group">
+                <button
+                  type="button"
+                  onClick={handleCopyBackupCodes}
+                  className="fs-btn fs-btn-secondary fs-btn-sm copy-button"
+                >
+                  {copiedBackupCodes ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
                   {copiedBackupCodes ? 'Copied All' : 'Copy All'}
                 </button>
-                <button onClick={handleDownloadBackupCodes} className="copy-button">
-                  <Download size={14} /> Download .txt
+                <button
+                  type="button"
+                  onClick={handleDownloadBackupCodes}
+                  className="fs-btn fs-btn-secondary fs-btn-sm copy-button"
+                >
+                  <Download size={14} aria-hidden="true" /> Download .txt
                 </button>
               </div>
 
               <button
+                type="button"
                 onClick={() => setBackupCodesModalOpen(false)}
-                className="action-btn-primary"
+                className="fs-btn fs-btn-primary"
               >
                 I have saved these codes
               </button>
@@ -545,110 +757,91 @@ const SecuritySettingsPage = () => {
 
       {/* 2FA Disable Modal */}
       {disableModalOpen && (
-        <div className="security-modal-overlay">
-          <div className="security-modal-content">
-            <div className="modal-header">
-              <h3 style={{ color: '#f87171' }}>Disable Two-Factor Authentication</h3>
-              <button onClick={() => setDisableModalOpen(false)} className="close-btn">&times;</button>
+        <div className="modal-overlay security-modal-overlay">
+          <div
+            ref={modalContentRef}
+            className="modal-content security-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="security-disable-modal-title"
+            onKeyDown={handleModalKeyDown}
+          >
+            <div className="modal-header security-modal-header">
+              <h2 id="security-disable-modal-title">Disable Two-Factor Authentication</h2>
+              <button
+                type="button"
+                onClick={() => setDisableModalOpen(false)}
+                className="fs-btn fs-btn-secondary fs-btn-sm security-modal-close"
+                aria-label="Close modal"
+              >
+                &times;
+              </button>
             </div>
 
-            <p style={{ fontSize: '0.9rem', color: '#94a3b8', lineHeight: '1.5' }}>
+            <p className="security-modal-intro">
               To disable 2FA, please enter your password or current 6-digit TOTP code to confirm your identity.
             </p>
 
             <form onSubmit={handleConfirmDisable}>
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '6px' }}>
+              <div className="security-modal-field">
+                <label htmlFor="security-disable-password" className="security-modal-label">
                   Account Password:
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="security-password-wrap">
                   <input
+                    id="security-disable-password"
                     type={showDisablePassword ? 'text' : 'password'}
                     placeholder="Enter password"
                     value={disablePassword}
                     onChange={(e) => setDisablePassword(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 42px 10px 14px',
-                      borderRadius: '8px',
-                      background: '#0f172a',
-                      border: '1px solid rgba(148, 163, 184, 0.3)',
-                      color: 'white',
-                      fontSize: '0.95rem',
-                    }}
+                    className="security-password-input"
                   />
                   <button
                     type="button"
                     onClick={() => setShowDisablePassword(!showDisablePassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '10px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      color: '#94a3b8',
-                      cursor: 'pointer',
-                    }}
+                    className="security-password-toggle"
+                    aria-label={showDisablePassword ? 'Hide password' : 'Show password'}
                   >
-                    {showDisablePassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showDisablePassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
                   </button>
                 </div>
               </div>
 
-              <div style={{ textAlign: 'center', margin: '8px 0', color: '#64748b', fontSize: '0.8rem' }}>
-                &mdash; OR &mdash;
-              </div>
+              <div className="security-or-divider">&mdash; OR &mdash;</div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#cbd5e1', marginBottom: '6px' }}>
+              <div className="security-modal-field">
+                <label htmlFor="security-disable-code" className="security-modal-label">
                   Current 6-digit TOTP Code:
                 </label>
                 <input
+                  id="security-disable-code"
                   type="text"
                   maxLength={6}
                   placeholder="000000"
                   value={disableCode}
                   onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, ''))}
-                  style={{
-                    width: '100%',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    background: '#0f172a',
-                    border: '1px solid rgba(148, 163, 184, 0.3)',
-                    color: 'white',
-                    fontSize: '1rem',
-                    textAlign: 'center',
-                    letterSpacing: '3px',
-                  }}
+                  className="security-totp-input fs-mono"
                 />
               </div>
 
               {disableError && (
-                <div style={{ color: '#f87171', fontSize: '0.85rem', marginBottom: '16px' }}>
+                <div role="alert" className="security-modal-error">
                   {disableError}
                 </div>
               )}
 
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <div className="security-modal-footer">
                 <button
                   type="button"
                   onClick={() => setDisableModalOpen(false)}
-                  style={{
-                    background: 'transparent',
-                    border: '1px solid rgba(148, 163, 184, 0.3)',
-                    color: '#cbd5e1',
-                    borderRadius: '8px',
-                    padding: '8px 16px',
-                    cursor: 'pointer',
-                  }}
+                  className="fs-btn fs-btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={disableLoading}
-                  className="action-btn-danger"
+                  className="fs-btn fs-btn-danger"
                 >
                   {disableLoading ? 'Disabling...' : 'Confirm Disable'}
                 </button>

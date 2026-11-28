@@ -34,7 +34,7 @@ module.exports = defineConfig({
     {
       name: 'reference',
       dependencies: ['setup'],
-      testMatch: /(reference-frames|dashboard-reference-match|expenditure-reference-match|expenditure-form-reference-match|paycheck-form-reference-match|payroll-history-reference-match|portfolio-reference-match|rebalancing-reports-reference-match|trades-reference-match|corporate-actions-reference-match|mutual-funds-reference-match|gold-reference-match|certificates-reference-match|certificates-detail-forms-reference-match|currency-reference-match|real-estate-reference-match|credit-cards-reference-match|credit-cards-9b-reference-match|lending-reference-match|profile-settings-reference-match)\.spec\.js/,
+      testMatch: /(reference-frames|dashboard-reference-match|expenditure-reference-match|expenditure-form-reference-match|paycheck-form-reference-match|payroll-history-reference-match|portfolio-reference-match|rebalancing-reports-reference-match|trades-reference-match|corporate-actions-reference-match|mutual-funds-reference-match|gold-reference-match|certificates-reference-match|certificates-detail-forms-reference-match|currency-reference-match|real-estate-reference-match|credit-cards-reference-match|credit-cards-9b-reference-match|lending-reference-match|profile-settings-reference-match|security-reference-match)\.spec\.js/,
     },
     {
       name: 'shared',

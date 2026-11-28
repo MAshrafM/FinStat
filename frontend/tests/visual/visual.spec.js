@@ -24,6 +24,7 @@ const { setupRealEstateMocks } = require('./fixtures/realEstateMocks');
 const { setupCreditCardsMocks } = require('./fixtures/creditCardsMocks');
 const { setupLendingMocks } = require('./fixtures/lendingMocks');
 const { setupProfileSettingsMocks } = require('./fixtures/profileSettingsMocks');
+const { setupSecurityMocks } = require('./fixtures/securityMocks');
 
 const MANDATORY_QA_WIDTHS = [1440, 1024, 768, 480, 390];
 
@@ -108,6 +109,8 @@ test.describe('Visual Regression Suite', () => {
           route.slug === 'settings-recycle-bin'
         ) {
           await setupProfileSettingsMocks(page, route.slug);
+        } else if (route.slug === 'security') {
+          await setupSecurityMocks(page);
         }
 
         // Navigate to route
