@@ -360,8 +360,8 @@ Every conditional tone above is audited in 1A before a page implements it. The a
 | Debt and card balance | overdue | `Overdue` | `pages/credit-cards/CreditCardPage.js` & `pages/credit-cards/DebtPayoffPage.js` (`dueDiffDays < 0`) | Neutral, no label |
 | Recurring bills | payment due within 3 days | `Due Soon` | `pages/expenditure/RecurringBills.js` (`getUpcomingBills({ days: 3 })` on line 69; `getBillStatus` lines 210–227) | Neutral, no label |
 | Recurring bills | overdue | `Overdue` | `pages/expenditure/RecurringBills.js` (`diffDays < 0` in `getBillStatus` lines 210–227) | Neutral, no label |
-| Card utilization | 30–70% | `Elevated` | `pages/credit-cards/CreditCardPage.js` (`utilizationRate >= 30`) | Neutral, no label |
-| Card utilization | over 70% | `High` | `pages/credit-cards/CreditCardPage.js` (`utilizationRate >= 70`) | Neutral, no label |
+| Card utilization | 30–70% | `Elevated` | *(No pre-existing source — 30/70 thresholds and `Elevated`/`High` labels mandated by Gate 0 §10 decision; supersedes legacy colour-only `UtilizationWidget.js:25–29`)* | Neutral, no label |
+| Card utilization | over 70% | `High` | *(No pre-existing source — 30/70 thresholds and `Elevated`/`High` labels mandated by Gate 0 §10 decision; supersedes legacy colour-only `UtilizationWidget.js:25–29`)* | Neutral, no label |
 | Yield and ROI | delta against a stated target | target label | *(Audit confirmed no comparative target constant in code)* | Neutral, no delta, no label |
 | FX change (unrealised P&L) | positive / negative / zero | `Gain` / `Loss` / `No change` *(8D Option A amendment)* | `pages/currency/CurrencyLogPage.js` & `pages/currency/CurrencyDetailPage.js` (`change > 0` / `< 0` / `0`) | Sign and arrow only |
 | Rebalancing drift | at or above the rebalance threshold | `Rebalance` | `pages/portfolio/RebalancingPage.js` (target allocation drift threshold) | Neutral, no label |
@@ -1898,12 +1898,13 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 - [ ] `CreditCardPage.css` — light → graphite; card selector, card visuals, utilization bars.
 - [ ] `CreditCardPage.js` (7) → classes.
-- [ ] `AddCardModal`, `EditCardModal`, `AddTransactionModal` (13), `EditTransactionModal`, `PartialPaymentModal` (14) → dark modal + form tokens.
+- [ ] `AddCardModal`, `EditCardModal`, `AddTransactionModal` (13), `EditTransactionModal`, `PartialPaymentModal` (14 hex literals / 14 inline styles per §8.2:2223) → dark modal + form tokens.
 - [ ] `CardInstallmentSchedule.js` (28) → dark schedule table.
 - [ ] `UtilizationWidget.css` → the bar is neutral under 30%, uses `.fs-progress--warning` at 30–70% and `.fs-progress--negative` above 70%, each with a text label. Use only the thresholds recorded in §4.3.1; if absent, the bar stays neutral. No emerald, gold, or rose.
 - [ ] `CreditCardSubNav.css` — dual-mode until 9B lands (§4.16).
 - [ ] Verify installment math display, partial payments, card CRUD.
-- [ ] Credit-card, statement, and lending ledger tables render as compact-expand cards at ≤ 768px. Utilization bars keep .fs-progress--* semantics; the accent does not replace severity.
+- [ ] Credit-card tables (Due Transactions, Full Transaction History, Installment Schedule) render as compact-expand cards at ≤ 768px per D19 with `0px` page overflow. Utilization bars keep `.fs-progress--*` semantics; the accent does not replace severity.
+- [ ] *(9B/9C)* Statement and lending-ledger tables render as compact-expand cards at ≤ 768px per D19.
 - [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
 - [ ] Installment schedule fixtures unchanged.
 - [ ] Remove Credit Card dashboard components (`CreditCardPage.js`, `CardInstallmentSchedule.js`, card modals) from `frontend/.eslintignore`; verify clean ESLint.
@@ -2101,7 +2102,7 @@ Per rendering route at **1440 / 1024 / 768 / 480 / 390**:
 - [ ] If the PR adds an allowlist pattern: the route it names is converted **in this PR**.
 - [ ] If the PR converts a cluster's first route: the screen matches its reference frame.
 - [ ] `grep -rn '#14b8a6' frontend/src --include='*.css'` returns only tokens.css:36.
-- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`, waiver **W-8B-1** for `.cert-log-page .cert-table-wrap` in `Certificates.css`, waiver **W-8D-1** for `.curr-log-page .curr-table-wrap` in `Currency.css`, and waiver **W-8E-1** for `.re-log-page .re-table-wrap` in `RealEstate.css`); `PurchasingPowerChart.css` has no `overflow-x`.
+- [ ] `grep -rn 'overflow-x' frontend/src --include='*.css'` returns only documented exceptions (≥ 12-column audit logs including `.gold-log-page .gold-table-wrap`, pre-existing `TaxSimulator.css:280`, pre-existing `CreditCardSubNav.css:21` inherited baseline exception, waiver **W-7C-1** for `.mf-table-wrap` in `MutualFunds.css`, waiver **W-8A-1** for `.gold-summary-page .gold-table-wrap` in `GoldWallet.css`, waiver **W-8B-1** for `.cert-log-page .cert-table-wrap` in `Certificates.css`, waiver **W-8D-1** for `.curr-log-page .curr-table-wrap` in `Currency.css`, waiver **W-8E-1** for `.re-log-page .re-table-wrap` in `RealEstate.css`, and waiver **W-9A-1** for `.cc-dashboard-page .cc-table-wrap` in `CreditCardPage.css`); `PurchasingPowerChart.css` has no `overflow-x`.
 - [ ] Loading consistency check: `git grep -nE "<div>Loading|className=\"loading-spinner\"|custom spinner SVG" frontend/src --include="*.js"` returns only loading primitive usages and test files.
 
 The legacy zero-diff gate is the proof that the allowlist works. A PR that changes a legacy page fails here, regardless of whether the change looks harmless.
@@ -2220,7 +2221,7 @@ Metric: number of `style={{` props per file. Counts include layout-only styles; 
 | `pages/mutual-funds/MutualFundForm.js` | 18 | 7C |
 | `pages/salary/PayrollRulesHub.js` | 17 | 5A |
 | `pages/credit-cards/DebtPayoffPage.js` | 16 | 9B |
-| `pages/credit-cards/PartialPaymentModal.js` | 15 | 9A |
+| `pages/credit-cards/PartialPaymentModal.js` | 14 | 9A |
 | `pages/credit-cards/StatementCyclePage.js` | 15 | 9B |
 | `pages/trades/CorporateActionWizard.js` | 14 | 7B |
 | `components/salary/ComponentTable.js` | 13 | 5A |
@@ -2964,6 +2965,20 @@ Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (
 Screenshots: None tracked per D5/D21; 15 real-estate baselines in FinStat-visual-baselines repo (7460ca7)
 Branch:      phase-ui-8e-real-estate (Gate 0 Plan SHA: 7435fda; Impl SHA: e7a7c4e; Walkthrough SHA: 44c402f; Gov SHA: a5f8bb0)
 Merge SHA:   7f6a4a2 (merged to main; governance finalized in follow-up commit)
+```
+
+```
+Sub-phase:   9A (Gate 0 — Approved Plan & Pre-Execution Governance; Taste Checkpoint #7)
+Status:      in progress (Executing on local branch phase-ui-9a-credit-cards from main @ 22f4a9f)
+Done:        Gate 0 approved plan (`docs/ui-plans/phase_9a_implementation_plan.md` v8) and pre-execution governance recorded: (1) Review Item #1 Option A (`0 <= x < 30%` neutral unlabeled, `30 <= x < 70%` `.fs-progress--warning` + `Elevated`, `x >= 70%` `.fs-progress--negative` + `High`, mandated per Gate 0 §10 decision and §4.3.1:363–364/:371 amendment while keeping backend `isAlert`/`threshold` & calculations untouched per `I2`/`I3`); (2) Review Item #2 Option A (authorized scoped `I4` defensive handler-guard fix `const { canModify } = useCanModify();` at `CreditCardPage.js:24` with viewer-role Jest test, zero visible `ProtectedAction` wrapper changes); (3) Waiver `W-9A-1` recorded in §7.1:2104 for desktop/tablet `.cc-dashboard-page .cc-table-wrap` (`>768px` only; D19 cards at `<=768px` with `0px` page overflow) plus pre-existing `CreditCardSubNav.css:21` inherited exception; (4) 8-file `.eslintignore` de-ignore scope confirmed (retaining `AddTransactionModal.currency.test.js` & 3 Phase 9B entries); (5) §15.3/§15.5 local Gate 12 (`2048`MB / `1536`MB fallback) and full 326-test Gate 15 authorized; (6) inherited `$` `formatCurrency()` retained per `I3`; (7) Taste Checkpoint #7 two-part evidence accepted (5 dashboard PNGs + 21 local artifacts in gitignored `docs/ui-snapshots/phase-9a/`). Catalogue reconciliations: `§8.2:2223` & `§6.13:1901` aligned to `14` (`PartialPaymentModal`), `§6.13:1906` split into 9A/9B rows, `§4.3.1:359–360` neutral-chip rule recorded (zero `Due soon`/`Overdue` on `/credit-cards`), and §4.5/§7.2 `.fs-num` proportional tabular-nums governance recorded.
+Next:        Implement Phase 9A Credit Cards (`/credit-cards`, modals, UtilizationWidget, CardInstallmentSchedule) and run Gates 1–19
+Blocked by:  None
+Allowlist:   Pending (`/credit-cards`; 49 -> 50)
+Visual diff: Pending (starting baseline 7460ca7, 334/334 manifest verified)
+Fixtures:    Pending (`calculations.spec.js` untouched)
+Screenshots: Pending (5 baselines in FinStat-visual-baselines repo + 21 local §7.4 artifacts in gitignored docs/ui-snapshots/phase-9a/)
+Branch:      phase-ui-9a-credit-cards (tag: ui-phase-9a-start)
+Merge SHA:   Pending Gate 19 + Taste Checkpoint #7 user sign-off
 ```
 
 ### Sub-phase note template
