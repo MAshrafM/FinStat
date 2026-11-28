@@ -2257,5 +2257,33 @@ html[data-fs-theme] .re-form-page .re-field-error {
   color: var(--fs-danger);
 }
 
+/* ----------------------------------------------------
+   Phase 9A: Credit Cards Semantic & Interactive Themes (§4.3, §4.3.1, §4.10)
+   Note: CreditCardSubNav dual-mode styling stays in Section 10 (.fs-page .cc-subnav-*).
+   Utilization severity uses .fs-progress--warning (Elevated) & .fs-progress--negative (High).
+   ---------------------------------------------------- */
+html[data-fs-theme] .cc-dashboard-page .cc-icon-btn-danger:hover:not(:disabled),
+html[data-fs-theme] .cc-dashboard-page .cc-icon-btn-danger:focus-visible:not(:disabled) {
+  color: var(--fs-danger);
+  border-color: var(--fs-danger);
+}
+
+html[data-fs-theme] .cc-util-progress.fs-progress--warning::-webkit-progress-value {
+  background: var(--fs-warning);
+}
+
+html[data-fs-theme] .cc-util-progress.fs-progress--warning::-moz-progress-bar {
+  background: var(--fs-warning);
+}
+
+html[data-fs-theme] .cc-util-progress.fs-progress--negative::-webkit-progress-value {
+  background: var(--fs-negative);
+}
+
+html[data-fs-theme] .cc-util-progress.fs-progress--negative::-moz-progress-bar {
+  background: var(--fs-negative);
+}
+
+
 
 

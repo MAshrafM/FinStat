@@ -14,31 +14,28 @@ const AddCardModal = ({ isOpen, onClose, onCardAdded }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Basic validation
-    const day = parseInt(formData.billingCycleDay);
-    if (day < 1 || day > 28) {
+    const day = parseInt(formData.billingCycleDay, 10);
+    if (Number.isNaN(day) || day < 1 || day > 28) {
       setError('Billing Cycle Day must be between 1 and 28.');
       return;
     }
 
     try {
-      // The service function expects numbers, so we parse them
       const dataToSubmit = {
         ...formData,
         limit: parseFloat(formData.limit),
         billingCycleDay: day,
       };
-      console.log("Submitting card data:", dataToSubmit);
       await createCard(dataToSubmit);
-      onCardAdded(); // Callback to refresh the card list on the parent page
-      onClose(); // Close the modal
+      onCardAdded();
+      onClose();
     } catch (err) {
       setError('Failed to create card. Please check the console.');
       console.error(err);
@@ -47,25 +44,75 @@ const AddCardModal = ({ isOpen, onClose, onCardAdded }) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add New Credit Card">
-      <form onSubmit={handleSubmit} className="standard-form">
-        <div className="form-group">
-          <label>Card Name / Nickname</label>
-          <input type="text" name="name" placeholder="e.g., Visa Gold, Everyday Card" value={formData.name} onChange={handleChange} required />
+      <form onSubmit={handleSubmit} className="cc-modal-form">
+        <div className="cc-modal-field">
+          <label htmlFor="cc-add-name">Card Name / Nickname</label>
+          <input
+            id="cc-add-name"
+            type="text"
+            name="name"
+            className="cc-modal-input"
+            placeholder="e.g., Visa Gold, Everyday Card"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
         </div>
-        <div className="form-group">
-          <label>Bank</label>
-          <input type="text" name="bank" placeholder="e.g., CIB, NBE" value={formData.bank} onChange={handleChange} required />
+        <div className="cc-modal-field">
+          <label htmlFor="cc-add-bank">Bank</label>
+          <input
+            id="cc-add-bank"
+            type="text"
+            name="bank"
+            className="cc-modal-input"
+            placeholder="e.g., CIB, NBE"
+            value={formData.bank}
+            onChange={handleChange}
+            required
+          />
         </div>
-        <div className="form-group">
-          <label>Credit Limit</label>
-          <input type="number" step="1" name="limit" placeholder="e.g., 50000" value={formData.limit} onChange={handleChange} required />
+        <div className="cc-modal-field">
+          <label htmlFor="cc-add-limit">Credit Limit</label>
+          <input
+            id="cc-add-limit"
+            type="number"
+            step="1"
+            name="limit"
+            className="cc-modal-input fs-num"
+            placeholder="e.g., 50000"
+            value={formData.limit}
+            onChange={handleChange}
+            required
+          />
         </div>
-        <div className="form-group">
-          <label>Billing Cycle Day</label>
-          <input type="number" name="billingCycleDay" placeholder="Day of the month (1-28)" value={formData.billingCycleDay} onChange={handleChange} required />
+        <div className="cc-modal-field">
+          <label htmlFor="cc-add-cycle">Billing Cycle Day</label>
+          <input
+            id="cc-add-cycle"
+            type="number"
+            name="billingCycleDay"
+            className="cc-modal-input fs-num"
+            placeholder="Day of the month (1-28)"
+            value={formData.billingCycleDay}
+            onChange={handleChange}
+            required
+          />
         </div>
-        {error && <p className="error-message">{error}</p>}
-        <button type="submit" className="action-button">Add Card</button>
+
+        {error && (
+          <p className="cc-modal-error" role="alert">
+            {error}
+          </p>
+        )}
+
+        <div className="cc-modal-actions">
+          <button type="button" className="fs-btn fs-btn-secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="fs-btn fs-btn-primary">
+            Add Card
+          </button>
+        </div>
       </form>
     </Modal>
   );

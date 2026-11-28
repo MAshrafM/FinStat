@@ -1,108 +1,211 @@
 // frontend/src/pages/credit-cards/CardInstallmentSchedule.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { formatCurrency, formatDate } from '../../utils/formatters';
+import Badge from '../../components/ui/Badge';
+
+const getIsMobile = () =>
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(max-width: 768px)').matches;
+
+const computeInstallmentRow = (inst) => {
+  const totalInPiastres = inst.amountInPiastres ?? (inst.amount != null ? Math.round(inst.amount * 100) : 0);
+  const paidInPiastres = inst.paidAmountInPiastres ?? (inst.paidAmount != null ? Math.round(inst.paidAmount * 100) : 0);
+  const totalMonths = inst.installmentDetails?.months || 1;
+  const monthlyInPiastres = inst.installmentDetails?.monthlyPrincipalInPiastres ??
+    (inst.installmentDetails?.monthlyPrincipal != null
+      ? Math.round(inst.installmentDetails.monthlyPrincipal * 100)
+      : Math.floor(totalInPiastres / totalMonths));
+
+  const remainingPrincipalInPiastres = Math.max(0, totalInPiastres - paidInPiastres);
+  const remainingPrincipal = remainingPrincipalInPiastres / 100;
+  const monthsPaid = monthlyInPiastres > 0
+    ? Math.min(totalMonths, Math.floor(paidInPiastres / monthlyInPiastres))
+    : 0;
+  const remainingMonths = Math.max(0, totalMonths - monthsPaid);
+  const cyclePaidInPiastres = inst.installmentDetails?.cyclePaidInPiastres ?? 0;
+  const isCycleSatisfied = cyclePaidInPiastres >= monthlyInPiastres && monthlyInPiastres > 0;
+
+  let projectedDateStr = '—';
+  if (inst.date && remainingMonths > 0) {
+    const startDate = new Date(inst.date);
+    const compDate = new Date(startDate.getFullYear(), startDate.getMonth() + totalMonths, startDate.getDate());
+    projectedDateStr = formatDate(compDate);
+  } else if (remainingMonths === 0) {
+    projectedDateStr = 'Completed';
+  }
+
+  return {
+    totalInPiastres,
+    paidInPiastres,
+    monthlyInPiastres,
+    remainingPrincipal,
+    remainingMonths,
+    isCycleSatisfied,
+    projectedDateStr,
+  };
+};
 
 const CardInstallmentSchedule = ({ installments = [] }) => {
+  const [expandedIds, setExpandedIds] = useState(() => new Set());
+  const [isMobile, setIsMobile] = useState(getIsMobile);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const mql = window.matchMedia('(max-width: 768px)');
+    const handleChange = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener('change', handleChange);
+    return () => mql.removeEventListener('change', handleChange);
+  }, []);
+
+  const toggleExpand = (key) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
   if (!installments || installments.length === 0) {
     return (
-      <div className="card shadow-sm mt-4 p-4" style={{ backgroundColor: '#fcfcfc', border: '1px dashed #ced4da', borderRadius: '8px' }}>
-        <h5 style={{ fontWeight: 600, color: '#495057', marginBottom: '8px' }}>Active Installment Plans</h5>
-        <p className="text-muted mb-0" style={{ fontSize: '14px', color: '#6c757d' }}>
-          No active installment plans on this card. Convert large purchases to 0% installments to smooth cash flows.
-        </p>
-      </div>
+      <section className="cc-section" aria-label="Active Installment Plans">
+        <div className="cc-empty-card">
+          <h3>Active Installment Plans</h3>
+          <p>
+            No active installment plans on this card. Convert large purchases to 0% installments to smooth cash flows.
+          </p>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div className="card shadow-sm mt-4 p-4" style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e9ecef' }}>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h5 style={{ fontWeight: 600, color: '#2c3e50', margin: 0 }}>Active Installment Plans</h5>
-        <span className="badge bg-primary" style={{ fontSize: '12px', padding: '5px 10px', background: '#3498db', color: '#fff', borderRadius: '4px' }}>
+    <section className="cc-section" aria-label="Active Installment Plans">
+      <div className="cc-section-header">
+        <h2 className="cc-section-title">Active Installment Plans</h2>
+        <Badge tone="neutral">
           {installments.length} {installments.length === 1 ? 'Plan' : 'Plans'} Active
-        </span>
+        </Badge>
       </div>
 
-      <div className="table-responsive">
-        <table className="table table-hover align-middle mb-0" style={{ width: '100%', fontSize: '14px' }}>
-          <thead style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
-            <tr>
-              <th style={{ padding: '10px' }}>Description</th>
-              <th style={{ padding: '10px' }}>Total Value</th>
-              <th style={{ padding: '10px' }}>Paid So Far</th>
-              <th style={{ padding: '10px' }}>Monthly Due</th>
-              <th style={{ padding: '10px' }}>Remaining</th>
-              <th style={{ padding: '10px' }}>Remaining Principal</th>
-              <th style={{ padding: '10px' }}>Completion</th>
-              <th style={{ padding: '10px' }}>Cycle Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {installments.map((inst, index) => {
-              const totalInPiastres = inst.amountInPiastres ?? (inst.amount != null ? Math.round(inst.amount * 100) : 0);
-              const paidInPiastres = inst.paidAmountInPiastres ?? (inst.paidAmount != null ? Math.round(inst.paidAmount * 100) : 0);
-              const totalMonths = inst.installmentDetails?.months || 1;
-              const monthlyInPiastres = inst.installmentDetails?.monthlyPrincipalInPiastres ??
-                (inst.installmentDetails?.monthlyPrincipal != null
-                  ? Math.round(inst.installmentDetails.monthlyPrincipal * 100)
-                  : Math.floor(totalInPiastres / totalMonths));
-
-              const remainingPrincipalInPiastres = Math.max(0, totalInPiastres - paidInPiastres);
-              const remainingPrincipal = remainingPrincipalInPiastres / 100;
-              const monthsPaid = monthlyInPiastres > 0
-                ? Math.min(totalMonths, Math.floor(paidInPiastres / monthlyInPiastres))
-                : 0;
-              const remainingMonths = Math.max(0, totalMonths - monthsPaid);
-              const cyclePaidInPiastres = inst.installmentDetails?.cyclePaidInPiastres ?? 0;
-              const isCycleSatisfied = cyclePaidInPiastres >= monthlyInPiastres && monthlyInPiastres > 0;
-
-              let projectedDateStr = '—';
-              if (inst.date && remainingMonths > 0) {
-                const startDate = new Date(inst.date);
-                const compDate = new Date(startDate.getFullYear(), startDate.getMonth() + totalMonths, startDate.getDate());
-                projectedDateStr = formatDate(compDate);
-              } else if (remainingMonths === 0) {
-                projectedDateStr = 'Completed';
-              }
-
-              return (
-                <tr key={inst._id || index} style={{ borderBottom: '1px solid #f1f3f5' }}>
-                  <td style={{ padding: '12px 10px', fontWeight: 500, color: '#333' }}>
-                    {inst.description || inst.merchant || 'Installment Purchase'}
-                    {inst.date && (
-                      <div style={{ fontSize: '11px', color: '#888' }}>
-                        Started {formatDate(inst.date)}
+      {/* Desktop / Tablet Table (Waiver W-9A-1 > 768px) or Mobile D19 Cards (<= 768px) */}
+      {!isMobile ? (
+        <div className="cc-table-wrap">
+          <table className="cc-table">
+            <thead>
+              <tr>
+                <th scope="col">Description</th>
+                <th scope="col" className="cc-th-num">Total Value</th>
+                <th scope="col" className="cc-th-num">Paid So Far</th>
+                <th scope="col" className="cc-th-num">Monthly Due</th>
+                <th scope="col" className="cc-th-num">Remaining</th>
+                <th scope="col" className="cc-th-num">Remaining Principal</th>
+                <th scope="col">Completion</th>
+                <th scope="col">Cycle Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {installments.map((inst, index) => {
+                const row = computeInstallmentRow(inst);
+                return (
+                  <tr key={inst._id || index}>
+                    <td>
+                      <div className="cc-mobile-card-title">
+                        {inst.description || inst.merchant || 'Installment Purchase'}
                       </div>
-                    )}
-                  </td>
-                  <td style={{ padding: '12px 10px' }}>{formatCurrency(totalInPiastres / 100)}</td>
-                  <td style={{ padding: '12px 10px', color: '#27ae60' }}>{formatCurrency(paidInPiastres / 100)}</td>
-                  <td style={{ padding: '12px 10px', fontWeight: 500 }}>{formatCurrency(monthlyInPiastres / 100)}</td>
-                  <td style={{ padding: '12px 10px' }}>
-                    {remainingMonths} mos
-                  </td>
-                  <td style={{ padding: '12px 10px', fontWeight: 600, color: '#2c3e50' }}>
-                    {formatCurrency(remainingPrincipal)}
-                  </td>
-                  <td style={{ padding: '12px 10px', color: '#666' }}>{projectedDateStr}</td>
-                  <td style={{ padding: '12px 10px' }}>
-                    {isCycleSatisfied ? (
-                      <span className="badge badge-success" style={{ backgroundColor: '#27ae60', color: '#fff', padding: '3px 8px', borderRadius: '4px', fontSize: '11px' }}>
-                        Cycle Paid
+                      {inst.date && (
+                        <div className="cc-cell-sub">Started {formatDate(inst.date)}</div>
+                      )}
+                    </td>
+                    <td className="cc-td-num fs-num">{formatCurrency(row.totalInPiastres / 100)}</td>
+                    <td className="cc-td-num fs-num">{formatCurrency(row.paidInPiastres / 100)}</td>
+                    <td className="cc-td-num fs-num">{formatCurrency(row.monthlyInPiastres / 100)}</td>
+                    <td className="cc-td-num fs-num">{row.remainingMonths} mos</td>
+                    <td className="cc-td-num fs-num">{formatCurrency(row.remainingPrincipal)}</td>
+                    <td>{row.projectedDateStr}</td>
+                    <td>
+                      <Badge tone="neutral">
+                        {row.isCycleSatisfied ? 'Cycle Paid' : 'Due This Cycle'}
+                      </Badge>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="cc-mobile-cards" data-testid="cc-installments-mobile-cards">
+          {installments.map((inst, index) => {
+            const key = inst._id || `inst-${index}`;
+            const row = computeInstallmentRow(inst);
+            const isExpanded = expandedIds.has(key);
+            const label = inst.description || inst.merchant || 'Installment Purchase';
+
+            return (
+              <article key={key} className="cc-mobile-card">
+                <div className="cc-mobile-card-summary">
+                  <div className="cc-mobile-card-main">
+                    <span className="cc-mobile-card-title">{label}</span>
+                    <Badge tone="neutral">
+                      {row.isCycleSatisfied ? 'Cycle Paid' : 'Due This Cycle'}
+                    </Badge>
+                  </div>
+                  <div className="cc-mobile-card-val">
+                    <div className="cc-mobile-card-title fs-num">{formatCurrency(row.remainingPrincipal)}</div>
+                    <div className="cc-cell-sub fs-num">{row.remainingMonths} mos left</div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="cc-mobile-expand-btn"
+                  aria-expanded={isExpanded}
+                  aria-label={`${isExpanded ? 'Hide' : 'Show'} installment details for ${label}`}
+                  onClick={() => toggleExpand(key)}
+                >
+                  <span>{isExpanded ? 'Hide details' : 'Show details'}</span>
+                  {isExpanded ? <FaChevronUp aria-hidden="true" /> : <FaChevronDown aria-hidden="true" />}
+                </button>
+
+                {isExpanded && (
+                  <div className="cc-mobile-details">
+                    <div className="cc-mobile-detail-item">
+                      <span className="cc-mobile-detail-label">Total Value</span>
+                      <span className="cc-mobile-detail-value fs-num">
+                        {formatCurrency(row.totalInPiastres / 100)}
                       </span>
-                    ) : (
-                      <span className="badge badge-warning" style={{ backgroundColor: '#e67e22', color: '#fff', padding: '3px 8px', borderRadius: '4px', fontSize: '11px' }}>
-                        Due This Cycle
+                    </div>
+                    <div className="cc-mobile-detail-item">
+                      <span className="cc-mobile-detail-label">Paid So Far</span>
+                      <span className="cc-mobile-detail-value fs-num">
+                        {formatCurrency(row.paidInPiastres / 100)}
                       </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+                    </div>
+                    <div className="cc-mobile-detail-item">
+                      <span className="cc-mobile-detail-label">Monthly Due</span>
+                      <span className="cc-mobile-detail-value fs-num">
+                        {formatCurrency(row.monthlyInPiastres / 100)}
+                      </span>
+                    </div>
+                    <div className="cc-mobile-detail-item">
+                      <span className="cc-mobile-detail-label">Completion</span>
+                      <span className="cc-mobile-detail-value">{row.projectedDateStr}</span>
+                    </div>
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 };
 

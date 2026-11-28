@@ -20,6 +20,7 @@ const { setupGoldMocks } = require('./fixtures/goldMocks');
 const { setupCertificatesMocks } = require('./fixtures/certificatesMocks');
 const { setupCurrencyMocks } = require('./fixtures/currencyMocks');
 const { setupRealEstateMocks } = require('./fixtures/realEstateMocks');
+const { setupCreditCardsMocks } = require('./fixtures/creditCardsMocks');
 
 const AXE_SOURCE_PATH = require.resolve('axe-core/axe.min.js');
 
@@ -30,6 +31,9 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
       page.on('console', msg => console.log('PAGE CONSOLE on', route.slug, ':', msg.type(), msg.text()));
       await page.setViewportSize({ width: 1440, height: 900 });
       await setFixedClock(page);
+      await page.addInitScript(() => {
+        window.__VISUAL_TEST__ = true;
+      });
 
       if (
         route.slug.startsWith('salary-paycheck') ||
@@ -64,6 +68,8 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
         await setupCurrencyMocks(page);
       } else if (route.slug.startsWith('real-estate')) {
         await setupRealEstateMocks(page);
+      } else if (route.slug === 'credit-cards') {
+        await setupCreditCardsMocks(page);
       }
 
       await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });

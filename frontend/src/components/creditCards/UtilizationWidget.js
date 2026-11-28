@@ -3,7 +3,19 @@ import React, { useState, useEffect } from 'react';
 import { FaExclamationTriangle, FaShieldAlt } from 'react-icons/fa';
 import { getUtilization } from '../../services/creditCardService';
 import { formatCurrency } from '../../utils/formatters';
+import Badge from '../ui/Badge';
 import './UtilizationWidget.css';
+
+const getSeverityMeta = (utilization) => {
+  const pct = Number(utilization) || 0;
+  if (pct >= 70) {
+    return { progressClass: 'fs-progress--negative', tone: 'negative', label: 'High' };
+  }
+  if (pct >= 30) {
+    return { progressClass: 'fs-progress--warning', tone: 'warning', label: 'Elevated' };
+  }
+  return { progressClass: '', tone: 'neutral', label: '' };
+};
 
 const UtilizationWidget = () => {
   const [data, setData] = useState(null);
@@ -21,50 +33,49 @@ const UtilizationWidget = () => {
   }
 
   const { overallUtilization, totalBalance, totalLimit, hasAlerts, cards } = data;
-
-  const getBarColor = (utilization) => {
-    if (utilization >= 50) return '#ef4444'; // Red (High risk)
-    if (utilization >= 30) return '#f59e0b'; // Amber (Moderate)
-    return '#10b981'; // Green (Healthy)
-  };
+  const overallPct = Number(overallUtilization) || 0;
+  const overallMeta = getSeverityMeta(overallPct);
 
   return (
-    <div className="utilization-widget-card animate-fade-in">
-      <div className="utilization-header">
-        <div className="utilization-title-group">
-          <FaShieldAlt className="utilization-icon-shield" />
+    <section className="cc-util-card" aria-label="Credit Utilization Health">
+      <div className="cc-util-header">
+        <div className="cc-util-title-group">
+          <FaShieldAlt className="cc-util-icon" aria-hidden="true" />
           <div>
-            <h3>Credit Utilization Health</h3>
-            <p className="utilization-subtitle">Keep utilization below 30% to optimize credit health</p>
+            <h2>Credit Utilization Health</h2>
+            <p className="cc-util-subtitle">Keep utilization below 30% to optimize credit health</p>
           </div>
         </div>
-        <div className="utilization-overall-badge" style={{ backgroundColor: getBarColor(overallUtilization) }}>
-          {overallUtilization.toFixed(1)}% Overall
+        <div className="cc-util-overall">
+          <Badge tone={overallMeta.tone}>
+            <span className="fs-num">{overallPct.toFixed(1)}%</span> Overall
+            {overallMeta.label ? ` — ${overallMeta.label}` : ''}
+          </Badge>
         </div>
       </div>
 
       {/* Main Overall Progress Bar */}
-      <div className="utilization-meter-container">
-        <div className="utilization-meter-track">
-          <div
-            className="utilization-meter-fill"
-            style={{
-              width: `${Math.min(overallUtilization, 100)}%`,
-              backgroundColor: getBarColor(overallUtilization),
-            }}
+      <div className="cc-util-meter-wrap">
+        <div className="cc-util-progress-track">
+          <progress
+            className={`cc-util-progress ${overallMeta.progressClass}`.trim()}
+            aria-label="Overall credit utilization"
+            aria-valuetext={`${overallPct.toFixed(1)}%${overallMeta.label ? ` — ${overallMeta.label}` : ''}`}
+            value={Math.min(100, Math.max(0, Number(overallPct.toFixed(1))))}
+            max={100}
           />
-          <div className="threshold-marker-30" title="Target Threshold (30%)" />
+          <div className="cc-util-threshold-30" title="Target Threshold (30%)" aria-hidden="true" />
         </div>
-        <div className="utilization-meter-labels">
-          <span>{formatCurrency(totalBalance)} Used</span>
-          <span>{formatCurrency(totalLimit)} Total Limit</span>
+        <div className="cc-util-meter-labels">
+          <span className="fs-num">{formatCurrency(totalBalance)} Used</span>
+          <span className="fs-num">{formatCurrency(totalLimit)} Total Limit</span>
         </div>
       </div>
 
-      {/* Alert Banner if any cards exceeded threshold */}
+      {/* Alert Banner if any cards exceeded threshold (informational 30% threshold) */}
       {hasAlerts && (
-        <div className="utilization-alert-banner">
-          <FaExclamationTriangle className="alert-icon" />
+        <div className="cc-util-alert-banner" role="status">
+          <FaExclamationTriangle className="cc-util-alert-icon" aria-hidden="true" />
           <span>
             One or more cards exceed the recommended 30% threshold. Consider paying down balances prior to statement close dates.
           </span>
@@ -72,40 +83,45 @@ const UtilizationWidget = () => {
       )}
 
       {/* Individual Cards Breakdown */}
-      <div className="utilization-cards-grid">
+      <div className="cc-util-cards-grid">
         {cards.map((c) => {
-          const color = getBarColor(c.utilization);
+          const pct = Number(c.utilization) || 0;
+          const meta = getSeverityMeta(pct);
           return (
-            <div key={c.cardId} className={`card-utilization-item ${c.isAlert ? 'item-alert' : ''}`}>
-              <div className="card-item-header">
-                <span className="card-item-name">{c.cardName}</span>
-                <span className="card-item-pct" style={{ color }}>
-                  {c.utilization.toFixed(1)}%
-                </span>
+            <div key={c.cardId} className="cc-util-item">
+              <div className="cc-util-item-header">
+                <span className="cc-util-item-name">{c.cardName}</span>
+                <span className="cc-util-item-pct fs-num">{pct.toFixed(1)}%</span>
               </div>
-              <div className="mini-meter-track">
-                <div
-                  className="mini-meter-fill"
-                  style={{
-                    width: `${Math.min(c.utilization, 100)}%`,
-                    backgroundColor: color,
-                  }}
-                />
+
+              <progress
+                className={`cc-util-progress ${meta.progressClass}`.trim()}
+                aria-label={`Utilization for ${c.cardName}`}
+                aria-valuetext={`${pct.toFixed(1)}%${meta.label ? ` — ${meta.label}` : ''}`}
+                value={Math.min(100, Math.max(0, Number(pct.toFixed(1))))}
+                max={100}
+              />
+
+              <div className="cc-util-item-details">
+                <span className="fs-num">{formatCurrency(c.currentBalance)}</span>
+                <span className="cc-util-item-limit fs-num">/ {formatCurrency(c.limit)}</span>
               </div>
-              <div className="card-item-details">
-                <span>{formatCurrency(c.currentBalance)}</span>
-                <span className="card-item-limit">/ {formatCurrency(c.limit)}</span>
-              </div>
-              {c.isAlert && (
-                <div className="card-alert-badge">
-                  <FaExclamationTriangle size={10} /> Above {c.threshold}% Alert
+
+              {(meta.label || c.isAlert) && (
+                <div className="cc-util-item-badges">
+                  {meta.label && <Badge tone={meta.tone}>{meta.label}</Badge>}
+                  {c.isAlert && (
+                    <Badge tone="neutral">
+                      <FaExclamationTriangle size={10} aria-hidden="true" /> Above {c.threshold}% Alert
+                    </Badge>
+                  )}
                 </div>
               )}
             </div>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 };
 

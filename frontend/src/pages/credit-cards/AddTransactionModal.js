@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import { EXPENDITURE_CATEGORIES } from '../../constants/categories';
 import { formatCurrency } from '../../utils/formatters';
 import { CURRENCY_OPTIONS, DEFAULT_RATES } from '../expenditure/ExpenditureForm';
+import Badge from '../../components/ui/Badge';
 
 const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) => {
   const { showToast } = useToast();
@@ -120,21 +121,19 @@ const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) =>
 
     if (isForeign) {
       const parsedForeign = parseFloat(foreignAmount);
-      if (isNaN(parsedForeign) || parsedForeign <= 0) {
+      if (Number.isNaN(parsedForeign) || parsedForeign <= 0) {
         setError(`Please enter a valid positive foreign amount in ${currency}.`);
         return;
       }
       const parsedRate = parseFloat(exchangeRate);
-      if (isNaN(parsedRate) || parsedRate <= 0) {
+      if (Number.isNaN(parsedRate) || parsedRate <= 0) {
         setError('Please enter a valid positive exchange rate.');
         return;
       }
       finalAmount = Number((parsedForeign * parsedRate).toFixed(2));
-    } else {
-      if (isNaN(finalAmount) || finalAmount <= 0) {
-        setError('Amount must be a positive number.');
-        return;
-      }
+    } else if (Number.isNaN(finalAmount) || finalAmount <= 0) {
+      setError('Amount must be a positive number.');
+      return;
     }
 
     const dataToSubmit = {
@@ -160,7 +159,7 @@ const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) =>
         return;
       }
       dataToSubmit.installmentDetails = {
-        months: months,
+        months,
         monthlyPrincipal: finalAmount / months,
         interest: parseFloat(formData.installmentInterest) || 0,
       };
@@ -197,13 +196,14 @@ const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) =>
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Log New Card Transaction">
-      <form onSubmit={handleSubmit} className="standard-form">
-        <div className="form-group">
+      <form onSubmit={handleSubmit} className="cc-modal-form">
+        <div className="cc-modal-field">
           <label htmlFor="card-description">Merchant / Description</label>
           <input
             id="card-description"
             type="text"
             name="description"
+            className="cc-modal-input"
             value={formData.description}
             onChange={handleChange}
             placeholder="e.g. Carrefour Hypermarket"
@@ -211,9 +211,16 @@ const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) =>
           />
         </div>
 
-        <div className="form-group">
+        <div className="cc-modal-field">
           <label htmlFor="card-category">Category (Real Expenditure Category)</label>
-          <select id="card-category" name="category" value={formData.category} onChange={handleChange} required>
+          <select
+            id="card-category"
+            name="category"
+            className="cc-modal-select"
+            value={formData.category}
+            onChange={handleChange}
+            required
+          >
             {EXPENDITURE_CATEGORIES.map((cat) => (
               <option key={cat.name} value={cat.name}>
                 {cat.name}
@@ -223,11 +230,12 @@ const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) =>
         </div>
 
         {/* Currency Selector */}
-        <div className="form-group">
+        <div className="cc-modal-field">
           <label htmlFor="card-currency">Currency</label>
           <select
             id="card-currency"
             name="currency"
+            className="cc-modal-select"
             value={currency}
             onChange={handleCurrencyChange}
           >
@@ -241,13 +249,14 @@ const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) =>
 
         {/* Amount Inputs: Base EGP vs Foreign Currency */}
         {currency === 'EGP' ? (
-          <div className="form-group">
+          <div className="cc-modal-field">
             <label htmlFor="card-amount">Total Amount (EGP)</label>
             <input
               id="card-amount"
               type="number"
               step="0.01"
               name="amount"
+              className="cc-modal-input fs-num"
               value={formData.amount}
               onChange={handleChange}
               placeholder="0.00"
@@ -256,13 +265,14 @@ const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) =>
           </div>
         ) : (
           <>
-            <div className="form-row">
-              <div className="form-group">
+            <div className="cc-modal-row">
+              <div className="cc-modal-field">
                 <label htmlFor="card-foreign-amount">Amount ({currency})</label>
                 <input
                   id="card-foreign-amount"
                   type="number"
                   step="any"
+                  className="cc-modal-input fs-num"
                   value={foreignAmount}
                   onChange={handleForeignAmountChange}
                   placeholder={`Enter amount in ${currency}`}
@@ -270,34 +280,35 @@ const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) =>
                 />
               </div>
 
-              <div className="form-group">
+              <div className="cc-modal-field">
                 <label htmlFor="card-exchange-rate">Exchange Rate (1 {currency} in EGP)</label>
                 <input
                   id="card-exchange-rate"
                   type="number"
                   step="any"
+                  className="cc-modal-input fs-num"
                   value={exchangeRate}
                   onChange={handleExchangeRateChange}
                   placeholder="Exchange rate"
                   disabled={!isAdmin}
                   required
                 />
-                <small className="form-helper-text" style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                <small className="cc-modal-hint">
                   Rate is approximate for historical dates — actual rate is locked at save time based on transaction date.
                 </small>
               </div>
             </div>
 
             {/* Auto-displayed Converted EGP Equivalent Confirmation */}
-            <div className="currency-conversion-card" data-testid="conversion-confirmation-card">
-              <div className="conversion-header">
-                <span className="conversion-label">Converted EGP Equivalent (Confirmation)</span>
-                <span className="rate-badge">
-                  1 {currency} = {parseFloat(exchangeRate || 0).toFixed(4)} EGP
-                </span>
+            <div className="cc-conversion-card" data-testid="conversion-confirmation-card">
+              <div className="cc-conversion-header">
+                <span className="cc-conversion-label">Converted EGP Equivalent (Confirmation)</span>
+                <Badge tone="neutral">
+                  <span className="fs-num">1 {currency} = {parseFloat(exchangeRate || 0).toFixed(4)} EGP</span>
+                </Badge>
               </div>
-              <div className="conversion-value-row">
-                <span className="foreign-pill">
+              <div className="cc-conversion-value-row">
+                <span className="cc-foreign-pill fs-num">
                   {foreignAmount
                     ? `${parseFloat(foreignAmount).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
@@ -305,104 +316,137 @@ const AddTransactionModal = ({ isOpen, onClose, cardId, onTransactionAdded }) =>
                       })} ${currency}`
                     : `0.00 ${currency}`}
                 </span>
-                <span className="conversion-arrow">→</span>
-                <strong className="egp-equivalent" data-testid="converted-egp-value">
+                <span className="cc-conversion-arrow" aria-hidden="true">-&gt;</span>
+                <strong className="cc-egp-equivalent fs-num" data-testid="converted-egp-value">
                   {formatCurrency(convertedEgpValue)}
                 </strong>
               </div>
-              <div className="conversion-hint">
-                This transaction will be recorded on your card statement as <strong>{formatCurrency(convertedEgpValue)}</strong>.
+              <div className="cc-modal-note">
+                This transaction will be recorded on your card statement as{' '}
+                <strong className="fs-num">{formatCurrency(convertedEgpValue)}</strong>.
               </div>
             </div>
           </>
         )}
 
-        <div className="form-group">
+        <div className="cc-modal-field">
           <label htmlFor="card-date">Date</label>
-          <input id="card-date" type="date" name="date" value={formData.date} onChange={handleChange} required />
+          <input
+            id="card-date"
+            type="date"
+            name="date"
+            className="cc-modal-input fs-num"
+            value={formData.date}
+            onChange={handleChange}
+            required
+          />
         </div>
 
-        <div className="form-group">
+        <div className="cc-modal-field">
           <label htmlFor="card-type">Transaction Type</label>
-          <select id="card-type" name="type" value={formData.type} onChange={handleChange}>
+          <select
+            id="card-type"
+            name="type"
+            className="cc-modal-select"
+            value={formData.type}
+            onChange={handleChange}
+          >
             <option value="Purchase">Standard Purchase</option>
             <option value="Installment">Installment Plan</option>
           </select>
         </div>
 
         {formData.type === 'Installment' && (
-          <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid #e2e8f0' }}>
-            <div className="form-group">
+          <div className="cc-modal-panel">
+            <div className="cc-modal-field">
               <label htmlFor="card-installment-months">Number of Months</label>
               <input
                 id="card-installment-months"
                 type="number"
                 name="installmentMonths"
+                className="cc-modal-input fs-num"
                 value={formData.installmentMonths}
                 onChange={handleChange}
                 placeholder="e.g. 12"
                 required
               />
             </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
+            <div className="cc-modal-field">
               <label htmlFor="card-installment-interest">Interest Rate (%) (Optional)</label>
               <input
                 id="card-installment-interest"
                 type="number"
                 step="0.01"
                 name="installmentInterest"
+                className="cc-modal-input fs-num"
                 value={formData.installmentInterest}
                 onChange={handleChange}
                 placeholder="0"
               />
             </div>
             {formData.installmentMonths > 0 && convertedEgpValue > 0 && (
-              <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#2563eb', fontWeight: 600 }}>
-                💡 Monthly Principal: {formatCurrency(convertedEgpValue / parseInt(formData.installmentMonths, 10))} / mo
+              <div className="cc-modal-kv">
+                Monthly Principal:{' '}
+                <strong className="fs-num">
+                  {formatCurrency(convertedEgpValue / parseInt(formData.installmentMonths, 10))} / mo
+                </strong>
               </div>
             )}
           </div>
         )}
 
         {/* Integration Toggle */}
-        <div style={{ marginTop: '0.75rem', marginBottom: '1rem', background: '#f0fdf4', padding: '0.9rem', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer', margin: 0, fontWeight: 600, color: '#166534' }}>
+        <div className="cc-modal-panel">
+          <label className="cc-modal-check-label" htmlFor="card-create-expenditure">
             <input
+              id="card-create-expenditure"
               type="checkbox"
               name="createExpenditure"
+              className="cc-modal-checkbox"
               checked={formData.createExpenditure}
               onChange={handleChange}
-              style={{ width: '18px', height: '18px', cursor: 'pointer' }}
             />
             Also record as an expenditure in Expenditure Log
           </label>
 
           {formData.createExpenditure && (
-            <div style={{ marginTop: '0.6rem', padding: '0.6rem 0.8rem', background: '#ffffff', borderRadius: '6px', fontSize: '0.82rem', color: '#374151', border: '1px solid #dcfce7' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+            <div className="cc-modal-panel-inner">
+              <div className="cc-modal-kv">
                 <span><strong>Category:</strong> {formData.category}</span>
                 <span><strong>Method:</strong> Credit Card</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+              <div className="cc-modal-kv">
                 <span>
-                  <strong>Amount:</strong> {formatCurrency(convertedEgpValue)}
+                  <strong>Amount:</strong> <span className="fs-num">{formatCurrency(convertedEgpValue)}</span>
                   {currency !== 'EGP' && foreignAmount && (
-                    <span style={{ color: '#0369a1', marginLeft: '0.4rem', fontWeight: 600 }}>
-                      ({parseFloat(foreignAmount).toLocaleString()} {currency})
+                    <span className="fs-num">
+                      {' '}({parseFloat(foreignAmount).toLocaleString()} {currency})
                     </span>
                   )}
                 </span>
-                <span style={{ color: '#059669', fontWeight: 600 }}>💳 Credit Purchase (Unsettled)</span>
+                <span>Credit Purchase (Unsettled)</span>
               </div>
-              <p style={{ margin: '0.4rem 0 0 0', color: '#6b7280', fontSize: '0.78rem' }}>
-                🛡️ <strong>Ledger Rule:</strong> Bank running balance will NOT be reduced now. It will only be debited when settled via card payment.
+              <p className="cc-modal-note">
+                <strong>Ledger Rule:</strong> Bank running balance will NOT be reduced now. It will only be debited when settled via card payment.
               </p>
             </div>
           )}
         </div>
 
-        {error && <p className="error-message">{error}</p>}
-        <button type="submit" className="action-button">Add Transaction</button>
+        {error && (
+          <p className="cc-modal-error" role="alert">
+            {error}
+          </p>
+        )}
+
+        <div className="cc-modal-actions">
+          <button type="button" className="fs-btn fs-btn-secondary" onClick={handleClose}>
+            Cancel
+          </button>
+          <button type="submit" className="fs-btn fs-btn-primary">
+            Add Transaction
+          </button>
+        </div>
       </form>
     </Modal>
   );
