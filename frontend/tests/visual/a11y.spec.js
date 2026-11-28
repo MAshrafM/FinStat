@@ -22,6 +22,7 @@ const { setupCurrencyMocks } = require('./fixtures/currencyMocks');
 const { setupRealEstateMocks } = require('./fixtures/realEstateMocks');
 const { setupCreditCardsMocks } = require('./fixtures/creditCardsMocks');
 const { setupLendingMocks } = require('./fixtures/lendingMocks');
+const { setupProfileSettingsMocks } = require('./fixtures/profileSettingsMocks');
 
 const AXE_SOURCE_PATH = require.resolve('axe-core/axe.min.js');
 
@@ -73,6 +74,12 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
         await setupCreditCardsMocks(page);
       } else if (route.slug.startsWith('lending')) {
         await setupLendingMocks(page);
+      } else if (
+        route.slug === 'profile' ||
+        route.slug === 'settings' ||
+        route.slug === 'settings-recycle-bin'
+      ) {
+        await setupProfileSettingsMocks(page, route.slug);
       }
 
       await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });
