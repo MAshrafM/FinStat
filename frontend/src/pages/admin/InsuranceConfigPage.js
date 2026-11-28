@@ -1,6 +1,6 @@
 // frontend/src/pages/admin/InsuranceConfigPage.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { Plus, ShieldCheck } from 'lucide-react';
 import {
   getSocialInsuranceConfigs,
   createSocialInsuranceConfig,
@@ -9,6 +9,7 @@ import {
   toggleSocialInsuranceConfig,
 } from '../../services/adminService';
 import { useToast } from '../../context/ToastContext';
+import { EmptyState, Loading, PageHeader } from '../../components/ui';
 import InsuranceConfigCard from './InsuranceConfigCard';
 import InsuranceConfigModal from './InsuranceConfigModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -122,53 +123,44 @@ const InsuranceConfigPage = () => {
   };
 
   return (
-    <div className="admin-config-container">
-      {/* Header Section */}
-      <div className="admin-page-hero">
-        <div className="hero-title-group">
-          <div className="hero-badge">
-            <ShieldAlert size={13} /> Admin System Configuration
-          </div>
-          <h1 className="hero-main-title">
-            <span role="img" aria-label="diamond">🔹</span> Social Insurance Configuration
-          </h1>
-          <p className="hero-subtitle">
-            Manage employee/employer shares and income caps. Updates are applied automatically to Egyptian social insurance calculations.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          className="btn-primary-add"
-          onClick={handleOpenCreateModal}
-          id="btn-add-insurance-config"
-        >
-          <Plus size={18} />
-          <span>Add New Configuration</span>
-        </button>
-      </div>
-
-      {/* Main Content Area */}
-      {loading ? (
-        <div className="admin-loading-state">
-          <div className="loading-spinner-ring"></div>
-          <p>Loading social insurance configurations...</p>
-        </div>
-      ) : configs.length === 0 ? (
-        <div className="admin-empty-state-box">
-          <ShieldCheck size={48} className="empty-state-icon" />
-          <h3 className="empty-state-title">No Social Insurance Configurations Found</h3>
-          <p className="empty-state-desc">
-            No official insurance deduction rules have been configured yet. Click below to configure rates and caps.
-          </p>
+    <div className="fs-page admin-config-container">
+      <PageHeader
+        title="Social Insurance Configuration"
+        subtitle="Manage employee/employer shares and income caps. Updates are applied automatically to Egyptian social insurance calculations."
+        actions={
           <button
             type="button"
-            className="btn-primary-add"
+            className="fs-btn fs-btn-primary"
             onClick={handleOpenCreateModal}
+            id="btn-add-insurance-config"
           >
-            <Plus size={16} />
-            <span>Add {new Date().getFullYear()} Social Insurance</span>
+            <Plus size={18} aria-hidden="true" />
+            <span>Add New Configuration</span>
           </button>
+        }
+      />
+
+      {loading ? (
+        <div className="admin-config-loading">
+          <Loading variant="card" text="Loading social insurance configurations..." />
+        </div>
+      ) : configs.length === 0 ? (
+        <div className="fs-card">
+          <EmptyState
+            icon={<ShieldCheck size={36} />}
+            title="No Social Insurance Configurations Found"
+            description="No official insurance deduction rules have been configured yet. Click below to configure rates and caps."
+            action={
+              <button
+                type="button"
+                className="fs-btn fs-btn-primary"
+                onClick={handleOpenCreateModal}
+              >
+                <Plus size={16} aria-hidden="true" />
+                <span>Add {new Date().getFullYear()} Social Insurance</span>
+              </button>
+            }
+          />
         </div>
       ) : (
         <div className="admin-cards-container">

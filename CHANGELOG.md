@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - UI Phase 10C: Admin Family & Phase 10 Exit Gate
+- **Admin Routes Refresh (`60 -> 64`)**: Converted `/admin`, `/admin/tax-brackets`, `/admin/social-insurance`, and `/admin/backup` (`AdminDashboard`, `TaxConfigPage`, `InsuranceConfigPage`, `BackupPage`, and their modals/cards/CSS) into FinStat's dark graphite design system under D22 `html[data-fs-theme]`, removing legacy red/blue/purple washes, glassmorphism blurs, and all 4 admin entries from `frontend/.eslintignore`, while closing the Phase 10 Exit Gate (`8/8` Phase 10 routes themed, `64 of 65` rendering routes allowlisted).
+- **Accessibility, Mobile Cards & Modals**: Added Section 26 interactive accent in `theme-components.css` for Backup radio/checkbox controls and admin active toggles, full APG modal focus lifecycles (`useModalFocus`) on shared `.modal-overlay`/`.modal-content`, and D19 compact-expand mobile cards at `<= 768px` on `/admin` and `/admin/backup` (`0px` overflow at `390px`).
+
 ### Changed - UI Phase 10B: Security & Two-Factor Authentication
 - **Security Page Refresh**: Updated `/security` with a clean dark graphite layout, clearer 2FA enable/disable controls and modal dialogs, readable login audit trail formatting, and mobile-friendly cards on narrow screens.
 

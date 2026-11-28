@@ -25,6 +25,7 @@ const { setupCreditCardsMocks } = require('./fixtures/creditCardsMocks');
 const { setupLendingMocks } = require('./fixtures/lendingMocks');
 const { setupProfileSettingsMocks } = require('./fixtures/profileSettingsMocks');
 const { setupSecurityMocks } = require('./fixtures/securityMocks');
+const { setupAdminMocks } = require('./fixtures/adminMocks');
 
 const MANDATORY_QA_WIDTHS = [1440, 1024, 768, 480, 390];
 
@@ -111,6 +112,8 @@ test.describe('Visual Regression Suite', () => {
           await setupProfileSettingsMocks(page, route.slug);
         } else if (route.slug === 'security') {
           await setupSecurityMocks(page);
+        } else if (route.slug === 'admin' || route.slug.startsWith('admin-')) {
+          await setupAdminMocks(page);
         }
 
         // Navigate to route

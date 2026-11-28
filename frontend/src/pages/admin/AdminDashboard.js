@@ -1,5 +1,5 @@
 // frontend/src/pages/admin/AdminDashboard.js
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users,
@@ -16,6 +16,8 @@ import {
   Lock,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   RefreshCw,
   Shield,
   UserCheck,
@@ -27,7 +29,8 @@ import { getUsers, createUser, deleteUser } from '../../services/adminService';
 import { dispatchToast } from '../../services/apiClient';
 import ProtectedAction from '../../components/common/ProtectedAction';
 import { useAuth } from '../../context/AuthContext';
-import { Loading } from '../../components/ui';
+import { Badge, EmptyState, Loading, PageHeader } from '../../components/ui';
+import { useModalFocus } from './useModalFocus';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -37,6 +40,27 @@ const AdminDashboard = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
+
+  // Guarded D19 mobile viewport state
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(max-width: 768px)').matches
+      : false
+  );
+  const [expandedUserIds, setExpandedUserIds] = useState({});
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const mql = window.matchMedia('(max-width: 768px)');
+    const onChange = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', onChange);
+      return () => mql.removeEventListener('change', onChange);
+    }
+    mql.addListener(onChange);
+    return () => mql.removeListener(onChange);
+  }, []);
 
   // Search State with 300ms debounce
   const [searchInput, setSearchInput] = useState('');
@@ -53,11 +77,22 @@ const AdminDashboard = () => {
   });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
+  const addModalRef = useRef(null);
 
   // Delete Confirmation Modal State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const deleteModalRef = useRef(null);
+
+  const closeAddModal = useCallback(() => setAddModalOpen(false), []);
+  const closeDeleteModal = useCallback(() => {
+    setDeleteModalOpen(false);
+    setUserToDelete(null);
+  }, []);
+
+  useModalFocus(addModalOpen, closeAddModal, addModalRef);
+  useModalFocus(deleteModalOpen && Boolean(userToDelete), closeDeleteModal, deleteModalRef);
 
   // Debounce search input by 300ms
   useEffect(() => {
@@ -190,62 +225,77 @@ const AdminDashboard = () => {
     });
   };
 
-  return (
-    <div className="admin-page-container">
-      {/* Header */}
-      <div className="admin-header">
-        <div>
-          <div className="admin-title-group">
-            <Users size={32} color="#f87171" />
-            <h1 className="admin-page-title">
-              {isManager ? 'Manage Your Viewers' : 'User Management'}
-            </h1>
-          </div>
-          <p className="admin-subtitle">
-            {isManager
-              ? 'View and manage viewers attached to your workspace.'
-              : 'Manage system access, register new team members, and oversee role permissions.'}
-          </p>
-        </div>
+  const toggleExpandUser = (id) => {
+    setExpandedUserIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
-        <ProtectedAction tooltip="View-only access">
-          <button onClick={() => setAddModalOpen(true)} className="add-user-btn">
-            <UserPlus size={18} />
-            <span>{isManager ? 'Add New Viewer' : 'Add New User'}</span>
-          </button>
-        </ProtectedAction>
-      </div>
+  const renderAttachedTo = (u) => {
+    if (u.managedBy) {
+      return (
+        <span className="admin-attached-badge">
+          <UserCheck size={14} aria-hidden="true" /> @{u.managedBy.username || 'Parent'}
+        </span>
+      );
+    }
+    if (u.role === 'viewer') {
+      return <span className="admin-muted-text">Self / Unattached</span>;
+    }
+    return <span className="admin-muted-text">—</span>;
+  };
+
+  return (
+    <div className="fs-page admin-page-container">
+      <PageHeader
+        title={isManager ? 'Manage Your Viewers' : 'User Management'}
+        subtitle={
+          isManager
+            ? 'View and manage viewers attached to your workspace.'
+            : 'Manage system access, register new team members, and oversee role permissions.'
+        }
+        actions={
+          <ProtectedAction tooltip="View-only access">
+            <button
+              type="button"
+              onClick={() => setAddModalOpen(true)}
+              className="fs-btn fs-btn-primary"
+            >
+              <UserPlus size={18} aria-hidden="true" />
+              <span>{isManager ? 'Add New Viewer' : 'Add New User'}</span>
+            </button>
+          </ProtectedAction>
+        }
+      />
 
       {/* Admin Quick Access Configuration Cards */}
       {isAdmin && (
         <div className="admin-quick-cards-grid">
-          <Link to="/admin/tax-brackets" className="admin-quick-card">
-            <div className="quick-card-icon-wrapper tax-icon">
-              <BarChart3 size={24} />
+          <Link to="/admin/tax-brackets" className="fs-card admin-quick-card">
+            <div className="quick-card-icon-wrapper">
+              <BarChart3 size={22} aria-hidden="true" />
             </div>
             <div className="quick-card-content">
-              <h3 className="quick-card-title">Tax Brackets</h3>
+              <h2 className="quick-card-title">Tax Brackets</h2>
               <p className="quick-card-desc">
                 Manage progressive income tax brackets, levels, and personal exemptions
               </p>
             </div>
             <div className="quick-card-arrow">
-              <ArrowRight size={18} />
+              <ArrowRight size={18} aria-hidden="true" />
             </div>
           </Link>
 
-          <Link to="/admin/social-insurance" className="admin-quick-card">
-            <div className="quick-card-icon-wrapper insurance-icon">
-              <ShieldCheck size={24} />
+          <Link to="/admin/social-insurance" className="fs-card admin-quick-card">
+            <div className="quick-card-icon-wrapper">
+              <ShieldCheck size={22} aria-hidden="true" />
             </div>
             <div className="quick-card-content">
-              <h3 className="quick-card-title">Social Insurance</h3>
+              <h2 className="quick-card-title">Social Insurance</h2>
               <p className="quick-card-desc">
                 Manage employee/employer contribution shares and insurable income caps
               </p>
             </div>
             <div className="quick-card-arrow">
-              <ArrowRight size={18} />
+              <ArrowRight size={18} aria-hidden="true" />
             </div>
           </Link>
         </div>
@@ -254,9 +304,10 @@ const AdminDashboard = () => {
       {/* Toolbar */}
       <div className="admin-toolbar">
         <div className="search-input-wrapper">
-          <Search size={18} className="search-icon" />
+          <Search size={18} className="search-icon" aria-hidden="true" />
           <input
             type="text"
+            aria-label={isManager ? 'Search viewers' : 'Search users'}
             placeholder={
               isManager
                 ? 'Search viewers by username or email...'
@@ -267,204 +318,267 @@ const AdminDashboard = () => {
             className="search-input"
           />
           {searchInput && (
-            <button onClick={() => setSearchInput('')} className="clear-search-btn">
-              <X size={16} />
+            <button
+              type="button"
+              onClick={() => setSearchInput('')}
+              className="clear-search-btn"
+              aria-label="Clear search"
+            >
+              <X size={16} aria-hidden="true" />
             </button>
           )}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
-            {isManager ? 'Total Viewers:' : 'Total Users:'} <strong>{totalUsers}</strong>
+        <div className="admin-toolbar-meta">
+          <span className="admin-total-count">
+            {isManager ? 'Total Viewers:' : 'Total Users:'}{' '}
+            <strong className="fs-num">{totalUsers}</strong>
           </span>
           <button
+            type="button"
             onClick={fetchUsersList}
             disabled={loading}
-            style={{
-              background: '#111827',
-              border: '1px solid #1e293b',
-              color: '#94a3b8',
-              borderRadius: '8px',
-              padding: '8px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-            }}
+            className="fs-btn fs-btn-secondary admin-refresh-btn"
+            aria-label="Refresh users"
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={14} aria-hidden="true" />
+            <span>{loading ? 'Refreshing' : 'Refresh'}</span>
           </button>
         </div>
       </div>
 
-      {/* Card & Table */}
-      <div className="admin-card">
+      {/* Card & Table / Mobile Cards */}
+      <div className="fs-card admin-card">
         {loading ? (
-          <Loading variant="card" text={`Loading ${isManager ? 'viewers' : 'users'}...`} />
+          <div className="admin-loading-pad">
+            <Loading
+              variant="table"
+              rows={5}
+              text={`Loading ${isManager ? 'viewers' : 'users'}...`}
+            />
+          </div>
         ) : users.length === 0 ? (
-          <div className="admin-empty-state">
-            <div className="admin-empty-icon">
-              <Users size={28} />
-            </div>
-            <h3 className="admin-empty-title">
-              {searchTerm
+          <EmptyState
+            icon={<Users size={28} />}
+            title={
+              searchTerm
                 ? isManager
                   ? 'No matching viewers found'
                   : 'No matching users found'
                 : isManager
                   ? "You don't have any Viewers yet"
-                  : 'No other users registered yet'}
-            </h3>
-            <p className="admin-empty-desc">
-              {searchTerm
+                  : 'No other users registered yet'
+            }
+            description={
+              searchTerm
                 ? `No accounts matched "${searchTerm}". Try a different search term or clear the filter.`
                 : isManager
                   ? "You don't have any Viewers yet. Click 'Add New Viewer' to invite someone."
-                  : "Click 'Add New User' to invite someone to your FinStat workspace."}
-            </p>
-            {searchTerm ? (
-              <button onClick={() => setSearchInput('')} className="admin-pagination-btn">
-                Clear Search Filter
-              </button>
-            ) : (
-              <ProtectedAction tooltip="View-only access">
-                <button onClick={() => setAddModalOpen(true)} className="add-user-btn">
-                  <UserPlus size={16} />
-                  <span>{isManager ? 'Add New Viewer' : 'Add New User'}</span>
+                  : "Click 'Add New User' to invite someone to your FinStat workspace."
+            }
+            action={
+              searchTerm ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchInput('')}
+                  className="fs-btn fs-btn-secondary"
+                >
+                  Clear Search Filter
                 </button>
-              </ProtectedAction>
-            )}
-          </div>
+              ) : (
+                <ProtectedAction tooltip="View-only access">
+                  <button
+                    type="button"
+                    onClick={() => setAddModalOpen(true)}
+                    className="fs-btn fs-btn-primary"
+                  >
+                    <UserPlus size={16} aria-hidden="true" />
+                    <span>{isManager ? 'Add New Viewer' : 'Add New User'}</span>
+                  </button>
+                </ProtectedAction>
+              )
+            }
+          />
         ) : (
           <>
-            <div style={{ overflowX: 'auto' }}>
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>User</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    {isAdmin && <th>Attached To</th>}
-                    <th>2FA Status</th>
-                    <th>Joined</th>
-                    <th style={{ textAlign: 'right' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u, index) => {
-                    const rowNumber = (page - 1) * 10 + index + 1;
-                    return (
-                      <tr key={u._id}>
-                        <td style={{ color: '#64748b' }}>{rowNumber}</td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div
-                              style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                background: 'rgba(248, 113, 113, 0.15)',
-                                color: '#f87171',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: '700',
-                                fontSize: '0.85rem',
-                              }}
-                            >
-                              {u.username ? u.username.charAt(0).toUpperCase() : 'U'}
-                            </div>
-                            <span style={{ fontWeight: '600', color: '#f8fafc' }}>
-                              {u.username}
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <span style={{ color: '#94a3b8' }}>
-                            {u.email || '—'}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`role-badge role-badge-${u.role || 'viewer'}`}>
-                            {u.role || 'viewer'}
-                          </span>
-                        </td>
-                        {isAdmin && (
+            {!isMobile ? (
+              <div className="admin-table-wrap" data-testid="admin-users-table">
+                <table className="fs-table admin-table">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="fs-num">#</th>
+                      <th scope="col">User</th>
+                      <th scope="col">Email</th>
+                      <th scope="col">Role</th>
+                      {isAdmin && <th scope="col">Attached To</th>}
+                      <th scope="col">2FA Status</th>
+                      <th scope="col">Joined</th>
+                      <th scope="col" className="admin-actions-col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u, index) => {
+                      const rowNumber = (page - 1) * 10 + index + 1;
+                      return (
+                        <tr key={u._id}>
+                          <td className="fs-num admin-row-num">{rowNumber}</td>
                           <td>
-                            <span style={{ color: '#94a3b8', fontSize: '0.88rem' }}>
-                              {u.managedBy ? (
-                                <span style={{ color: '#a5b4fc', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                  <UserCheck size={14} /> @{u.managedBy.username || 'Parent'}
-                                </span>
-                              ) : u.role === 'viewer' ? (
-                                <span style={{ color: '#64748b' }}>Self / Unattached</span>
-                              ) : (
-                                <span style={{ color: '#475569' }}>—</span>
-                              )}
+                            <div className="admin-user-cell">
+                              <div className="admin-user-avatar" aria-hidden="true">
+                                {u.username ? u.username.charAt(0).toUpperCase() : 'U'}
+                              </div>
+                              <span className="admin-username-text">{u.username}</span>
+                            </div>
+                          </td>
+                          <td className="admin-email-cell">{u.email || '—'}</td>
+                          <td>
+                            <Badge>{u.role || 'viewer'}</Badge>
+                          </td>
+                          {isAdmin && <td>{renderAttachedTo(u)}</td>}
+                          <td>
+                            {u.totpEnabled ? (
+                              <Badge label="2FA Enabled">
+                                <CheckCircle2 size={13} aria-hidden="true" />
+                                <span>Enabled</span>
+                              </Badge>
+                            ) : (
+                              <Badge tone="warning" label="2FA Disabled">
+                                <XCircle size={13} aria-hidden="true" />
+                                <span>Disabled</span>
+                              </Badge>
+                            )}
+                          </td>
+                          <td>
+                            <span className="admin-date-cell">
+                              <Clock size={14} aria-hidden="true" />
+                              <time data-visual-mask="true" className="fs-num">
+                                {formatDate(u.createdAt)}
+                              </time>
                             </span>
                           </td>
-                        )}
-                        <td>
-                          {u.totpEnabled ? (
-                            <span className="twofa-badge-on">
-                              <CheckCircle2 size={15} /> Enabled
-                            </span>
-                          ) : (
-                            <span className="twofa-badge-off">
-                              <XCircle size={15} /> Disabled
-                            </span>
+                          <td className="admin-actions-col">
+                            <ProtectedAction tooltip="View-only access">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setUserToDelete(u);
+                                  setDeleteModalOpen(true);
+                                }}
+                                className="fs-btn fs-btn-ghost admin-delete-trigger"
+                                title={`Delete ${u.username}`}
+                                aria-label={`Delete ${u.username}`}
+                              >
+                                <Trash2 size={15} aria-hidden="true" />
+                                <span>Delete</span>
+                              </button>
+                            </ProtectedAction>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="admin-mobile-cards" data-testid="admin-users-mobile-cards">
+                {users.map((u) => {
+                  const isExpanded = Boolean(expandedUserIds[u._id]);
+                  return (
+                    <div key={u._id} className="admin-mobile-card">
+                      <div className="admin-mobile-card-top">
+                        <div className="admin-user-cell">
+                          <div className="admin-user-avatar" aria-hidden="true">
+                            {u.username ? u.username.charAt(0).toUpperCase() : 'U'}
+                          </div>
+                          <div className="admin-mobile-identity">
+                            <span className="admin-username-text">{u.username}</span>
+                            <div className="admin-mobile-badges">
+                              <Badge>{u.role || 'viewer'}</Badge>
+                              {u.totpEnabled ? (
+                                <Badge label="2FA Enabled">2FA On</Badge>
+                              ) : (
+                                <Badge tone="warning" label="2FA Disabled">2FA Off</Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="fs-btn fs-btn-ghost admin-expand-btn"
+                          onClick={() => toggleExpandUser(u._id)}
+                          aria-expanded={isExpanded}
+                          aria-label={isExpanded ? `Collapse ${u.username}` : `Expand ${u.username}`}
+                        >
+                          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+                      </div>
+
+                      {isExpanded && (
+                        <div className="admin-mobile-card-details">
+                          <div className="admin-mobile-detail-row">
+                            <span className="admin-mobile-detail-label">Email</span>
+                            <span className="admin-mobile-detail-value">{u.email || '—'}</span>
+                          </div>
+                          {isAdmin && (
+                            <div className="admin-mobile-detail-row">
+                              <span className="admin-mobile-detail-label">Attached To</span>
+                              <span className="admin-mobile-detail-value">{renderAttachedTo(u)}</span>
+                            </div>
                           )}
-                        </td>
-                        <td>
-                          <span style={{ color: '#94a3b8', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <Clock size={14} />
-                            {formatDate(u.createdAt)}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <ProtectedAction tooltip="View-only access">
-                            <button
-                              onClick={() => {
-                                setUserToDelete(u);
-                                setDeleteModalOpen(true);
-                              }}
-                              className="delete-action-btn"
-                              title={`Delete ${u.username}`}
-                            >
-                              <Trash2 size={15} />
-                              <span>Delete</span>
-                            </button>
-                          </ProtectedAction>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          <div className="admin-mobile-detail-row">
+                            <span className="admin-mobile-detail-label">Joined</span>
+                            <time data-visual-mask="true" className="fs-num admin-mobile-detail-value">
+                              {formatDate(u.createdAt)}
+                            </time>
+                          </div>
+                          <div className="admin-mobile-card-actions">
+                            <ProtectedAction tooltip="View-only access">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setUserToDelete(u);
+                                  setDeleteModalOpen(true);
+                                }}
+                                className="fs-btn fs-btn-secondary admin-mobile-delete-btn"
+                                aria-label={`Delete ${u.username}`}
+                              >
+                                <Trash2 size={15} aria-hidden="true" />
+                                <span>Delete User</span>
+                              </button>
+                            </ProtectedAction>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Pagination */}
             <div className="admin-pagination">
-              <span className="admin-page-info">
+              <span className="admin-page-info fs-num">
                 Page {page} of {totalPages} ({totalUsers} total)
               </span>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="admin-pagination-actions">
                 <button
+                  type="button"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page <= 1}
-                  className="admin-pagination-btn"
+                  className="fs-btn fs-btn-secondary"
                 >
-                  <ChevronLeft size={16} />
+                  <ChevronLeft size={16} aria-hidden="true" />
                   <span>Previous</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
-                  className="admin-pagination-btn"
+                  className="fs-btn fs-btn-secondary"
                 >
                   <span>Next</span>
-                  <ChevronRight size={16} />
+                  <ChevronRight size={16} aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -474,23 +588,38 @@ const AdminDashboard = () => {
 
       {/* Add New User Modal */}
       {addModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <UserPlus size={22} color="#f87171" />
-                <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#f8fafc' }}>
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="add-user-modal-title"
+        >
+          <div className="modal-content admin-modal-card" ref={addModalRef}>
+            <div className="admin-modal-header">
+              <div className="admin-modal-title-group">
+                <UserPlus size={20} aria-hidden="true" />
+                <h3 id="add-user-modal-title" className="admin-modal-title">
                   {isManager ? 'Register New Viewer' : 'Register New User'}
                 </h3>
               </div>
-              <button onClick={() => setAddModalOpen(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '1.4rem' }}>&times;</button>
+              <button
+                type="button"
+                onClick={closeAddModal}
+                className="admin-modal-close-btn"
+                aria-label="Close modal"
+              >
+                <X size={18} aria-hidden="true" />
+              </button>
             </div>
 
             <form onSubmit={handleCreateUser}>
               <div className="form-field-group">
-                <label className="form-field-label">Username:</label>
-                <div style={{ position: 'relative' }}>
+                <label className="form-field-label" htmlFor="add-user-username">
+                  Username
+                </label>
+                <div className="admin-input-icon-wrap">
                   <input
+                    id="add-user-username"
                     type="text"
                     placeholder="e.g. alex_viewer"
                     value={formData.username}
@@ -498,14 +627,17 @@ const AdminDashboard = () => {
                     className="form-field-input"
                     required
                   />
-                  <User size={16} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                  <User size={16} className="admin-input-trailing-icon" aria-hidden="true" />
                 </div>
               </div>
 
               <div className="form-field-group">
-                <label className="form-field-label">Email Address:</label>
-                <div style={{ position: 'relative' }}>
+                <label className="form-field-label" htmlFor="add-user-email">
+                  Email Address
+                </label>
+                <div className="admin-input-icon-wrap">
                   <input
+                    id="add-user-email"
                     type="email"
                     placeholder="e.g. alex@company.com"
                     value={formData.email}
@@ -513,14 +645,17 @@ const AdminDashboard = () => {
                     className="form-field-input"
                     required
                   />
-                  <Mail size={16} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                  <Mail size={16} className="admin-input-trailing-icon" aria-hidden="true" />
                 </div>
               </div>
 
               <div className="form-field-group">
-                <label className="form-field-label">Temporary Password (min 8 chars):</label>
-                <div style={{ position: 'relative' }}>
+                <label className="form-field-label" htmlFor="add-user-password">
+                  Temporary Password (min 8 chars)
+                </label>
+                <div className="admin-input-icon-wrap">
                   <input
+                    id="add-user-password"
                     type="password"
                     placeholder="Create secure password"
                     value={formData.password}
@@ -528,15 +663,18 @@ const AdminDashboard = () => {
                     className="form-field-input"
                     required
                   />
-                  <Lock size={16} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                  <Lock size={16} className="admin-input-trailing-icon" aria-hidden="true" />
                 </div>
               </div>
 
               {isAdmin ? (
                 <>
                   <div className="form-field-group">
-                    <label className="form-field-label">Assigned Role:</label>
+                    <label className="form-field-label" htmlFor="add-user-role">
+                      Assigned Role
+                    </label>
                     <select
+                      id="add-user-role"
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                       className="form-field-select"
@@ -549,8 +687,11 @@ const AdminDashboard = () => {
 
                   {formData.role === 'viewer' && (
                     <div className="form-field-group">
-                      <label className="form-field-label">Attach To Parent Account (Admin/Manager):</label>
+                      <label className="form-field-label" htmlFor="add-user-parent">
+                        Attach To Parent Account (Admin/Manager)
+                      </label>
                       <select
+                        id="add-user-parent"
                         value={formData.parentId}
                         onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
                         className="form-field-select"
@@ -562,7 +703,7 @@ const AdminDashboard = () => {
                           </option>
                         ))}
                       </select>
-                      <span style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>
+                      <span className="admin-field-hint">
                         This viewer will see the financial data belonging to the selected account.
                       </span>
                     </div>
@@ -570,44 +711,25 @@ const AdminDashboard = () => {
                 </>
               ) : (
                 <div className="form-field-group">
-                  <label className="form-field-label">Assigned Role:</label>
-                  <div
-                    style={{
-                      background: 'rgba(100, 116, 139, 0.1)',
-                      border: '1px solid #334155',
-                      borderRadius: '8px',
-                      padding: '10px 12px',
-                      color: '#cbd5e1',
-                      fontSize: '0.9rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
-                  >
-                    <Shield size={16} color="#38bdf8" />
+                  <span className="form-field-label">Assigned Role</span>
+                  <div className="admin-readonly-role-box">
+                    <Shield size={16} aria-hidden="true" />
                     <span>Viewer (Read-only access attached to your workspace)</span>
                   </div>
                 </div>
               )}
 
               {formError && (
-                <div style={{ color: '#f87171', fontSize: '0.85rem', marginBottom: '16px' }}>
+                <div className="admin-form-error" role="alert">
                   {formError}
                 </div>
               )}
 
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
+              <div className="admin-modal-actions">
                 <button
                   type="button"
-                  onClick={() => setAddModalOpen(false)}
-                  style={{
-                    background: 'transparent',
-                    border: '1px solid #334155',
-                    color: '#cbd5e1',
-                    borderRadius: '8px',
-                    padding: '8px 16px',
-                    cursor: 'pointer',
-                  }}
+                  onClick={closeAddModal}
+                  className="fs-btn fs-btn-secondary"
                 >
                   Cancel
                 </button>
@@ -615,7 +737,7 @@ const AdminDashboard = () => {
                   <button
                     type="submit"
                     disabled={formLoading}
-                    className="add-user-btn"
+                    className="fs-btn fs-btn-primary"
                   >
                     {formLoading ? 'Creating User...' : 'Create Account'}
                   </button>
@@ -628,50 +750,35 @@ const AdminDashboard = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && userToDelete && (
-        <div className="modal-overlay">
-          <div className="modal-card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div
-                style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '50%',
-                  background: 'rgba(239, 68, 68, 0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#f87171',
-                }}
-              >
-                <AlertTriangle size={22} />
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-user-modal-title"
+        >
+          <div className="modal-content admin-modal-card" ref={deleteModalRef}>
+            <div className="admin-delete-modal-head">
+              <div className="admin-delete-icon-box" aria-hidden="true">
+                <AlertTriangle size={20} />
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#f87171' }}>Confirm User Deletion</h3>
+              <h3 id="delete-user-modal-title" className="admin-modal-title">
+                Confirm User Deletion
+              </h3>
             </div>
 
-            <p style={{ color: '#cbd5e1', fontSize: '0.92rem', lineHeight: '1.6', margin: '0 0 20px' }}>
+            <p className="admin-delete-modal-body">
               Are you sure you want to delete user <strong>{userToDelete.username}</strong>
               {userToDelete.email ? ` (${userToDelete.email})` : ''}?
-              <br />
-              <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+              <span className="admin-delete-modal-note">
                 This will immediately terminate their active sessions and permanently delete their account. This action cannot be undone.
               </span>
             </p>
 
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <div className="admin-modal-actions">
               <button
                 type="button"
-                onClick={() => {
-                  setDeleteModalOpen(false);
-                  setUserToDelete(null);
-                }}
-                style={{
-                  background: 'transparent',
-                  border: '1px solid #334155',
-                  color: '#cbd5e1',
-                  borderRadius: '8px',
-                  padding: '8px 16px',
-                  cursor: 'pointer',
-                }}
+                onClick={closeDeleteModal}
+                className="fs-btn fs-btn-secondary"
               >
                 Cancel
               </button>
@@ -680,8 +787,7 @@ const AdminDashboard = () => {
                   type="button"
                   onClick={handleConfirmDelete}
                   disabled={deleteLoading}
-                  className="delete-action-btn"
-                  style={{ padding: '8px 18px', fontSize: '0.9rem' }}
+                  className="fs-btn fs-btn-danger"
                 >
                   {deleteLoading ? 'Deleting...' : 'Delete User'}
                 </button>

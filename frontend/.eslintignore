@@ -15,10 +15,6 @@ src/components/common/__tests__/UndoToast.test.js
 src/components/layout/AccountSwitcher.js
 src/config/dashboardActions.js
 src/pages/LandingPage.js
-src/pages/admin/AdminDashboard.js
-src/pages/admin/BackupPage.js
-src/pages/admin/InsuranceConfigModal.js
-src/pages/admin/TaxConfigModal.js
 src/pages/credit-cards/__tests__/AddTransactionModal.currency.test.js
 src/pages/profile/__tests__/RecycleBin.test.js
 src/services/apiClient.test.js

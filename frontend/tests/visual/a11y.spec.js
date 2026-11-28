@@ -24,6 +24,7 @@ const { setupCreditCardsMocks } = require('./fixtures/creditCardsMocks');
 const { setupLendingMocks } = require('./fixtures/lendingMocks');
 const { setupProfileSettingsMocks } = require('./fixtures/profileSettingsMocks');
 const { setupSecurityMocks } = require('./fixtures/securityMocks');
+const { setupAdminMocks } = require('./fixtures/adminMocks');
 
 const AXE_SOURCE_PATH = require.resolve('axe-core/axe.min.js');
 
@@ -83,6 +84,8 @@ test.describe('Real-Browser Accessibility & Contrast (axe-core)', () => {
         await setupProfileSettingsMocks(page, route.slug);
       } else if (route.slug === 'security') {
         await setupSecurityMocks(page);
+      } else if (route.slug === 'admin' || route.slug.startsWith('admin-')) {
+        await setupAdminMocks(page);
       }
 
       await page.goto(route.resolvedPath, { waitUntil: 'domcontentloaded' });
