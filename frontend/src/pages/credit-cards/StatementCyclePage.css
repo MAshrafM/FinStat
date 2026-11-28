@@ -1,163 +1,432 @@
 /* frontend/src/pages/credit-cards/StatementCyclePage.css */
 
-.cycle-summary-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 2rem;
+html[data-fs-theme] .sc-page {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  box-sizing: border-box;
+  color: var(--fs-text);
 }
 
-.cycle-metric-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1.25rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+html[data-fs-theme] .sc-page .sc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+html[data-fs-theme] .sc-page .sc-title-block h1 {
+  margin: 0 0 6px 0;
+  font-size: var(--fs-text-2xl);
+  font-weight: 700;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .sc-page .sc-subtitle {
+  margin: 0;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .sc-page .sc-card-selector {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.cycle-metric-card.metric-card-danger {
-  border-color: #fca5a5;
-  background: #fffafa;
+html[data-fs-theme] .sc-page .sc-selector-label {
+  font-size: var(--fs-text-sm);
+  font-weight: 600;
+  color: var(--fs-text-2);
 }
 
-.metric-icon-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
+html[data-fs-theme] .sc-page .sc-select {
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-md);
+  padding: 10px 12px;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text);
+  min-width: 220px;
+  min-height: 44px;
+}
+
+/* --- 4-Tile KPI Strip --- */
+html[data-fs-theme] .sc-page .sc-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+html[data-fs-theme] .sc-page .sc-metric-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 18px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  box-shadow: none;
+}
+
+html[data-fs-theme] .sc-page .sc-metric-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--fs-radius-md);
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text-2);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.metric-label {
-  display: block;
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: #64748b;
-  margin-bottom: 0.2rem;
+html[data-fs-theme] .sc-page .sc-metric-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
-.metric-value {
-  display: block;
-  font-size: 1.15rem;
+html[data-fs-theme] .sc-page .sc-metric-label {
+  font-size: var(--fs-text-xs);
+  font-weight: 600;
+  color: var(--fs-text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+html[data-fs-theme] .sc-page .sc-metric-value {
+  font-size: var(--fs-text-lg);
   font-weight: 700;
-  color: #1e293b;
+  color: var(--fs-text);
 }
 
-.metric-hint {
-  display: block;
-  font-size: 0.78rem;
-  color: #94a3b8;
-  margin-top: 0.2rem;
+html[data-fs-theme] .sc-page .sc-metric-hint {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
 }
 
-/* Timeline card */
-.timeline-container-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  margin-bottom: 2rem;
+html[data-fs-theme] .sc-page .sc-due-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
 }
 
-.timeline-container-card h3 {
-  margin: 0 0 1.5rem 0;
-  font-size: 1.1rem;
-  color: #1e293b;
+/* --- Timeline Visualizer --- */
+html[data-fs-theme] .sc-page .sc-timeline-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: none;
 }
 
-.cycle-timeline-track {
+html[data-fs-theme] .sc-page .sc-timeline-card h2 {
+  margin: 0 0 18px 0;
+  font-size: var(--fs-text-lg);
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .sc-page .sc-timeline-track {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
+  gap: 16px;
   position: relative;
-  padding: 1rem 1.5rem;
+  padding: 8px 0;
 }
 
-.cycle-timeline-track::before {
+html[data-fs-theme] .sc-page .sc-timeline-track::before {
   content: '';
   position: absolute;
   top: 50%;
-  left: 2rem;
-  right: 2rem;
-  height: 4px;
-  background: #e2e8f0;
+  left: 40px;
+  right: 40px;
+  height: 2px;
+  background: var(--fs-border);
   transform: translateY(-50%);
   z-index: 1;
 }
 
-.timeline-milestone {
+html[data-fs-theme] .sc-page .sc-milestone {
   position: relative;
   z-index: 2;
-  background: #ffffff;
-  padding: 0.5rem 0.8rem;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: var(--fs-surface-raised);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  min-width: 120px;
+  gap: 4px;
+  min-width: 150px;
+  box-shadow: none;
 }
 
-.milestone-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #3b82f6;
-  margin-bottom: 0.4rem;
+html[data-fs-theme] .sc-page .sc-milestone-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--fs-radius-pill);
+  background: var(--fs-text-2);
+  margin-bottom: 4px;
 }
 
-.milestone-dot.dot-close {
-  background: #f59e0b;
-}
-
-.milestone-dot.dot-due {
-  background: #10b981;
-}
-
-.milestone-dot.dot-overdue {
-  background: #ef4444;
-}
-
-.milestone-title {
-  font-size: 0.82rem;
+html[data-fs-theme] .sc-page .sc-milestone-title {
+  font-size: var(--fs-text-sm);
   font-weight: 600;
-  color: #1e293b;
+  color: var(--fs-text);
 }
 
-.milestone-date {
-  font-size: 0.78rem;
-  color: #64748b;
-  margin-top: 0.15rem;
+html[data-fs-theme] .sc-page .sc-milestone-date {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
 }
 
-.milestone-days {
-  font-size: 0.72rem;
-  color: #d97706;
+html[data-fs-theme] .sc-page .sc-milestone-meta {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+  margin-top: 2px;
+}
+
+/* --- Cycle Charges Table & D19 Mobile Cards --- */
+html[data-fs-theme] .sc-page .sc-section {
+  margin-top: 24px;
+}
+
+html[data-fs-theme] .sc-page .sc-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+html[data-fs-theme] .sc-page .sc-section-title {
+  margin: 0;
+  font-size: var(--fs-text-lg);
   font-weight: 600;
-  margin-top: 0.2rem;
+  color: var(--fs-text);
 }
 
-.milestone-badge {
-  font-size: 0.72rem;
-  color: #059669;
+html[data-fs-theme] .sc-page .sc-table-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  overflow: hidden;
+  box-shadow: none;
+}
+
+html[data-fs-theme] .sc-page .sc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-text-sm);
+}
+
+html[data-fs-theme] .sc-page .sc-table thead th {
+  background: var(--fs-surface-sunken);
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-xs);
   font-weight: 600;
-  margin-top: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
 }
 
-.category-pill {
-  display: inline-block;
-  background: #f1f5f9;
-  color: #475569;
-  font-size: 0.78rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 12px;
+html[data-fs-theme] .sc-page .sc-table tbody td {
+  padding: 14px 16px;
+  border-bottom: var(--fs-border-width) solid var(--fs-border);
+  color: var(--fs-text);
+  vertical-align: middle;
+}
+
+html[data-fs-theme] .sc-page .sc-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+html[data-fs-theme] .sc-page .sc-table tbody tr:hover {
+  background: var(--fs-surface-raised);
+}
+
+html[data-fs-theme] .sc-page .sc-th-num,
+html[data-fs-theme] .sc-page .sc-td-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+html[data-fs-theme] .sc-page .sc-tx-merchant {
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-cards {
+  display: none;
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-card-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-card-title {
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-card-sub {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-card-val {
+  text-align: right;
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border-control);
+  border-radius: var(--fs-radius-md);
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-xs);
   font-weight: 500;
+  cursor: pointer;
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 12px;
+  border-top: var(--fs-border-width) solid var(--fs-border);
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-detail-label {
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-3);
+}
+
+html[data-fs-theme] .sc-page .sc-mobile-detail-value {
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text);
+}
+
+/* --- Loading, Empty & Error States --- */
+html[data-fs-theme] .sc-page .sc-empty-card,
+html[data-fs-theme] .sc-page .sc-error-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: none;
+  margin-bottom: 24px;
+}
+
+html[data-fs-theme] .sc-page .sc-empty-card h2,
+html[data-fs-theme] .sc-page .sc-error-card h2 {
+  margin: 0;
+  font-size: var(--fs-text-lg);
+  font-weight: 600;
+  color: var(--fs-text);
+}
+
+html[data-fs-theme] .sc-page .sc-empty-card p,
+html[data-fs-theme] .sc-page .sc-error-card p {
+  margin: 0;
+  max-width: 520px;
+  font-size: var(--fs-text-sm);
+  color: var(--fs-text-2);
+}
+
+html[data-fs-theme] .sc-page .sc-loading-wrap {
+  margin: 16px 0 24px 0;
+}
+
+@media (max-width: 768px) {
+  html[data-fs-theme] .sc-page {
+    padding: 16px 12px;
+  }
+
+  html[data-fs-theme] .sc-page .sc-card-selector,
+  html[data-fs-theme] .sc-page .sc-select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  html[data-fs-theme] .sc-page .sc-timeline-track {
+    flex-direction: column;
+  }
+
+  html[data-fs-theme] .sc-page .sc-timeline-track::before {
+    display: none;
+  }
+
+  html[data-fs-theme] .sc-page .sc-milestone {
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  html[data-fs-theme] .sc-page .sc-table-card {
+    display: none;
+  }
+
+  html[data-fs-theme] .sc-page .sc-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 }

@@ -2284,6 +2284,23 @@ html[data-fs-theme] .cc-util-progress.fs-progress--negative::-moz-progress-bar {
   background: var(--fs-negative);
 }
 
+/* ----------------------------------------------------
+   Phase 9B: Credit Cards Sub-Routes Interactive Accent (§4.3.2)
+   Interactive accent only; zero tone tokens / tone-bearing classes.
+   ---------------------------------------------------- */
+html[data-fs-theme] .dp-page .dp-strategy-btn.is-active {
+  border-color: var(--fs-accent);
+}
+
+html[data-fs-theme] .dp-page .dp-strategy-btn.is-active .dp-strategy-icon {
+  color: var(--fs-accent);
+}
+
+html[data-fs-theme] .dp-page .dp-comparison-table tr.is-selected td:first-child {
+  border-left: 2px solid var(--fs-accent);
+}
+
+
 
 
 

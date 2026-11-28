@@ -1,10 +1,25 @@
+// frontend/src/pages/credit-cards/StatementCyclePage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import CreditCardSubNav from '../../components/creditCards/CreditCardSubNav';
 import { getCards, getStatementCycles } from '../../services/creditCardService';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { FaCalendarAlt, FaClock, FaReceipt, FaMoneyCheckAlt } from 'react-icons/fa';
+import { FaCalendarAlt, FaClock, FaReceipt, FaMoneyCheckAlt, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import CardInstallmentSchedule from './CardInstallmentSchedule';
+import Loading from '../../components/ui/Loading';
+import Badge from '../../components/ui/Badge';
+import './CreditCardPage.css';
 import './StatementCyclePage.css';
+
+const getDueBadgeProps = (currentPeriod) => {
+  if (!currentPeriod) return null;
+  if (currentPeriod.isOverdue) {
+    return { tone: 'negative', label: 'Overdue' };
+  }
+  if (currentPeriod.daysUntilDue <= 7) {
+    return { tone: 'warning', label: 'Due soon' };
+  }
+  return null;
+};
 
 const StatementCyclePage = () => {
   const [cards, setCards] = useState([]);
@@ -12,14 +27,15 @@ const StatementCyclePage = () => {
   const [cycleData, setCycleData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [expandedTxIds, setExpandedTxIds] = useState(() => new Set());
 
-  // Load user's cards
-  useEffect(() => {
+  const loadCards = useCallback(() => {
+    setError('');
     getCards()
       .then((data) => {
         setCards(data);
         if (data.length > 0) {
-          setSelectedCardId(data[0]._id);
+          setSelectedCardId((prev) => prev || data[0]._id);
         }
       })
       .catch((err) => {
@@ -27,6 +43,10 @@ const StatementCyclePage = () => {
         setError('Failed to load credit cards.');
       });
   }, []);
+
+  useEffect(() => {
+    loadCards();
+  }, [loadCards]);
 
   const loadCycles = useCallback(() => {
     if (!selectedCardId) return;
@@ -48,29 +68,46 @@ const StatementCyclePage = () => {
     loadCycles();
   }, [loadCycles]);
 
+  const toggleTxExpand = (id) => {
+    setExpandedTxIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   const currentPeriod = cycleData?.currentPeriod;
   const cycleSummary = cycleData?.currentCycleData;
   const cardInfo = cycleData?.card;
+  const dueBadge = getDueBadgeProps(currentPeriod);
+  const cycleTransactions = cycleSummary?.transactions || [];
 
   return (
-    <div className="page-container">
+    <div className="page-container cc-page-container cc-dashboard-page sc-page">
       <CreditCardSubNav />
 
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
+      <div className="sc-header">
+        <div className="sc-title-block">
           <h1>Statement Cycle Visualization</h1>
-          <p style={{ margin: '0.25rem 0 0 0', color: '#64748b', fontSize: '0.9rem' }}>
+          <p className="sc-subtitle">
             Monitor billing cycle windows, transaction accumulation, and upcoming payment due dates.
           </p>
         </div>
 
         {cards.length > 0 && (
-          <div className="card-selector" style={{ margin: 0 }}>
-            <label style={{ fontWeight: 600, color: '#374151', marginRight: '0.5rem' }}>Select Card:</label>
+          <div className="sc-card-selector">
+            <label htmlFor="sc-card-select" className="sc-selector-label">
+              Select Card:
+            </label>
             <select
+              id="sc-card-select"
+              className="sc-select"
               value={selectedCardId}
               onChange={(e) => setSelectedCardId(e.target.value)}
-              style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e1' }}
             >
               {cards.map((c) => (
                 <option key={c._id} value={c._id}>
@@ -82,149 +119,223 @@ const StatementCyclePage = () => {
         )}
       </div>
 
-      {error && <div className="error-banner">{error}</div>}
-      {isLoading && <p>Loading statement cycle timeline...</p>}
+      {error && (
+        <div className="sc-error-card" role="alert">
+          <h2>Unable to load statement cycle</h2>
+          <p>{error}</p>
+          <button
+            type="button"
+            className="fs-btn fs-btn-secondary"
+            onClick={selectedCardId ? loadCycles : loadCards}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {isLoading && (
+        <div className="sc-loading-wrap">
+          <Loading variant="card" text="Loading statement cycle timeline..." />
+        </div>
+      )}
+
+      {!isLoading && !error && cards.length === 0 && (
+        <div className="sc-empty-card">
+          <h2>No Credit Cards Found</h2>
+          <p>Add a credit card on the Cards &amp; Transactions tab to inspect statement cycles.</p>
+        </div>
+      )}
 
       {currentPeriod && !isLoading && (
         <>
           {/* Cycle Metrics Top Cards */}
-          <div className="cycle-summary-cards-grid">
-            <div className="cycle-metric-card">
-              <div className="metric-icon-wrap" style={{ backgroundColor: '#eff6ff', color: '#2563eb' }}>
+          <div className="sc-summary-grid">
+            <div className="sc-metric-card">
+              <div className="sc-metric-icon" aria-hidden="true">
                 <FaCalendarAlt size={18} />
               </div>
-              <div>
-                <span className="metric-label">Statement Period</span>
-                <span className="metric-value">
+              <div className="sc-metric-body">
+                <span className="sc-metric-label">Statement Period</span>
+                <span className="sc-metric-value fs-num">
                   {formatDate(currentPeriod.startDate)} - {formatDate(currentPeriod.closeDate)}
                 </span>
-                <span className="metric-hint">Closes on day {cardInfo?.statementCloseDay || cardInfo?.billingCycleDay || 25}</span>
+                <span className="sc-metric-hint">
+                  Closes on day {cardInfo?.statementCloseDay || cardInfo?.billingCycleDay || 25}
+                </span>
               </div>
             </div>
 
-            <div className={`cycle-metric-card ${currentPeriod.isOverdue ? 'metric-card-danger' : ''}`}>
-              <div
-                className="metric-icon-wrap"
-                style={{
-                  backgroundColor: currentPeriod.isOverdue ? '#fee2e2' : '#fef3c7',
-                  color: currentPeriod.isOverdue ? '#dc2626' : '#d97706',
-                }}
-              >
+            <div className="sc-metric-card">
+              <div className="sc-metric-icon" aria-hidden="true">
                 <FaClock size={18} />
               </div>
-              <div>
-                <span className="metric-label">Payment Due Date</span>
-                <span className="metric-value">{formatDate(currentPeriod.dueDate)}</span>
-                <span
-                  className="metric-hint"
-                  style={{ color: currentPeriod.isOverdue ? '#dc2626' : '#d97706', fontWeight: 600 }}
-                >
-                  {currentPeriod.isOverdue
-                    ? `⚠️ Overdue by ${Math.abs(currentPeriod.daysUntilDue)} days`
-                    : `⏳ Due in ${currentPeriod.daysUntilDue} days`}
-                </span>
+              <div className="sc-metric-body">
+                <span className="sc-metric-label">Payment Due Date</span>
+                <span className="sc-metric-value fs-num">{formatDate(currentPeriod.dueDate)}</span>
+                <div className="sc-due-row">
+                  {dueBadge && <Badge tone={dueBadge.tone}>{dueBadge.label}</Badge>}
+                  <span className="sc-metric-hint fs-num">
+                    {currentPeriod.isOverdue
+                      ? `Overdue by ${Math.abs(currentPeriod.daysUntilDue)} days`
+                      : `Due in ${currentPeriod.daysUntilDue} days`}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="cycle-metric-card">
-              <div className="metric-icon-wrap" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>
+            <div className="sc-metric-card">
+              <div className="sc-metric-icon" aria-hidden="true">
                 <FaReceipt size={18} />
               </div>
-              <div>
-                <span className="metric-label">Current Cycle Charges</span>
-                <span className="metric-value" style={{ color: '#dc2626' }}>
+              <div className="sc-metric-body">
+                <span className="sc-metric-label">Current Cycle Charges</span>
+                <span className="sc-metric-value fs-num">
                   {formatCurrency(cycleSummary?.totalCharges || 0)}
                 </span>
-                <span className="metric-hint">{cycleSummary?.transactions?.length || 0} transactions logged</span>
+                <span className="sc-metric-hint fs-num">
+                  {cycleTransactions.length} transactions logged
+                </span>
               </div>
             </div>
 
-            <div className="cycle-metric-card">
-              <div className="metric-icon-wrap" style={{ backgroundColor: '#f5f3ff', color: '#7c3aed' }}>
+            <div className="sc-metric-card">
+              <div className="sc-metric-icon" aria-hidden="true">
                 <FaMoneyCheckAlt size={18} />
               </div>
-              <div>
-                <span className="metric-label">Payments / Settlements</span>
-                <span className="metric-value" style={{ color: '#16a34a' }}>
+              <div className="sc-metric-body">
+                <span className="sc-metric-label">Payments / Settlements</span>
+                <span className="sc-metric-value fs-num">
                   {formatCurrency(cycleSummary?.totalPayments || 0)}
                 </span>
-                <span className="metric-hint">Net Change: {formatCurrency(Math.max(0, cycleSummary?.netCycleChange || 0))}</span>
+                <span className="sc-metric-hint fs-num">
+                  Net Change: {formatCurrency(Math.max(0, cycleSummary?.netCycleChange || 0))}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Timeline Visualizer */}
-          <div className="timeline-container-card">
-            <h3>Cycle Timeline & Milestones</h3>
-            <div className="cycle-timeline-track">
-              {/* Start Milestone */}
-              <div className="timeline-milestone milestone-start">
-                <div className="milestone-dot" />
-                <span className="milestone-title">Cycle Start</span>
-                <span className="milestone-date">{formatDate(currentPeriod.startDate)}</span>
+          <div className="sc-timeline-card">
+            <h2>Cycle Timeline &amp; Milestones</h2>
+            <div className="sc-timeline-track">
+              <div className="sc-milestone">
+                <div className="sc-milestone-dot" aria-hidden="true" />
+                <span className="sc-milestone-title">Cycle Start</span>
+                <span className="sc-milestone-date fs-num">{formatDate(currentPeriod.startDate)}</span>
               </div>
 
-              {/* Close Milestone */}
-              <div className="timeline-milestone milestone-close">
-                <div className="milestone-dot dot-close" />
-                <span className="milestone-title">Statement Close</span>
-                <span className="milestone-date">{formatDate(currentPeriod.closeDate)}</span>
-                <span className="milestone-days">{currentPeriod.daysUntilClose} days left</span>
+              <div className="sc-milestone">
+                <div className="sc-milestone-dot" aria-hidden="true" />
+                <span className="sc-milestone-title">Statement Close</span>
+                <span className="sc-milestone-date fs-num">{formatDate(currentPeriod.closeDate)}</span>
+                <span className="sc-milestone-meta fs-num">{currentPeriod.daysUntilClose} days left</span>
               </div>
 
-              {/* Due Date Milestone */}
-              <div className="timeline-milestone milestone-due">
-                <div className={`milestone-dot ${currentPeriod.isOverdue ? 'dot-overdue' : 'dot-due'}`} />
-                <span className="milestone-title">Payment Due</span>
-                <span className="milestone-date">{formatDate(currentPeriod.dueDate)}</span>
-                <span className="milestone-badge">{currentPeriod.daysUntilDue} days</span>
+              <div className="sc-milestone">
+                <div className="sc-milestone-dot" aria-hidden="true" />
+                <span className="sc-milestone-title">Payment Due</span>
+                <span className="sc-milestone-date fs-num">{formatDate(currentPeriod.dueDate)}</span>
+                <Badge tone={dueBadge ? dueBadge.tone : 'neutral'}>
+                  {dueBadge ? `${dueBadge.label} (${currentPeriod.daysUntilDue}d)` : `${currentPeriod.daysUntilDue} days`}
+                </Badge>
               </div>
             </div>
           </div>
 
           {/* Active Card Installment Schedule */}
           <CardInstallmentSchedule
-            installments={cycleSummary?.activeInstallments || cycleSummary?.transactions?.filter((tx) => tx.type === 'Installment') || []}
+            installments={
+              cycleSummary?.activeInstallments ||
+              cycleTransactions.filter((tx) => tx.type === 'Installment') ||
+              []
+            }
           />
 
           {/* Current Cycle Transactions Itemization */}
-          <div className="cycle-transactions-section">
-            <h3 style={{ margin: '1.5rem 0 1rem 0', color: '#1f2937' }}>Current Cycle Charges ({cycleSummary?.transactions?.length || 0})</h3>
-            <div className="table-container">
-              <table className="styled-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Merchant / Description</th>
-                    <th>Category</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cycleSummary?.transactions?.length === 0 ? (
-                    <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', padding: '1.5rem', color: '#9ca3af' }}>
-                        No transactions logged during this statement cycle.
-                      </td>
-                    </tr>
-                  ) : (
-                    cycleSummary?.transactions?.map((tx) => (
-                      <tr key={tx._id}>
-                        <td>{formatDate(tx.date)}</td>
-                        <td><strong>{tx.description}</strong></td>
-                        <td>
-                          <span className="category-pill">{tx.category || 'Other'}</span>
-                        </td>
-                        <td>{tx.type}</td>
-                        <td style={{ color: '#dc2626', fontWeight: 600 }}>{formatCurrency(tx.amount)}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+          <section className="sc-section" aria-label="Current Cycle Charges">
+            <div className="sc-section-header">
+              <h2 className="sc-section-title">
+                Current Cycle Charges ({cycleTransactions.length})
+              </h2>
             </div>
-          </div>
+
+            {cycleTransactions.length === 0 ? (
+              <div className="sc-empty-card">
+                <p>No transactions logged during this statement cycle.</p>
+              </div>
+            ) : (
+              <>
+                <div className="sc-table-card">
+                  <table className="sc-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Merchant / Description</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Type</th>
+                        <th scope="col" className="sc-th-num">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cycleTransactions.map((tx) => (
+                        <tr key={tx._id}>
+                          <td className="fs-num">{formatDate(tx.date)}</td>
+                          <td className="sc-tx-merchant">{tx.description}</td>
+                          <td>
+                            <Badge tone="neutral">{tx.category || 'Other'}</Badge>
+                          </td>
+                          <td>{tx.type}</td>
+                          <td className="sc-td-num fs-num">{formatCurrency(tx.amount)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="sc-mobile-cards" data-testid="sc-charges-mobile-cards">
+                  {cycleTransactions.map((tx, index) => {
+                    const key = tx._id || `tx-${index}`;
+                    const isExpanded = expandedTxIds.has(key);
+                    return (
+                      <article key={key} className="sc-mobile-card">
+                        <div className="sc-mobile-card-summary">
+                          <div className="sc-mobile-card-main">
+                            <span className="sc-mobile-card-title">{tx.description}</span>
+                            <span className="sc-mobile-card-sub fs-num">{formatDate(tx.date)}</span>
+                          </div>
+                          <div className="sc-mobile-card-val fs-num">{formatCurrency(tx.amount)}</div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="sc-mobile-expand-btn"
+                          aria-expanded={isExpanded}
+                          aria-label={`${isExpanded ? 'Hide' : 'Show'} charge details for ${tx.description}`}
+                          onClick={() => toggleTxExpand(key)}
+                        >
+                          <span>{isExpanded ? 'Hide details' : 'Show details'}</span>
+                          {isExpanded ? <FaChevronUp aria-hidden="true" /> : <FaChevronDown aria-hidden="true" />}
+                        </button>
+
+                        {isExpanded && (
+                          <div className="sc-mobile-details">
+                            <div className="sc-mobile-detail-item">
+                              <span className="sc-mobile-detail-label">Category</span>
+                              <span className="sc-mobile-detail-value">{tx.category || 'Other'}</span>
+                            </div>
+                            <div className="sc-mobile-detail-item">
+                              <span className="sc-mobile-detail-label">Type</span>
+                              <span className="sc-mobile-detail-value">{tx.type}</span>
+                            </div>
+                          </div>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </section>
         </>
       )}
     </div>

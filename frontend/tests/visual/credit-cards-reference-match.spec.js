@@ -99,7 +99,7 @@ test.describe('Phase 9A Credit Cards Reference Match & Checkpoint #7', () => {
     await page.goto('/credit-cards/statements', { waitUntil: 'domcontentloaded' });
     await page.locator('.cc-subnav-container').waitFor({ state: 'visible' });
     const themeAttr = await page.locator('html').getAttribute('data-fs-theme');
-    expect(themeAttr).toBeNull();
+    expect(themeAttr).toBe('dark');
     await page.locator('.cc-subnav-container').screenshot({
       path: path.join(SNAPSHOT_DIR, 'cc-subnav-legacy-1440.png'),
     });
