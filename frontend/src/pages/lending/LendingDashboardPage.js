@@ -1,6 +1,7 @@
 // frontend/src/pages/lending/LendingDashboardPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import {
   getLendingSummary,
   getPersons,
@@ -9,9 +10,16 @@ import {
   createLoan,
 } from '../../services/lendingService';
 import PersonCard from './PersonCard';
+import Loading from '../../components/ui/Loading';
+import Badge from '../../components/ui/Badge';
 import { formatCurrency } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
 import './Lending.css';
+
+const getIsMobile = () =>
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(max-width: 768px)').matches;
 
 const LendingDashboardPage = () => {
   const { showToast } = useToast();
@@ -21,6 +29,8 @@ const LendingDashboardPage = () => {
   const [loans, setLoans] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortBy, setSortBy] = useState('name');
+  const [isMobile, setIsMobile] = useState(getIsMobile);
+  const [expandedLoanIds, setExpandedLoanIds] = useState(() => new Set());
 
   // Modal states
   const [showPersonModal, setShowPersonModal] = useState(false);
@@ -33,6 +43,15 @@ const LendingDashboardPage = () => {
     note: '',
   });
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const mql = window.matchMedia('(max-width: 768px)');
+    const handleChange = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener('change', handleChange);
+    return () => mql.removeEventListener('change', handleChange);
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -56,6 +75,18 @@ const LendingDashboardPage = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const toggleLoanExpand = (id) => {
+    setExpandedLoanIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const handleCreatePerson = async (e) => {
     e.preventDefault();
@@ -113,8 +144,10 @@ const LendingDashboardPage = () => {
 
   if (loading && !summary) {
     return (
-      <div className="lending-page" data-testid="lending-loading" style={{ textAlign: 'center', padding: '60px' }}>
-        <p>Loading Lending Tracker...</p>
+      <div className="lending-page" data-testid="lending-loading">
+        <div className="lending-loading-wrap">
+          <Loading variant="card" text="Loading Lending Tracker..." />
+        </div>
       </div>
     );
   }
@@ -126,21 +159,21 @@ const LendingDashboardPage = () => {
       <div className="lending-header">
         <div>
           <h1>Lending Tracker</h1>
-          <p style={{ color: '#64748b', margin: '4px 0 0 0', fontSize: '0.95rem' }}>
+          <p className="lending-subtitle">
             Track personal loans, monitor informal receivables, and record repayments.
           </p>
         </div>
         <div className="lending-header-actions">
           <button
             type="button"
-            className="lending-btn lending-btn-secondary"
+            className="fs-btn fs-btn-secondary lending-action-btn"
             onClick={() => setShowPersonModal(true)}
           >
             + Add Person
           </button>
           <button
             type="button"
-            className="lending-btn lending-btn-primary"
+            className="fs-btn fs-btn-primary lending-action-btn"
             onClick={() => setShowLoanModal(true)}
             disabled={persons.length === 0}
           >
@@ -153,7 +186,7 @@ const LendingDashboardPage = () => {
       <div className="lending-kpi-grid">
         <div className="lending-kpi-card">
           <div className="lending-kpi-title">Total Receivables</div>
-          <div className="lending-kpi-value" style={{ color: '#009879' }}>
+          <div className="lending-kpi-value fs-num">
             {formatCurrency((summary?.totalOutstanding || 0) / 100)}
           </div>
           <div className="lending-kpi-sub">Active outstanding loans</div>
@@ -161,7 +194,7 @@ const LendingDashboardPage = () => {
 
         <div className="lending-kpi-card">
           <div className="lending-kpi-title">Total Repaid</div>
-          <div className="lending-kpi-value" style={{ color: '#059669' }}>
+          <div className="lending-kpi-value fs-num">
             {formatCurrency((summary?.totalRepaid || 0) / 100)}
           </div>
           <div className="lending-kpi-sub">Collected repayments to date</div>
@@ -169,8 +202,8 @@ const LendingDashboardPage = () => {
 
         <div className="lending-kpi-card">
           <div className="lending-kpi-title">Active Debtors</div>
-          <div className="lending-kpi-value">{summary?.personsCount || 0}</div>
-          <div className="lending-kpi-sub">{summary?.activeLoansCount || 0} active loans</div>
+          <div className="lending-kpi-value fs-num">{summary?.personsCount || 0}</div>
+          <div className="lending-kpi-sub fs-num">{summary?.activeLoansCount || 0} active loans</div>
         </div>
       </div>
 
@@ -178,11 +211,11 @@ const LendingDashboardPage = () => {
         <div className="lending-empty-state">
           <div className="lending-empty-title">No personal loans or receivables found</div>
           <div className="lending-empty-desc">
-            You haven't recorded any borrowers or active loans yet. Start by adding a contact!
+            You haven&apos;t recorded any borrowers or active loans yet. Start by adding a contact!
           </div>
           <button
             type="button"
-            className="lending-btn lending-btn-primary"
+            className="fs-btn fs-btn-primary lending-action-btn"
             onClick={() => setShowPersonModal(true)}
           >
             + Add First Borrower
@@ -192,9 +225,9 @@ const LendingDashboardPage = () => {
         <>
           {/* Controls Bar */}
           <div className="lending-controls-bar">
-            <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 600 }}>Borrowers</h2>
+            <h2 className="lending-section-title">Borrowers</h2>
             <div className="lending-filters">
-              <label htmlFor="sort-by-select" style={{ fontSize: '0.85rem', color: '#64748b' }}>
+              <label htmlFor="sort-by-select" className="lending-filter-label">
                 Sort By
               </label>
               <select
@@ -218,10 +251,10 @@ const LendingDashboardPage = () => {
           </div>
 
           {/* Active Loans Section */}
-          <div className="lending-controls-bar" style={{ marginTop: '32px' }}>
-            <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 600 }}>Loan Ledgers</h2>
+          <div className="lending-controls-bar">
+            <h2 className="lending-section-title">Loan Ledgers</h2>
             <div className="lending-filters">
-              <label htmlFor="filter-status-select" style={{ fontSize: '0.85rem', color: '#64748b' }}>
+              <label htmlFor="filter-status-select" className="lending-filter-label">
                 Filter Status
               </label>
               <select
@@ -238,100 +271,174 @@ const LendingDashboardPage = () => {
             </div>
           </div>
 
-          <div className="lending-scroll-hint" aria-hidden="true">
-            <span>↔ Scroll horizontally to view full loan details</span>
-          </div>
-
-          <div className="table-container lending-table-card">
-            <table className="lending-table">
-              <thead>
-                <tr>
-                  <th>Borrower</th>
-                  <th>Created</th>
-                  <th>Total Borrowed</th>
-                  <th>Total Repaid</th>
-                  <th>Remaining Balance</th>
-                  <th>Repayment Progress</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loans.length === 0 ? (
+          {!isMobile ? (
+            <div className="lending-table-wrap">
+              <table className="lending-table">
+                <thead>
                   <tr>
-                    <td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
-                      No loans match the selected filter.
-                    </td>
+                    <th scope="col">Borrower</th>
+                    <th scope="col">Created</th>
+                    <th scope="col" className="lending-th-num">Total Borrowed</th>
+                    <th scope="col" className="lending-th-num">Total Repaid</th>
+                    <th scope="col" className="lending-th-num">Remaining Balance</th>
+                    <th scope="col">Repayment Progress</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" className="lending-th-actions">Actions</th>
                   </tr>
-                ) : (
-                  loans.map((loan) => {
-                    const borrowed = (loan.totalBorrowedInPiastres || 0) / 100;
-                    const repaid = (loan.totalRepaidInPiastres || 0) / 100;
-                    const balance = (loan.balanceInPiastres || 0) / 100;
-                    const progressPct = borrowed > 0 ? Math.min(100, Math.round((repaid / borrowed) * 100)) : 0;
+                </thead>
+                <tbody>
+                  {loans.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" className="lending-table-empty">
+                        No loans match the selected filter.
+                      </td>
+                    </tr>
+                  ) : (
+                    loans.map((loan) => {
+                      const borrowed = (loan.totalBorrowedInPiastres || 0) / 100;
+                      const repaid = (loan.totalRepaidInPiastres || 0) / 100;
+                      const balance = (loan.balanceInPiastres || 0) / 100;
+                      const progressPct = borrowed > 0 ? Math.min(100, Math.round((repaid / borrowed) * 100)) : 0;
+                      const borrowerName = loan.person?.name || 'Unknown';
 
-                    return (
-                      <tr key={loan._id}>
-                        <td>
-                          <strong>{loan.person?.name || 'Unknown'}</strong>
-                        </td>
-                        <td>{new Date(loan.createdAt).toLocaleDateString()}</td>
-                        <td>{formatCurrency(borrowed)}</td>
-                        <td style={{ color: '#059669' }}>{formatCurrency(repaid)}</td>
-                        <td style={{ fontWeight: 600, color: balance > 0 ? '#009879' : '#64748b' }}>
-                          {formatCurrency(balance)}
-                        </td>
-                        <td style={{ width: '160px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-                            <span>{progressPct}%</span>
-                          </div>
-                          <div className="lending-progress-bg">
-                            <div className="lending-progress-fill" style={{ width: `${progressPct}%` }} />
-                          </div>
-                        </td>
-                        <td>
-                          <span
-                            className={`person-card-badge ${
-                              loan.status === 'Active'
-                                ? 'badge-active'
-                                : loan.status === 'Repaid'
-                                ? 'badge-repaid'
-                                : 'badge-writtenoff'
-                            }`}
-                          >
+                      return (
+                        <tr key={loan._id}>
+                          <td>
+                            <strong>{borrowerName}</strong>
+                          </td>
+                          <td className="fs-num">{new Date(loan.createdAt).toLocaleDateString()}</td>
+                          <td className="lending-td-num fs-num">{formatCurrency(borrowed)}</td>
+                          <td className="lending-td-num fs-num">{formatCurrency(repaid)}</td>
+                          <td className="lending-td-num fs-num">
+                            <strong>{formatCurrency(balance)}</strong>
+                          </td>
+                          <td>
+                            <div className="lending-progress-wrap">
+                              <span className="lending-progress-pct fs-num">{progressPct}%</span>
+                              <progress
+                                className="fs-progress lending-progress"
+                                value={progressPct}
+                                max={100}
+                                aria-label={`Repayment progress for ${borrowerName}`}
+                                aria-valuetext={`${progressPct}% repaid`}
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <Badge tone={loan.status === 'WrittenOff' ? 'negative' : 'neutral'}>
+                              {loan.status}
+                            </Badge>
+                          </td>
+                          <td className="lending-td-actions">
+                            <Link
+                              to={`/lending/loans/${loan._id}`}
+                              className="fs-btn fs-btn-secondary lending-table-btn"
+                            >
+                              View Ledger
+                            </Link>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="lending-mobile-cards" data-testid="lending-loans-mobile-cards">
+              {loans.length === 0 ? (
+                <div className="lending-empty-state">
+                  <p className="lending-empty-desc">No loans match the selected filter.</p>
+                </div>
+              ) : (
+                loans.map((loan) => {
+                  const borrowed = (loan.totalBorrowedInPiastres || 0) / 100;
+                  const repaid = (loan.totalRepaidInPiastres || 0) / 100;
+                  const balance = (loan.balanceInPiastres || 0) / 100;
+                  const progressPct = borrowed > 0 ? Math.min(100, Math.round((repaid / borrowed) * 100)) : 0;
+                  const borrowerName = loan.person?.name || 'Unknown';
+                  const isExpanded = expandedLoanIds.has(loan._id);
+
+                  return (
+                    <article key={loan._id} className="lending-mobile-card">
+                      <div className="lending-mobile-card-summary">
+                        <div className="lending-mobile-card-main">
+                          <span className="lending-mobile-card-title">{borrowerName}</span>
+                          <Badge tone={loan.status === 'WrittenOff' ? 'negative' : 'neutral'}>
                             {loan.status}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <Link
-                            to={`/lending/loans/${loan._id}`}
-                            className="lending-btn lending-btn-secondary"
-                            style={{ padding: '4px 10px', fontSize: '0.8rem', textDecoration: 'none' }}
-                          >
-                            View Ledger
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+                          </Badge>
+                        </div>
+                        <div className="lending-mobile-card-val fs-num">{formatCurrency(balance)}</div>
+                      </div>
+
+                      <div className="lending-progress-wrap">
+                        <span className="lending-progress-pct fs-num">{progressPct}% repaid</span>
+                        <progress
+                          className="fs-progress lending-progress"
+                          value={progressPct}
+                          max={100}
+                          aria-label={`Repayment progress for ${borrowerName}`}
+                          aria-valuetext={`${progressPct}% repaid`}
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        className="lending-mobile-expand-btn"
+                        aria-expanded={isExpanded}
+                        aria-label={`${isExpanded ? 'Hide' : 'Show'} loan details for ${borrowerName}`}
+                        onClick={() => toggleLoanExpand(loan._id)}
+                      >
+                        <span>{isExpanded ? 'Hide details' : 'Show details'}</span>
+                        {isExpanded ? <FaChevronUp aria-hidden="true" /> : <FaChevronDown aria-hidden="true" />}
+                      </button>
+
+                      {isExpanded && (
+                        <div className="lending-mobile-details">
+                          <div className="lending-mobile-detail-item">
+                            <span className="lending-mobile-detail-label">Created</span>
+                            <span className="lending-mobile-detail-value fs-num">
+                              {new Date(loan.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="lending-mobile-detail-item">
+                            <span className="lending-mobile-detail-label">Total Borrowed</span>
+                            <span className="lending-mobile-detail-value fs-num">{formatCurrency(borrowed)}</span>
+                          </div>
+                          <div className="lending-mobile-detail-item">
+                            <span className="lending-mobile-detail-label">Total Repaid</span>
+                            <span className="lending-mobile-detail-value fs-num">{formatCurrency(repaid)}</span>
+                          </div>
+                          <div className="lending-mobile-card-actions">
+                            <Link
+                              to={`/lending/loans/${loan._id}`}
+                              className="fs-btn fs-btn-secondary lending-table-btn"
+                            >
+                              View Ledger
+                            </Link>
+                          </div>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })
+              )}
+            </div>
+          )}
         </>
       )}
 
       {/* Add Person Modal */}
       {showPersonModal && (
-        <div className="lending-modal-backdrop" role="dialog" aria-modal="true">
+        <div className="modal-overlay lending-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="add-person-title">
           <div className="lending-modal-content">
             <div className="lending-modal-header">
-              <h3>New Borrower / Contact</h3>
+              <h3 id="add-person-title">New Borrower / Contact</h3>
               <button
                 type="button"
-                className="lending-btn lending-btn-secondary"
+                aria-label="Close modal"
+                className="fs-btn fs-btn-secondary lending-modal-close"
                 onClick={() => setShowPersonModal(false)}
-                style={{ padding: '4px 8px' }}
               >
                 ✕
               </button>
@@ -365,13 +472,13 @@ const LendingDashboardPage = () => {
               <div className="lending-modal-footer">
                 <button
                   type="button"
-                  className="lending-btn lending-btn-secondary"
+                  className="fs-btn fs-btn-secondary lending-action-btn"
                   onClick={() => setShowPersonModal(false)}
                   disabled={submitting}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="lending-btn lending-btn-primary" disabled={submitting}>
+                <button type="submit" className="fs-btn fs-btn-primary lending-action-btn" disabled={submitting}>
                   {submitting ? 'Saving...' : 'Save Person'}
                 </button>
               </div>
@@ -382,15 +489,15 @@ const LendingDashboardPage = () => {
 
       {/* New Loan Modal */}
       {showLoanModal && (
-        <div className="lending-modal-backdrop" role="dialog" aria-modal="true">
+        <div className="modal-overlay lending-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="new-loan-title">
           <div className="lending-modal-content">
             <div className="lending-modal-header">
-              <h3>Create New Loan</h3>
+              <h3 id="new-loan-title">Create New Loan</h3>
               <button
                 type="button"
-                className="lending-btn lending-btn-secondary"
+                aria-label="Close modal"
+                className="fs-btn fs-btn-secondary lending-modal-close"
                 onClick={() => setShowLoanModal(false)}
-                style={{ padding: '4px 8px' }}
               >
                 ✕
               </button>
@@ -451,13 +558,13 @@ const LendingDashboardPage = () => {
               <div className="lending-modal-footer">
                 <button
                   type="button"
-                  className="lending-btn lending-btn-secondary"
+                  className="fs-btn fs-btn-secondary lending-action-btn"
                   onClick={() => setShowLoanModal(false)}
                   disabled={submitting}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="lending-btn lending-btn-primary" disabled={submitting}>
+                <button type="submit" className="fs-btn fs-btn-primary lending-action-btn" disabled={submitting}>
                   {submitting ? 'Creating...' : 'Create Loan'}
                 </button>
               </div>

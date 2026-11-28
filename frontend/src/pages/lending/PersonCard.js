@@ -1,6 +1,7 @@
 // frontend/src/pages/lending/PersonCard.js
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Badge from '../../components/ui/Badge';
 import { formatCurrency } from '../../utils/formatters';
 
 const PersonCard = ({ person }) => {
@@ -13,27 +14,27 @@ const PersonCard = ({ person }) => {
       <div className="person-card-header">
         <div>
           <h3 className="person-card-name">
-            <Link to={`/lending/persons/${person._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Link to={`/lending/persons/${person._id}`} className="person-card-link">
               {person.name}
             </Link>
           </h3>
           {person.note && <div className="person-card-note">{person.note}</div>}
         </div>
-        <span className={`person-card-badge ${owes > 0 ? 'badge-active' : 'badge-repaid'}`}>
+        <Badge tone="neutral">
           {owes > 0 ? 'Owes Money' : 'Settled'}
-        </span>
+        </Badge>
       </div>
 
       <div className="person-card-stats">
         <div>
           <div className="person-card-stat-label">Total Outstanding</div>
-          <div className="person-card-stat-val" style={{ color: owes > 0 ? '#009879' : '#059669' }}>
+          <div className="person-card-stat-val fs-num">
             {formatCurrency(owes)}
           </div>
         </div>
-        <div style={{ textAlign: 'right' }}>
+        <div className="person-card-stat-right">
           <div className="person-card-stat-label">Active / Total Loans</div>
-          <div className="person-card-stat-val">
+          <div className="person-card-stat-val fs-num">
             {activeCount} / {loansCount}
           </div>
         </div>

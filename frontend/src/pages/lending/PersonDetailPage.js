@@ -1,6 +1,7 @@
 // frontend/src/pages/lending/PersonDetailPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import {
   getPersonById,
   updatePerson,
@@ -8,9 +9,16 @@ import {
   createLoan,
 } from '../../services/lendingService';
 import ConfirmModal from '../../components/common/ConfirmModal';
+import Loading from '../../components/ui/Loading';
+import Badge from '../../components/ui/Badge';
 import { formatCurrency } from '../../utils/formatters';
 import { useToast } from '../../context/ToastContext';
 import './Lending.css';
+
+const getIsMobile = () =>
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(max-width: 768px)').matches;
 
 const PersonDetailPage = () => {
   const { id } = useParams();
@@ -21,6 +29,8 @@ const PersonDetailPage = () => {
   const [person, setPerson] = useState(null);
   const [loans, setLoans] = useState([]);
   const [aggregate, setAggregate] = useState(null);
+  const [isMobile, setIsMobile] = useState(getIsMobile);
+  const [expandedLoanIds, setExpandedLoanIds] = useState(() => new Set());
 
   // Edit Person modal
   const [isEditing, setIsEditing] = useState(false);
@@ -37,6 +47,15 @@ const PersonDetailPage = () => {
   // Delete modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const mql = window.matchMedia('(max-width: 768px)');
+    const handleChange = (e) => setIsMobile(e.matches);
+    setIsMobile(mql.matches);
+    mql.addEventListener('change', handleChange);
+    return () => mql.removeEventListener('change', handleChange);
+  }, []);
 
   const fetchDetail = useCallback(async () => {
     try {
@@ -61,6 +80,18 @@ const PersonDetailPage = () => {
   useEffect(() => {
     fetchDetail();
   }, [fetchDetail]);
+
+  const toggleLoanExpand = (loanId) => {
+    setExpandedLoanIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(loanId)) {
+        next.delete(loanId);
+      } else {
+        next.add(loanId);
+      }
+      return next;
+    });
+  };
 
   const handleUpdatePerson = async (e) => {
     e.preventDefault();
@@ -132,8 +163,10 @@ const PersonDetailPage = () => {
 
   if (loading && !person) {
     return (
-      <div className="lending-page" style={{ textAlign: 'center', padding: '60px' }}>
-        <p>Loading Person Details...</p>
+      <div className="lending-page">
+        <div className="lending-loading-wrap">
+          <Loading variant="card" text="Loading Person Details..." />
+        </div>
       </div>
     );
   }
@@ -141,10 +174,12 @@ const PersonDetailPage = () => {
   if (!person) {
     return (
       <div className="lending-page">
-        <p>Person not found.</p>
-        <Link to="/lending" className="lending-btn lending-btn-secondary">
-          ← Back to Lending Dashboard
-        </Link>
+        <div className="lending-empty-state">
+          <p className="lending-empty-title">Person not found.</p>
+          <Link to="/lending" className="fs-btn fs-btn-secondary lending-action-btn">
+            ← Back to Lending Dashboard
+          </Link>
+        </div>
       </div>
     );
   }
@@ -155,8 +190,8 @@ const PersonDetailPage = () => {
 
   return (
     <div className="lending-page">
-      <div style={{ marginBottom: '16px' }}>
-        <Link to="/lending" style={{ textDecoration: 'none', color: '#009879', fontSize: '0.9rem', fontWeight: 500 }}>
+      <div className="lending-back-row">
+        <Link to="/lending" className="lending-back-link">
           ← Back to Lending Dashboard
         </Link>
       </div>
@@ -164,27 +199,26 @@ const PersonDetailPage = () => {
       <div className="lending-header">
         <div>
           <h1>{person.name}</h1>
-          {person.note && <p style={{ color: '#64748b', margin: '4px 0 0 0' }}>{person.note}</p>}
+          {person.note && <p className="lending-subtitle">{person.note}</p>}
         </div>
         <div className="lending-header-actions">
           <button
             type="button"
-            className="lending-btn lending-btn-secondary"
+            className="fs-btn fs-btn-secondary lending-action-btn"
             onClick={() => setIsEditing(true)}
           >
             Edit Person
           </button>
           <button
             type="button"
-            className="lending-btn lending-btn-primary"
+            className="fs-btn fs-btn-primary lending-action-btn"
             onClick={() => setShowNewLoanModal(true)}
           >
             + New Loan for {person.name}
           </button>
           <button
             type="button"
-            className="lending-btn lending-btn-secondary"
-            style={{ color: '#b91c1c', borderColor: '#fecaca' }}
+            className="fs-btn fs-btn-secondary lending-action-btn"
             onClick={() => setShowDeleteModal(true)}
           >
             Delete Person
@@ -193,122 +227,170 @@ const PersonDetailPage = () => {
       </div>
 
       {/* Aggregate Banner */}
-      <div
-        style={{
-          background: activeDebt > 0 ? '#e6f5f1' : '#f0fdf4',
-          border: `1px solid ${activeDebt > 0 ? '#a7f3d0' : '#bbf7d0'}`,
-          borderRadius: '10px',
-          padding: '16px 20px',
-          marginBottom: '24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '12px',
-        }}
-      >
+      <div className="lending-summary-banner">
         <div>
-          <span style={{ fontSize: '1.1rem', fontWeight: 600, color: activeDebt > 0 ? '#007a61' : '#14532d' }}>
+          <div className="lending-summary-headline">
             {activeDebt > 0
               ? `${person.name} currently owes you ${formatCurrency(activeDebt)} across ${activeCount} active loan${
                   activeCount === 1 ? '' : 's'
                 }`
               : `All active loans for ${person.name} are fully settled`}
-          </span>
+          </div>
           {writtenOffDebt > 0 && (
-            <div style={{ fontSize: '0.85rem', color: '#b91c1c', marginTop: '4px' }}>
-              • {aggregate?.writtenOffCount} written-off loan ({formatCurrency(writtenOffDebt)})
+            <div className="lending-summary-meta fs-num">
+              {aggregate?.writtenOffCount} written-off loan ({formatCurrency(writtenOffDebt)})
             </div>
           )}
         </div>
-        <div style={{ fontSize: '0.9rem', color: '#64748b' }}>Total Loans: {loans.length}</div>
+        <div className="lending-summary-count fs-num">Total Loans: {loans.length}</div>
       </div>
 
       {/* Loans List */}
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '16px', fontWeight: 600 }}>Loans for {person.name}</h2>
-      <div className="lending-scroll-hint" aria-hidden="true">
-        <span>↔ Scroll horizontally to view full loan details</span>
+      <div className="lending-controls-bar">
+        <h2 className="lending-section-title">Loans for {person.name}</h2>
       </div>
 
-      <div className="table-container lending-table-card">
-        <table className="lending-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Total Borrowed</th>
-              <th>Total Repaid</th>
-              <th>Remaining Balance</th>
-              <th>Status</th>
-              <th>Purpose / Notes</th>
-              <th style={{ textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loans.length === 0 ? (
+      {!isMobile ? (
+        <div className="lending-table-wrap">
+          <table className="lending-table">
+            <thead>
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
-                  No loans recorded for this person yet.
-                </td>
+                <th scope="col">Date</th>
+                <th scope="col" className="lending-th-num">Total Borrowed</th>
+                <th scope="col" className="lending-th-num">Total Repaid</th>
+                <th scope="col" className="lending-th-num">Remaining Balance</th>
+                <th scope="col">Status</th>
+                <th scope="col">Purpose / Notes</th>
+                <th scope="col" className="lending-th-actions">Actions</th>
               </tr>
-            ) : (
-              loans.map((loan) => {
-                const txs = loan.transactions || [];
-                const borrowed =
-                  txs.filter((t) => t.type === 'borrow').reduce((sum, t) => sum + (t.amountInPiastres || 0), 0) / 100;
-                const repaid =
-                  txs.filter((t) => t.type === 'repay').reduce((sum, t) => sum + (t.amountInPiastres || 0), 0) / 100;
-                const balance = Math.max(0, borrowed - repaid);
+            </thead>
+            <tbody>
+              {loans.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="lending-table-empty">
+                    No loans recorded for this person yet.
+                  </td>
+                </tr>
+              ) : (
+                loans.map((loan) => {
+                  const txs = loan.transactions || [];
+                  const borrowed =
+                    txs.filter((t) => t.type === 'borrow').reduce((sum, t) => sum + (t.amountInPiastres || 0), 0) / 100;
+                  const repaid =
+                    txs.filter((t) => t.type === 'repay').reduce((sum, t) => sum + (t.amountInPiastres || 0), 0) / 100;
+                  const balance = Math.max(0, borrowed - repaid);
 
-                return (
-                  <tr key={loan._id}>
-                    <td>{new Date(loan.createdAt).toLocaleDateString()}</td>
-                    <td>{formatCurrency(borrowed)}</td>
-                    <td style={{ color: '#059669' }}>{formatCurrency(repaid)}</td>
-                    <td style={{ fontWeight: 600, color: balance > 0 ? '#009879' : '#64748b' }}>
-                      {formatCurrency(balance)}
-                    </td>
-                    <td>
-                      <span
-                        className={`person-card-badge ${
-                          loan.status === 'Active'
-                            ? 'badge-active'
-                            : loan.status === 'Repaid'
-                            ? 'badge-repaid'
-                            : 'badge-writtenoff'
-                        }`}
-                      >
+                  return (
+                    <tr key={loan._id}>
+                      <td className="fs-num">{new Date(loan.createdAt).toLocaleDateString()}</td>
+                      <td className="lending-td-num fs-num">{formatCurrency(borrowed)}</td>
+                      <td className="lending-td-num fs-num">{formatCurrency(repaid)}</td>
+                      <td className="lending-td-num fs-num">
+                        <strong>{formatCurrency(balance)}</strong>
+                      </td>
+                      <td>
+                        <Badge tone={loan.status === 'WrittenOff' ? 'negative' : 'neutral'}>
+                          {loan.status}
+                        </Badge>
+                      </td>
+                      <td className="cell-wrap">{loan.notes || '—'}</td>
+                      <td className="lending-td-actions">
+                        <Link
+                          to={`/lending/loans/${loan._id}`}
+                          className="fs-btn fs-btn-secondary lending-table-btn"
+                        >
+                          View Ledger
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="lending-mobile-cards" data-testid="person-loans-mobile-cards">
+          {loans.length === 0 ? (
+            <div className="lending-empty-state">
+              <p className="lending-empty-desc">No loans recorded for this person yet.</p>
+            </div>
+          ) : (
+            loans.map((loan) => {
+              const txs = loan.transactions || [];
+              const borrowed =
+                txs.filter((t) => t.type === 'borrow').reduce((sum, t) => sum + (t.amountInPiastres || 0), 0) / 100;
+              const repaid =
+                txs.filter((t) => t.type === 'repay').reduce((sum, t) => sum + (t.amountInPiastres || 0), 0) / 100;
+              const balance = Math.max(0, borrowed - repaid);
+              const dateLabel = new Date(loan.createdAt).toLocaleDateString();
+              const isExpanded = expandedLoanIds.has(loan._id);
+
+              return (
+                <article key={loan._id} className="lending-mobile-card">
+                  <div className="lending-mobile-card-summary">
+                    <div className="lending-mobile-card-main">
+                      <span className="lending-mobile-card-title fs-num">{dateLabel}</span>
+                      <Badge tone={loan.status === 'WrittenOff' ? 'negative' : 'neutral'}>
                         {loan.status}
-                      </span>
-                    </td>
-                    <td className="cell-wrap">{loan.notes || '—'}</td>
-                    <td style={{ textAlign: 'right' }}>
-                      <Link
-                        to={`/lending/loans/${loan._id}`}
-                        className="lending-btn lending-btn-secondary"
-                        style={{ padding: '4px 10px', fontSize: '0.8rem', textDecoration: 'none' }}
-                      >
-                        View Ledger
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                      </Badge>
+                    </div>
+                    <div className="lending-mobile-card-val fs-num">{formatCurrency(balance)}</div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="lending-mobile-expand-btn"
+                    aria-expanded={isExpanded}
+                    aria-label={`${isExpanded ? 'Hide' : 'Show'} loan details for ${dateLabel}`}
+                    onClick={() => toggleLoanExpand(loan._id)}
+                  >
+                    <span>{isExpanded ? 'Hide details' : 'Show details'}</span>
+                    {isExpanded ? <FaChevronUp aria-hidden="true" /> : <FaChevronDown aria-hidden="true" />}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="lending-mobile-details">
+                      <div className="lending-mobile-detail-item">
+                        <span className="lending-mobile-detail-label">Total Borrowed</span>
+                        <span className="lending-mobile-detail-value fs-num">{formatCurrency(borrowed)}</span>
+                      </div>
+                      <div className="lending-mobile-detail-item">
+                        <span className="lending-mobile-detail-label">Total Repaid</span>
+                        <span className="lending-mobile-detail-value fs-num">{formatCurrency(repaid)}</span>
+                      </div>
+                      <div className="lending-mobile-detail-item">
+                        <span className="lending-mobile-detail-label">Purpose / Notes</span>
+                        <span className="lending-mobile-detail-value">{loan.notes || '—'}</span>
+                      </div>
+                      <div className="lending-mobile-card-actions">
+                        <Link
+                          to={`/lending/loans/${loan._id}`}
+                          className="fs-btn fs-btn-secondary lending-table-btn"
+                        >
+                          View Ledger
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </article>
+              );
+            })
+          )}
+        </div>
+      )}
 
       {/* Edit Person Modal */}
       {isEditing && (
-        <div className="lending-modal-backdrop" role="dialog" aria-modal="true">
+        <div className="modal-overlay lending-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="edit-person-title">
           <div className="lending-modal-content">
             <div className="lending-modal-header">
-              <h3>Edit Person</h3>
+              <h3 id="edit-person-title">Edit Person</h3>
               <button
                 type="button"
-                className="lending-btn lending-btn-secondary"
+                aria-label="Close modal"
+                className="fs-btn fs-btn-secondary lending-modal-close"
                 onClick={() => setIsEditing(false)}
-                style={{ padding: '4px 8px' }}
               >
                 ✕
               </button>
@@ -340,13 +422,13 @@ const PersonDetailPage = () => {
               <div className="lending-modal-footer">
                 <button
                   type="button"
-                  className="lending-btn lending-btn-secondary"
+                  className="fs-btn fs-btn-secondary lending-action-btn"
                   onClick={() => setIsEditing(false)}
                   disabled={submitting}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="lending-btn lending-btn-primary" disabled={submitting}>
+                <button type="submit" className="fs-btn fs-btn-primary lending-action-btn" disabled={submitting}>
                   {submitting ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
@@ -357,15 +439,15 @@ const PersonDetailPage = () => {
 
       {/* New Loan Modal */}
       {showNewLoanModal && (
-        <div className="lending-modal-backdrop" role="dialog" aria-modal="true">
+        <div className="modal-overlay lending-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="person-new-loan-title">
           <div className="lending-modal-content">
             <div className="lending-modal-header">
-              <h3>New Loan for {person.name}</h3>
+              <h3 id="person-new-loan-title">New Loan for {person.name}</h3>
               <button
                 type="button"
-                className="lending-btn lending-btn-secondary"
+                aria-label="Close modal"
+                className="fs-btn fs-btn-secondary lending-modal-close"
                 onClick={() => setShowNewLoanModal(false)}
-                style={{ padding: '4px 8px' }}
               >
                 ✕
               </button>
@@ -410,13 +492,13 @@ const PersonDetailPage = () => {
               <div className="lending-modal-footer">
                 <button
                   type="button"
-                  className="lending-btn lending-btn-secondary"
+                  className="fs-btn fs-btn-secondary lending-action-btn"
                   onClick={() => setShowNewLoanModal(false)}
                   disabled={submitting}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="lending-btn lending-btn-primary" disabled={submitting}>
+                <button type="submit" className="fs-btn fs-btn-primary lending-action-btn" disabled={submitting}>
                   {submitting ? 'Creating...' : 'Create Loan'}
                 </button>
               </div>

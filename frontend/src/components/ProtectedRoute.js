@@ -69,6 +69,9 @@ export const THEMED_PATTERNS = [
   '/credit-cards/statements',
   '/credit-cards/debt-payoff',
   '/credit-cards/reconcile',
+  '/lending',
+  '/lending/persons/:id',
+  '/lending/loans/:id',
 ];
 
 export const isThemedRoute = (pathname) => {
