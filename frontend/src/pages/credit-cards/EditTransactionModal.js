@@ -1,3 +1,4 @@
+// frontend/src/pages/credit-cards/EditTransactionModal.js
 import React, { useState, useEffect } from 'react';
 import Modal from '../../components/Modal';
 import { updateTransaction } from '../../services/creditCardService';
@@ -6,6 +7,7 @@ import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
 import { CURRENCY_OPTIONS, DEFAULT_RATES } from '../expenditure/ExpenditureForm';
+import Badge from '../../components/ui/Badge';
 
 const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdated }) => {
   const { showToast } = useToast();
@@ -56,7 +58,6 @@ const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdat
     };
   }, []);
 
-  // When the modal opens or the transaction prop changes, pre-fill the form
   useEffect(() => {
     if (transaction && isOpen) {
       const initCurr = (transaction.currency || 'EGP').toUpperCase();
@@ -84,6 +85,7 @@ const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdat
         installmentMonths: transaction.installmentDetails?.months || '',
         installmentInterest: transaction.installmentDetails?.interest || 0,
       });
+      setError('');
     }
   }, [transaction, isOpen]);
 
@@ -144,21 +146,19 @@ const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdat
 
     if (isForeign) {
       const parsedForeign = parseFloat(foreignAmount);
-      if (isNaN(parsedForeign) || parsedForeign <= 0) {
+      if (Number.isNaN(parsedForeign) || parsedForeign <= 0) {
         setError(`Please enter a valid positive foreign amount in ${currency}.`);
         return;
       }
       const parsedRate = parseFloat(exchangeRate);
-      if (isNaN(parsedRate) || parsedRate <= 0) {
+      if (Number.isNaN(parsedRate) || parsedRate <= 0) {
         setError('Please enter a valid positive exchange rate.');
         return;
       }
       finalAmount = Number((parsedForeign * parsedRate).toFixed(2));
-    } else {
-      if (isNaN(finalAmount) || finalAmount <= 0) {
-        setError('Amount must be a positive number.');
-        return;
-      }
+    } else if (Number.isNaN(finalAmount) || finalAmount <= 0) {
+      setError('Amount must be a positive number.');
+      return;
     }
 
     const dataToSubmit = {
@@ -184,7 +184,7 @@ const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdat
         return;
       }
       dataToSubmit.installmentDetails = {
-        months: months,
+        months,
         monthlyPrincipal: finalAmount / months,
         interest: parseFloat(formData.installmentInterest) || 0,
       };
@@ -203,13 +203,14 @@ const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdat
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit Transaction">
-      <form onSubmit={handleSubmit} className="standard-form">
-        <div className="form-group">
+      <form onSubmit={handleSubmit} className="cc-modal-form">
+        <div className="cc-modal-field">
           <label htmlFor="edit-card-description">Description</label>
           <input
             id="edit-card-description"
             type="text"
             name="description"
+            className="cc-modal-input"
             value={formData.description}
             onChange={handleChange}
             required
@@ -217,11 +218,12 @@ const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdat
         </div>
 
         {/* Currency Selector */}
-        <div className="form-group">
+        <div className="cc-modal-field">
           <label htmlFor="edit-card-currency">Currency</label>
           <select
             id="edit-card-currency"
             name="currency"
+            className="cc-modal-select"
             value={currency}
             onChange={handleCurrencyChange}
           >
@@ -235,13 +237,14 @@ const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdat
 
         {/* Amount Inputs: Base EGP vs Foreign Currency */}
         {currency === 'EGP' ? (
-          <div className="form-group">
+          <div className="cc-modal-field">
             <label htmlFor="edit-card-amount">Total Amount (EGP)</label>
             <input
               id="edit-card-amount"
               type="number"
               step="0.01"
               name="amount"
+              className="cc-modal-input fs-num"
               value={formData.amount}
               onChange={handleChange}
               required
@@ -249,13 +252,14 @@ const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdat
           </div>
         ) : (
           <>
-            <div className="form-row">
-              <div className="form-group">
+            <div className="cc-modal-row">
+              <div className="cc-modal-field">
                 <label htmlFor="edit-card-foreign-amount">Amount ({currency})</label>
                 <input
                   id="edit-card-foreign-amount"
                   type="number"
                   step="any"
+                  className="cc-modal-input fs-num"
                   value={foreignAmount}
                   onChange={handleForeignAmountChange}
                   placeholder={`Enter amount in ${currency}`}
@@ -263,34 +267,35 @@ const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdat
                 />
               </div>
 
-              <div className="form-group">
+              <div className="cc-modal-field">
                 <label htmlFor="edit-card-exchange-rate">Exchange Rate (1 {currency} in EGP)</label>
                 <input
                   id="edit-card-exchange-rate"
                   type="number"
                   step="any"
+                  className="cc-modal-input fs-num"
                   value={exchangeRate}
                   onChange={handleExchangeRateChange}
                   placeholder="Exchange rate"
                   disabled={!isAdmin}
                   required
                 />
-                <small className="form-helper-text" style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                <small className="cc-modal-hint">
                   Rate is approximate for historical dates — actual rate is locked at save time based on transaction date.
                 </small>
               </div>
             </div>
 
             {/* Auto-displayed Converted EGP Equivalent Confirmation */}
-            <div className="currency-conversion-card" data-testid="conversion-confirmation-card">
-              <div className="conversion-header">
-                <span className="conversion-label">Converted EGP Equivalent (Confirmation)</span>
-                <span className="rate-badge">
-                  1 {currency} = {parseFloat(exchangeRate || 0).toFixed(4)} EGP
-                </span>
+            <div className="cc-conversion-card" data-testid="conversion-confirmation-card">
+              <div className="cc-conversion-header">
+                <span className="cc-conversion-label">Converted EGP Equivalent (Confirmation)</span>
+                <Badge tone="neutral">
+                  <span className="fs-num">1 {currency} = {parseFloat(exchangeRate || 0).toFixed(4)} EGP</span>
+                </Badge>
               </div>
-              <div className="conversion-value-row">
-                <span className="foreign-pill">
+              <div className="cc-conversion-value-row">
+                <span className="cc-foreign-pill fs-num">
                   {foreignAmount
                     ? `${parseFloat(foreignAmount).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
@@ -298,72 +303,97 @@ const EditTransactionModal = ({ isOpen, onClose, transaction, onTransactionUpdat
                       })} ${currency}`
                     : `0.00 ${currency}`}
                 </span>
-                <span className="conversion-arrow">→</span>
-                <strong className="egp-equivalent" data-testid="converted-egp-value">
+                <span className="cc-conversion-arrow" aria-hidden="true">-&gt;</span>
+                <strong className="cc-egp-equivalent fs-num" data-testid="converted-egp-value">
                   {formatCurrency(convertedEgpValue)}
                 </strong>
               </div>
-              <div className="conversion-hint">
-                This transaction will be recorded on your card statement as <strong>{formatCurrency(convertedEgpValue)}</strong>.
+              <div className="cc-modal-note">
+                This transaction will be recorded on your card statement as{' '}
+                <strong className="fs-num">{formatCurrency(convertedEgpValue)}</strong>.
               </div>
             </div>
           </>
         )}
 
-        <div className="form-group">
+        <div className="cc-modal-field">
           <label htmlFor="edit-card-date">Date</label>
           <input
             id="edit-card-date"
             type="date"
             name="date"
+            className="cc-modal-input fs-num"
             value={formData.date}
             onChange={handleChange}
             required
           />
         </div>
 
-        <div className="form-group">
+        <div className="cc-modal-field">
           <label htmlFor="edit-card-type">Type</label>
-          <select id="edit-card-type" name="type" value={formData.type} onChange={handleChange}>
+          <select
+            id="edit-card-type"
+            name="type"
+            className="cc-modal-select"
+            value={formData.type}
+            onChange={handleChange}
+          >
             <option value="Purchase">Standard Purchase</option>
             <option value="Installment">Installment Plan</option>
           </select>
         </div>
 
         {formData.type === 'Installment' && (
-          <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid #e2e8f0' }}>
-            <div className="form-group">
+          <div className="cc-modal-panel">
+            <div className="cc-modal-field">
               <label htmlFor="edit-card-installment-months">Number of Months</label>
               <input
                 id="edit-card-installment-months"
                 type="number"
                 name="installmentMonths"
+                className="cc-modal-input fs-num"
                 value={formData.installmentMonths}
                 onChange={handleChange}
                 required
               />
             </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
+            <div className="cc-modal-field">
               <label htmlFor="edit-card-installment-interest">Interest Rate (%) (Optional)</label>
               <input
                 id="edit-card-installment-interest"
                 type="number"
                 step="0.01"
                 name="installmentInterest"
+                className="cc-modal-input fs-num"
                 value={formData.installmentInterest}
                 onChange={handleChange}
               />
             </div>
             {formData.installmentMonths > 0 && convertedEgpValue > 0 && (
-              <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#2563eb', fontWeight: 600 }}>
-                💡 Monthly Principal: {formatCurrency(convertedEgpValue / parseInt(formData.installmentMonths, 10))} / mo
+              <div className="cc-modal-kv">
+                <span>Monthly Principal:</span>
+                <strong className="fs-num">
+                  {formatCurrency(convertedEgpValue / parseInt(formData.installmentMonths, 10))} / mo
+                </strong>
               </div>
             )}
           </div>
         )}
 
-        {error && <p className="error-message">{error}</p>}
-        <button type="submit" className="action-button">Save Changes</button>
+        {error && (
+          <p className="cc-modal-error" role="alert">
+            {error}
+          </p>
+        )}
+
+        <div className="cc-modal-actions">
+          <button type="button" className="fs-btn fs-btn-secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="fs-btn fs-btn-primary">
+            Save Changes
+          </button>
+        </div>
       </form>
     </Modal>
   );

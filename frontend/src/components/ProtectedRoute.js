@@ -65,6 +65,7 @@ export const THEMED_PATTERNS = [
   '/real-estate',
   '/real-estate/new',
   '/real-estate/edit/:id',
+  '/credit-cards',
 ];
 
 export const isThemedRoute = (pathname) => {

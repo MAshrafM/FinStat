@@ -1,193 +1,190 @@
-/* frontend/src/components/creditCards/UtilizationWidget.css */
+/* ==========================================================================
+   Phase 9A: Credit Utilization Widget
+   Scoped under D22 attribute-existence selector html[data-fs-theme].
+   Uses .fs-progress--warning (Elevated, 30-70%) & .fs-progress--negative
+   (High, >= 70%), with neutral unlabeled meters under 30%.
+   ========================================================================== */
 
-.utilization-widget-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
-  margin-bottom: 2rem;
+html[data-fs-theme] .cc-util-card {
+  background: var(--fs-surface);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: none;
 }
 
-.utilization-header {
+html[data-fs-theme] .cc-util-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-.utilization-title-group {
+html[data-fs-theme] .cc-util-title-group {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
 }
 
-.utilization-icon-shield {
-  font-size: 1.8rem;
-  color: #3b82f6;
+html[data-fs-theme] .cc-util-icon {
+  font-size: 1.25rem;
+  color: var(--fs-text-2);
+  flex-shrink: 0;
 }
 
-.utilization-header h3 {
+html[data-fs-theme] .cc-util-header h2,
+html[data-fs-theme] .cc-util-header h3 {
   margin: 0;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-size: var(--fs-text-lg);
+  font-weight: 600;
+  color: var(--fs-text);
 }
 
-.utilization-subtitle {
-  margin: 0.25rem 0 0 0;
-  font-size: 0.85rem;
-  color: #6b7280;
+html[data-fs-theme] .cc-util-subtitle {
+  margin: 4px 0 0 0;
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
 }
 
-.utilization-overall-badge {
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 0.95rem;
-  padding: 0.4rem 1rem;
-  border-radius: 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+html[data-fs-theme] .cc-util-overall {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.utilization-meter-container {
-  margin-bottom: 1.25rem;
+html[data-fs-theme] .cc-util-meter-wrap {
+  margin-bottom: 16px;
 }
 
-.utilization-meter-track {
+html[data-fs-theme] .cc-util-progress-track {
   position: relative;
-  height: 14px;
-  background: #e5e7eb;
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+
+html[data-fs-theme] .cc-util-progress {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  border: 0;
+  border-radius: var(--fs-radius-sm);
+  background: var(--fs-surface-sunken);
   overflow: hidden;
+  display: block;
 }
 
-.utilization-meter-fill {
-  height: 100%;
-  border-radius: 8px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+html[data-fs-theme] .cc-util-progress::-webkit-progress-bar {
+  background: var(--fs-surface-sunken);
+  border-radius: var(--fs-radius-sm);
 }
 
-.threshold-marker-30 {
+html[data-fs-theme] .cc-util-progress::-webkit-progress-value {
+  background: var(--fs-text-2);
+  border-radius: var(--fs-radius-sm);
+}
+
+html[data-fs-theme] .cc-util-progress::-moz-progress-bar {
+  background: var(--fs-text-2);
+  border-radius: var(--fs-radius-sm);
+}
+
+html[data-fs-theme] .cc-util-threshold-30 {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 30%;
   width: 2px;
-  background: #1f2937;
-  opacity: 0.4;
-  z-index: 2;
+  background: var(--fs-text-3);
+  pointer-events: none;
 }
 
-.utilization-meter-labels {
+html[data-fs-theme] .cc-util-meter-labels {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.5rem;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #4b5563;
+  margin-top: 8px;
+  font-size: var(--fs-text-xs);
+  font-weight: 500;
+  color: var(--fs-text-2);
 }
 
-.utilization-alert-banner {
+html[data-fs-theme] .cc-util-alert-banner {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  background: #fffbeb;
-  border-left: 4px solid #f59e0b;
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
-  margin-bottom: 1.25rem;
-  color: #92400e;
-  font-size: 0.88rem;
+  gap: 10px;
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  color: var(--fs-text-2);
+  font-size: var(--fs-text-sm);
+  line-height: 1.4;
 }
 
-.alert-icon {
+html[data-fs-theme] .cc-util-alert-icon {
   flex-shrink: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  color: var(--fs-text-2);
 }
 
-.utilization-cards-grid {
+html[data-fs-theme] .cc-util-cards-grid {
   display: grid;
-  grid-templateColumns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
 }
 
-.card-utilization-item {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 0.9rem;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+html[data-fs-theme] .cc-util-item {
+  background: var(--fs-surface-sunken);
+  border: var(--fs-border-width) solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
 }
 
-.card-utilization-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
-
-.card-utilization-item.item-alert {
-  border-color: #fca5a5;
-  background: #fffafa;
-}
-
-.card-item-header {
+html[data-fs-theme] .cc-util-item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  gap: 8px;
 }
 
-.card-item-name {
-  font-size: 0.9rem;
+html[data-fs-theme] .cc-util-item-name {
+  font-size: var(--fs-text-sm);
   font-weight: 600;
-  color: #1f2937;
+  color: var(--fs-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
 }
 
-.card-item-pct {
-  font-size: 0.9rem;
-  font-weight: 700;
+html[data-fs-theme] .cc-util-item-pct {
+  font-size: var(--fs-text-sm);
+  font-weight: 600;
+  color: var(--fs-text);
+  flex-shrink: 0;
 }
 
-.mini-meter-track {
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-}
-
-.mini-meter-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.5s ease;
-}
-
-.card-item-details {
+html[data-fs-theme] .cc-util-item-details {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
-  color: #374151;
-  font-weight: 500;
+  font-size: var(--fs-text-xs);
+  color: var(--fs-text-2);
 }
 
-.card-item-limit {
-  color: #9ca3af;
+html[data-fs-theme] .cc-util-item-limit {
+  color: var(--fs-text-3);
 }
 
-.card-alert-badge {
-  display: inline-flex;
+html[data-fs-theme] .cc-util-item-badges {
+  display: flex;
   align-items: center;
-  gap: 0.3rem;
-  margin-top: 0.5rem;
-  font-size: 0.75rem;
-  color: #b91c1c;
-  background: #fee2e2;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-weight: 600;
+  gap: 6px;
+  flex-wrap: wrap;
 }
