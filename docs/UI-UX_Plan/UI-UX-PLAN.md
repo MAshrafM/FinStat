@@ -2983,7 +2983,7 @@ Merge SHA:   4e63db1
 
 ```
 Sub-phase:   9B (Finalized — Gate 19 Signed Off)
-Status:      done (Signed off by User 2026-11-28; merging to main)
+Status:      done (Signed off by User 2026-11-28; merged to main as 8d816b3)
 Done:        Converted `/credit-cards/statements`, `/credit-cards/debt-payoff`, and `/credit-cards/reconcile` to the dark graphite design system (`StatementCyclePage.css`, `DebtPayoffPage.css`, `ReconciliationPage.css` under D22 `html[data-fs-theme]`, `theme-components.css` Section 24 interactive-accent only), and removed the legacy light branch & `overflow-x: auto` from `CreditCardSubNav.css` (§6.13:1918) while preserving Phase 9A `/credit-cards` pixel-identical (`0` diff). Purged all 51 inline styles (`15 + 16 + 20`), 47 hex literals, 5 emojis, 3 `!important` rules (`DebtPayoffPage.css:162`, `ReconciliationPage.css:117–118`), and 5 `jsx-a11y/label-has-associated-control` warnings to 0. Applied Review Items #1–#7: §4.3.1:359–360 `StatementCyclePage.js` due-date `<Badge>` (`Overdue` / `Due soon` / neutral), scoped `useCanModify()` destructuring fix (`DebtPayoffPage.js:13`), neutral AD13 ordinary amounts & `Interest Saved`, `W-9A-1` scope extension to embedded `<CardInstallmentSchedule />` on `/credit-cards/statements` & retirement of `CreditCardSubNav.css:21` from §7.1:2105, Reconciliation `Reconciled` neutral / `Discrepancy` warning `<Badge>` + `<Delta>`, neutral timeline milestone dots, D19 <= 768px compact-expand cards on all 5 Phase 9B tables (`0px` overflow at `390px`), `<Loading>` & neutral `.sc-error-card`/`.dp-error-card`/`.rec-error-card` states. De-ignored all 3 Phase 9B pages in `.eslintignore` (`1` retained entry), expanded `THEMED_PATTERNS` `50 -> 53`, added 3 Jest + `jest-axe` suites (`9/9` suites, `41/41` passed), extended `creditCardsMocks.js`, and added `credit-cards-9b-reference-match.spec.js` (`10/10` passed, `25` local §7.4 PNGs). Gates 0–18 verified green: Gate 1 `53` patterns / `75 / 10 / 65 / 0`, Gate 2 `0` drift, Gate 3 `0` deletions, Gate 4 `0` violations (`61` page / `64` total CSS), Gate 5 `0` regressions across `63` CSS / `stylelint` clean / `0` overflow / protected diffs empty, Gate 6 ESLint `0` warnings, Gate 7 `41/41`, Gate 8 `15/15` (`DashboardSummary.js` `96` lines), Gate 9 `11/11`, Gate 10 `4/4`, Gate 11 `10/10` + `9/9`, Gate 12 `2048`MB build clean, Gate 13 `16/16` (`01e61c5`; `2ec388e -> 01e61c5`; `334/334` manifest), Gate 14 `68/71` (`3` W-6A-1/AD16 only), Gate 15 `292/34` (`326` accounted; `0` unexplained / 9A / 9B / 9C diffs), Gate 16 `2/2`, Gate 17 inspection clean, Gate 18 `56/56` (Credit Cards + Trades + unthemed 9C Lending).
 Next:        Phase 9C (Peer-to-Peer Lending — Module 23)
 Blocked by:  None
@@ -2991,8 +2991,8 @@ Allowlist:   ['/credit-cards/statements', '/credit-cards/debt-payoff', '/credit-
 Visual diff: Gate 13 recaptured 15 Phase 9B snapshots in place (01e61c5; 334/334 manifest verified); Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 292/34 (326 accounted: 292 + 34 AD14/AD16); Gate 18 56/56; 0 diffs on 9A, 9B, Trades, or unthemed 9C Lending.
 Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (Domains 2 & 3 unchanged)
 Screenshots: None tracked per D5/D21; 15 baselines in FinStat-visual-baselines repo (01e61c5) + 25 local §7.4 PNGs in gitignored docs/ui-snapshots/phase-9b/
-Branch:      phase-ui-9b-statements-debt (tag: ui-phase-9b-start; Gate 0 SHA: db1e7ac; Impl SHA: 863dd85; Walkthrough SHA: 464d01e)
-Merge SHA:   Pending merge commit on main
+Branch:      phase-ui-9b-statements-debt (tag: ui-phase-9b-start; Gate 0 SHA: db1e7ac; Impl SHA: 863dd85; Walkthrough SHA: 464d01e; Gov SHA: 7a35608)
+Merge SHA:   8d816b3
 ```
 
 ### Sub-phase note template

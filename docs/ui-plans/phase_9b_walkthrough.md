@@ -6,7 +6,8 @@
 - **Merge Base**: `main` @ `e3bd47a`
 - **Gate 0 Plan & Governance SHA**: `db1e7ac`
 - **Implementation SHA**: `863dd85`
-- **Walkthrough SHA**: `464d01e`
+- **Walkthrough SHA**: `464d01e` (Walkthrough), `7a35608` (Gov Sync)
+- **Merge SHA**: `8d816b3`
 - **Starting Baseline Commit**: `2ec388e` (`334/334` manifest verified)
 - **Gate 13 Baseline Commit**: `01e61c5` in `D:\Projects\FinStat-visual-baselines` (`334/334` manifest verified; 15 Phase 9B PNGs recaptured in place, `0` net new entries)
 
@@ -117,5 +118,5 @@ Merge SHA:   Pending Gate 19 sign-off
 - [x] Sync governance in `docs/UI-UX_Plan/UI-UX-PLAN.md` (`§5.8:946–948`, `§6.1:1071`, `§6.13:1907/:1913–1922`, `§10` final SHAs & Merge SHA).
 - [x] Update `docs/ui-plans/phase_9b_implementation_plan.md` & `phase_9b_walkthrough.md` (`Status: Complete`, final SHAs/sign-off date).
 - [x] Update `CHANGELOG.md` (Phase 9B conversion, `THEMED_PATTERNS` `50 -> 53`, `CreditCardSubNav.css` legacy branch removal, AD13 ordinary-amount neutrality).
-- [ ] Merge `phase-ui-9b-statements-debt` into `main` (`--no-ff`), finalize SHA closure on `main`, and push only `main`.
+- [x] Merge `phase-ui-9b-statements-debt` into `main` (`--no-ff`), finalize SHA closure on `main`, and push only `main`.
 - [ ] Clean `frontend/test-results/` and `frontend/playwright-report/`, and verify post-merge CI passes on `main`.
