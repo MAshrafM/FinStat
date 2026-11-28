@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - UI Phase 9B: Credit Cards Sub-Routes (Statements, Debt Payoff & Reconciliation)
+- **Theme & Allowlist (`50 -> 53`)**: Converted `/credit-cards/statements`, `/credit-cards/debt-payoff`, and `/credit-cards/reconcile` to the FinStat dark graphite design system (`StatementCyclePage`, `DebtPayoffPage`, `ReconciliationPage`), expanded `THEMED_PATTERNS` from `50` to `53`, removed all 3 Phase 9B pages from `frontend/.eslintignore`, and retired the legacy light branch and `overflow-x: auto` from `CreditCardSubNav.css` (`§6.13:1918`).
+- **AD13 Ordinary-Amount Neutrality & Semantic Labels**: Kept ordinary charges, payments, interest, balances, and payoff dates neutral (`.fs-num`, `--fs-text`); added 3-tier statement due-date `<Badge>` severity (`Overdue`, `Due soon`, neutral unlabeled) per `§4.3.1:359–360`, neutral `Reconciled` / warning `Discrepancy` + `<Delta>` status banner on reconciliation, and D19 `<= 768px` compact-expand mobile cards across all 5 Phase 9B tables (`0px` page overflow at `390px`).
+- **Access Control Guard (`I4`)**: Applied scoped `const { canModify } = useCanModify();` destructuring fix in `DebtPayoffPage.js` with viewer-role Jest coverage blocking `savePlan`.
+
 ### Added - Phase 0: Test Harness & CI Bootstrap
 - Step 0.1: [AUD-OPS-005 (Bootstrap)] Minimal GitHub Actions CI pipeline skeleton (`.github/workflows/ci.yml`) targeting Node 20.x on push and pull requests for `main` and `phase-*` branches.
 - Step 0.2: [AUD-TEST-001 (Bootstrap)] In-memory MongoDB test database harness (`backend/tests/helpers/testDb.js`), auth fixture utilities (`backend/tests/helpers/authFixtures.js`), and package test script with `--detectOpenHandles` (`backend/package.json`).
