@@ -1,11 +1,12 @@
 # UI Phase 9A Walkthrough — Credit Cards, Modals & Installments (Taste Checkpoint #7)
 
 - **Date**: 2026-11-28
-- **Status**: Complete (Gates 0–18 Passed) — **Awaiting Gate 19 + Taste Checkpoint #7 User Sign-Off**
+- **Status**: Complete — **Gate 19 & Taste Checkpoint #7 Signed Off by User (2026-11-28)**
 - **Branch**: `phase-ui-9a-credit-cards` *(tag: `ui-phase-9a-start`; local only; only `main` is pushed after Gate 19 sign-off)*
 - **Merge Base**: `main` @ `22f4a9f`
 - **Gate 0 Plan & Governance SHA**: `3743f17`
 - **Implementation SHA**: `f9e40ea`
+- **Walkthrough SHA**: `1e38616`
 - **Starting Baseline Commit**: `7460ca7` (`D:\Projects\FinStat-visual-baselines`, `334/334` manifest verified)
 - **Gate 13 Baseline Commit**: `2ec388e` (`D:\Projects\FinStat-visual-baselines`, `334/334` manifest verified; `5` `/credit-cards` PNGs replaced in place, `0` net new entries)
 - **Target Route (1 route — smoke route in `pr-subset`)**:

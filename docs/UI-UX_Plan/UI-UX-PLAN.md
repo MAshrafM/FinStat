@@ -942,7 +942,7 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 
 | Route | Component | Phase | Theme applied | Visual QA | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| `/credit-cards` | `pages/credit-cards/CreditCardPage` | 9A | ☐ | ☐ | + 5 modals; `CardInstallmentSchedule` (28) |
+| `/credit-cards` | `pages/credit-cards/CreditCardPage` | 9A | ☑ | ☑ | + 5 modals; `CardInstallmentSchedule` (`70` inline styles & `57` hex literals purged to `0`; `11` label warnings fixed; Option A 30/70 utilization + `Elevated`/`High`; neutral transaction/installment chips; D19 mobile cards; `W-9A-1`; byte-identical dual-mode `CreditCardSubNav`; Taste Checkpoint #7 signed off) |
 | `/credit-cards/statements` | `pages/credit-cards/StatementCyclePage` | 9B | ☐ | ☐ | 15 inline styles |
 | `/credit-cards/debt-payoff` | `pages/credit-cards/DebtPayoffPage` | 9B | ☐ | ☐ | 16 inline styles; strategy cards |
 | `/credit-cards/reconcile` | `pages/credit-cards/ReconciliationPage` | 9B | ☐ | ☐ | 20 inline styles |
@@ -1067,7 +1067,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **8C** | Certificates: detail + forms | `phase-ui-8c-certificates-detail` | ☑ | ☑ |
 | **8D** | Currency | `phase-ui-8d-currency` | ☑ | ☑ |
 | **8E** | Real estate (all three routes) | `phase-ui-8e-real-estate` | ☑ | ☑ |
-| **9A** | Credit cards, modals, installments | `phase-ui-9a-credit-cards` | ☐ | ☐ |
+| **9A** | Credit cards, modals, installments | `phase-ui-9a-credit-cards` | ☑ | ☑ |
 | **9B** | Statements, debt payoff, reconciliation | `phase-ui-9b-statements-debt` | ☐ | ☐ |
 | **9C** | Peer-to-peer lending (Module 23) | `phase-ui-9c-lending` | ☐ | ☐ |
 | **10A** | Profile + Settings | `phase-ui-10a-profile-settings` | ☐ | ☐ |
@@ -1096,7 +1096,7 @@ A checkpoint is a rendered screen the developer opens and approves, not a token 
 | 4 | 6A | `/portfolio` | frame 3 (Variant B — dashboard) |
 | 5 | 7A | `/trades` | frame 1 (Variant B) — Approved by User (2026-11-24) |
 | 6 | 8A | `/gold-wallet` | frame 1 (Variant B) — Approved by User (2026-11-26) |
-| 7 | 9A | `/credit-cards` | frame 2 (Variant B) |
+| 7 | 9A | `/credit-cards` | frame 2 (Variant B) — Approved by User (2026-11-28, two-part evidence) |
 | 8 | 10A | `/profile` | frame 2 (Variant B) |
 | 9 | 11A | Landing / login | frame 2 (Variant B) |
 
@@ -1896,19 +1896,19 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 9A — Cards, modals, installments
 
-- [ ] `CreditCardPage.css` — light → graphite; card selector, card visuals, utilization bars.
-- [ ] `CreditCardPage.js` (7) → classes.
-- [ ] `AddCardModal`, `EditCardModal`, `AddTransactionModal` (13), `EditTransactionModal`, `PartialPaymentModal` (14 hex literals / 14 inline styles per §8.2:2223) → dark modal + form tokens.
-- [ ] `CardInstallmentSchedule.js` (28) → dark schedule table.
-- [ ] `UtilizationWidget.css` → the bar is neutral under 30%, uses `.fs-progress--warning` at 30–70% and `.fs-progress--negative` above 70%, each with a text label. Use only the thresholds recorded in §4.3.1; if absent, the bar stays neutral. No emerald, gold, or rose.
-- [ ] `CreditCardSubNav.css` — dual-mode until 9B lands (§4.16).
-- [ ] Verify installment math display, partial payments, card CRUD.
-- [ ] Credit-card tables (Due Transactions, Full Transaction History, Installment Schedule) render as compact-expand cards at ≤ 768px per D19 with `0px` page overflow. Utilization bars keep `.fs-progress--*` semantics; the accent does not replace severity.
+- [x] `CreditCardPage.css` — light → graphite; card selector, card visuals, utilization bars.
+- [x] `CreditCardPage.js` (7) → classes.
+- [x] `AddCardModal`, `EditCardModal`, `AddTransactionModal` (13), `EditTransactionModal`, `PartialPaymentModal` (14 hex literals / 14 inline styles per §8.2:2223) → dark modal + form tokens.
+- [x] `CardInstallmentSchedule.js` (28) → dark schedule table + D19 mobile cards (`0` inline styles).
+- [x] `UtilizationWidget.css` → neutral unlabeled `0 <= x < 30%`, `.fs-progress--warning` + `Elevated` at `30 <= x < 70%`, `.fs-progress--negative` + `High` at `x >= 70%` per Gate 0 Option A (`3743f17`) & `§4.3.1:363–364/:371`.
+- [x] `CreditCardSubNav.css` — byte-identical dual-mode until 9B lands (§4.16; Section 10 `.fs-page .cc-subnav-*` serves `/credit-cards`).
+- [x] Verify installment math display, partial payments, card CRUD (`6/6` Jest suites `32/32`, `9/9` Playwright reference match).
+- [x] Credit-card tables (Due Transactions, Full Transaction History, Installment Schedule) render as compact-expand cards at ≤ 768px per D19 with `0px` page overflow. Utilization bars keep `.fs-progress--*` semantics; the accent does not replace severity.
 - [ ] *(9B/9C)* Statement and lending-ledger tables render as compact-expand cards at ≤ 768px per D19.
-- [ ] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll.
-- [ ] Installment schedule fixtures unchanged.
-- [ ] Remove Credit Card dashboard components (`CreditCardPage.js`, `CardInstallmentSchedule.js`, card modals) from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add `/credit-cards`.**
+- [x] Table renders as compact-expand cards at ≤ 768px per §6.4 and D19; no page-level horizontal scroll (`W-9A-1` desktop/tablet only).
+- [x] Installment schedule fixtures unchanged (`calculations.spec.js` `11/11`, Domain 2 unchanged; `$` formatter retained per `I3`).
+- [x] Remove Credit Card dashboard components (8 Phase 9A production components from `frontend/.eslintignore`, retaining `AddTransactionModal.currency.test.js` & 3 Phase 9B files); verify clean ESLint (`--max-warnings=0`).
+- [x] **Add `/credit-cards`.** (`THEMED_PATTERNS` 49 → 50; Taste Checkpoint #7 signed off 2026-11-28 on 5 dashboard PNGs + 21 local §7.4 artifacts.)
 
 #### 9B — Statements, debt payoff, reconciliation
 
@@ -2182,7 +2182,7 @@ The legacy zero-diff gate is the proof that the allowlist works. A PR that chang
 | 6A–6B | `portfolio/Portfolio.css`, `portfolio/RebalancingPage.css`, `reports/ComprehensiveReport.css` (Phase 6B / print styles) |
 | 7A–7C | `trades/Trades.css`, `trades/CorporateActionsList.css`, `trades/CorporateActionWizard.css` |
 | 8A–8E | `certificates/CertificateDetail.css` *(converted to D22 dark tokens in 8D)*, `real-estate/RealEstate.css` *(rewritten in place to D22 dark tokens in 8E; no net new CSS file)* *(plus post-8.1 phase additions `gold/GoldWallet.css`, `analytics/PurchasingPowerChart.css`, `certificates/Certificates.css`, `currency/Currency.css`; on-disk total remains 64 post-8E vs §8.1's historic 57-file snapshot including `PaycheckLog.css`, `PayrollAnalyticsPage.css`, `MutualFunds.css`)* |
-| 9A–9C | `credit-cards/CreditCardPage.css`, `credit-cards/StatementCyclePage.css`, `credit-cards/DebtPayoffPage.css`, `credit-cards/ReconciliationPage.css`, `credit-cards/UtilizationWidget.css`, `credit-cards/CreditCardSubNav.css`, `lending/Lending.css` |
+| 9A–9C | `credit-cards/CreditCardPage.css` *(rewritten in place in 9A)*, `credit-cards/StatementCyclePage.css`, `credit-cards/DebtPayoffPage.css`, `credit-cards/ReconciliationPage.css`, `credit-cards/UtilizationWidget.css` *(rewritten in place in 9A)*, `credit-cards/CreditCardSubNav.css` *(byte-identical in 9A)*, `lending/Lending.css` *(on-disk total unchanged at 64 / 61 page CSS)* |
 | 10A–10C | `profile/ProfilePage.css`, `profile/SettingsPage.css`, `profile/RecycleBin.css`, `security/SecuritySettingsPage.css`, `admin/AdminDashboard.css`, `admin/TaxConfigPage.css`, `admin/InsuranceConfigPage.css`, `admin/BackupPage.css` |
 | 11A | `LandingPage.css` |
 | 12A | Shared legacy files converted to tokens / deleted: `components/Table.css`, `components/Form.css`, `components/Modal.css`, `components/common/ConfirmModal.css`, `components/common/ViewOnlyBanner.css`, `components/common/ProtectedAction.css`, `components/PaginationControls.css`, `components/SummaryRow.css`, `components/AnalysisCard.css`, `components/salary/ComponentTable.css`, `components/common/UndoToast.css`. Merge `theme-components.css` into `theme.css`. |
@@ -2209,7 +2209,7 @@ Metric: number of `style={{` props per file. Counts include layout-only styles; 
 | `pages/paycheck/PaycheckLog.js` | 34 | 5B |
 | `pages/real-estate/RealEstateLogPage.js` | 34 *(purged to 0 in 8E; `RealEstateForm.js` 7, `AddRealEstatePage.js` 2, `EditRealEstatePage.js` 4 also purged to 0)* | 8E |
 | `pages/expenditure/ExpenditureAnalysisPage.js` | 32 | 4C |
-| `pages/credit-cards/CardInstallmentSchedule.js` | 28 | 9A |
+| `pages/credit-cards/CardInstallmentSchedule.js` | 28 *(purged to 0 in 9A)* | 9A |
 | `pages/salary/SalaryProfilePage.js` | 26 | 5A |
 | `pages/portfolio/RebalancingPage.js` | 24 | 6B |
 | `pages/expenditure/ExpenditureForm.js` | 22 | 4B |
@@ -2221,7 +2221,7 @@ Metric: number of `style={{` props per file. Counts include layout-only styles; 
 | `pages/mutual-funds/MutualFundForm.js` | 18 | 7C |
 | `pages/salary/PayrollRulesHub.js` | 17 | 5A |
 | `pages/credit-cards/DebtPayoffPage.js` | 16 | 9B |
-| `pages/credit-cards/PartialPaymentModal.js` | 14 | 9A |
+| `pages/credit-cards/PartialPaymentModal.js` | 14 *(purged to 0 in 9A; plus `AddTransactionModal.js` 13, `CreditCardPage.js` 7, `EditTransactionModal.js` 4, `UtilizationWidget.js` 4 also purged to 0; `AddTransactionModal.currency.test.js` retained in `.eslintignore`)* | 9A |
 | `pages/credit-cards/StatementCyclePage.js` | 15 | 9B |
 | `pages/trades/CorporateActionWizard.js` | 14 | 7B |
 | `components/salary/ComponentTable.js` | 13 | 5A |
@@ -2968,17 +2968,17 @@ Merge SHA:   7f6a4a2 (merged to main; governance finalized in follow-up commit)
 ```
 
 ```
-Sub-phase:   9A (Gate 0 — Approved Plan & Pre-Execution Governance; Taste Checkpoint #7)
-Status:      in progress (Executing on local branch phase-ui-9a-credit-cards from main @ 22f4a9f)
-Done:        Gate 0 approved plan (`docs/ui-plans/phase_9a_implementation_plan.md` v8) and pre-execution governance recorded: (1) Review Item #1 Option A (`0 <= x < 30%` neutral unlabeled, `30 <= x < 70%` `.fs-progress--warning` + `Elevated`, `x >= 70%` `.fs-progress--negative` + `High`, mandated per Gate 0 §10 decision and §4.3.1:363–364/:371 amendment while keeping backend `isAlert`/`threshold` & calculations untouched per `I2`/`I3`); (2) Review Item #2 Option A (authorized scoped `I4` defensive handler-guard fix `const { canModify } = useCanModify();` at `CreditCardPage.js:24` with viewer-role Jest test, zero visible `ProtectedAction` wrapper changes); (3) Waiver `W-9A-1` recorded in §7.1:2104 for desktop/tablet `.cc-dashboard-page .cc-table-wrap` (`>768px` only; D19 cards at `<=768px` with `0px` page overflow) plus pre-existing `CreditCardSubNav.css:21` inherited exception; (4) 8-file `.eslintignore` de-ignore scope confirmed (retaining `AddTransactionModal.currency.test.js` & 3 Phase 9B entries); (5) §15.3/§15.5 local Gate 12 (`2048`MB / `1536`MB fallback) and full 326-test Gate 15 authorized; (6) inherited `$` `formatCurrency()` retained per `I3`; (7) Taste Checkpoint #7 two-part evidence accepted (5 dashboard PNGs + 21 local artifacts in gitignored `docs/ui-snapshots/phase-9a/`). Catalogue reconciliations: `§8.2:2223` & `§6.13:1901` aligned to `14` (`PartialPaymentModal`), `§6.13:1906` split into 9A/9B rows, `§4.3.1:359–360` neutral-chip rule recorded (zero `Due soon`/`Overdue` on `/credit-cards`), and §4.5/§7.2 `.fs-num` proportional tabular-nums governance recorded.
-Next:        Implement Phase 9A Credit Cards (`/credit-cards`, modals, UtilizationWidget, CardInstallmentSchedule) and run Gates 1–19
+Sub-phase:   9A (Finalized — Gate 19 & Taste Checkpoint #7 Signed Off)
+Status:      done (Signed off by User 2026-11-28; merging to main)
+Done:        Modernized /credit-cards, UtilizationWidget, CardInstallmentSchedule, and all 5 modals into the FinStat dark graphite design system (`CreditCardPage.css`, `UtilizationWidget.css` under D22 `html[data-fs-theme]`, `theme-components.css` Section 23), keeping `CreditCardSubNav.css`/Section 10, `Trades.css`, `Table.css`, and `Modal.css` byte-identical. Purged all 70 verified inline styles (`7` CreditCardPage + `4` UtilizationWidget + `28` CardInstallmentSchedule + `13` AddTransactionModal + `4` EditTransactionModal + `14` PartialPaymentModal), 57 hex literals, and all emojis to 0; eliminated all 11 pre-existing `jsx-a11y/label-has-associated-control` warnings via explicit `id`/`htmlFor` pairing. Applied Gate 0 Option A 30/70 utilization thresholds (`<30%` neutral unlabeled, `30–70%` `.fs-progress--warning` + `Elevated`, `>=70%` `.fs-progress--negative` + `High`) with accessible `<progress>` meters, neutral transaction/installment `<Badge>` chips per `§4.3.1:371`, Gate 0 Option A scoped `I4` defensive `useCanModify()` destructuring fix (`CreditCardPage.js:24`) with viewer-role Jest coverage, Waiver `W-9A-1` (`§7.1:2104`) on desktop/tablet `.cc-dashboard-page .cc-table-wrap` with D19 `<=768px` compact-expand mobile cards (`0px` overflow at `390px`), Frame 02 Variant B stacked dark modal forms, `<Loading>` primitives, and `.cc-error-card` Retry states. De-ignored 8 Phase 9A production components in `.eslintignore` (retaining `AddTransactionModal.currency.test.js` & 3 Phase 9B files), expanded `THEMED_PATTERNS` `49 -> 50`, kept all 4 existing Jest suites green + added 18 new Jest + jest-axe tests (`6/6` suites, `32/32` passed), added `creditCardsMocks.js` (scoped strictly to `credit-cards`) and 8-spec `credit-cards-reference-match.spec.js` (`9/9` passed, capturing all 21 §7.4 PNG artifacts). Gates 0–18 passed: Gate 1 50 patterns / 75 routes / 0 unassigned, Gate 2 0 drift, Gate 3 0 deletions, Gate 4 0 violations (`61` page / `64` total CSS), Gate 5 `0` regressions across `63` CSS / stylelint clean / `0` loading bypasses / protected-file diffs empty, Gate 6 ESLint `0` warnings, Gate 7 `32/32`, Gate 8 `15/15` (`DashboardSummary.js` `96` lines), Gate 9 `11/11`, Gate 10 `2/2`, Gate 11 `9/9`, Gate 12 `2048`MB build clean, Gate 13 `6/6` (`2ec388e`; `7460ca7 -> 2ec388e`; `334/334` manifest), Gate 14 `68/71` (`3` W-6A-1/AD16 only), Gate 15 `326` (`292 + 34` AD14/AD16; authorized §15.5 local run + §7.1 HTML-report substitution, `0` §7.4 deviation), Gate 16 `2/2`, Gate 17 5 baselines + 21 local artifacts inspected clean, Gate 18 `41/41` (Credit Cards + unthemed 9B + Trades).
+Next:        Phase 9B (Statement Cycles, Debt Payoff, Reconciliation)
 Blocked by:  None
-Allowlist:   Pending (`/credit-cards`; 49 -> 50)
-Visual diff: Pending (starting baseline 7460ca7, 334/334 manifest verified)
-Fixtures:    Pending (`calculations.spec.js` untouched)
-Screenshots: Pending (5 baselines in FinStat-visual-baselines repo + 21 local §7.4 artifacts in gitignored docs/ui-snapshots/phase-9a/)
-Branch:      phase-ui-9a-credit-cards (tag: ui-phase-9a-start)
-Merge SHA:   Pending Gate 19 + Taste Checkpoint #7 user sign-off
+Allowlist:   ['/credit-cards'] (cumulative: 50 patterns)
+Visual diff: Gate 13 replaced 5 credit-cards snapshots in place (2ec388e); manifest 334/334 verified; Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 326 accounted (292 + 34 AD14/AD16); Gate 18 41/41; 0 diffs attributable to 9A, 0 diffs on unthemed 9B routes. W-9A-1 active for desktop/tablet .cc-dashboard-page .cc-table-wrap only.
+Fixtures:    calculations.spec.js byte-identical, 11/11 green across 8 domains (Domain 2 Credit Card Installment Amortization unchanged)
+Screenshots: None tracked per D5/D21; 5 baselines in FinStat-visual-baselines repo (2ec388e) + 21 local §7.4 PNG artifacts in gitignored docs/ui-snapshots/phase-9a/
+Branch:      phase-ui-9a-credit-cards (tag: ui-phase-9a-start; Gate 0 Plan SHA: 3743f17; Impl SHA: f9e40ea; Walkthrough SHA: 1e38616)
+Merge SHA:   Pending merge commit on main
 ```
 
 ### Sub-phase note template

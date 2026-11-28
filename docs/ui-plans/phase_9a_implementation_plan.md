@@ -3,7 +3,7 @@
 - **Date**: 2026-11-27
 - **Revision**: **v8** — records user approval of Review Items #1 (`Option A` 30/70 thresholds & `Elevated`/`High`), #2 (`Option A` scoped `useCanModify()` fix), #3 (Waiver `W-9A-1` & inherited `CreditCardSubNav.css:21` note), #4 (8-file `.eslintignore` de-ignore scope retaining `AddTransactionModal.currency.test.js` & 9B files), #5 (local Gate 12 `2048`MB/`1536`MB fallback & full 326-test Gate 15), #6 (retained `$` formatter), and #7 (two-part Taste Checkpoint #7 evidence); retains all v5–v7 corrections
 - **Revision Date**: 2026-11-28
-- **Status**: Approved — Executing on `phase-ui-9a-credit-cards`
+- **Status**: Complete — Gate 19 & Taste Checkpoint #7 Signed Off 2026-11-28
 - **Merge Base**: `main` @ `22f4a9f`
 - **Starting Baseline Commit**: `7460ca7` in `D:\Projects\FinStat-visual-baselines` (`334/334` manifest verified)
 - **Branch**: `phase-ui-9a-credit-cards` *(local branch policy per §14/§10; only `main` is pushed after Gate 19 user sign-off)*
