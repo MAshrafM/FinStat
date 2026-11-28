@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - UI Phase 10B: Security & Two-Factor Authentication
+- **Security Page Refresh**: Updated `/security` with a clean dark graphite layout, clearer 2FA enable/disable controls and modal dialogs, readable login audit trail formatting, and mobile-friendly cards on narrow screens.
+
 ### Changed - UI Phase 10A: Profile, Settings & Recycle Bin (Checkpoint #8)
 - **Theme & Allowlist (`56 -> 59`)**: Converted `/profile`, `/settings`, and `/settings/recycle-bin` (`ProfilePage`, `SettingsPage`, `RecycleBin` and their CSS) into the FinStat dark graphite design system under D22 `html[data-fs-theme]`, added `theme-components.css` Section 25 interactive accent for Settings cost-basis radio cards, expanded `THEMED_PATTERNS` from `56` to `59`, and removed `ProfilePage.js` and `SettingsPage.js` from `frontend/.eslintignore`.
 - **Accessibility, Typography & D19 Mobile Cards**: Purged all 18 inline styles and 15 label association warnings, replaced ad-hoc loading blocks with `<Loading>`, implemented full APG keyboard/ARIA tabs + `<EmptyState>` + guarded `matchMedia` D19 compact-expand mobile cards on `/settings/recycle-bin` (`0px` overflow at `390px`), and applied `.fs-num` / `.fs-mono` typography per §4.5.

@@ -21,7 +21,6 @@ src/pages/admin/InsuranceConfigModal.js
 src/pages/admin/TaxConfigModal.js
 src/pages/credit-cards/__tests__/AddTransactionModal.currency.test.js
 src/pages/profile/__tests__/RecycleBin.test.js
-src/pages/security/SecuritySettingsPage.js
 src/services/apiClient.test.js
 src/services/portfolioService.test.js
 src/services/realEstateService.test.js

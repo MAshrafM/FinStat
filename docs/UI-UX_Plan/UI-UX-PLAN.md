@@ -336,6 +336,7 @@ That is the complete tone set. There is no six-tone palette, no category colour,
 | Rebalancing drift | within the rebalance threshold | — | at or above the threshold, `Rebalance` label | — |
 | Gold | **weight, price, value** | — | — | — |
 | Account balance / net worth | **the balance** | change is positive *and* change is what the view is about | — | change is negative *and* change is what the view is about |
+| Security / auth status | Enabled, Success, role | — | 2FA disabled, backup codes not saved | Failed login |
 
 Consequences: the expense log has **no red rows**; a budget bar is the only place an expense category shows colour; a paycheck is never green; a debt balance is red only when it is overdue, never because it is debt; a gold holding is never a gold colour; a credit-card bar shows severity, not "healthy green".
 
@@ -368,6 +369,9 @@ Every conditional tone above is audited in 1A before a page implements it. The a
 | Rebalancing drift | at or above the rebalance threshold | `Rebalance` | `pages/portfolio/RebalancingPage.js` (target allocation drift threshold) | Neutral, no label |
 | Account balance / net worth change | positive / negative | sign only | `pages/dashboard/NetWorthHero.js` & `pages/dashboard/DashboardKpiStrip.js` (period delta sign) | Sign and arrow only |
 | Realised / unrealised P&L | gain, loss, or zero | `Gain` / `Loss` *(+ `No change` for currency)* | `pages/trades/TradeSummaryPage.js`, `components/portfolio/HoldingsTable.js`, `components/portfolio/SummaryCards.js`, `pages/currency/CurrencyLogPage.js`, `pages/currency/CurrencyDetailPage.js` | Sign and arrow only |
+| Security / 2FA | 2FA disabled | `Disabled` | `pages/security/SecuritySettingsPage.js` (`user?.totpEnabled` false; JSX:250) | Neutral, no label |
+| Security / Login audit | unsuccessful login | `Failed` | `pages/security/SecuritySettingsPage.js` (`log.success === false`; JSX:358) | Neutral, no label |
+| Security / Backup codes | codes not yet acknowledged | `Save Now` | `pages/security/SecuritySettingsPage.js` (backup-code warning banner; JSX:509–513) | Neutral, no label |
 
 1A leaves the source empty when the code has none. An empty source means the row is **neutral and unlabeled**: no target, threshold, figure, or label is computed in the component. Reusing an existing label is allowed; adding a new label requires a recorded decision in §10 and updates to the tests and accessible names (I5).
 
@@ -965,7 +969,7 @@ The **Phase** column names the sub-phase that converts the route and adds its al
 | `/profile` | `pages/profile/ProfilePage` | 10A | ☑ | ☑ | 8 inline styles & 12 label warnings purged to 0; Frame 02 Variant B match (**Checkpoint #8 signed off 2026-11-28**); I2 deviations (no avatar/cancel/inline-error; toast feedback) |
 | `/settings` | `pages/profile/SettingsPage` | 10A | ☑ | ☑ | 9 inline styles & 3 label warnings purged to 0; Section 25 `.fs-page .settings-page` radio accent (active+hover verified) |
 | `/settings/recycle-bin` | `pages/profile/RecycleBin` | 10A | ☑ | ☑ | APG `role="tab"`/`aria-selected`/`aria-labelledby` tabs + `<EmptyState>` + guarded `matchMedia` D19 mobile cards (`0px` overflow); `RecycleBin.test.js` `10/10` untouched |
-| `/security` | `pages/security/SecuritySettingsPage` | 10B | ☐ | ☐ | 42 inline styles |
+| `/security` | `pages/security/SecuritySettingsPage` | 10B | ☑ | ☑ | Converted in 10B (`0` inline styles, `0` raw hex, `0` gradients/blurs); neutral `Enabled`/`Success`/role `<Badge>` + semantic `Disabled`/`Failed`/`Save Now`; neutral `Disable 2FA` trigger; APG modal focus lifecycle; D19 mobile cards (`0px` overflow) |
 | `/admin` | `pages/admin/AdminDashboard` | 10C | ☐ | ☐ | 41 inline styles |
 | `/admin/tax-brackets` | `pages/admin/TaxConfigPage` | 10C | ☐ | ☐ | Already dark |
 | `/admin/social-insurance` | `pages/admin/InsuranceConfigPage` | 10C | ☐ | ☐ | Already dark |
@@ -1072,7 +1076,7 @@ There are **no day estimates**. A sub-phase is finished when its exit gate is me
 | **9B** | Statements, debt payoff, reconciliation | `phase-ui-9b-statements-debt` | ☑ | ☑ |
 | **9C** | Peer-to-peer lending (Module 23) | `phase-ui-9c-lending` | ☑ | ☑ |
 | **10A** | Profile, Settings & Recycle Bin | `phase-ui-10a-profile-settings` | ☑ | ☑ |
-| **10B** | Security | `phase-ui-10b-security` | ☐ | ☐ |
+| **10B** | Security | `phase-ui-10b-security` | ☑ | ☑ |
 | **10C** | Admin family | `phase-ui-10c-admin` | ☐ | ☐ |
 | **11A** | Landing / login + 2FA | `phase-ui-11a-landing` | ☐ | ☐ |
 | **12A** | Cleanup and consolidation | `phase-ui-12a-cleanup` | ☐ | ☐ |
@@ -1954,11 +1958,11 @@ Highest concentration and highest risk: 190 inline styles in five files, plus ca
 
 #### 10B — Security
 
-- [ ] `SecuritySettingsPage.css` — purple heading gradient → plain `--fs-text`; no violet accent.
-- [ ] `SecuritySettingsPage.js` (42) → classes.
-- [ ] Verify 2FA setup/disable, session list, and permission gating.
-- [ ] Remove `SecuritySettingsPage.js` from `frontend/.eslintignore`; verify clean ESLint.
-- [ ] **Add `/security`.**
+- [x] `SecuritySettingsPage.css` — purple heading gradient (`#ffffff -> #c084fc`), violet identity wash, and blurred modal backdrop → flat `--fs-text` + graphite tokens (`html[data-fs-theme] .fs-page .security-page-container`); reuse shared `.modal-overlay` / `.modal-content`.
+- [x] `SecuritySettingsPage.js` (42 inline styles + 5 hex icon props) → classes, `<Loading>` variants (D23 purge of all 4 loading states), neutral `Enabled` / `Success` / role `<Badge>` + `Disabled` (`warning`) / `Failed` (`negative`) / `Save Now` (`warning`) per §4.3/§4.3.1, neutral page-level `Disable 2FA` trigger (§4.4:410), `.fs-num` / identifier-only `.fs-mono`, full-wrap device/client (`overflow-wrap: anywhere`), D19 compact-expand mobile cards (`≤ 768px`, guarded `matchMedia`), and full APG focus lifecycle on 3 modals (Decision 5).
+- [x] Verify 2FA setup/disable flows, backup codes modal, 4-column Login Audit Trail (`admin`/`manager`/`viewer` role copy; live-scope clarification: no separate active-sessions list or invented backend endpoints per I2; distinct from 10C admin audit log; empty-state action N/A per I2).
+- [x] Remove `SecuritySettingsPage.js` from `frontend/.eslintignore` (`line 24`); verify clean ESLint (`--max-warnings=0`).
+- [x] **Add `/security` (`THEMED_PATTERNS` 59 → 60).** *(Signed off by User 2026-11-28.)*
 
 #### 10C — Admin family
 
@@ -3022,6 +3026,20 @@ Fixtures:    calculations.spec.js & paycheckMocks.js byte-identical; RecycleBin.
 Screenshots: None tracked per D5/D21; 15 baselines in FinStat-visual-baselines (723c4ac) + 31 local §7.4 PNGs in gitignored docs/ui-snapshots/phase-10a/
 Branch:      phase-ui-10a-profile-settings (tag: ui-phase-10a-start; Gate 0 SHA: 51478bb; Impl SHA: fe20e40; Walkthrough SHA: 10aab73; Gov SHA: e699a5a)
 Merge SHA:   dfaca50
+```
+
+```
+Sub-phase:   10B (Finalized — Gate 19 Signed Off)
+Status:      done (Signed off by User 2026-11-28; merging to main)
+Done:        Converted `/security` (`SecuritySettingsPage.js` & `SecuritySettingsPage.css`) to dark graphite under D22 `html[data-fs-theme]`, expanded `THEMED_PATTERNS` `59 -> 60`, and removed `SecuritySettingsPage.js` from `.eslintignore`. Purged all 42 inline styles, 5 hex icon props, purple gradient heading, violet identity wash, `backdrop-filter: blur`, `animate-spin`, `LOADING...`, and `overflow-x` (`88` Stylelint errors -> `0`). Applied neutral `Enabled`/`Success`/role `<Badge>` + semantic `Disabled` (`warning`), `Failed` (`negative`), and `Save Now` (`warning`) per §4.3/§4.3.1, neutral page-level `Disable 2FA` trigger (§4.4:410), full APG modal focus lifecycle reusing shared `.modal-overlay`/`.modal-content`, `.fs-num` tabular timestamps with `data-visual-mask="true"`, `.fs-mono` IP/secret/backup codes/TOTP inputs, full-wrap device/client (`overflow-wrap: anywhere`), and guarded `matchMedia` D19 mobile cards (`0px` overflow at `390px`). Added `securityMocks.js`, `security-reference-match.spec.js`, `SecuritySettingsPage.test.js` (`9/9`), and `SecuritySettingsA11y.test.js` (`5/5` `jest-axe`). Gates 0–18 verified green: Gate 1 `60` / `75 / 10 / 65 / 0`, Gate 2 `0` drift, Gate 3 `0` deletions, Gate 4 `0` violations, Gate 5 `0` regressions / `stylelint` clean / `0` `overflow-x` / `0` protected diffs, Gate 6 ESLint `0` warnings, Gate 7 `14/14`, Gate 8 `21/21` (`DashboardSummary.js` `96` lines), Gate 9 `11/11`, Gate 12 build `Compiled successfully.` (`2048`MB main-only + `GENERATE_SOURCEMAP=false`), Gate 10 `2/2`, Gate 11 `9/9` (`25` PNGs), Gate 13 `6/6` (`3b3cfc5`; `334/334` manifest), Gate 14 `68/71`, Gate 15 `292/34` (`0` unexplained), Gate 16 `2/2`, Gate 17 inspection clean, Gate 18 `71/71`.
+Next:        Phase 10C (Admin family — closing Phase 10 at 64/65 routes)
+Blocked by:  None
+Allowlist:   ['/security'] (cumulative: 60 patterns)
+Visual diff: Gate 13 recaptured 5 Phase 10B snapshots in place (3b3cfc5; 334/334 manifest verified); Gate 14 68/71 (3 W-6A-1/AD16 only); Gate 15 292/34 (326 accounted: 292 + 34 AD14/AD16); Gate 18 71/71; 0 diffs on Cluster 9, 10A, or unthemed 10C routes.
+Fixtures:    calculations.spec.js, paycheckMocks.js & profileSettingsMocks.js byte-identical
+Screenshots: None tracked per D5/D21; 5 baselines in FinStat-visual-baselines (3b3cfc5) + 25 local §7.4 PNGs in gitignored docs/ui-snapshots/phase-10b/
+Branch:      phase-ui-10b-security (tag: ui-phase-10b-start; Gate 0 SHA: 7f8d4c6; Impl SHA: 7a8e9bb; Walkthrough SHA: 23a94aa)
+Merge SHA:   Pending merge commit on main
 ```
 
 ### Sub-phase note template

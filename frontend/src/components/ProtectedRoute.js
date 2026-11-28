@@ -75,6 +75,7 @@ export const THEMED_PATTERNS = [
   '/profile',
   '/settings',
   '/settings/recycle-bin',
+  '/security',
 ];
 
 export const isThemedRoute = (pathname) => {
